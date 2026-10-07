@@ -10,5 +10,5 @@ figures:
 paper.tex slop.tex: %.tex: %.texlish
 	texlish $<
 
-paper.pdf slop.pdf: %.pdf: %.tex paper.bib $(FIGURE_PDFS)
+paper.pdf slop.pdf: %.pdf: %.tex paper.bib alpha-key.bst $(FIGURE_PDFS)
 	latexmk -pdf -interaction=nonstopmode -halt-on-error $<

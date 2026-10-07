@@ -82,7 +82,7 @@
 
 : tcolorbox[colback=figorange!6!white,colframe=figorange!65!black,boxrule=0.6pt,arc=2pt,left=10pt,right=10pt,top=8pt,bottom=8pt]
   **Warning:** This technical overview was written by a large
-  language model (LLM) and is probably hard to understand.
+  language model (LLM) and is probably poorly written.
 
 # Definitions and Main Theorem @=sec:definitions
 Following the tiling-equation notation of
@@ -224,7 +224,7 @@ A word $w=(w_p,w_q,w_{\calT})\in\Sigma^I$ is ***allowed*** if there are
 integers $a,b$ such that $\lambda$ is nondegenerate modulo both primes,
 and a domino solution
 $$
- \sigma:\{0,\ldots,t_p(a)\}\times\{0,\ldots,t_q(a)\}\to\calT,
+ \sigma\colon \{0,\ldots,t_p(a)\}\times\{0,\ldots,t_q(a)\}\to\calT,
 $$
 such that, for every $n\in I$,
 : equation \label{eq:explicit-word-rule}
@@ -264,7 +264,7 @@ solution, is the substantive theorem we import.
     \item If an array satisfies \eqref{eq:line-rule} and both $W_p$ and $W_q$
     are nonconstant on every column, then the domino system has a solution
     on $\N^2$.
-    \item If $\tau:\N^2\to\calT$ is a domino solution, choose any
+    \item If $\tau\colon\N^2\to\calT$ is a domino solution, choose any
     $t_*\in\calT$ and define the array
     : equation \label{eq:canonical-sudoku}
        W(n,m)=
@@ -693,9 +693,9 @@ $\delta\mapsto e_\delta^b+\rho_i^b(\delta)$.
 Thus both maps
 : equation \label{eq:orderings}
   \begin{aligned}
-   \{\delta:e_\delta^b=\xi\}&\longrightarrow\Cyc{a_i},
+   \{\delta\colon e_\delta^b=\xi\}&\longrightarrow\Cyc{a_i},
      &\delta&\longmapsto e_\delta^a+\rho_i^a(\delta),\\
-   \{\delta:e_\delta^a=\alpha\}&\longrightarrow\Cyc{b_i},
+   \{\delta\colon e_\delta^a=\alpha\}&\longrightarrow\Cyc{b_i},
      &\delta&\longmapsto e_\delta^b+\rho_i^b(\delta)
   \end{aligned}
 are bijections.  Repeated entries in the list have different indices.
@@ -1027,7 +1027,7 @@ and the labels of the inactive seeds.
 
 Let $R(t)$ be the permutation of $S$ preserving each label-space copy
 and adding $t$ to all its coordinates.  Fix any bijection
-$\lambda:S\to\Cyc D$, and define a single auxiliary output
+$\lambda\colon S\to\Cyc D$, and define a single auxiliary output
 : equation \label{eq:shared-z}
   z(x,k)=\lambda(R(x_1)s(x)).
 There is no requirement that these labelings respect the additive
@@ -1605,5 +1605,5 @@ from \cite[Corollary~1.1]{RationalPolygons}.
   It does not assert that the original real translation set was integral,
   and no preservation of its period group is used.
 
-\bibliographystyle: plainnat
+\bibliographystyle: alpha-key
 \bibliography: paper
