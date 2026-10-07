@@ -1,7 +1,7 @@
 """Render the exact small Kim example as vector PDFs using only Python's stdlib.
 
 Run from the repository root: python3 figures/generate_connected.py
-The PDFs are checked-in figure assets. Geometry follows paper.texlish, Section 6.3,
+The PDFs are checked-in figure assets. Geometry follows slop.texlish, Section 6.3,
 and Kim, arXiv:2508.11725v2, Section 2. No cubes, bumps, or dents are omitted.
 """
 

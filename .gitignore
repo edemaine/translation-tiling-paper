@@ -8,5 +8,7 @@
 *.synctex.gz
 paper.pdf
 paper.tex
+slop.pdf
+slop.tex
 build/
 lean/.lake/

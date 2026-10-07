@@ -8,9 +8,11 @@ arbitrary real translations.
 
 ## Files and build
 
-- [paper.texlish](paper.texlish): authoritative source, in Texlish 0.2.0 syntax.
-- [paper.tex](paper.tex): generated LaTeX.
-- [paper.pdf](paper.pdf): compiled draft.
+- [paper.texlish](paper.texlish): human-written abstract and introduction.
+- [slop.texlish](slop.texlish): LLM-written technical overview, with definitions,
+  theorem statements, constructions, and proofs; no abstract or introduction.
+- `paper.tex`, `slop.tex`: generated LaTeX; both sources use Texlish 0.2.0 syntax.
+- `paper.pdf`, `slop.pdf`: compiled documents.
 - [paper.bib](paper.bib): bibliography with version-specific source links.
 - [verification/check_activation.py](verification/check_activation.py): finite algebra checks.
 - [figures/generate_connected.py](figures/generate_connected.py): exact connectedness-example renderer.
@@ -27,15 +29,22 @@ Equivalently:
 
 ```sh
 texlish paper.texlish
+texlish slop.texlish
+latexmk -pdf -interaction=nonstopmode -halt-on-error slop.tex
 latexmk -pdf -interaction=nonstopmode -halt-on-error paper.tex
 ```
 
-Edit `paper.texlish`, not `paper.tex`. TikZ diagrams are inline in the Texlish
-source; panel captions use `subcaption`.
+Edit the `.texlish` sources, not the generated `.tex` files. Keep prose edits
+to `paper.texlish` human-written; LLM-authored material belongs in `slop.texlish`.
+The technical overview repeats the definitions and main theorem so it can be
+read independently. Both documents use `paper.bib` and build independently.
+Keep numbered references within each document.
+TikZ diagrams are inline in the Texlish sources; panel captions use `subcaption`.
 
-The paper includes a reduction overview, a two-Wang-tile Sudoku example,
-cycle and activation diagrams, and an exact 54,000-cube connectedness
-example. The Sudoku figure uses toy primes 3 and 5 to show the arithmetic;
+The introduction includes a reduction overview. The technical overview includes
+a two-Wang-tile Sudoku example, cycle and activation diagrams, and an exact
+54,000-cube connectedness example. The Sudoku figure uses toy primes 3 and 5
+to show the arithmetic;
 the soundness theorem requires primes greater than 200. The connectedness
 figure shows the final construction step on a small disconnected input,
 rather than the output of the full reduction.
@@ -49,7 +58,8 @@ between the two replacement pieces before writing vector PDFs.
 
 ## Argument and dependencies
 
-The paper defines the decorated Sudoku word rule and canonical solution,
+The technical overview defines the decorated Sudoku word rule and canonical
+solution,
 supplies the graph, dependence, cycle, activation, common-solution,
 and stacking arguments, explicitly builds a lattice tile from rigid
 component shapes, and then applies an explicit connectedness construction.
