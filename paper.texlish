@@ -18,12 +18,14 @@
 
 ::use
   fontenc: T1
-  lmodern
+  libertine
   geometry: margin=1in
   amsmath
   amssymb
   amsthm
   mathtools
+  newtxmath: libertine
+  zi4: scaled=0.96
   mathrsfs
   microtype
   enumitem
@@ -236,21 +238,27 @@ finite Wang tile set $\calT$
 to a finite connected set $F_{\calT}\subset\Z^3$ such that
 $\calT$ tiles $\Z^2$ if and only if
 $F_{\calT}$ tiles $\Z^3$ by translations.
+To achieve this, we combine four constructions.
 
-Our reduction combines four constructions.  A ***Sudoku array*** has
-finitely many columns and integer-indexed rows, where every integer-slope
-line must read as one of a specified finite set of words.
-Greenfeld and Tao encode Wang tilings using such arrays, with two
-arithmetic scales providing the coordinates of the simulated plane
-\cite[Section~5]{GTUndecidable}.  OpenAI's preprint encodes a one-prime
-Sudoku obstruction by simultaneous tiling equations with a cyclic
-finite factor \cite[Sections~3--5]{OpenAI2026}.  We combine these
-equations into one tile while keeping the finite factor cyclic
-\cite[Section~6]{OpenAI2026}.  An effective quotient reduction preserves
-the number of tiles when passing from a quotient of $\Z^3$ to $\Z^3$
-\cite[Theorem~1.1]{MSS}.
-Kim's reduction then makes the tile connected while preserving
-dimension and tileability \cite[Theorem~2.5]{Kim}.
+1. Greenfeld and Tao \cite[Section~5]{GTUndecidable} reduce Wang tiling
+   to finding a ***Sudoku array*** --- a grid with infinitely many rows
+   and a fixed number of columns, independent of the Wang tile set,
+   such that every integer-slope line reads as one of a specified finite
+   set of words.
+   Their decorated two-prime rule uses powers of two distinct primes
+   to encode the two coordinates of the simulated plane, with a Wang
+   tile label included in each symbol.
+2. OpenAI \cite[Sections~3--5]{OpenAI2026} encodes Greenfeld and Tao's
+   one-prime Sudoku rule and its nonconstant-column condition as several
+   tiling equations on $\Z^2\times(\Z/Q\Z)$ sharing one translation set.
+   We adapt this encoding to the decorated two-prime rule and combine
+   the equations into one tile while keeping the finite coordinate cyclic
+   \cite[Section~6]{OpenAI2026}.
+3. An effective quotient reduction preserves
+   the number of tiles when passing from a quotient of $\Z^3$ to $\Z^3$
+   \cite[Theorem~1.1]{MSS}.
+4. We use a reduction of Kim \cite[Theorem~2.5]{Kim}
+   which makes the tile connected while preserving dimension and tileability.
 
 Our modification of the cyclic encoding replaces each arithmetic symbol
 by a pair of arithmetic symbols and a Wang label.  Two auxiliary
@@ -292,7 +300,7 @@ separate solutions of the different tiling equations would not suffice.
 
 The reduction in \cite{GTUndecidable} allows a variable finite abelian
 factor and a periodic target subset.  Its lattice dimension is part of
-the input; that result alone does not give \cref{thm:main}.
+the input; that result alone does not give \cref{thm:undecidability}.
 Here the finite factor is cyclic and the target is the whole group.
 For the quotient step we use \cite{MSS}, which preserves arbitrary tilings.
 The periodic-tiling descent in \cite[Section~7]{OpenAI2026} alone would
