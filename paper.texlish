@@ -201,8 +201,16 @@ given known algorithms for 2D [[Bhattacharya,GTStructure]].
   @=tab:related
 
 : theorem @=thm:undecidability
-  Tiling $\Z^3$ by translations of a single polycube is co-RE-complete,
-  and hence undecidable.
+  Tiling $\Z^3$ by translations of a single finite connected[^1]
+  subset of $\Z^3$ is co-RE-complete, and hence undecidable.
+  Replacing each lattice point by a unit cube,
+  tiling $\R^3$ by translations of a single finite connected[^1]
+  polycube in $\R^3$ is co-RE-complete, and hence undecidable.
+  [^1]:
+    Connectivity of a set in $\Z^3$ is defined according
+    to lattice adjacency in $\Z^3$.
+    Connectivity of a polycube in $\R^3$ is thus defined according
+    to face adjacency of the constituent unit cubes.
 
 ***Co-RE*** is the complexity class of decision problems whose "no" instances
 can be recognized in finite time by an algorithm (Turing machine).
@@ -224,61 +232,12 @@ Deciding whether a given finite set of Wang tiles admits such a tiling
 is co-RE-complete [[Berger]].
 
 Thus our main task is to construct a computable map from a
-finite nonempty Wang tile set $\calT$
-to a finite nonempty connected set $F_{\calT}\subset\Z^3$ such that
-  $$
-   \calT\text{ tiles }\Z^2
-   \quad\Longleftrightarrow\quad
-   F_{\calT}\text{ tiles }\Z^3\text{ by translations}.
-  $$
+finite Wang tile set $\calT$
+to a finite connected set $F_{\calT}\subset\Z^3$ such that
+$\calT$ tiles $\Z^2$ if and only if
+$F_{\calT}$ tiles $\Z^3$ by translations.
 
----
-
-For the purposes of this paper, define a ***prototile*** in $d$ dimensions to
-be a ***polycube***: a set of points in $\Z^d$, or equivalently
-a finite union of unit cubes in $\R^d$.
-
-
-Following the tiling-equation notation of
-\cite[Section~1.1]{GTUndecidable}, for subsets $A,F$ of an abelian
-group $G$, the notation $A\oplus F=G$
-means that every element of $G$ has exactly one representation as $a+f$
-with $a\in A$ and $f\in F$.  We say that $F$ ***tiles*** $G$ if such an $A$
-exists.  The input ***tile*** is finite and nonempty; the translation set may
-be infinite.  We allow translations only.  Intermediate tiles may be
-disconnected; the final tile will be connected.
-A finite set $F\subset\Z^d$ is ***connected*** if every pair of its
-points can be joined by a sequence of points of $F$, successive points
-differing by a signed coordinate unit vector.
-Connectedness of polycubes and polyominoes always refers to this lattice
-adjacency, including when they are viewed as unions of unit cubes.
-A ***polycube*** is a finite nonempty subset of $\Z^3$, or its corresponding
-union of unit cubes; a ***polyomino*** is its two-dimensional counterpart,
-following the terminology of \cite[Section~1.2]{Kim}.
-A tiling using one tile type is a ***translational monotiling***.
-More generally, $B\oplus C=E$ denotes unique representation of every
-point of $E$ as a sum, with no sums outside $E$; $B+C$ denotes the set
-of sums without a uniqueness condition, and $B-C$ is the set of
-differences $b-c$.  For a vector $u$ and an integer $n$, write
-$u+B=\{u+b:b\in B\}$ and $nB=\{nb:b\in B\}$.
-The notation $\sqcup$ denotes a disjoint union.
-A ***simultaneous tiling system*** asks for one translation
-set $A$ satisfying $A\oplus F_\nu=G$ for every specified tile $F_\nu$,
-as in \cite[Section~3]{GTPeriodic}.
-
-For a finite nonempty $F\subset\Z^d$, its ***unit-cube union*** is
-$F+[0,1]^d$.  In $\R^d$, a ***tiling by translations*** means that each point
-belongs to exactly one translated copy, except on a set of Lebesgue
-measure zero; this is coverage with multiplicity one almost everywhere
-\cite[Section~1.1]{GTPeriodic}.
-
-
-: theorem @=thm:main
-
-Replacing each lattice point by a unit cube gives co-RE-completeness
-for deciding whether a single connected polycube tiles $\R^3$ by arbitrary real translations.
-
-The reduction combines four constructions.  A ***Sudoku array*** has
+Our reduction combines four constructions.  A ***Sudoku array*** has
 finitely many columns and integer-indexed rows, where every integer-slope
 line must read as one of a specified finite set of words.
 Greenfeld and Tao encode Wang tilings using such arrays, with two
@@ -323,8 +282,7 @@ separate solutions of the different tiling equations would not suffice.
     \draw[reductionarrow] (stacked) -- (lattice);
     \draw[reductionarrow] (lattice) -- (connected);
   \end{tikzpicture}
-  \caption{The reduction, read left to right in each row, with the
-    connecting arrow continuing from the top row to the bottom row.
+  \caption{Reduction chain in our proof.
     Arrows indicate the direction of the reduction; every step preserves
     existence of a solution in both directions. The Sudoku interface is from
     \cite[Section~5]{GTUndecidable}; the cyclic encoding adapts
@@ -332,7 +290,6 @@ separate solutions of the different tiling equations would not suffice.
     use \cite[Theorem~1.1]{MSS} and \cite[Theorem~2.5]{Kim}, respectively.}
   \label{fig:reduction}
 
-.# Scope of the Ingredients.
 The reduction in \cite{GTUndecidable} allows a variable finite abelian
 factor and a periodic target subset.  Its lattice dimension is part of
 the input; that result alone does not give \cref{thm:main}.
