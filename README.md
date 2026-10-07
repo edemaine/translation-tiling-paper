@@ -27,7 +27,7 @@ texlish paper.texlish
 latexmk -pdf -interaction=nonstopmode -halt-on-error paper.tex
 ```
 
-Edit `paper.texlish`, not `paper.tex`. No author list has been assigned.
+Edit `paper.texlish`, not `paper.tex`.
 
 ## Argument and dependencies
 

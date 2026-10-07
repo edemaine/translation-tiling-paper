@@ -55,8 +55,25 @@
 \setlength{\emergencystretch}{2em}
 \setlist{itemsep=3pt,topsep=5pt}
 \title: Undecidability of Translational Monotilings in Dimension Three
-\author{}
-\date: Working draft --- October 7, 2026
+\author:
+  MIT--ULB CompGeom Group\thanks:
+    Artificial first author to highlight that the other authors (in
+    alphabetical order) worked as an equal group. Please include all
+    authors (including this one) in your bibliography, and refer to the
+    authors as “MIT--ULB CompGeom Group” (without “et al.”).
+  \and
+  Erik D. Demaine[^MIT-CSAIL]
+  \and
+  Stefan Langerman[^ULB]
+  [^MIT-CSAIL]:
+    Computer Science and Artificial Intelligence Laboratory,
+    Massachusetts Institute of Technology, Cambridge, MA, USA,
+    <edemaine@mit.edu>
+  [^ULB]:
+    Computer Science Department, Universit\'e libre de Bruxelles, Belgium,
+    <stefan.langerman@ulb.ac.be>. S. Langerman is Directeur de Recherche du F.R.S.-FNRS.
+
+\date{}
 
 : abstract
   We give a computable reduction from the Wang domino problem to deciding
