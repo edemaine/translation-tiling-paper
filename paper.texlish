@@ -120,9 +120,10 @@ be infinite.  We allow translations only.  Intermediate tiles may be
 disconnected; the final tile will be face-connected.
 A finite set $F\subset\Z^d$ is face-connected if every pair of its
 points can be joined by a sequence of points of $F$, successive points
-differing by a signed coordinate unit vector.  A polycube is a finite
-face-connected set in $\Z^3$, or its corresponding union of unit cubes,
-following the connectedness convention of \cite[Section~1.2]{Kim}.
+differing by a signed coordinate unit vector.
+A polycube is a finite nonempty subset of $\Z^3$, or its corresponding
+union of unit cubes; a polyomino is its two-dimensional counterpart,
+following the terminology of \cite[Section~1.2]{Kim}.
 A tiling using one tile type is a translational monotiling.
 More generally, $B\oplus C=E$ denotes unique representation of every
 point of $E$ as a sum, with no sums outside $E$; $B+C$ denotes the set
@@ -133,6 +134,12 @@ The notation $\sqcup$ denotes a disjoint union.
 A simultaneous tiling system asks for one translation
 set $A$ satisfying $A\oplus F_\nu=G$ for every specified tile $F_\nu$,
 as in \cite[Section~3]{GTPeriodic}.
+
+For a finite nonempty $F\subset\Z^d$, its unit-cube union is
+$F+[0,1]^d$.  In $\R^d$, a tiling by translations means that each point
+belongs to exactly one translated copy, except on a set of Lebesgue
+measure zero; this is coverage with multiplicity one almost everywhere
+\cite[Section~1.1]{GTPeriodic}.
 
 A subgroup $\Lambda$ has finite index when there are finitely many
 cosets $g+\Lambda$; the group of these cosets is the quotient $G/\Lambda$.
@@ -154,8 +161,8 @@ if an algorithm halts exactly on its yes instances, and co-recursively
 enumerable (co-RE) if an algorithm halts exactly on its no instances.
 A computable many-one reduction maps inputs of one problem to inputs
 of another, preserving yes and no
-answers.  A problem is co-RE hard if every co-RE problem has such a
-reduction to it, and co-RE complete if it is also in co-RE.
+answers.  A problem is co-RE-hard if every co-RE problem has such a
+reduction to it, and co-RE-complete if it is also in co-RE.
 For an encoding, completeness means that an original solution yields
 an encoded solution; soundness means that an encoded solution implies
 an original solution.
@@ -168,13 +175,12 @@ an original solution.
    \quad\Longleftrightarrow\quad
    F_{\calT}\text{ tiles }\Z^3\text{ by translations}.
   $$
-  Consequently, translational monotiling of $\Z^3$ is co-recursively
-  enumerable complete under computable many-one reductions, even when
-  the input tile is required to be face-connected.
+  Consequently, translational monotiling of $\Z^3$ is co-RE-complete
+  under computable many-one reductions, even when the input tile is
+  required to be face-connected.
 
-Replacing each lattice point by a unit cube gives the same co-RE
-completeness result for deciding whether a single face-connected
-polycube tiles $\R^3$ by arbitrary real translations
+Replacing each lattice point by a unit cube gives co-RE-completeness
+for deciding whether a single face-connected polycube tiles $\R^3$ by arbitrary real translations
 (\cref{cor:euclidean}).
 
 Bhattacharya's periodicity theorem implies decidability for every finite
@@ -183,7 +189,7 @@ Thus the dimension in \cref{thm:main} is optimal.
 The tile itself is part of the input.  No periodic subset of the ambient space
 and no prescribed partial tiling are supplied as additional input.
 
-The construction has four sources.  A Sudoku array has
+The reduction combines four constructions.  A Sudoku array has
 finitely many columns and integer-indexed rows, where every integer-slope
 line must read as one of a specified finite set of words.
 Greenfeld and Tao encode Wang tilings using such arrays, with two
@@ -192,8 +198,9 @@ arithmetic scales providing the coordinates of the simulated plane
 Sudoku obstruction by simultaneous tiling equations with a cyclic
 finite factor \cite[Sections~3--5]{OpenAI2026}.  We combine these
 equations into one tile while keeping the finite factor cyclic
-\cite[Section~6]{OpenAI2026}.  An effective quotient reduction preserves the number of tiles when passing from a
-quotient of $\Z^3$ to $\Z^3$ \cite[Theorem~1.1]{MSS}.
+\cite[Section~6]{OpenAI2026}.  An effective quotient reduction preserves
+the number of tiles when passing from a quotient of $\Z^3$ to $\Z^3$
+\cite[Theorem~1.1]{MSS}.
 Kim's reduction then makes the tile face-connected while preserving
 dimension and tileability \cite[Theorem~2.5]{Kim}.
 
@@ -267,8 +274,7 @@ Solvability on $\N^2$ is equivalent to solvability on $\Z^2$
 Indeed, a solution on the quadrant provides solutions on every finite
 square by restriction and translation; compactness then gives a
 solution on the plane.  Restriction proves the reverse implication.
-We use the classical co-recursively enumerable completeness of this
-domino problem \cite{Berger,GTUndecidable}.
+We use the classical co-RE-completeness of this domino problem \cite{Berger,GTUndecidable}.
 
 For a prime $r$, write $\F_r=\Z/r\Z$ for its field of residues and
 $\F_r^\times$ for the nonzero residues.
@@ -643,8 +649,8 @@ a seed it depends only on $s(x)$.
 The next test is the cycle construction of
 \cite[Lemma~3.2]{OpenAI2026}.
 : lemma @=lem:cycle
-  Let $C$ be a cyclically ordered list of distinct channels, and choose
-  one label $j(i)\in J_i$ for each $i\in C$.  A finite family of finite
+  Let $C$ be a nonempty cyclically ordered list of distinct channels,
+  and choose one label $j(i)\in J_i$ for each $i\in C$.  A finite family of finite
   tiles imposes the condition that these labels are not all active at
   the same $x$.  On graphs with \eqref{eq:dependence}, this condition
   is equivalent to the family of tiling equations, regardless of $z$
@@ -1310,17 +1316,17 @@ $D_Q=\Z^2\times\{0,\ldots,Q-1\}$.
 Let $e_1,e_2,e_3$ be the standard unit vectors in $\Z^3$, and define
 the boxes and their one-cell-thick frames by
 $$
- B_k=\{-k,\ldots,k\}^3,\qquad S_k=B_k\setminus B_{k-1}\quad(k\geq1).
+ B_k=\{-k,\ldots,k\}^3,\qquad H_k=B_k\setminus B_{k-1}\quad(k\geq1).
 $$
 Take $m=100$, $n=2m+1=201$, and $v_j=(12j,0,0)$ for $1\leq j\leq5$.
 The five boxes $v_j+B_5$ are disjoint, lie strictly inside $B_m$,
 and avoid zero.  Define
 : equation \label{eq:rigid-shapes}
   \begin{aligned}
-   T&=\left(B_m\setminus\bigcup_{j=1}^3(v_j+S_j)\right)
-          \sqcup\bigcup_{j=1}^3(ne_j+v_j+S_j),\\
-   T_1&=(T\setminus(v_4+S_4))\sqcup(nw+v_4+S_4),\\
-   T_2&=(T\setminus(v_5+S_5))\sqcup(nw+v_5+S_5).
+   T&=\left(B_m\setminus\bigcup_{j=1}^3(v_j+H_j)\right)
+          \sqcup\bigcup_{j=1}^3(ne_j+v_j+H_j),\\
+   T_1&=(T\setminus(v_4+H_4))\sqcup(nw+v_4+H_4),\\
+   T_2&=(T\setminus(v_5+H_5))\sqcup(nw+v_5+H_5).
   \end{aligned}
 Thus each removed frame is reattached at a displacement that is a
 multiple of $n$.  The first three frames distinguish the coordinate
@@ -1471,10 +1477,11 @@ These are the internal and external adjacency properties of
 Replace each point of $Q_i$ by a $3\times3\times3$ block:
 $R_i=3Q_i+C_3$.  Define the three bumps and their matching dents by
 $$
- B=\{(-1,1,1),(1,-1,1),(1,1,-1)\},\qquad
- D=\{(s-1,1,1),(1,s-1,1),(1,1,s-1)\},
+ B_{\rm bump}=\{(-1,1,1),(1,-1,1),(1,1,-1)\},\qquad
+ D_{\rm dent}=\{(s-1,1,1),(1,s-1,1),(1,1,s-1)\},
 $$
-and put $Q'_1=(R_1\setminus D)\cup B$, $Q'_i=R_i$ for $i>1$.
+and put $Q'_1=(R_1\setminus D_{\rm dent})\cup B_{\rm bump}$,
+$Q'_i=R_i$ for $i>1$.
 The thickened pieces retain face-connectedness and their adjacency
 properties.  The bumps and dents enforce a common grid in tilings
 of the assembly
@@ -1547,7 +1554,7 @@ pieces in overlapping boxes, while their lattice points remain disjoint.
   \cref{prop:connected}.  The last step makes the output face-connected.
   The composition is a computable many-one reduction and keeps the
   ambient dimension equal to three for every input.  The classical
-  domino problem gives co-recursively enumerable hardness.
+  domino problem gives co-RE-hardness.
 
   For membership, introduce Boolean variables $b_a\in\{0,1\}$ for
   $a\in\Z^3$ and write the tiling equations
@@ -1558,8 +1565,8 @@ pieces in overlapping boxes, while their lattice points remain disjoint.
   If no assignment exists, report that $F$ does not tile.
   Conversely, if every such finite system is satisfiable, compactness
   of $\{0,1\}^{\Z^3}$ yields an assignment satisfying every equation,
-  and its support $\{a:b_a=1\}$ tiles $\Z^3$.  Thus non-tileability is recursively
-  enumerable, completing the proof.
+  and its support $\{a:b_a=1\}$ tiles $\Z^3$.
+  Thus translational monotiling is in co-RE, completing the proof.
 
 ### An Explicit Connected Example
 
@@ -1636,10 +1643,8 @@ translational monotiling, even with a face-connected input tile.
 
 ## Arbitrary Real Translations of Unit-Cube Unions
 
-The lattice result also has a Euclidean formulation.  Here a tiling
-means that each point belongs to exactly one translated copy, except
-on a set of Lebesgue measure zero; this is coverage with multiplicity
-one almost everywhere.  For $v\in\R^d$, write
+We now prove the Euclidean formulation using the tiling convention
+from the introduction.  For $v\in\R^d$, write
 $\|v\|_\infty=\max_j|v_j|$ for the sup norm.
 Discrete-to-Euclidean tiling reductions also appear in
 \cite[Section~2]{GTPeriodic}; the unit-cube existence equivalence
@@ -1675,9 +1680,9 @@ needed here has the direct sampling proof below.
   $\{b(a):a\in A\}\oplus F=\Z^d$.
 
 : corollary @=cor:euclidean
-  It is co-recursively enumerable complete to decide whether a
-  finite union $F+[0,1]^3$ of integer unit cubes tiles $\R^3$ by
-  arbitrary real translations, given the finite set $F\subset\Z^3$.
+  Given a finite nonempty $F\subset\Z^3$, the problem of deciding
+  whether its unit-cube union $F+[0,1]^3$ tiles $\R^3$ by arbitrary
+  real translations is co-RE-complete.
   This remains true when $F$ is required to be face-connected, in which
   case its unit-cube union is connected and has connected interior.
   For the analogous class of unit-square unions in $\R^2$, the
