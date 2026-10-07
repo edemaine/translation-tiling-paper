@@ -81,31 +81,33 @@
 
 : abstract
   We prove co-RE-completeness, and thus undecidability, of the following
-  problem: given a single face-connected polycube prototile,
+  problem: given a single face-connected polycube,
   decide whether it tiles 3D Euclidean space by translations.
   %We give a computable reduction from Wang tiling, the problem of tiling
   %the plane with edge-colored squares whose touching colors must match,
   %to deciding whether one face-connected finite subset of $\Z^3$ tiles
   %$\Z^3$ by translations.  Face-connected means that any two points
   %can be joined within the set by steps of one unit along coordinate axes.
-  We prove hardness by reduction from Wang tiling,
-  combining the decorated two-prime Sudoku construction of
-  Greenfeld and Tao, a system of constraints on finite-width arrays,
-  and a cyclic encoding adapted from OpenAI's 3D aperiodic tile.
-  Two auxiliary constraints force both arithmetic components to vary
-  in every column while leaving the Wang labels unrestricted.
-  We prove both directions of the modified encoding,
-  combine its tiling equations into one tile
-  with a cyclic finite coordinate, and apply the effective quotient
-  reduction of Meyerovitch, Sanadhya, and Solomon.  Kim's connectedness
-  reduction then produces a single polycube in the same dimension.
-  The resulting decision
-  problem is co-recursively enumerable complete: its no instances can be
-  recognized algorithmically, and every problem with this property
-  reduces to it.  Dimension three is optimal, because translational
-  monotiling in $\Z^2$ is decidable.
-  The same reduction applies to connected unions of integer unit cubes in
-  $\R^3$, with arbitrary real translations.
+  We reduce from Wang tiling using the decorated two-prime Sudoku construction of Greenfeld and Tao and a cyclic encoding adapted from OpenAI's 3D aperiodic tile.
+  %We prove hardness by reduction from Wang tiling,
+  %combining the decorated two-prime Sudoku construction of
+  %Greenfeld and Tao, a system of constraints on finite-width arrays,
+  %and a cyclic encoding adapted from OpenAI's 3D aperiodic tile.
+  %Two auxiliary constraints force both arithmetic components to vary
+  %in every column while leaving the Wang labels unrestricted.
+  %We prove both directions of the modified encoding,
+  %combine its tiling equations into one tile
+  %with a cyclic finite coordinate, and apply the effective quotient
+  %reduction of Meyerovitch, Sanadhya, and Solomon.  Kim's connectedness
+  %reduction then produces a single polycube in the same dimension.
+  %The resulting decision
+  %problem is co-recursively enumerable complete: its no instances can be
+  %recognized algorithmically, and every problem with this property
+  %reduces to it.
+  Dimension three is optimal: translational monotiling is known to be
+  decidable in $\Z^2$ and for a single (possibly disconnected) polyomino in $\R^2$.
+  %The same reduction applies to connected unions of integer unit cubes in
+  %$\R^3$, with arbitrary real translations.
 
 # Introduction
 Following the tiling-equation notation of
@@ -1679,6 +1681,9 @@ needed here has the direct sampling proof below.
   Apply \cref{lem:rounding} to \cref{thm:main,prop:planar}.
   Face-connected cubes can be joined through their shared faces, so
   both the union and its interior are connected.
+
+The planar Euclidean decidability conclusion is also known directly
+from \cite[Corollary~1.1]{RationalPolygons}.
 
 : remark
   The sampling argument produces a new tiling with integer translations.
