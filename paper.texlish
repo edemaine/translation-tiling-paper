@@ -172,6 +172,11 @@ an original solution.
   enumerable complete under computable many-one reductions, even when
   the input tile is required to be face-connected.
 
+Replacing each lattice point by a unit cube gives the same co-RE
+completeness result for deciding whether a single face-connected
+polycube tiles $\R^3$ by arbitrary real translations
+(\cref{cor:euclidean}).
+
 Bhattacharya's periodicity theorem implies decidability for every finite
 tile in $\Z^2$, including disconnected tiles \cite{Bhattacharya}.
 Thus the dimension in \cref{thm:main} is optimal.
@@ -185,8 +190,9 @@ Greenfeld and Tao encode Wang tilings using such arrays, with two
 arithmetic scales providing the coordinates of the simulated plane
 \cite[Section~5]{GTUndecidable}.  OpenAI's preprint encodes a one-prime
 Sudoku obstruction by simultaneous tiling equations with a cyclic
-finite factor \cite[Sections~3--5]{OpenAI2026}.  An effective
-quotient reduction preserves the number of tiles when passing from a
+finite factor \cite[Sections~3--5]{OpenAI2026}.  We combine these
+equations into one tile while keeping the finite factor cyclic
+\cite[Section~6]{OpenAI2026}.  An effective quotient reduction preserves the number of tiles when passing from a
 quotient of $\Z^3$ to $\Z^3$ \cite[Theorem~1.1]{MSS}.
 Kim's reduction then makes the tile face-connected while preserving
 dimension and tileability \cite[Theorem~2.5]{Kim}.
