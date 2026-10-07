@@ -1,17 +1,15 @@
 # Lean formalization
 
-The pointwise construction of a connected three-dimensional tile is proved,
-conditional on the named external inputs. Uniform computability of the complete
-Wang compiler remains in progress, so the main computable reduction and its
-unconditional-on-a-compiler complexity consequences are **not yet proved**.
+The complete computable Wang-to-tile reduction is proved, conditional on the
+named mathematical inputs. Its output is a nonempty, face-connected tile in
+dimension three, tileable exactly when the input Wang tiles tile the plane.
 
 Read [TranslationTiling/Statements.lean](TranslationTiling/Statements.lean) for
-the short public statements. Its `Claims` namespace contains the outstanding
-targets as definitions of propositions. Those definitions supply no proofs.
-The subsequent `theorem` declarations have proofs. `compilation` gives the
-pointwise Wang/connected-tile equivalence; the complexity consequences
-currently require a `WangReduction` certificate. Constructing that certificate
-from the external inputs remains an internal obligation, not an imported theorem.
+the short public statements. `compiler_effectivity` and `compiler_correct`
+prove uniform computability and correctness. `reduction`, `completeness`,
+`connected_completeness`, and `real_completeness` take only `ReductionInputs`;
+`dimension_optimality` additionally uses planar periodicity. There is no assumed
+compiler certificate or outstanding `Claims` namespace.
 
 ## Build
 
@@ -31,7 +29,7 @@ lake build
 
 The first build includes the Wang repository's completed Kari–Hooper development.
 Build artifacts from the same dependency commit and toolchain may be reused.
-The build includes the examples and axiom audit.
+The full `lake build` passes, including the examples and axiom audit.
 `TranslationTiling/AxiomAudit.lean` rejects every axiom beyond `propext`,
 `Classical.choice`, and `Quot.sound` in the public theorems and selected main lemmas.
 Mathematical hypotheses are theorem parameters. No unfinished proof is accepted.
@@ -87,14 +85,14 @@ proved by the pinned Wang dependency, using its independent Kari–Hooper certif
 | Rectangular periods from the finite-index periodicity input | `Proofs/PeriodicGrid.lean` |
 | Primitive-recursive torus certificates, their equivalence with periodic tilings, and planar decidability from periodicity | `Proofs/IntegerResidues.lean`, `Proofs/PeriodicCertificates.lean` |
 | Shell assembly preserves tilability under a fundamental-domain and coset-rigidity hypothesis | `Proofs/ShellAssembly.lean` |
-| Completeness, undecidability, higher dimensions, connected completeness, and dimension optimality from their stated certificates | `Proofs/Complexity.lean` |
+| Completeness, undecidability, higher dimensions, connected completeness, and dimension optimality | `Proofs/Complexity.lean`, `Compiler/Main.lean` |
 
 `Examples.lean` checks small finite searches, repeated tile entries,
 face-connectivity, and torus certificates, including rejection of folded
 overlaps and modulus zero. It also derives real tilability of a single cube.
 It uses kernel evaluation.
 
-## Compiler progress
+## Main compiler
 
 `Compiler/Completeness.lean` proves equivalence of the graph, dependence, cycle,
 ordinary activation, and paired-seed constraints with Wang tilability. It uses
@@ -102,28 +100,41 @@ one common auxiliary solution for completeness and the decorated Sudoku input
 for soundness. `Consolidation.lean` stacks the finite family into a cyclic tile.
 `LatticeCompiler.lean` proves arbitrary-tiling descent and completeness using the
 explicit MSS components. `ConnectedCompiler.lean` applies Kim's shells and proves
-face-connectivity. Together these prove the public `compilation` theorem.
+face-connectivity. These semantic constructions have corresponding uniform
+numerical algorithms, assembled in `Compiler/Main.lean`.
 
 The numerical alphabet and decorated word-rule enumeration are primitive
 recursive (`EffectiveWordRule*.lean`, `EffectiveAlphabet.lean`). Prime and block
 coefficient searches are total computable (`EffectiveChoices.lean`,
 `EffectiveParameters.lean`). Full-difference colorings are found by a total
-computable certificate search (`EffectivePartition.lean`). Lattice assembly and
+computable certificate search (`EffectivePartition.lean`). Numerical cyclic
+stacking, its tiling equivalence, positivity, and nonemptiness are checked in
+`EffectiveStacking.lean`. Lattice assembly and
 connected-shell conversion are primitive recursive (`EffectiveLattice.lean`,
 `EffectiveConnected.lean`). Activation fibre orderings and batch indices now use
 explicit numerical ranks instead of input-dependent arbitrary enumerations.
 
-Remaining internal work:
+`EffectiveDependence.lean`, `EffectiveConstraintFamilies.lean`, and
+`EffectiveActivationFamily.lean` serialize every dependence, bad-word,
+seed-constraint, and activation gadget. `EffectiveCycleCorrect.lean` proves that
+the numerical cycle tables represent **every** required finite function and
+produce exactly the semantic cycle family. `EffectiveSystem.lean` proves that
+the complete serialized family equals the checked finite system, and transports
+its common complement through the cyclic CRT equivalence.
 
-1. Finish uniform numerical serialization of the graph, dependence, cycle, and
-   activation tile family, with correctness bridges to the checked finite gadgets.
-2. Prove uniform computability of cyclic stacking and compose the complete
-   `ConnectedWangReduction` certificate.
-3. Replace the `Claims` propositions with theorems taking only the named inputs.
+`Main.lean` composes this family with the searched full-difference partition,
+cyclic stacking, MSS lattice assembly, and Kim shell conversion. It constructs
+`wangReduction` and `connectedWangReduction`, proving effectivity, nonemptiness,
+arbitrary-tiling soundness and completeness, and face-connectivity. The algorithm
+does not depend on proofs of the mathematical inputs.
 
-The main compiler is an internal obligation, never an external hypothesis.
-The mathematical inputs can subsequently be discharged independently without
-changing the public statement surface.
+The `Computable` proofs establish total recursion on the canonical encodings.
+Some definitions use `noncomputable` to express fixed finite tables or searched
+witnesses; their uniform effectivity is separately proved. The exhaustive
+enumerations are enormous and are intended for the reduction proof.
+
+The remaining work is to discharge the named mathematical inputs themselves.
+They can be formalized independently without changing the compiler.
 
 ## Online formalizations inspected (October 7, 2026)
 

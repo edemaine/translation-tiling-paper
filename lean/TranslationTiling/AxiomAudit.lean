@@ -15,6 +15,7 @@ import TranslationTiling.Proofs.FiniteWordRule
 import TranslationTiling.Compiler.EffectiveGraphCompiler
 import TranslationTiling.Compiler.EffectiveActivationOffsets
 import TranslationTiling.Compiler.EffectiveStacking
+import TranslationTiling.Compiler.EffectiveInvarianceTiles
 import Lean.Util.CollectAxioms
 
 /-! Reject unfinished proofs, native evaluation axioms, and undeclared mathematical
@@ -24,6 +25,30 @@ mathematical statements occur as explicit parameters, never as Lean axioms. -/
 open Lean Elab Command in
 run_cmd do
   for name in [``TranslationTiling.membership,
+      ``TranslationTiling.reduction,
+      ``TranslationTiling.compiler_effectivity,
+      ``TranslationTiling.compiler_correct,
+      ``TranslationTiling.Compiler.compile_computable,
+      ``TranslationTiling.Compiler.compile_correct,
+      ``TranslationTiling.Compiler.connectedCompile_computable,
+      ``TranslationTiling.Compiler.connectedCompile_correct,
+      ``TranslationTiling.Compiler.Effective.family_computable,
+      ``TranslationTiling.Compiler.Effective.family_correct,
+      ``TranslationTiling.Compiler.Effective.family_tiling_iff,
+      ``TranslationTiling.Compiler.Effective.cycleFamily_computable,
+      ``TranslationTiling.Compiler.Effective.cycleFamily_correct,
+      ``TranslationTiling.Compiler.Effective.dependenceFamily_computable,
+      ``TranslationTiling.Compiler.Effective.dependenceFamily_correct,
+      ``TranslationTiling.Compiler.Effective.ordinaryFamily_computable,
+      ``TranslationTiling.Compiler.Effective.ordinaryFamily_correct,
+      ``TranslationTiling.Compiler.Effective.seedFamily_computable,
+      ``TranslationTiling.Compiler.Effective.seedFamily_correct,
+      ``TranslationTiling.Compiler.Effective.wordFamily_computable,
+      ``TranslationTiling.Compiler.Effective.wordFamily_correct,
+      ``TranslationTiling.Compiler.Effective.seedConstraintFamily_computable,
+      ``TranslationTiling.Compiler.Effective.seedConstraintFamily_correct,
+      ``TranslationTiling.Compiler.Effective.numericalSeedFirst_primrec,
+      ``TranslationTiling.Compiler.Effective.numericalSeedFirst_eq,
       ``TranslationTiling.compilation,
       ``TranslationTiling.lattice_effectivity,
       ``TranslationTiling.shell_effectivity,
@@ -57,6 +82,7 @@ run_cmd do
       ``TranslationTiling.Compiler.Effective.stackCompiler_correct,
       ``TranslationTiling.Compiler.Effective.stackCompiler_pos,
       ``TranslationTiling.Compiler.Effective.stackCompiler_nonempty,
+      ``TranslationTiling.Compiler.Effective.invarianceCodes_correct,
       ``TranslationTiling.sudoku_equivalence,
       ``TranslationTiling.planar_decidability,
       ``TranslationTiling.rounding,

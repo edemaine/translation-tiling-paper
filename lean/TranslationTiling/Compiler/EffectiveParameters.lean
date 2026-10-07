@@ -160,5 +160,11 @@ def parameters (T : LeanWang.TileSet) : EncodingParameters T where
   digitProduct := fun i => ∏ j : Label T i, digitLookup i (labelCode i j)
   digitProduct_eq := fun _ => rfl
 
+theorem parameters_a (T : LeanWang.TileSet) (i : FixedChannel) :
+    (parameters T).a i = usefulPrime (.inl i) := rfl
+
+theorem parameters_b (T : LeanWang.TileSet) (i : FixedChannel) :
+    (parameters T).b i = usefulPrime (.inr i) := rfl
+
 end
 end TranslationTiling.Compiler.Effective

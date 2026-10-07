@@ -2,37 +2,27 @@ import TranslationTiling.ExternalInputs
 import TranslationTiling.Proofs.Complexity
 import TranslationTiling.Proofs.CanonicalLineRule
 import TranslationTiling.Proofs.PeriodicCertificates
-import TranslationTiling.Compiler.EffectiveLattice
+import TranslationTiling.Compiler.Main
 
-/-! The public statement surface. Theorems below have checked proofs in `Proofs/`.
-`Claims` records outstanding targets as propositions, not as assumed theorems. -/
+/-! Short public statements. All imported mathematical inputs are explicit;
+the complete compiler and its uniform computability are proved internally. -/
 
 namespace TranslationTiling
 
-namespace Claims
+theorem reduction (h : ReductionInputs) : Nonempty ConnectedWangReduction :=
+  ⟨Compiler.connectedWangReduction h⟩
 
-/-- Outstanding: uniform computability of the complete Wang gadget compiler. -/
-def reduction : Prop := ReductionInputs → Nonempty ConnectedWangReduction
+theorem compiler_effectivity : Computable Compiler.connectedCompile :=
+  Compiler.connectedCompile_computable
 
-/-- Outstanding: the main lattice consequence using only the named external inputs. -/
-def completeness : Prop := ReductionInputs → LeanWang.CoREComplete (@Tiles 3)
-
-/-- Outstanding: the connected-input assertion of the current main theorem. -/
-def connected_completeness : Prop :=
-  ReductionInputs → LeanWang.CoREComplete (@ConnectedTiles 3)
-
-/-- Outstanding: the real-translation version using only the named external inputs. -/
-def real_completeness : Prop := ReductionInputs → LeanWang.CoREComplete (@RealTiles 3)
-
-/-- Outstanding: dimension three is the least undecidable dimension. -/
-def optimal_dimension : Prop :=
-  ExternalInputs → IsLeast {d : ℕ | ¬ ComputablePred (@Tiles d)} 3
-
-end Claims
+theorem compiler_correct (h : ReductionInputs) (T : LeanWang.TileSet) :
+    LeanWang.TilesPlane T ↔ Tiles (Compiler.connectedCompile T) :=
+  Compiler.connectedCompile_correct h T
 
 theorem compilation (h : ReductionInputs) (T : LeanWang.TileSet) :
     ∃ F : Tile 3, F ≠ [] ∧ FaceConnected F ∧ (LeanWang.TilesPlane T ↔ Tiles F) :=
-  Compiler.exists_connected_tile h T
+  ⟨Compiler.connectedCompile T, Compiler.connectedCompile_nonempty h.connectedness T,
+    Compiler.connectedCompile_connected h.connectedness T, compiler_correct h T⟩
 
 theorem lattice_effectivity : Computable Compiler.integerTile :=
   Compiler.integerTile_computable
@@ -51,35 +41,39 @@ theorem planar_decidability (h : PlanarPeriodicity) : ComputablePred (@Tiles 2) 
 
 theorem rounding {d : ℕ} (F : Tile d) : RealTiles F ↔ Tiles F := realTiles_iff_tiles F
 
-theorem completeness (r : WangReduction) : LeanWang.CoREComplete (@Tiles 3) :=
-  coRE_complete_of_reduction r
+theorem completeness (h : ReductionInputs) : LeanWang.CoREComplete (@Tiles 3) :=
+  coRE_complete_of_reduction (Compiler.wangReduction h.sudoku h.rigidity)
 
-theorem undecidability (r : WangReduction) : ¬ ComputablePred (@Tiles 3) :=
-  undecidable_of_reduction r
+theorem undecidability (h : ReductionInputs) : ¬ ComputablePred (@Tiles 3) :=
+  undecidable_of_reduction (Compiler.wangReduction h.sudoku h.rigidity)
 
-theorem higher_dimension (r : WangReduction) {d : ℕ} (h : 3 ≤ d) :
-    LeanWang.CoREComplete (@Tiles d) := coRE_complete_in_dimension r h
+theorem higher_dimension (h : ReductionInputs) {d : ℕ} (hd : 3 ≤ d) :
+    LeanWang.CoREComplete (@Tiles d) :=
+  coRE_complete_in_dimension (Compiler.wangReduction h.sudoku h.rigidity) hd
 
 theorem real_membership (d : ℕ) : LeanWang.CoREPred (@RealTiles d) := realTiles_coRE d
 
-theorem connected_hardness (r : ConnectedWangReduction) :
-    LeanWang.CoREHard (@ConnectedTiles 3) := connected_hard_of_reduction r
+theorem connected_hardness (h : ReductionInputs) : LeanWang.CoREHard (@ConnectedTiles 3) :=
+  connected_hard_of_reduction (Compiler.connectedWangReduction h)
 
 theorem connected_membership (d : ℕ) : LeanWang.CoREPred (@ConnectedTiles d) :=
   connectedTiles_coRE d
 
-theorem connected_completeness (r : ConnectedWangReduction) :
-    LeanWang.CoREComplete (@ConnectedTiles 3) := connected_complete_of_reduction r
+theorem connected_completeness (h : ReductionInputs) : LeanWang.CoREComplete (@ConnectedTiles 3) :=
+  connected_complete_of_reduction (Compiler.connectedWangReduction h)
 
-theorem real_completeness (r : WangReduction) : LeanWang.CoREComplete (@RealTiles 3) :=
-  real_coRE_complete_of_reduction r
+theorem real_completeness (h : ReductionInputs) : LeanWang.CoREComplete (@RealTiles 3) :=
+  real_coRE_complete_of_reduction (Compiler.wangReduction h.sudoku h.rigidity)
 
-theorem dimension_optimality (r : WangReduction) (h : PlanarPeriodicity) :
+theorem dimension_optimality (h : ExternalInputs) :
     IsLeast {d : ℕ | ¬ ComputablePred (@Tiles d)} 3 :=
-  optimal_dimension_of_planar r (planar_decidable h)
+  optimal_dimension_of_planar (Compiler.wangReduction h.sudoku h.rigidity)
+    (planar_decidable h.planar)
 
-theorem connected_output (r : ConnectedWangReduction) (T : LeanWang.TileSet) (h : T ≠ []) :
-    r.tile T ≠ [] ∧ FaceConnected (r.tile T) ∧ (LeanWang.TilesPlane T ↔ Tiles (r.tile T)) :=
-  ⟨r.nonempty T h, r.connected T h, r.correct T⟩
+theorem connected_output (h : ReductionInputs) (T : LeanWang.TileSet) :
+    Compiler.connectedCompile T ≠ [] ∧ FaceConnected (Compiler.connectedCompile T) ∧
+      (LeanWang.TilesPlane T ↔ Tiles (Compiler.connectedCompile T)) :=
+  ⟨Compiler.connectedCompile_nonempty h.connectedness T,
+    Compiler.connectedCompile_connected h.connectedness T, compiler_correct h T⟩
 
 end TranslationTiling
