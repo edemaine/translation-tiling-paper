@@ -28,10 +28,12 @@
   microtype
   enumitem
   booktabs
+  tabularx
   graphicx
   subcaption
   flafter
   placeins
+  xcolor: table
   tikz
   aliascnt
   xurl
@@ -42,6 +44,10 @@
 \definecolor{figblue}{RGB}{41,110,166}
 \definecolor{figorange}{RGB}{217,107,38}
 \definecolor{figgreen}{RGB}{38,128,89}
+\definecolor{bgblue}{HTML}{C1C1F6}
+\definecolor{bgred}{HTML}{F6C1C1}
+\definecolor{bgyellow}{HTML}{FFF5C4}
+\definecolor{bggreen}{HTML}{CDEECF}
 \newtheorem{theorem}{Theorem}[section]
 \newaliascnt{lemma}{theorem}
 \newtheorem{lemma}[lemma]{Lemma}
@@ -89,6 +95,118 @@
   decidable in $\Z^2$ and for a single (possibly disconnected) polyomino in $\R^2$.
 
 # Introduction
+
+Given $k$ finite subsets of $\Z^d$ (***prototiles***),
+can (infinitely many) copies of those subsets be *translated*
+to cover all of $\Z^d$ without overlaps?
+For which values of $k$ and $d$ is this problem decidable?
+In this paper, we prove undecidability for $k=1$ and $d=3$.
+
+The decidability question has a long history, summarized in Table~@tab:related.
+The first result is Golomb's implementation [[Golomb]]
+of the undecidable Wang tiling problem [[Berger]],
+which works in 2D but requires arbitrarily many prototiles.
+In 2D, Ollinger [[Ollinger]] reduced the number of prototiles to a constant
+(11), which was subsequently improved in a series of papers;
+%Subsequent bounds were 10 and 9 by Yang [[YangTen,YangNine]],
+%8 and 7 by Yang and Zhang [[YZEight,YZSeven]], and 5 by Kim [[KimPlane]],
+%all with connected polyominoes.
+%Allowing disconnected polyominoes gives bounds of 4 by Yang and Zhang
+%[[YZFour]] and
+the current record is 3 by the MIT--ULB CompGeom Group [[Trominoes]]
+(although this result requires one of the prototiles to be disconnected).
+In 3D, the first undecidability result used 6 prototiles
+[[YangSix]],
+% to 3 by Yang and Zhang [[YangThree]] and independently
+%the MIT--ULB CompGeom Group [[Trominoes]],
+and the current record is 2 [[Kim]];
+we improve to the minimum possible number of 3D prototiles, 1.
+3D is also the minimum dimension for undecidability,
+given known algorithms for 2D [[Bhattacharya,GTStructure]].
+%even if we allow disconnected polyominoes.
+
+: table[tbp]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.3}
+  \begin{tabularx}{\textwidth}{c*{4}{>{\centering\arraybackslash}X}}
+    \toprule
+    \multicolumn{5}{c}{\textbf{Translations only}} \\
+    \midrule
+    Prototiles & 1D & 2D & 3D & $d$D ($d\geq4$) \\
+    \midrule
+    \rowcolor{bggreen}\cellcolor{white}%
+    1 & R ($\downarrow$) & R \cite{Bhattacharya,GTStructure} & \cellcolor{bgblue}co-RE-c (Thm.~\ref{thm:main})$^{*}$ & \cellcolor{bgblue}co-RE-c ($\leftarrow$)$^{*}$ \\
+    \rowcolor{bgred}\cellcolor{white}%
+    2 & \cellcolor{bggreen}R ($\downarrow$) & \cellcolor{bgyellow}OPEN & co-RE-c \cite{Kim} ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
+    \rowcolor{bgred}\cellcolor{white}%
+    3 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c \cite{Trominoes} & co-RE-c \cite{YangThree,Trominoes} ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
+    \rowcolor{bgred}\cellcolor{white}%
+    4 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c \cite{YZFour} ($\uparrow$) & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
+    \rowcolor{bgred}\cellcolor{white}%
+    5 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c \cite{KimPlane}$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
+    \rowcolor{bgred}\cellcolor{white}%
+    6 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c \cite{YangSix} ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
+    \rowcolor{bgred}\cellcolor{white}%
+    7 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c \cite{YZSeven,YZConvex} ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
+    \rowcolor{bgred}\cellcolor{white}%
+    8 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c \cite{YZEight} ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
+    \rowcolor{bgred}\cellcolor{white}%
+    9 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c \cite{YangNine} ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
+    \rowcolor{bgred}\cellcolor{white}%
+    10 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c \cite{YangTen} ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
+    \rowcolor{bgred}\cellcolor{white}%
+    11 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c \cite{Ollinger} ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
+    \rowcolor{bgred}\cellcolor{white}%
+    $n$ & \cellcolor{bggreen}R \cite{GTUndecidable} & co-RE-c \cite{Berger,Golomb} ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
+    \bottomrule
+  \end{tabularx}
+
+  % \medskip
+  % \begin{tabularx}{\textwidth}{c*{4}{>{\centering\arraybackslash}X}}
+  %   \toprule
+  %   \multicolumn{5}{c}{\textbf{Rotations and translations}} \\
+  %   \midrule
+  %   Prototiles & 1D & 2D & 3D & $d$D ($d\geq4$) \\
+  %   \midrule
+  %   \rowcolor{bgyellow}\cellcolor{white}%
+  %   1 & \cellcolor{bggreen}R ($\downarrow$) & OPEN & OPEN & OPEN \\
+  %   \rowcolor{bgred}\cellcolor{white}%
+  %   2 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c \cite{Trominoes} & co-RE-c \cite{Trominoes} & co-RE-c ($\leftarrow$) \\
+  %   \rowcolor{bgred}\cellcolor{white}%
+  %   3 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c ($\uparrow$) & co-RE-c ($\uparrow$) & co-RE-c ($\uparrow$) \\
+  %   \rowcolor{bgred}\cellcolor{white}%
+  %   $n$ & \cellcolor{bggreen}R \cite{GTUndecidable} & co-RE-c \cite{Berger,Golomb} ($\uparrow$) & co-RE-c ($\uparrow$) & co-RE-c ($\uparrow$) \\
+  %   \bottomrule
+  % \end{tabularx}
+
+  \caption: Complexity of tiling the whole integer lattice by translations with
+    possibly disconnected polycubes, organized as in Table~3 of \cite{Trominoes}.
+    Rows bound the number of prototiles; $n$ means an arbitrary finite
+    input set. The last column applies to every fixed $d\geq4$.
+    "R" (green) denotes decidability,
+    "co-RE-c" (red) denotes co-RE-completeness,
+    and yellow marks open cases.
+    Blue highlights our new one-tile result
+    (\cref{thm:main}) and its extension to higher dimensions by extrusion.
+    Result marked "$^*$" work even when every prototile is face-connected.
+    (Unmarked results allow disconnected tiles.)
+    Arrows point to adjacent entries that imply the stated result,
+    including the connectedness restriction when marked.
+    % The lower panel allows grid-preserving rotations.
+    %The 2D three-tile construction uses one disconnected tile \cite{Trominoes};
+    %the four-tile result also allows disconnected tiles \cite{YZFour}.
+    %The seven-tile bound was strengthened to orthogonally convex
+    %polyominoes in \cite{YZConvex}.
+  @=tab:related
+
+---
+
+For the purposes of this paper, define a ***prototile*** in $d$ dimensions to
+be a ***polycube***: a set of points in $\Z^d$, or equivalently
+a finite union of unit cubes in $\R^d$.
+
+
 Following the tiling-equation notation of
 \cite[Section~1.1]{GTUndecidable}, for subsets $A,F$ of an abelian
 group $G$, the notation $A\oplus F=G$
@@ -165,9 +283,19 @@ for deciding whether a single face-connected polycube tiles $\R^3$ by arbitrary 
 
 Bhattacharya's periodicity theorem implies decidability for every finite
 tile in $\Z^2$, including disconnected tiles \cite{Bhattacharya}.
+Greenfeld and Tao subsequently gave a quantitative periodicity theorem
+and an explicit complexity bound for this decision problem \cite{GTStructure}.
 Thus the dimension in \cref{thm:main} is optimal.
 The tile itself is part of the input.  No periodic subset of the ambient space
 and no prescribed partial tiling are supplied as additional input.
+
+Table~@tab:related summarizes the complexity of translational tiling,
+drawing on the survey and constructions of the
+MIT--ULB CompGeom Group \cite{Trominoes}.
+In particular, their two-polycube result allows rotations, whereas
+their translation-only construction uses three connected polycubes.
+Our result reduces the translation-only count to one for the whole
+three-dimensional space.
 
 The reduction combines four constructions.  A ***Sudoku array*** has
 finitely many columns and integer-indexed rows, where every integer-slope
@@ -233,5 +361,5 @@ The periodic-tiling descent in \cite[Section~7]{OpenAI2026} alone would
 not justify an undecidability reduction.
 
 \FloatBarrier
-\bibliographystyle: plainnat
+\bibliographystyle: alpha-key
 \bibliography: paper
