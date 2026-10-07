@@ -92,10 +92,12 @@ means that every element of $G$ has exactly one representation as $a+f$
 with $a\in A$ and $f\in F$.  We say that $F$ ***tiles*** $G$ if such an $A$
 exists.  The input ***tile*** is finite and nonempty; the translation set may
 be infinite.  We allow translations only.  Intermediate tiles may be
-disconnected; the final tile will be face-connected.
-A finite set $F\subset\Z^d$ is ***face-connected*** if every pair of its
+disconnected; the final tile will be connected.
+A finite set $F\subset\Z^d$ is ***connected*** if every pair of its
 points can be joined by a sequence of points of $F$, successive points
 differing by a signed coordinate unit vector.
+Connectedness of polycubes and polyominoes always refers to this lattice
+adjacency, including when they are viewed as unions of unit cubes.
 A ***polycube*** is a finite nonempty subset of $\Z^3$, or its corresponding
 union of unit cubes; a ***polyomino*** is its two-dimensional counterpart,
 following the terminology of \cite[Section~1.2]{Kim}.
@@ -145,7 +147,7 @@ an original solution.
 
 : theorem @=thm:main
   There is a computable map from finite nonempty Wang tile sets $\calT$
-  to finite nonempty face-connected sets $F_{\calT}\subset\Z^3$ such that
+  to finite nonempty connected sets $F_{\calT}\subset\Z^3$ such that
   $$
    \calT\text{ tiles }\Z^2
    \quad\Longleftrightarrow\quad
@@ -153,7 +155,7 @@ an original solution.
   $$
   Consequently, translational monotiling of $\Z^3$ is co-RE-complete
   under computable many-one reductions, even when the input tile is
-  required to be face-connected.
+  required to be connected.
 
 # The Decorated Sudoku Interface @=sec:sudoku
 We use $\N=\{0,1,2,\ldots\}$ and the domino-system formulation of
@@ -1335,7 +1337,7 @@ no periods in the first two coordinates.
   This proves both directions without assuming periods of the
   original tiling.
 
-## Making the Tile Face-Connected @=sec:connected
+## Making the Tile Connected @=sec:connected
 
 Kim's connectedness reduction applies to any finite number of tiles,
 including one \cite[Theorem~2.5]{Kim}.  We give its finite construction
@@ -1365,7 +1367,7 @@ Define a function $\chi_m:C_{m+2}\to\{1,\ldots,m\}$ by
     1,&\text{otherwise}.
   \end{cases}
 Let $Q_i=\chi_m^{-1}(i)$.  This is Kim's partition from
-\cite[Section~2.1]{Kim}: the pieces $Q_i$ are face-connected, and
+\cite[Section~2.1]{Kim}: the pieces $Q_i$ are connected, and
 every two different pieces meet along a face both inside one box and
 across corresponding faces of neighboring boxes.  More precisely,
 disjoint lattice sets are ***adjacent*** when some point of one differs
@@ -1386,7 +1388,7 @@ $$
 $$
 and put $Q'_1=(R_1\setminus D_{\rm dent})\cup B_{\rm bump}$,
 $Q'_i=R_i$ for $i>1$.
-The thickened pieces retain face-connectedness and their adjacency
+The thickened pieces retain connectedness and their adjacency
 properties.  The bumps and dents enforce a common grid in tilings
 of the assembly
 : equation \label{eq:kim-shell}
@@ -1399,7 +1401,7 @@ Thus $|S_l|=s^3$ and $S_l\oplus s\Z^3=\Z^3$.
 ### The Rigidity Input and the Connected Tile
 
 : lemma[Kim's connected assembly] @=lem:kim-shell
-  The set $S_l$ in \eqref{eq:kim-shell} is face-connected.
+  The set $S_l$ in \eqref{eq:kim-shell} is connected.
   For distinct $u,v\in C_l$, the sets $su+S_l$ and $sv+S_l$ are
   disjoint and adjacent.  Moreover, if $A\oplus S_l=\Z^3$, then
   $A=t+s\Z^3$ for some $t\in\Z^3$.
@@ -1413,7 +1415,7 @@ pieces in overlapping boxes, while their lattice points remain disjoint.
 
 : proposition[Connectedness reduction, Kim] @=prop:connected
   From any finite nonempty $E\subset\Z^3$ one can compute a finite
-  nonempty face-connected $E^{\rm conn}\subset\Z^3$ such that
+  nonempty connected $E^{\rm conn}\subset\Z^3$ such that
   $$
    E\text{ tiles }\Z^3
    \quad\Longleftrightarrow\quad
@@ -1426,8 +1428,8 @@ pieces in overlapping boxes, while their lattice points remain disjoint.
   : equation \label{eq:connected-tile}
     E^{\rm conn}=sE\oplus S_l
       =\bigsqcup_{e\in E}(se+S_l).
-  Every piece is face-connected and every pair of different pieces
-  is adjacent by \cref{lem:kim-shell}, so their union is face-connected.
+  Every piece is connected and every pair of different pieces
+  is adjacent by \cref{lem:kim-shell}, so their union is connected.
   The representation is unique because $S_l$ is a fundamental domain
   for $s\Z^3$.  All sets in the construction are finite and explicit.
 
@@ -1455,7 +1457,7 @@ pieces in overlapping boxes, while their lattice points remain disjoint.
 : proof[Proof of \cref{thm:main}]
   Construct the domino relations of the input Wang tiles, apply
   \cref{cor:quotient}, apply \cref{thm:MSS}, and finally apply
-  \cref{prop:connected}.  The last step makes the output face-connected.
+  \cref{prop:connected}.  The last step makes the output connected.
   The composition is a computable many-one reduction and keeps the
   ambient dimension equal to three for every input.  The classical
   domino problem gives co-RE-hardness.
@@ -1543,7 +1545,7 @@ $F\subset\Z$ by $F\times\{0\}\subset\Z^2$.
 For every fixed $d>3$, the three-dimensional hardness result extends
 by replacing $F$ with $F\times\{0\}^{d-3}$ and taking slices.
 Thus three is precisely the least lattice dimension with undecidable
-translational monotiling, even with a face-connected input tile.
+translational monotiling, even with a connected input tile.
 
 ## Arbitrary Real Translations of Unit-Cube Unions
 
@@ -1587,14 +1589,14 @@ needed here has the direct sampling proof below.
   Given a finite nonempty $F\subset\Z^3$, the problem of deciding
   whether its unit-cube union $F+[0,1]^3$ tiles $\R^3$ by arbitrary
   real translations is co-RE-complete.
-  This remains true when $F$ is required to be face-connected, in which
+  This remains true when $F$ is required to be connected, in which
   case its unit-cube union is connected and has connected interior.
   For the analogous class of unit-square unions in $\R^2$, the
   problem is decidable.
 
 : proof
   Apply \cref{lem:rounding} to \cref{thm:main,prop:planar}.
-  Face-connected cubes can be joined through their shared faces, so
+  The lattice paths in $F$ give chains of cubes sharing faces, so
   both the union and its interior are connected.
 
 The planar Euclidean decidability conclusion is also known directly

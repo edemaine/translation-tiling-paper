@@ -88,9 +88,9 @@
 
 : abstract
   We prove co-RE-completeness, and thus undecidability, of the following
-  problem: given a single (face-connected) polycube,
+  problem: given a single (connected) polycube,
   decide whether it tiles 3D Euclidean space by translations.
-  We reduce from Wang tiling using the decorated two-prime Sudoku construction of Greenfeld and Tao and a cyclic encoding adapted from OpenAI's 3D aperiodic tile, and apply a reduction of Kim to make it face-connected.
+  We reduce from Wang tiling using the decorated two-prime Sudoku construction of Greenfeld and Tao and a cyclic encoding adapted from OpenAI's 3D aperiodic tile, and apply a reduction of Kim to make it connected (via faces).
   Dimension three is optimal: translational monotiling is known to be
   decidable in $\Z^2$ and for a single (possibly disconnected) polyomino in $\R^2$.
 
@@ -113,8 +113,8 @@ In 2D, Ollinger [[Ollinger]] reduced the number of prototiles to a constant
 %all with connected polyominoes.
 %Allowing disconnected polyominoes gives bounds of 4 by Yang and Zhang
 %[[YZFour]] and
-the current record is 3 by the MIT--ULB CompGeom Group [[Trominoes]]
-(although this result requires one of the prototiles to be disconnected).
+the current record is 3 by the MIT--ULB CompGeom Group [[Trominoes]].
+%(although this result requires one of the prototiles to be disconnected).
 In 3D, the first undecidability result used 6 prototiles
 [[YangSix]],
 % to 3 by Yang and Zhang [[YangThree]] and independently
@@ -189,7 +189,7 @@ given known algorithms for 2D [[Bhattacharya,GTStructure]].
     and yellow marks open cases.
     Blue highlights our new one-tile result
     (\cref{thm:undecidability}) and its extension to higher dimensions by extrusion.
-    Results marked "$^*$" work even when every prototile is face-connected.
+    Results marked "$^*$" work even when every prototile is connected.
     (Unmarked results allow disconnected tiles.)
     Arrows point to adjacent entries that imply the stated result,
     including the connectedness restriction when marked.
@@ -223,6 +223,15 @@ touching edges have the same color.
 Deciding whether a given finite set of Wang tiles admits such a tiling
 is co-RE-complete [[Berger]].
 
+Thus our main task is to construct a computable map from a
+finite nonempty Wang tile set $\calT$
+to a finite nonempty connected set $F_{\calT}\subset\Z^3$ such that
+  $$
+   \calT\text{ tiles }\Z^2
+   \quad\Longleftrightarrow\quad
+   F_{\calT}\text{ tiles }\Z^3\text{ by translations}.
+  $$
+
 ---
 
 For the purposes of this paper, define a ***prototile*** in $d$ dimensions to
@@ -237,10 +246,12 @@ means that every element of $G$ has exactly one representation as $a+f$
 with $a\in A$ and $f\in F$.  We say that $F$ ***tiles*** $G$ if such an $A$
 exists.  The input ***tile*** is finite and nonempty; the translation set may
 be infinite.  We allow translations only.  Intermediate tiles may be
-disconnected; the final tile will be face-connected.
-A finite set $F\subset\Z^d$ is ***face-connected*** if every pair of its
+disconnected; the final tile will be connected.
+A finite set $F\subset\Z^d$ is ***connected*** if every pair of its
 points can be joined by a sequence of points of $F$, successive points
 differing by a signed coordinate unit vector.
+Connectedness of polycubes and polyominoes always refers to this lattice
+adjacency, including when they are viewed as unions of unit cubes.
 A ***polycube*** is a finite nonempty subset of $\Z^3$, or its corresponding
 union of unit cubes; a ***polyomino*** is its two-dimensional counterpart,
 following the terminology of \cite[Section~1.2]{Kim}.
@@ -263,35 +274,9 @@ measure zero; this is coverage with multiplicity one almost everywhere
 
 
 : theorem @=thm:main
-  There is a computable map from finite nonempty Wang tile sets $\calT$
-  to finite nonempty face-connected sets $F_{\calT}\subset\Z^3$ such that
-  $$
-   \calT\text{ tiles }\Z^2
-   \quad\Longleftrightarrow\quad
-   F_{\calT}\text{ tiles }\Z^3\text{ by translations}.
-  $$
-  Consequently, translational monotiling of $\Z^3$ is co-RE-complete
-  under computable many-one reductions, even when the input tile is
-  required to be face-connected.
 
 Replacing each lattice point by a unit cube gives co-RE-completeness
-for deciding whether a single face-connected polycube tiles $\R^3$ by arbitrary real translations.
-
-Bhattacharya's periodicity theorem implies decidability for every finite
-tile in $\Z^2$, including disconnected tiles \cite{Bhattacharya}.
-Greenfeld and Tao subsequently gave a quantitative periodicity theorem
-and an explicit complexity bound for this decision problem \cite{GTStructure}.
-Thus the dimension in \cref{thm:main} is optimal.
-The tile itself is part of the input.  No periodic subset of the ambient space
-and no prescribed partial tiling are supplied as additional input.
-
-Table~@tab:related summarizes the complexity of translational tiling,
-drawing on the survey and constructions of the
-MIT--ULB CompGeom Group \cite{Trominoes}.
-In particular, their two-polycube result allows rotations, whereas
-their translation-only construction uses three connected polycubes.
-Our result reduces the translation-only count to one for the whole
-three-dimensional space.
+for deciding whether a single connected polycube tiles $\R^3$ by arbitrary real translations.
 
 The reduction combines four constructions.  A ***Sudoku array*** has
 finitely many columns and integer-indexed rows, where every integer-slope
@@ -305,7 +290,7 @@ equations into one tile while keeping the finite factor cyclic
 \cite[Section~6]{OpenAI2026}.  An effective quotient reduction preserves
 the number of tiles when passing from a quotient of $\Z^3$ to $\Z^3$
 \cite[Theorem~1.1]{MSS}.
-Kim's reduction then makes the tile face-connected while preserving
+Kim's reduction then makes the tile connected while preserving
 dimension and tileability \cite[Theorem~2.5]{Kim}.
 
 Our modification of the cyclic encoding replaces each arithmetic symbol
@@ -329,7 +314,7 @@ separate solutions of the different tiling equations would not suffice.
     \node[stage] (system) at (10.6,0) {Simultaneous tiling equations\\with a cyclic finite factor};
     \node[stage] (stacked) at (0,-2) {One tile in $\Z^2$\\with a cyclic finite factor};
     \node[stage] (lattice) at (5.3,-2) {One finite lattice tile\\in $\Z^3$};
-    \node[stage] (connected) at (10.6,-2) {One face-connected tile\\in $\Z^3$};
+    \node[stage] (connected) at (10.6,-2) {One connected tile\\in $\Z^3$};
     \draw[reductionarrow] (wang) -- (sudoku);
     \draw[reductionarrow] (sudoku) -- (system);
     \draw[reductionarrow,rounded corners=4pt]
