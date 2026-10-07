@@ -55,12 +55,6 @@
 \setlist{itemsep=3pt,topsep=5pt}
 \title: Undecidability of Translational Monotilings in Dimension Three
 \author:
-  MIT--ULB CompGeom Group\thanks:
-    Artificial first author to highlight that the other authors (in
-    alphabetical order) worked as an equal group. Please include all
-    authors (including this one) in your bibliography, and refer to the
-    authors as “MIT--ULB CompGeom Group” (without “et al.”).
-  \and
   Erik D. Demaine[^MIT-CSAIL]
   \and
   Stefan Langerman[^ULB]
