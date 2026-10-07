@@ -28,11 +28,19 @@
   microtype
   enumitem
   booktabs
+  graphicx
+  subcaption
+  flafter
+  tikz
   aliascnt
   xurl
   natbib: numbers,sort&compress
   hyperref: colorlinks=true,allcolors=blue
   cleveref: capitalise,nameinlink,noabbrev
+\usetikzlibrary{arrows.meta,positioning,calc}
+\definecolor{figblue}{RGB}{41,110,166}
+\definecolor{figorange}{RGB}{217,107,38}
+\definecolor{figgreen}{RGB}{38,128,89}
 \newtheorem{theorem}{Theorem}[section]
 \newaliascnt{lemma}{theorem}
 \newtheorem{lemma}[lemma]{Lemma}
@@ -188,8 +196,39 @@ components to vary in every column.  A Wang tiling supplies an array
 that supports both constraints simultaneously.  We include the
 finite-group construction and its inverse calculations to verify this compatibility; constructing
 separate solutions of the different tiling equations would not suffice.
+\Cref{fig:reduction} summarizes the existence equivalences.
 
-.# Scope of the ingredients.
+: figure[tbp]
+  \centering
+  \begin{tikzpicture}[
+    font=\small, >=Latex,
+    stage/.style={draw=black!55, rounded corners=2pt, fill=black!3,
+      text width=4.0cm, minimum height=1.05cm, align=center},
+    reductionarrow/.style={->, semithick, draw=black!65}]
+    \node[stage] (wang) at (0,0) {Wang tiling\\of the plane};
+    \node[stage] (sudoku) at (5.3,0) {Decorated Sudoku array\\arithmetic components\\nonconstant in each column};
+    \node[stage] (system) at (10.6,0) {Simultaneous tiling equations\\with a cyclic finite factor};
+    \node[stage] (stacked) at (0,-2) {One tile in $\Z^2$\\with a cyclic finite factor};
+    \node[stage] (lattice) at (5.3,-2) {One finite lattice tile\\in $\Z^3$};
+    \node[stage] (connected) at (10.6,-2) {One face-connected tile\\in $\Z^3$};
+    \draw[reductionarrow] (wang) -- (sudoku);
+    \draw[reductionarrow] (sudoku) -- (system);
+    \draw[reductionarrow,rounded corners=4pt]
+      (system.east) -- (13.2,0) -- (13.2,-1)
+      -- (-2.6,-1) -- (-2.6,-2) -- (stacked.west);
+    \draw[reductionarrow] (stacked) -- (lattice);
+    \draw[reductionarrow] (lattice) -- (connected);
+  \end{tikzpicture}
+  \caption{The reduction, read left to right in each row, with the
+    connecting arrow continuing from the top row to the bottom row.
+    Arrows indicate the direction of the reduction; every step preserves
+    existence of a solution in both directions. The Sudoku interface is from
+    \cite[Section~5]{GTUndecidable}; the cyclic encoding adapts
+    \cite[Sections~3--6]{OpenAI2026}; the lattice and connectedness steps
+    use \cite[Theorem~1.1]{MSS} and \cite[Theorem~2.5]{Kim}, respectively.}
+  \label{fig:reduction}
+
+.# Scope of the Ingredients.
 The reduction in \cite{GTUndecidable} allows a variable finite abelian
 factor and a periodic target subset.  Its lattice dimension is part of
 the input; that result alone does not give \cref{thm:main}.
@@ -198,7 +237,7 @@ For the quotient step we use \cite{MSS}, which preserves arbitrary tilings.
 The periodic-tiling descent in \cite[Section~7]{OpenAI2026} alone would
 not justify an undecidability reduction.
 
-# The decorated Sudoku interface @=sec:sudoku
+# The Decorated Sudoku Interface @=sec:sudoku
 We use $\N=\{0,1,2,\ldots\}$ and the domino-system formulation of
 \cite[Definition~2.2]{GTUndecidable}.  A domino system consists of a finite
 nonempty alphabet $\calT$ and two allowed-pair relations
@@ -254,7 +293,7 @@ analogous notation for $q$.
 The last-nonzero-digit function and the convention at zero follow
 \cite[Definition~4.1]{GTUndecidable}.
 
-## The finite word rule
+## The Finite Word Rule
 
 We now define $\calW$ explicitly, following
 \cite[Definition~5.1]{GTUndecidable}.
@@ -299,7 +338,7 @@ different lines and valuation scales.  The reverse assertion, that
 these local tests and nonconstant columns force a global domino
 solution, is the substantive theorem we import.
 
-## The imported soundness theorem and a canonical solution
+## The Imported Soundness Theorem and a Canonical Solution
 
 : theorem[Decorated Sudoku, Greenfeld--Tao] @=thm:GT
   The word rule just defined has the following properties.
@@ -346,6 +385,98 @@ and $\sigma(0,0)=t_*$.  This proves the line rule for the entire array.
 Both arithmetic components are nonconstant on every column: heights
 $1$ and $2$ already give the distinct values $1$ and $2$.
 
+### A Small Arithmetic Example
+
+Let $A$ have east and north colors $0$ and west and south colors $1$,
+and let $B$ have the opposite colors. These two Wang tiles force a
+checkerboard, with $\tau(u,v)=A$ when $u+v$ is even and $B$ otherwise.
+\Cref{fig:sudoku-example} shows how the valuation pair addresses this
+tiling in the canonical array. For readability, the figure uses the
+toy primes $p=3,q=5$, as in the arithmetic illustration of
+\cite[Figure~5.1]{GTUndecidable}. The canonical formula and its
+line-rule verification above apply to these primes, but we make no
+soundness claim for them: \cref{thm:GT} uses $p,q>200$.
+Every displayed height has the same symbol in every column $n$.
+For example, height $45$ gives the full symbol $(2,4,B)$, because
+$f_3(45)=2$, $f_5(45)=4$, and $(\nu_3(45),\nu_5(45))=(2,1)$.
+This illustrates the arithmetic interface, rather than enumerating
+the much larger lattice tile produced by the full reduction.
+
+: figure[tbp]
+  \centering
+  \subcaptionbox{Wang tiles\label{fig:sudoku-tiles}}[.27\linewidth]{%
+    \begin{minipage}[c][4.2cm][c]{\linewidth}
+      \centering
+      \begin{tikzpicture}[font=\small, x=1cm,y=1cm]
+      \foreach \x/\name/\en/\ws/\shade in {0/A/0/1/figblue,1.8/B/1/0/figorange} {
+        \fill[\shade!15] (\x,2) rectangle +(1.25,1.25);
+        \draw[black!65] (\x,2) rectangle +(1.25,1.25);
+        \node at (\x+.625,2.625) {$\name$};
+        \node[font=\scriptsize] at (\x+.625,3.12) {$\en$};
+        \node[font=\scriptsize] at (\x+1.12,2.625) {$\en$};
+        \node[font=\scriptsize] at (\x+.625,2.13) {$\ws$};
+        \node[font=\scriptsize] at (\x+.13,2.625) {$\ws$};
+      }
+      \node[align=center] at (1.525,1.35) {Colors $0,1$ on edges;\\touching colors agree.};
+      \end{tikzpicture}
+    \end{minipage}%
+  }
+  \hfil
+  \subcaptionbox{Valuation addresses\label{fig:sudoku-addresses}}[.29\linewidth]{%
+    \begin{minipage}[c][4.2cm][c]{\linewidth}
+      \centering
+      \begin{tikzpicture}[font=\small, x=1cm,y=1cm]
+      \foreach \u in {0,1,2} {
+        \foreach \v in {0,1,2} {
+          \pgfmathtruncatemacro{\parity}{mod(\u+\v,2)}
+          \ifnum\parity=0
+            \def\shade{figblue}\def\name{A}
+          \else
+            \def\shade{figorange}\def\name{B}
+          \fi
+          \fill[\shade!15] (4.6+.8*\u,.7+.8*\v) rectangle +(.8,.8);
+          \draw[black!45] (4.6+.8*\u,.7+.8*\v) rectangle +(.8,.8);
+          \node at (5+.8*\u,1.1+.8*\v) {$\name$};
+        }
+        \node at (5+.8*\u,.4) {$\u$};
+        \node at (4.3,1.1+.8*\u) {$\u$};
+      }
+      \node at (5.8,-.05) {$u=\nu_3(m)$};
+      \node[rotate=90] at (3.85,1.9) {$v=\nu_5(m)$};
+      \end{tikzpicture}
+    \end{minipage}%
+  }
+  \hfil
+  \subcaptionbox{Sampled heights\label{fig:sudoku-heights}}[.38\linewidth]{%
+    \begin{minipage}[c][4.2cm][c]{\linewidth}
+      \centering
+      \small
+      \renewcommand{\arraystretch}{1.12}
+      \begin{tabular}{rcc}
+            $m$ & $(\nu_3(m),\nu_5(m))$ & $W_{\calT}(n,m)$\\\midrule
+            1  & $(0,0)$ & $A$\\
+            3  & $(1,0)$ & $B$\\
+            5  & $(0,1)$ & $B$\\
+            9  & $(2,0)$ & $A$\\
+            15 & $(1,1)$ & $A$\\
+            25 & $(0,2)$ & $A$\\
+            45 & $(2,1)$ & $B$\\
+            75 & $(1,2)$ & $B$
+          \end{tabular}
+    \end{minipage}%
+  }
+  \caption{A two-tile example of the canonical decoration
+    \eqref{eq:canonical-sudoku}. (a) Edge colors specify the Wang tiles.
+    (b) Their checkerboard tiling supplies the decoration at each
+    valuation address. (c) Sample heights for the toy primes $3,5$;
+    the arithmetic components are suppressed in the table. These
+    small primes illustrate the formula and do not instantiate the
+    imported soundness theorem. The two-prime addressing method is from
+    \cite[Section~5]{GTUndecidable}.}
+  \label{fig:sudoku-example}
+
+### The Two Seed Symbol Sets
+
 Parametrize the lines by $x=(x_1,x_2)\in\Z^2$, and put
 $$
  L_n(x)=x_2+nx_1,\qquad u_n=(1,-n).
@@ -372,7 +503,7 @@ No constraint on the third coordinate is needed in this implication.
   merely the triple $W$.  Variation of the Wang label alone would not
   suffice.  This is the reason for imposing \eqref{eq:seed-symbols}.
 
-# Encoding finite constraints with a cyclic factor @=sec:encoding
+# Encoding Finite Constraints with a Cyclic Factor @=sec:encoding
 The general method of encoding finite-valued functional constraints
 by tiling equations was developed by Greenfeld and Tao
 \cite[Sections~4--8]{GTTwoTiles} and
@@ -381,7 +512,7 @@ The graph and cycle gadgets in this section adapt
 \cite[Section~3]{OpenAI2026}.  We give their definitions and proofs for
 the decorated alphabet, and keep the prime choices explicit.
 
-## Coordinates and the graph equation
+## Coordinates and the Graph Equation
 A channel is an indexed collection of input and output coordinates.
 Let $\mathcal I=I\sqcup\{\eta_1,\eta_2\}$ be their index set.
 Indices $n\in I$ are ordinary channels; $\eta_1,\eta_2$ are seed
@@ -456,7 +587,7 @@ $\beta_i:\Z^2\times K\to K_i$, called its high output, via
 This parametrizes the possible lifts of $k_i$ bijectively.  It is a choice
 of coordinates on fibers, not a splitting of cyclic groups.
 
-## Controlling dependence
+## Controlling Dependence
 We next require functions
 $\widetilde c_n:\Z\times K_n\to P_n$ and
 $\widetilde c_{\eta_t}:S\times K_{\eta_t}\to P_{\eta_t}$ such that
@@ -500,7 +631,7 @@ digits one at a time between any two inputs.
 For ordinary $n$, the active set depends only on $L_n(x)$, and for
 a seed it depends only on $s(x)$.
 
-## Excluding a tuple of active labels
+## Excluding a Tuple of Active Labels
 The next test is the cycle construction of
 \cite[Lemma~3.2]{OpenAI2026}.
 : lemma @=lem:cycle
@@ -549,6 +680,53 @@ The next test is the cycle construction of
   $\epsilon$ have the same image in \eqref{eq:cycle-map}, a contradiction
   to bijectivity.  All maps and all tiles used are finite.
 
+\Cref{fig:cycle} illustrates the dependency cycle in this argument.
+
+: figure[tbp]
+  \centering
+  \subcaptionbox{All selected labels active\label{fig:cycle-active}}[.47\linewidth]{%
+    \begin{minipage}[c][2.8cm][c]{\linewidth}
+      \centering
+      \begin{tikzpicture}[font=\small,>=Latex,
+        active/.style={circle,draw=figorange,fill=figorange!12,minimum size=1cm},
+        inactive/.style={circle,draw=figgreen,fill=figgreen!12,minimum size=1cm},
+        dependency/.style={->,semithick,draw=black!65}]
+      \node[active] (a1) at (0,1) {$e_1$};
+      \node[active] (a2) at (3,1) {$e_2$};
+      \node[active] (a3) at (1.5,-.6) {$e_3$};
+      \draw[dependency] (a1) -- node[above] {$d_2(e_1)$} (a2);
+      \draw[dependency] (a2) -- node[right] {$d_3(e_2)$} (a3);
+      \draw[dependency] (a3) -- node[left] {$d_1(e_3)$} (a1);
+      \end{tikzpicture}
+    \end{minipage}%
+  }
+  \hfil
+  \subcaptionbox{Selected label at $1$ inactive\label{fig:cycle-inactive}}[.47\linewidth]{%
+    \begin{minipage}[c][2.8cm][c]{\linewidth}
+      \centering
+      \begin{tikzpicture}[font=\small,>=Latex,
+        active/.style={circle,draw=figorange,fill=figorange!12,minimum size=1cm},
+        inactive/.style={circle,draw=figgreen,fill=figgreen!12,minimum size=1cm},
+        dependency/.style={->,semithick,draw=black!65}]
+      \node[inactive] (b1) at (0,1) {$e_1$};
+      \node[active] (b2) at (3,1) {$e_2$};
+      \node[active] (b3) at (1.5,-.6) {$e_3$};
+      \draw[dependency] (b1) -- node[above] {$d_2(e_1)$} (b2);
+      \draw[dependency] (b2) -- node[right] {$d_3(e_2)$} (b3);
+      \draw[dashed,draw=black!35] (b3) -- (b1);
+      \node[fill=white,inner sep=1pt,text=black!55] at (.7,.18) {$\times$};
+      \end{tikzpicture}
+    \end{minipage}%
+  }
+  \caption{A three-channel instance of the cycle test, adapted from
+    \cite[Lemma~3.2]{OpenAI2026}. Arrows indicate dependence of an
+    output component on another input in \eqref{eq:cycle-map}.
+    (a) When all selected labels are active, some tested maps produce
+    a collision. (b) An inactive selected label removes one dependency,
+    allowing the components of the preimage to be recovered in order
+    for every choice of the maps.}
+  \label{fig:cycle}
+
 Apply \cref{lem:cycle} to every word outside $\calW$, using the cycle
 of all ordinary channels.  Also apply it to the pair $(\eta_t,n)$
 with labels $*$ and $j$, for every $j\in\Sigma\setminus B_t$.
@@ -561,14 +739,14 @@ The resulting equations are exactly the conditions
 These conditions allow empty active sets.  The next section excludes
 that degeneracy where it matters.
 
-# Activation and soundness @=sec:activation
+# Activation and Soundness @=sec:activation
 
 Activation tests are tiling equations designed to force nonempty active sets.
 We adapt the activation tests of \cite[Section~4]{OpenAI2026} to the
 residue set $S$ in \eqref{eq:residues}.  Their purpose is to make every
 ordinary active set nonempty and each seed active somewhere.
 
-## A nonuniform list with uniform marginals
+## A Nonuniform List with Uniform Marginals
 
 On $P_i$, let $\ind_e$ be the function equal to one at $e$ and zero
 elsewhere, and let $1$ denote the constant function equal to one.
@@ -604,7 +782,66 @@ Thus both maps
   \end{aligned}
 are bijections.  Repeated entries in the list have different indices.
 
-## Finite activation tiles
+\Cref{fig:activation} gives a small example of this list on
+$(\Cyc2)\times(\Cyc3)$. Only the multiplicity pattern is illustrated;
+the prime choices in the full encoding remain those specified in
+\cref{sec:encoding}.
+
+: figure[tbp]
+  \centering
+  \subcaptionbox{Multiplicities $\mu(\alpha,\xi)$\label{fig:activation-multiplicities}}[.40\linewidth]{%
+    \begin{minipage}[c][3.1cm][c]{\linewidth}
+      \centering
+      \begin{tikzpicture}[font=\small,x=1cm,y=1cm,>=Latex]
+      \foreach \xi in {0,1,2} {
+        \node at (1.05*\xi+.525,1.95) {$\xi$};
+        \draw[black!50] (1.05*\xi,0) rectangle +(1.05,1.5);
+        \draw[black!50] (1.05*\xi,.75) -- +(1.05,0);
+      }
+      \node at (1.575,2.35) {$\xi$};
+      \node at (-.4,1.125) {$0$};
+      \node at (-.4,.375) {$1$};
+      \node at (-.9,.75) {$\alpha$};
+      \foreach \x/\y/\value in {0/.75/2,1.05/.75/0,2.1/.75/1,0/0/0,1.05/0/2,2.1/0/1} {
+        \ifnum\value=2\def\shade{figblue!20}\else\def\shade{black!3}\fi
+        \fill[\shade] (\x+.01,\y+.01) rectangle + (1.03,.73);
+        \node at (\x+.525,\y+.375) {$\value$};
+      }
+      \node[text=figgreen] at (3.65,1.125) {$3$};
+      \node[text=figgreen] at (3.65,.375) {$3$};
+      \node[font=\scriptsize,text=figgreen] at (3.65,1.95) {sum};
+      \foreach \x in {0,1,2} {\node[text=figgreen] at (1.05*\x+.525,-.35) {$2$};}
+      \node[font=\scriptsize,text=figgreen] at (-.4,-.35) {sum};
+      \end{tikzpicture}
+    \end{minipage}%
+  }
+  \hfil
+  \subcaptionbox{Six distinct list indices\label{fig:activation-indices}}[.54\linewidth]{%
+    \begin{minipage}[c][3.1cm][c]{\linewidth}
+      \centering
+      \begin{tikzpicture}[font=\small,x=1cm,y=1cm,>=Latex]
+      \foreach \delta/\entry in {0/{(0,0)},1/{(0,0)},2/{(1,1)},3/{(1,1)},4/{(0,2)},5/{(1,2)}} {
+        \node at (5.55+1.03*\delta,1.9) {$\delta$};
+        \node[draw=black!50,fill=figblue!8,minimum width=.96cm,minimum height=.75cm]
+          at (5.55+1.03*\delta,1.15) {$\entry$};
+      }
+      \node[anchor=east] at (4.95,1.9) {$\delta$};
+      \node[anchor=east] at (4.95,1.15) {$e_\delta$};
+      \end{tikzpicture}
+    \end{minipage}%
+  }
+  \caption{The activation multiplicity pattern on
+    $(\Cyc2)\times(\Cyc3)$, adapted from
+    \cite[Section~4]{OpenAI2026}. (a) The entries are nonuniform, but
+    their marginals are uniform. (b) The same multiplicities written
+    as an indexed list. Separate horizontal offsets for repeated
+    entries make the activation tile a set. An inactive ordinary
+    channel cannot satisfy its required uniform coverage, whereas
+    the marginal bijections \eqref{eq:orderings} support the block
+    inverse in \cref{lem:block}.}
+  \label{fig:activation}
+
+## Finite Activation Tiles
 
 Given a horizontal offset $h=(h_1,h_2)$, a useful-output offset
 $e\in P_i$, and a set $E\subseteq\Cyc D$, define a batch of offsets by
@@ -763,14 +1000,14 @@ from the domino system.
   Both arithmetic components therefore take the distinct values
   $1$ and $2$ in every column.  \Cref{thm:GT} gives a domino solution
   on $\N^2$, and compactness gives one on $\Z^2$.
-# One common solution @=sec:completeness
+# One Common Solution @=sec:completeness
 
 We prove the converse by lifting the canonical array from
 \eqref{eq:canonical-sudoku}.  The construction uses the block
 permutations of \cite[Section~5]{OpenAI2026}, with the two-prime
 residue set and the relaxed seed restrictions $B_t$.
 
-## Block functions
+## Block Functions
 
 For channel $i$ and label $j$, partition the $j$th digit set
 $\Cyc{r_{ij}}$ into $A_{ij}$ sets of size $a_i$ and $B_{ij}$ sets
@@ -829,7 +1066,7 @@ on exactly the $j$th digit, so its active set is $\{j\}$.
   The second bijection fixes $\delta$; the source label is
   $\xi^*-e_\delta^b$, and again $k_i'$ and $l$ follow uniquely.
 
-## Ordinary outputs
+## Ordinary Outputs
 
 Suppose the domino system has a solution, and let $W$ be the canonical
 array of \cref{thm:GT}.  For ordinary channel $i$ set
@@ -845,7 +1082,7 @@ $j_i(x)$ and the same block partition.  The test map is therefore
 activation equation.  This calculation permits any valid Sudoku array;
 the canonical choice will only be needed to accommodate the seeds.
 
-## Seed regions and the shared output
+## Seed Regions and the Shared Output
 
 For $t=1,2$, choose disjoint sets $S_t\subset S$ of respective sizes
 $3$ and $4$, contained in
@@ -973,9 +1210,9 @@ this dependence.
   fixed enumeration orders.  In particular, no knowledge of a domino
   solution is needed to construct the tiles.  The infinite solution
   is used only to prove completeness.
-# One tile in three dimensions @=sec:reduction
+# One Tile in Three Dimensions @=sec:reduction
 
-## Stacking the simultaneous equations
+## Stacking the Simultaneous Equations
 
 The stacking step is an existence equivalence, not merely a way to
 transfer aperiodicity.  We record its proof to make that distinction
@@ -1043,7 +1280,7 @@ We use the prime-cyclic version in \cite[Section~6]{OpenAI2026}.
   coprime to $|V|$.  The group $V\times\Cyc\ell$ is cyclic of order
   $Q=\ell|V|$.  All steps are effective.
 
-## Removing the finite coordinate
+## Removing the Finite Coordinate
 
 We give the finite tile construction from
 \cite[Theorem~1.1]{MSS} in the special case needed here.  Its only
@@ -1060,7 +1297,7 @@ The kernel is $L=\Z w$.  A fundamental domain for $L$ is a set
 containing exactly one representative of every coset of $L$; we use
 $D_Q=\Z^2\times\{0,\ldots,Q-1\}$.
 
-### Rigid component shapes
+### Rigid Component Shapes
 
 Let $e_1,e_2,e_3$ be the standard unit vectors in $\Z^3$, and define
 the boxes and their one-cell-thick frames by
@@ -1109,7 +1346,7 @@ so that one of its component translation vectors is zero.
 Here invariance under $nL$ means exactly $C_j+nw=C_j$; it imposes
 no periods in the first two coordinates.
 
-### Assembly and the tiling correspondence
+### Assembly and the Tiling Correspondence
 
 : theorem[Meyerovitch--Sanadhya--Solomon] @=thm:MSS
   Given $Q\geq1$ and a finite nonempty
@@ -1180,14 +1417,15 @@ no periods in the first two coordinates.
   This proves both directions without assuming periods of the
   original tiling.
 
-## Making the tile face-connected @=sec:connected
+## Making the Tile Face-Connected @=sec:connected
 
 Kim's connectedness reduction applies to any finite number of tiles,
 including one \cite[Theorem~2.5]{Kim}.  We give its finite construction
 in our notation and use its rigidity assertion as a black box.
-For an integer $a\geq1$, write $C_a=\{0,\ldots,a-1\}^3$.
+For an integer $a\geq0$, write $C_a=\{0,\ldots,a-1\}^3$, with
+$C_0=\varnothing$.
 Given a finite nonempty tile $E\subset\Z^3$, translate it into $C_l$
-for a computable integer $l\geq3$, and set
+for a computable integer $l\geq2$, and set
 $$
  m=l^3-(l-2)^3,\qquad s=3m+6.
 $$
@@ -1195,7 +1433,7 @@ Here $m$ counts the points in the outer layer
 $\partial C_l=C_l\setminus((1,1,1)+C_{l-2})$; enumerate them as
 $x_1,\ldots,x_m$ in lexicographic order.
 
-### The interlocking partition
+### The Interlocking Partition
 
 Define a function $\chi_m:C_{m+2}\to\{1,\ldots,m\}$ by
 : equation \label{eq:kim-partition}
@@ -1239,7 +1477,7 @@ does not change their residues modulo $s$, and the pieces $Q'_i$
 together contain exactly one representative of every such residue.
 Thus $|S_l|=s^3$ and $S_l\oplus s\Z^3=\Z^3$.
 
-### The rigidity input and the connected tile
+### The Rigidity Input and the Connected Tile
 
 : lemma[Kim's connected assembly] @=lem:kim-shell
   The set $S_l$ in \eqref{eq:kim-shell} is face-connected.
@@ -1315,7 +1553,54 @@ pieces in overlapping boxes, while their lattice points remain disjoint.
   and its support $\{a:b_a=1\}$ tiles $\Z^3$.  Thus non-tileability is recursively
   enumerable, completing the proof.
 
-## Why the dimension is optimal
+### An Explicit Connected Example
+
+Take $E=\{(0,0,0),(1,1,1)\}\subset C_2$. Its two points are not
+face-adjacent. With $l=2$, the outer layer is all of $C_2$, so $m=8$
+and $s=30$. Thus the construction gives
+$$
+ E^{\rm conn}=S_2\sqcup((30,30,30)+S_2),\qquad
+ |S_2|=27{,}000,\quad |E^{\rm conn}|=54{,}000.
+$$
+\Cref{fig:connected} renders these exact sets as unit-cube unions.
+The two copies of $S_2$ are disjoint and share unit-square faces,
+joining the two components without adding a separate connector.
+This is an example of the connectedness step, rather than the
+output of the full Wang-to-polycube reduction.
+
+: figure[tbp]
+  \centering
+  \subcaptionbox{Input $E$\label{fig:connected-input}}[.25\linewidth]{%
+    \begin{minipage}[c][3.6cm][c]{\linewidth}
+      \centering
+      \includegraphics[width=2.8cm]{figures/kim-input.pdf}
+    \end{minipage}%
+  }
+  \hfil
+  \subcaptionbox{Assembly $S_2$: $27{,}000$ cubes\label{fig:connected-shell}}[.32\linewidth]{%
+    \begin{minipage}[c][3.6cm][c]{\linewidth}
+      \centering
+      \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{figures/kim-shell.pdf}
+    \end{minipage}%
+  }
+  \hfil
+  \subcaptionbox{Connected tile: $54{,}000$ cubes\label{fig:connected-output}}[.37\linewidth]{%
+    \begin{minipage}[c][3.6cm][c]{\linewidth}
+      \centering
+      \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{figures/kim-connected.pdf}
+    \end{minipage}%
+  }
+  \caption{An exact three-dimensional example of Kim's connectedness
+    construction \cite[Section~2]{Kim}, with panels scaled separately.
+    (a) The two input cubes meet only at a corner.
+    (b) The eight colors identify the pieces $30x_i+Q'_i$ of $S_2$.
+    (c) Blue and orange identify its two translated copies in
+    $E^{\rm conn}$; these copies have disjoint interiors and meet along
+    faces. The rendering includes the bumps and dents, although they
+    are small at this scale.}
+  \label{fig:connected}
+
+## Why the Dimension Is Optimal
 
 : proposition @=prop:planar
   Given a finite nonempty $F\subset\Z^2$, it is decidable whether
@@ -1341,7 +1626,7 @@ by replacing $F$ with $F\times\{0\}^{d-3}$ and taking slices.
 Thus three is precisely the least lattice dimension with undecidable
 translational monotiling, even with a face-connected input tile.
 
-## Arbitrary real translations of unit-cube unions
+## Arbitrary Real Translations of Unit-Cube Unions
 
 The lattice result also has a Euclidean formulation.  Here a tiling
 means that each point belongs to exactly one translated copy, except

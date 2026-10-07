@@ -13,8 +13,11 @@ arbitrary real translations.
 - [paper.pdf](paper.pdf): compiled draft.
 - [paper.bib](paper.bib): bibliography with version-specific source links.
 - [verification/check_activation.py](verification/check_activation.py): finite algebra checks.
+- [figures/generate_connected.py](figures/generate_connected.py): exact connectedness-example renderer.
+- [figures/](figures/): checked-in PDF figures needed to build the paper.
 
-Build with Texlish, LaTeX, BibTeX, and latexmk installed:
+Build with Texlish, LaTeX (including TikZ and subcaption), BibTeX, latexmk,
+and Make installed:
 
 ```sh
 make
@@ -27,7 +30,22 @@ texlish paper.texlish
 latexmk -pdf -interaction=nonstopmode -halt-on-error paper.tex
 ```
 
-Edit `paper.texlish`, not `paper.tex`.
+Edit `paper.texlish`, not `paper.tex`. TikZ diagrams are inline in the Texlish
+source; panel captions use `subcaption`.
+
+The paper includes a reduction overview, a two-Wang-tile Sudoku example,
+cycle and activation diagrams, and an exact 54,000-cube connectedness
+example. The Sudoku figure uses toy primes 3 and 5 to show the arithmetic;
+the soundness theorem requires primes greater than 200. The connectedness
+figure shows the final construction step on a small disconnected input,
+rather than the output of the full reduction.
+
+The three figure PDFs in `figures/` are checked in, so building the paper
+does not require Python. With Python 3 installed, `make figures` regenerates
+these assets; include any updated PDFs when committing changes to the renderer.
+The renderer uses only the Python standard library and
+checks the cube counts, distinct residues, connectedness, and contact
+between the two replacement pieces before writing vector PDFs.
 
 ## Argument and dependencies
 
