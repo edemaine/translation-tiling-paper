@@ -9,8 +9,8 @@ namespace TranslationTiling.Kim
 
 /-- Lexicographic enumeration of the nonnegative lattice cube. -/
 def cube (l : ℕ) : Tile 3 :=
-  (List.range l).flatMap fun x => (List.range l).flatMap fun y =>
-    (List.range l).map fun z => ![(x : ℤ), (y : ℤ), (z : ℤ)]
+  (List.range l).flatMap fun x : ℕ => (List.range l).flatMap fun y : ℕ =>
+    (List.range l).map fun z : ℕ => ![(x : ℤ), (y : ℤ), (z : ℤ)]
 
 def boundary (l : ℕ) : Tile 3 :=
   (cube l).filter fun x => decide (∃ i : Fin 3, x i = 0 ∨ x i = (l : ℤ) - 1)

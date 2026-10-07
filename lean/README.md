@@ -1,12 +1,15 @@
 # Lean formalization
 
-This is an initial, partially proved formalization. The paper's main reduction
-is **not yet proved**, even conditional on its named external inputs.
+The pointwise construction of a connected three-dimensional tile is proved,
+conditional on the named external inputs. Uniform computability of the complete
+Wang compiler remains in progress, so the main computable reduction and its
+unconditional-on-a-compiler complexity consequences are **not yet proved**.
 
 Read [TranslationTiling/Statements.lean](TranslationTiling/Statements.lean) for
 the short public statements. Its `Claims` namespace contains the outstanding
 targets as definitions of propositions. Those definitions supply no proofs.
-The subsequent `theorem` declarations have proofs; the complexity consequences
+The subsequent `theorem` declarations have proofs. `compilation` gives the
+pointwise Wang/connected-tile equivalence; the complexity consequences
 currently require a `WangReduction` certificate. Constructing that certificate
 from the external inputs remains an internal obligation, not an imported theorem.
 
@@ -28,7 +31,7 @@ lake build
 
 The first build includes the Wang repository's completed Kari–Hooper development.
 Build artifacts from the same dependency commit and toolchain may be reused.
-The full `lake build` passes, including the examples and axiom audit.
+The build includes the examples and axiom audit.
 `TranslationTiling/AxiomAudit.lean` rejects every axiom beyond `propext`,
 `Classical.choice`, and `Quot.sound` in the public theorems and selected main lemmas.
 Mathematical hypotheses are theorem parameters. No unfinished proof is accepted.
@@ -91,25 +94,36 @@ face-connectivity, and torus certificates, including rejection of folded
 overlaps and modulus zero. It also derives real tilability of a single cube.
 It uses kernel evaluation.
 
-## Remaining internal proofs
+## Compiler progress
 
-1. Prove uniform computability of the decorated word-rule enumeration in the
-   compiler's concrete encodings. Its executable finite search and correctness
-   are checked already; a `Computable` theorem is still needed.
-2. Construct the graph, dependence, cycle, ordinary activation, and paired seed
-   gadgets. Prove soundness into `Sudoku.ActiveSystem` and completeness with the
-   common auxiliary solution. The existing histogram lemma proves only the
-   algebraic obstruction, not these whole gadgets.
-3. Prove computability of the full-difference partition and cyclic stacking
-   data. The existence theorem and tiling equivalence are checked already.
-4. Assemble the explicit MSS components and prove the quotient/lattice
-   correspondence from `MSS.Rigidity`, including computability.
-5. Instantiate the shell-assembly theorem with Kim's construction, prove finite
-   connectivity and computability, and compose the connected compiler.
+`Compiler/Completeness.lean` proves equivalence of the graph, dependence, cycle,
+ordinary activation, and paired-seed constraints with Wang tilability. It uses
+one common auxiliary solution for completeness and the decorated Sudoku input
+for soundness. `Consolidation.lean` stacks the finite family into a cyclic tile.
+`LatticeCompiler.lean` proves arbitrary-tiling descent and completeness using the
+explicit MSS components. `ConnectedCompiler.lean` applies Kim's shells and proves
+face-connectivity. Together these prove the public `compilation` theorem.
 
-Once these are complete, the `Claims` propositions can become theorems whose
-only mathematical parameters are the named external inputs. The inputs can
-then be discharged independently without changing the main statement surface.
+The numerical alphabet and decorated word-rule enumeration are primitive
+recursive (`EffectiveWordRule*.lean`, `EffectiveAlphabet.lean`). Prime and block
+coefficient searches are total computable (`EffectiveChoices.lean`,
+`EffectiveParameters.lean`). Full-difference colorings are found by a total
+computable certificate search (`EffectivePartition.lean`). Lattice assembly and
+connected-shell conversion are primitive recursive (`EffectiveLattice.lean`,
+`EffectiveConnected.lean`). Activation fibre orderings and batch indices now use
+explicit numerical ranks instead of input-dependent arbitrary enumerations.
+
+Remaining internal work:
+
+1. Finish uniform numerical serialization of the graph, dependence, cycle, and
+   activation tile family, with correctness bridges to the checked finite gadgets.
+2. Prove uniform computability of cyclic stacking and compose the complete
+   `ConnectedWangReduction` certificate.
+3. Replace the `Claims` propositions with theorems taking only the named inputs.
+
+The main compiler is an internal obligation, never an external hypothesis.
+The mathematical inputs can subsequently be discharged independently without
+changing the public statement surface.
 
 ## Online formalizations inspected (October 7, 2026)
 

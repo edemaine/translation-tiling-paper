@@ -15,6 +15,16 @@ The complete upstream license is [openai-math.LICENSE](openai-math.LICENSE).
 | `TranslationTiling/Proofs/FinitePairCounting.lean`, `PrimeDifferencePairs.lean`, `FullDifferenceBound.lean`, `FullDifferencePartition.lean` | Corresponding files, proving existence of a fresh prime full-difference partition |
 | `TranslationTiling/Proofs/Euclidean.lean` | Arguments from `AETilingCountable.lean` and `LatticeThickening.lean`, extended to prove the sampling/rounding equivalence |
 
+Compiler ports (local and upstream basenames agree):
+
+`Activation.lean`, `ActivationOffsets.lean`, `ActivationTiles.lean`, `BlockActivationInverse.lean`, `ChannelDigitBlocks.lean`, `CommonModel.lean`, `CommonSeedOutputs.lean`, `CommonSolution.lean`, `ConstraintCycles.lean`, `CycleTests.lean`, `CyclicCRT.lean`, `CyclicCoordinates.lean`, `CyclicFactorCRT.lean`, `CyclicQuotient.lean`, `CyclicShear.lean`, `CyclicTypes.lean`, `Dependence.lean`, `EncodedSystem.lean`, `EncodingParameters.lean`, `EncodingPrimeSelection.lean`, `GraphTests.lean`, `LabeledDigitBlocks.lean`, `OrdinaryActivation.lean`, `OrdinaryModel.lean`, `QuotientTiling.lean`, `SharedSeedInactive.lean`, `SharedSeedInverse.lean`, `SharedSeedLabelEquiv.lean`, `SharedSeedLabels.lean`, `SharedSeedRegions.lean`, `SharedSeedSizeTransport.lean`, `ShiftMultiplicity.lean`.
+
+These ports adapt the auxiliary finite-group construction to the decorated
+two-prime alphabet. They retain the upstream notices. Numerical activation
+rankings and index encodings have been replaced with explicit formulas; the
+integer descent, connected assembly, and computability bridges are developed
+locally.
+
 The ports change namespaces and imports for Lean 4.31.0, replace the upstream
 finite tiling predicate with `TranslationTiling.Stacking.Covers`, and add bridges
 to this project's set-based exact-coverage definition. All local copied/adapted

@@ -12,6 +12,9 @@ import TranslationTiling.Proofs.ComputableSearch
 import TranslationTiling.Proofs.Decidability
 import TranslationTiling.Proofs.Canonical
 import TranslationTiling.Proofs.FiniteWordRule
+import TranslationTiling.Compiler.EffectiveGraphCompiler
+import TranslationTiling.Compiler.EffectiveActivationOffsets
+import TranslationTiling.Compiler.EffectiveStacking
 import Lean.Util.CollectAxioms
 
 /-! Reject unfinished proofs, native evaluation axioms, and undeclared mathematical
@@ -21,6 +24,39 @@ mathematical statements occur as explicit parameters, never as Lean axioms. -/
 open Lean Elab Command in
 run_cmd do
   for name in [``TranslationTiling.membership,
+      ``TranslationTiling.compilation,
+      ``TranslationTiling.lattice_effectivity,
+      ``TranslationTiling.shell_effectivity,
+      ``TranslationTiling.Compiler.EncodingPrimeSelection.primeSequence_computable,
+      ``TranslationTiling.Compiler.finite_system_iff_wang,
+      ``TranslationTiling.Compiler.exists_cyclic_tile,
+      ``TranslationTiling.Compiler.exists_integer_tile,
+      ``TranslationTiling.Compiler.exists_connected_tile,
+      ``TranslationTiling.Compiler.LatticeGeometry.assembled_iff_quotient,
+      ``TranslationTiling.Compiler.integerTile_correct,
+      ``TranslationTiling.Compiler.connectedReduction_of_reduction,
+      ``TranslationTiling.Compiler.Effective.partitionCode_computable,
+      ``TranslationTiling.Compiler.Effective.partitionCertificate_valid,
+      ``TranslationTiling.Compiler.Effective.certificateParts_correct,
+      ``TranslationTiling.Compiler.Effective.allowedWordCodes_primrec,
+      ``TranslationTiling.Compiler.Effective.mem_allowedWordCodes,
+      ``TranslationTiling.Compiler.Effective.wordTest_iff,
+      ``TranslationTiling.Compiler.Effective.positiveCombination_computable,
+      ``TranslationTiling.Compiler.Effective.numericalR_computable,
+      ``TranslationTiling.Compiler.Effective.numericalR_eq,
+      ``TranslationTiling.Compiler.Effective.numericalOrder_computable,
+      ``TranslationTiling.Compiler.Effective.numericalOrder_eq,
+      ``TranslationTiling.Compiler.numericalFactor_surjective,
+      ``TranslationTiling.Compiler.Effective.kernelCompiler_computable,
+      ``TranslationTiling.Compiler.Effective.kernelCompiler_correct,
+      ``TranslationTiling.Compiler.Effective.numericalActivationFirst_primrec,
+      ``TranslationTiling.Compiler.Effective.numericalActivationFirst_eq,
+      ``TranslationTiling.Compiler.integerTile_nonempty,
+      ``TranslationTiling.Compiler.Effective.stackCompiler_computable,
+      ``TranslationTiling.Compiler.Effective.stackCodes_correct,
+      ``TranslationTiling.Compiler.Effective.stackCompiler_correct,
+      ``TranslationTiling.Compiler.Effective.stackCompiler_pos,
+      ``TranslationTiling.Compiler.Effective.stackCompiler_nonempty,
       ``TranslationTiling.sudoku_equivalence,
       ``TranslationTiling.planar_decidability,
       ``TranslationTiling.rounding,

@@ -2,6 +2,7 @@ import TranslationTiling.ExternalInputs
 import TranslationTiling.Proofs.Complexity
 import TranslationTiling.Proofs.CanonicalLineRule
 import TranslationTiling.Proofs.PeriodicCertificates
+import TranslationTiling.Compiler.EffectiveLattice
 
 /-! The public statement surface. Theorems below have checked proofs in `Proofs/`.
 `Claims` records outstanding targets as propositions, not as assumed theorems. -/
@@ -10,7 +11,7 @@ namespace TranslationTiling
 
 namespace Claims
 
-/-- Outstanding: the paper's computable construction from its geometric imports. -/
+/-- Outstanding: uniform computability of the complete Wang gadget compiler. -/
 def reduction : Prop := ReductionInputs → Nonempty ConnectedWangReduction
 
 /-- Outstanding: the main lattice consequence using only the named external inputs. -/
@@ -28,6 +29,16 @@ def optimal_dimension : Prop :=
   ExternalInputs → IsLeast {d : ℕ | ¬ ComputablePred (@Tiles d)} 3
 
 end Claims
+
+theorem compilation (h : ReductionInputs) (T : LeanWang.TileSet) :
+    ∃ F : Tile 3, F ≠ [] ∧ FaceConnected F ∧ (LeanWang.TilesPlane T ↔ Tiles F) :=
+  Compiler.exists_connected_tile h T
+
+theorem lattice_effectivity : Computable Compiler.integerTile :=
+  Compiler.integerTile_computable
+
+theorem shell_effectivity : Computable Compiler.connectedTile :=
+  Compiler.connectedTile_computable
 
 theorem sudoku_equivalence (h : Sudoku.Soundness) (T : LeanWang.TileSet) :
     LeanWang.TilesPlane T ↔ ∃ W : Sudoku.Array T,
