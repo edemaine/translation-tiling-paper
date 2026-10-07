@@ -1,4 +1,21 @@
 ::version >= 0.2.0
+
+%\title: Undecidability of Polycube Monotiling by Translation in 3D
+\title: Tiling 3D by Translates of a Single Polycube is Undecidable
+\author:
+  Erik D. Demaine[^MIT-CSAIL]
+  \and
+  Stefan Langerman[^ULB]
+  [^MIT-CSAIL]:
+    Computer Science and Artificial Intelligence Laboratory,
+    Massachusetts Institute of Technology, Cambridge, MA, USA,
+    <edemaine@mit.edu>
+  [^ULB]:
+    Computer Science Department, Universit\'e libre de Bruxelles, Belgium,
+    <stefan.langerman@ulb.ac.be>. S. Langerman is Directeur de Recherche du F.R.S.-FNRS.
+
+\date{}
+
 ::use
   fontenc: T1
   lmodern
@@ -53,34 +70,24 @@
 \numberwithin{equation}{section}
 \setlength{\emergencystretch}{2em}
 \setlist{itemsep=3pt,topsep=5pt}
-\title: Undecidability of Translational Monotilings in Dimension Three
-\author:
-  Erik D. Demaine[^MIT-CSAIL]
-  \and
-  Stefan Langerman[^ULB]
-  [^MIT-CSAIL]:
-    Computer Science and Artificial Intelligence Laboratory,
-    Massachusetts Institute of Technology, Cambridge, MA, USA,
-    <edemaine@mit.edu>
-  [^ULB]:
-    Computer Science Department, Universit\'e libre de Bruxelles, Belgium,
-    <stefan.langerman@ulb.ac.be>. S. Langerman is Directeur de Recherche du F.R.S.-FNRS.
-
-\date{}
 
 : abstract
-  We give a computable reduction from Wang tiling, the problem of tiling
-  the plane with edge-colored squares whose touching colors must match,
-  to deciding whether one face-connected finite subset of $\Z^3$ tiles
-  $\Z^3$ by translations.  Face-connected means that any two points
-  can be joined within the set by steps of one unit along coordinate axes.
-  The reduction combines the decorated two-prime Sudoku construction of
+  We prove co-RE-completeness, and thus undecidability, of the following
+  problem: given a single face-connected polycube prototile,
+  decide whether it tiles 3D Euclidean space by translations.
+  %We give a computable reduction from Wang tiling, the problem of tiling
+  %the plane with edge-colored squares whose touching colors must match,
+  %to deciding whether one face-connected finite subset of $\Z^3$ tiles
+  %$\Z^3$ by translations.  Face-connected means that any two points
+  %can be joined within the set by steps of one unit along coordinate axes.
+  We prove hardness by reduction from Wang tiling,
+  combining the decorated two-prime Sudoku construction of
   Greenfeld and Tao, a system of constraints on finite-width arrays,
-  with a cyclic encoding adapted from OpenAI's
-  three-dimensional aperiodic-tile preprint.  Two auxiliary constraints
-  force both arithmetic components to vary in every column while leaving
-  the Wang labels unrestricted.  We prove both directions of the
-  modified encoding, combine its tiling equations into one tile
+  and a cyclic encoding adapted from OpenAI's 3D aperiodic tile.
+  Two auxiliary constraints force both arithmetic components to vary
+  in every column while leaving the Wang labels unrestricted.
+  We prove both directions of the modified encoding,
+  combine its tiling equations into one tile
   with a cyclic finite coordinate, and apply the effective quotient
   reduction of Meyerovitch, Sanadhya, and Solomon.  Kim's connectedness
   reduction then produces a single polycube in the same dimension.
