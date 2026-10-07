@@ -31,8 +31,10 @@ Edit `paper.texlish`, not `paper.tex`.
 
 ## Argument and dependencies
 
-The paper supplies the graph, dependence, cycle, activation, common-solution,
-and stacking arguments. The change from the one-prime construction is to
+The paper defines the decorated Sudoku word rule and canonical solution,
+supplies the graph, dependence, cycle, activation, common-solution,
+and stacking arguments, and explicitly builds the final lattice tile
+from rigid component shapes. The change from the one-prime construction is to
 use decorated two-prime symbols and let seed `t` restrict both arithmetic
 components to `t`, leaving the Wang label free. Residues are indexed by
 `S = (Z/(pq)^2 Z)^2`; only the cyclic coordinate of order `|S|` enters the
@@ -42,10 +44,11 @@ The external mathematical inputs are:
 
 1. Berger's domino undecidability/completeness theorem.
 2. Greenfeld–Tao, arXiv:2309.09504v2, Definition 5.1 and Proposition 5.2:
-   the decorated Sudoku rule, its soundness, and its canonical model.
-3. Meyerovitch–Sanadhya–Solomon, arXiv:2211.07140v1, Theorem 1.1:
-   the effective quotient reduction preserving arbitrary tilings and the
-   number of prototiles.
+   soundness of the explicitly stated decorated Sudoku rule. The draft
+   verifies the canonical solution directly.
+3. Meyerovitch–Sanadhya–Solomon, arXiv:2211.07140v1, Lemma 2.1:
+   rigidity of the explicitly defined component shapes. The draft supplies
+   their assembly and the arbitrary-tiling correspondence of Theorem 1.1.
 4. Bhattacharya, arXiv:1602.05738v1: planar periodicity and decidability.
 
 The cyclic gadgets are adapted and reproved from Sections 3–6 of OpenAI's
