@@ -18,7 +18,7 @@ arbitrary real translations.
 - [figures/generate_connected.py](figures/generate_connected.py): exact connectedness-example renderer.
 - [figures/](figures/): checked-in PDF figures needed to build the paper.
 
-Build with Texlish, LaTeX (including TikZ and subcaption), BibTeX, latexmk,
+Build with Texlish, LaTeX (including TikZ, subcaption, and tcolorbox), BibTeX, latexmk,
 and Make installed:
 
 ```sh

@@ -32,6 +32,7 @@
   subcaption
   flafter
   tikz
+  tcolorbox
   aliascnt
   xurl
   natbib: numbers,sort&compress
@@ -79,64 +80,67 @@
 \setlength{\emergencystretch}{2em}
 \setlist{itemsep=3pt,topsep=5pt}
 
-**Warning:** This technical overview was written by a large
-language model (LLM) and is probably hard to understand.
+: tcolorbox[colback=figorange!6!white,colframe=figorange!65!black,boxrule=0.6pt,arc=2pt,left=10pt,right=10pt,top=8pt,bottom=8pt]
+  **Warning:** This technical overview was written by a large
+  language model (LLM) and is probably hard to understand.
 
 # Definitions and Main Theorem @=sec:definitions
 Following the tiling-equation notation of
 \cite[Section~1.1]{GTUndecidable}, for subsets $A,F$ of an abelian
 group $G$, the notation $A\oplus F=G$
 means that every element of $G$ has exactly one representation as $a+f$
-with $a\in A$ and $f\in F$.  We say that $F$ tiles $G$ if such an $A$
-exists.  The input tile is finite and nonempty; the translation set may
+with $a\in A$ and $f\in F$.  We say that $F$ ***tiles*** $G$ if such an $A$
+exists.  The input ***tile*** is finite and nonempty; the translation set may
 be infinite.  We allow translations only.  Intermediate tiles may be
 disconnected; the final tile will be face-connected.
-A finite set $F\subset\Z^d$ is face-connected if every pair of its
+A finite set $F\subset\Z^d$ is ***face-connected*** if every pair of its
 points can be joined by a sequence of points of $F$, successive points
 differing by a signed coordinate unit vector.
-A polycube is a finite nonempty subset of $\Z^3$, or its corresponding
-union of unit cubes; a polyomino is its two-dimensional counterpart,
+A ***polycube*** is a finite nonempty subset of $\Z^3$, or its corresponding
+union of unit cubes; a ***polyomino*** is its two-dimensional counterpart,
 following the terminology of \cite[Section~1.2]{Kim}.
-A tiling using one tile type is a translational monotiling.
+A tiling using one tile type is a ***translational monotiling***.
 More generally, $B\oplus C=E$ denotes unique representation of every
 point of $E$ as a sum, with no sums outside $E$; $B+C$ denotes the set
 of sums without a uniqueness condition, and $B-C$ is the set of
 differences $b-c$.  For a vector $u$ and an integer $n$, write
 $u+B=\{u+b:b\in B\}$ and $nB=\{nb:b\in B\}$.
 The notation $\sqcup$ denotes a disjoint union.
-A simultaneous tiling system asks for one translation
+A ***simultaneous tiling system*** asks for one translation
 set $A$ satisfying $A\oplus F_\nu=G$ for every specified tile $F_\nu$,
 as in \cite[Section~3]{GTPeriodic}.
 
-For a finite nonempty $F\subset\Z^d$, its unit-cube union is
-$F+[0,1]^d$.  In $\R^d$, a tiling by translations means that each point
+For a finite nonempty $F\subset\Z^d$, its ***unit-cube union*** is
+$F+[0,1]^d$.  In $\R^d$, a ***tiling by translations*** means that each point
 belongs to exactly one translated copy, except on a set of Lebesgue
 measure zero; this is coverage with multiplicity one almost everywhere
 \cite[Section~1.1]{GTPeriodic}.
 
-A subgroup $\Lambda$ has finite index when there are finitely many
-cosets $g+\Lambda$; the group of these cosets is the quotient $G/\Lambda$.
-A set $A$ is invariant under $\Lambda$ if $A+\lambda=A$ for every
-$\lambda\in\Lambda$.  We call a translation set periodic if it is
+A subgroup $\Lambda$ has ***finite index*** when there are finitely many
+***cosets*** $g+\Lambda$; the group of these cosets is the
+***quotient*** $G/\Lambda$.
+A set $A$ is ***invariant*** under $\Lambda$ if $A+\lambda=A$ for every
+$\lambda\in\Lambda$.  We call a translation set ***periodic*** if it is
 invariant under a finite-index subgroup, following
 \cite[Section~1.1]{GTPeriodic}.
 
-A Wang tile is a unit square with a color on each of its east, north,
-west, and south edges; a Wang tiling assigns tiles from a finite set
+A ***Wang tile*** is a unit square with a color on each of its east, north,
+west, and south edges; a ***Wang tiling*** assigns tiles from a finite set
 to $\Z^2$, without rotating or reflecting them, with equal colors on
 touching edges.  A Wang tile set tiles $\Z^2$ when such an assignment
 exists \cite[Definition~2.6]{GTUndecidable}.
 
-A decision problem is decidable if an algorithm halts on every input
-with the correct yes or no answer.  It is recursively enumerable (RE)
-if an algorithm halts exactly on its yes instances, and co-recursively
-enumerable (co-RE) if an algorithm halts exactly on its no instances.
-A computable many-one reduction maps inputs of one problem to inputs
+A decision problem is ***decidable*** if an algorithm halts on every input
+with the correct yes or no answer.  It is ***recursively enumerable*** (RE)
+if an algorithm halts exactly on its yes instances, and
+***co-recursively enumerable*** (co-RE) if an algorithm halts exactly on its
+no instances.
+A ***computable many-one reduction*** maps inputs of one problem to inputs
 of another, preserving yes and no
-answers.  A problem is co-RE-hard if every co-RE problem has such a
-reduction to it, and co-RE-complete if it is also in co-RE.
-For an encoding, completeness means that an original solution yields
-an encoded solution; soundness means that an encoded solution implies
+answers.  A problem is ***co-RE-hard*** if every co-RE problem has such a
+reduction to it, and ***co-RE-complete*** if it is also in co-RE.
+For an encoding, ***completeness*** means that an original solution yields
+an encoded solution; ***soundness*** means that an encoded solution implies
 an original solution.
 
 : theorem @=thm:main
@@ -153,9 +157,9 @@ an original solution.
 
 # The Decorated Sudoku Interface @=sec:sudoku
 We use $\N=\{0,1,2,\ldots\}$ and the domino-system formulation of
-\cite[Definition~2.2]{GTUndecidable}.  A domino system consists of a finite
+\cite[Definition~2.2]{GTUndecidable}.  A ***domino system*** consists of a finite
 nonempty alphabet $\calT$ and two allowed-pair relations
-$H,V\subseteq\calT^2$.  A solution on a subset of $\Z^2$ assigns a
+$H,V\subseteq\calT^2$.  A ***solution*** on a subset of $\Z^2$ assigns a
 symbol $\tau(u,v)$ to each point, with
 $$
  (\tau(u,v),\tau(u+1,v))\in H,\qquad
@@ -186,36 +190,37 @@ The finite-width board with constraints on all integer-slope lines is
 the Sudoku framework of Greenfeld and Tao
 \cite[Definition~7.4]{GTPeriodic}; we use its general word-rule
 formulation \cite[Definition~3.1]{GTUndecidable}.
-A word on $I$ is a function $I\to\Sigma$; $\Sigma^I$ denotes the set
-of all such words.  A word rule is a subset $\calW\subseteq\Sigma^I$.
-An array $W:I\times\Z\to\Sigma$ satisfies this rule if
+A ***word*** on $I$ is a function $I\to\Sigma$; $\Sigma^I$ denotes the set
+of all such words.  A ***word rule*** is a subset $\calW\subseteq\Sigma^I$.
+An ***array*** $W:I\times\Z\to\Sigma$ satisfies this rule if
 : equation \label{eq:line-rule}
    (W(n,dn+e))_{n\in I}\in\calW
    \qquad(d,e\in\Z).
 Write $W=(W_p,W_q,W_{\calT})$ for its three components.
-The first two are its arithmetic components; the third is its Wang decoration.
-The column at $n$ is the function $m\mapsto W(n,m)$ on $\Z$;
-nonconstancy of an arithmetic component means that this component takes
+The first two are its ***arithmetic components***; the third is its
+***Wang decoration***.
+The ***column*** at $n$ is the function $m\mapsto W(n,m)$ on $\Z$;
+***nonconstancy*** of an arithmetic component means that this component takes
 at least two different values in the column.
 
 For a nonzero integer $m$, let $\nu_p(m)$ denote the largest integer
-$k\geq0$ for which $p^k$ divides $m$, called its $p$-adic valuation,
+$k\geq0$ for which $p^k$ divides $m$, called its ***$p$-adic valuation***,
 and let $f_p(m)$ be the residue of $m/p^{\nu_p(m)}$ in
 $\F_p^\times$.  Set $\nu_p(0)=+\infty$ and $f_p(0)=1$, and use the
 analogous notation for $q$.
-The last-nonzero-digit function and the convention at zero follow
+The ***last-nonzero-digit function*** and the convention at zero follow
 \cite[Definition~4.1]{GTUndecidable}.
 
 ## The Finite Word Rule
 
 We now define $\calW$ explicitly, following
 \cite[Definition~5.1]{GTUndecidable}.
-For integers $a,b$, call $\lambda(n)=an+b$ nondegenerate modulo $r$
+For integers $a,b$, call $\lambda(n)=an+b$ ***nondegenerate modulo $r$***
 if $a,b$ are not both divisible by $r$, and put
 $$
  t_r(a)=\begin{cases}1,&r\nmid a,\\0,&r\mid a.\end{cases}
 $$
-A word $w=(w_p,w_q,w_{\calT})\in\Sigma^I$ is allowed if there are
+A word $w=(w_p,w_q,w_{\calT})\in\Sigma^I$ is ***allowed*** if there are
 integers $a,b$ such that $\lambda$ is nondegenerate modulo both primes,
 and a domino solution
 $$
@@ -269,8 +274,8 @@ solution, is the substantive theorem we import.
        \end{cases}
     Then $W$ satisfies \eqref{eq:line-rule}.
 
-The array in \eqref{eq:canonical-sudoku} is called the canonical Sudoku
-array associated to $\tau$.
+The array in \eqref{eq:canonical-sudoku} is called the
+***canonical Sudoku array*** associated to $\tau$.
 Part \textup{(i)} is the implication of
 \cite[Proposition~5.2]{GTUndecidable} that we use as a black box.
 For completeness, we verify part \textup{(ii)} directly.
@@ -394,7 +399,7 @@ Parametrize the lines by $x=(x_1,x_2)\in\Z^2$, and put
 $$
  L_n(x)=x_2+nx_1,\qquad u_n=(1,-n).
 $$
-Then $L_n$ is onto $\Z$ and its kernel, the set of points mapped to
+Then $L_n$ is onto $\Z$ and its ***kernel***, the set of points mapped to
 zero, is $\ker L_n=\Z u_n$.
 The two auxiliary constraints will use the symbol sets
 : equation \label{eq:seed-symbols}
@@ -426,11 +431,11 @@ The graph and cycle gadgets in this section adapt
 the decorated alphabet, and keep the prime choices explicit.
 
 ## Coordinates and the Graph Equation
-A channel is an indexed collection of input and output coordinates.
+A ***channel*** is an indexed collection of input and output coordinates.
 Let $\mathcal I=I\sqcup\{\eta_1,\eta_2\}$ be their index set.
-Indices $n\in I$ are ordinary channels; $\eta_1,\eta_2$ are seed
-channels, used to enforce the two auxiliary constraints.
-The label set of channel $i$ is denoted by $J_i$: put $J_n=\Sigma$
+Indices $n\in I$ are ***ordinary channels***; $\eta_1,\eta_2$ are
+***seed channels***, used to enforce the two auxiliary constraints.
+The ***label set*** of channel $i$ is denoted by $J_i$: put $J_n=\Sigma$
 for ordinary channels and $J_{\eta_t}=\{*\}$ for seeds.
 Set
 : equation \label{eq:residues}
@@ -460,11 +465,11 @@ $$
  K=\prod_i K_i,\qquad P=\prod_iP_i,
 $$
 where the product description of $K_i$ uses the Chinese remainder
-isomorphism.  Each coordinate in this product is called an input digit.
+isomorphism.  Each coordinate in this product is called an ***input digit***.
 Denote by $U_{ij}$ the subgroup with arbitrary $j$th
 digit and all other digits zero; subtraction by an element of $U_{ij}$
 changes only that digit.
-The ambient group is
+The ***ambient group*** is
 : equation \label{eq:ambient}
    G=\Z^2\times V,\qquad
    V=(\Cyc D)\times\prod_i\bigl((\Cyc{r_i^2})\times P_i\bigr).
@@ -473,11 +478,11 @@ so $V$ is cyclic.  The residue set $S$ is only an indexing set for
 functions; it is not a factor of $V$.
 
 Write coordinates of $G$ as $(x,z,(v_i,c_i)_i)$, and project to the
-base $(x,k)\in\Z^2\times K$ by setting $k_i=v_i\bmod r_i$.
-We call $x\in\Z^2$ the horizontal coordinates.
-The $k_i$ are the low coordinates; $c_i\in P_i$ are the useful outputs,
-and $z\in\Cyc D$ is the auxiliary output.  A fiber over a base point
-is the set of all points projecting to it; a lift of a base point is
+***base*** $(x,k)\in\Z^2\times K$ by setting $k_i=v_i\bmod r_i$.
+We call $x\in\Z^2$ the ***horizontal coordinates***.
+The $k_i$ are the ***low coordinates***; $c_i\in P_i$ are the ***useful outputs***,
+and $z\in\Cyc D$ is the ***auxiliary output***.  A ***fiber*** over a base point
+is the set of all points projecting to it; a ***lift*** of a base point is
 any point in that fiber.
 The kernel of this projection is the finite subgroup
 $$
@@ -488,12 +493,12 @@ Our first equation is
 : equation \label{eq:graph}
    A\oplus H_0=G.
 It says exactly that $A$ has one point over each base point $(x,k)$.
-We call such an $A$ a graph over the base; it is specified by its
+We call such an $A$ a ***graph over the base***; it is specified by its
 output functions $z,c_i,v_i$.
 For a residue $t$ modulo a positive integer $r$, write $[t]_r$ for its
 least nonnegative integer representative.
 It is useful to replace $v_i$ by an arbitrary function
-$\beta_i:\Z^2\times K\to K_i$, called its high output, via
+$\beta_i:\Z^2\times K\to K_i$, called its ***high output***, via
 : equation \label{eq:shear}
    v_i(x,k)=x_1+[k_i-x_1]_{r_i}+r_i\beta_i(x,k)
    \quad\text{in }\Cyc{r_i^2}.
@@ -532,13 +537,13 @@ the two shifts $(M,0),(0,M)$ in each seed channel.  These finitely
 many equations are equivalent to \eqref{eq:dependence}.
 
 For a graph with these dependencies, put $g_{i,x}(k_i)=c_i(x,k)$.
-Following \cite[Section~3.3]{OpenAI2026}, define its active labels by
+Following \cite[Section~3.3]{OpenAI2026}, define its ***active labels*** by
 : equation \label{eq:active}
    \calA_i(x)=\{j\in J_i:\exists v,v'\in K_i,
          \ v-v'\in U_{ij},\ g_{i,x}(v)\ne g_{i,x}(v')\}.
-A label is inactive when the function ignores that input digit.
-A channel is active at $x$ if $\calA_i(x)\ne\varnothing$, and
-inactive at $x$ otherwise.
+A label is ***inactive*** when the function ignores that input digit.
+A channel is ***active*** at $x$ if $\calA_i(x)\ne\varnothing$, and
+***inactive*** at $x$ otherwise.
 If all labels are inactive, the function is constant: change the
 digits one at a time between any two inputs.
 For ordinary $n$, the active set depends only on $L_n(x)$, and for
@@ -654,7 +659,7 @@ that degeneracy where it matters.
 
 # Activation and Soundness @=sec:activation
 
-Activation tests are tiling equations designed to force nonempty active sets.
+***Activation tests*** are tiling equations designed to force nonempty active sets.
 We adapt the activation tests of \cite[Section~4]{OpenAI2026} to the
 residue set $S$ in \eqref{eq:residues}.  Their purpose is to make every
 ordinary active set nonempty and each seed active somewhere.
@@ -668,9 +673,9 @@ $$
  \omega_i=\ind_{(0,0)}-\ind_{(1,0)}-\ind_{(0,1)}+\ind_{(1,1)},
  \qquad \mu_i=1+\omega_i.
 $$
-We will use $\mu_i(e)$ as the multiplicity, or number of occurrences,
+We will use $\mu_i(e)$ as the ***multiplicity***, or number of occurrences,
 of $e$ in a list.  These multiplicities are nonnegative and not all
-equal.  Their marginals, the sums over either coordinate, are uniform:
+equal.  Their ***marginals***, the sums over either coordinate, are uniform:
 $$
  \sum_{\alpha\in\Cyc{a_i}}\mu_i(\alpha,\xi)=a_i,
  \qquad
@@ -757,7 +762,7 @@ the prime choices in the full encoding remain those specified in
 ## Finite Activation Tiles
 
 Given a horizontal offset $h=(h_1,h_2)$, a useful-output offset
-$e\in P_i$, and a set $E\subseteq\Cyc D$, define a batch of offsets by
+$e\in P_i$, and a set $E\subseteq\Cyc D$, define a ***batch of offsets*** by
 : equation \label{eq:batch}
   \begin{split}
    \mathcal B_i(h,e;E)=\{(h,\zeta,(w_\ell,d_\ell)_\ell):\ &
@@ -855,12 +860,12 @@ The activation equation for channel $i$ is $A\oplus F_i^{\rm act}=G$.
   $\mu_i$.
 
   Now suppose a seed $i$ is nowhere active.  Its useful output then
-  has the form $q_i(s(x))$, independent of $k_i$.  Define the histogram
+  has the form $q_i(s(x))$, independent of $k_i$.  Define the ***histogram***
   $$
    Q(\alpha,\xi)=|\{s\in S:q_i(s)=(\alpha,\xi)\}|,
    \qquad \sum Q=D.
   $$
-  For functions on $P_i$, define their convolution by
+  For functions on $P_i$, define their ***convolution*** by
   $(f*g)(c)=\sum_{u\in P_i}f(u)g(c-u)$.
   At any target base, the pairs $(s(x)-\tau,k_i-l)$ run through
   $S\times K_i$.  Counting only the useful output in
@@ -927,7 +932,7 @@ $\Cyc{r_{ij}}$ into $A_{ij}$ sets of size $a_i$ and $B_{ij}$ sets
 of size $b_i$, using \eqref{eq:semigroup}.  Label each such set
 bijectively by the cyclic group of its size.  Copy these partitions
 and labels identically for every setting of the other digits in $K_i$.
-This partitions $K_i$ into blocks, each fixing all digits other than $j$.
+This partitions $K_i$ into ***blocks***, each fixing all digits other than $j$.
 
 If $k_i$ has label $y$ in a block of size $d$, define
 $$
@@ -1206,14 +1211,14 @@ $$
  \pi(x_1,x_2,x_3)=(x_1,x_2,x_3\bmod Q),\qquad
  w=(0,0,Q).
 $$
-The kernel is $L=\Z w$.  A fundamental domain for $L$ is a set
+The kernel is $L=\Z w$.  A ***fundamental domain*** for $L$ is a set
 containing exactly one representative of every coset of $L$; we use
 $D_Q=\Z^2\times\{0,\ldots,Q-1\}$.
 
 ### Rigid Component Shapes
 
 Let $e_1,e_2,e_3$ be the standard unit vectors in $\Z^3$, and define
-the boxes and their one-cell-thick frames by
+the ***boxes*** and their ***one-cell-thick frames*** by
 $$
  B_k=\{-k,\ldots,k\}^3,\qquad H_k=B_k\setminus B_{k-1}\quad(k\geq1).
 $$
@@ -1240,7 +1245,7 @@ $T_2$ of any given residue differ by an element of $nL$, because
 their type-specific moves are by $nw$.  These observations are direct
 checks on the shapes; forcing every tiling to respect their intended
 placement is the following black box.
-By a mixed tiling with shapes $T_1,T_2$ and translation sets $C_1,C_2$
+By a ***mixed tiling*** with shapes $T_1,T_2$ and translation sets $C_1,C_2$
 we mean that all copies $c+T_j$, $c\in C_j$, $j=1,2$, together cover
 $\Z^3$ exactly once.
 
@@ -1342,7 +1347,7 @@ for a computable integer $l\geq2$, and set
 $$
  m=l^3-(l-2)^3,\qquad s=3m+6.
 $$
-Here $m$ counts the points in the outer layer
+Here $m$ counts the points in the ***outer layer***
 $\partial C_l=C_l\setminus((1,1,1)+C_{l-2})$; enumerate them as
 $x_1,\ldots,x_m$ in lexicographic order.
 
@@ -1363,7 +1368,7 @@ Let $Q_i=\chi_m^{-1}(i)$.  This is Kim's partition from
 \cite[Section~2.1]{Kim}: the pieces $Q_i$ are face-connected, and
 every two different pieces meet along a face both inside one box and
 across corresponding faces of neighboring boxes.  More precisely,
-disjoint lattice sets are adjacent when some point of one differs
+disjoint lattice sets are ***adjacent*** when some point of one differs
 from a point of the other by a signed coordinate unit vector; the
 partition satisfies
 $$
@@ -1374,7 +1379,7 @@ These are the internal and external adjacency properties of
 \cite[Lemmas~2.1--2.2]{Kim}.
 
 Replace each point of $Q_i$ by a $3\times3\times3$ block:
-$R_i=3Q_i+C_3$.  Define the three bumps and their matching dents by
+$R_i=3Q_i+C_3$.  Define the three ***bumps*** and their matching ***dents*** by
 $$
  B_{\rm bump}=\{(-1,1,1),(1,-1,1),(1,1,-1)\},\qquad
  D_{\rm dent}=\{(s-1,1,1),(1,s-1,1),(1,1,s-1)\},
@@ -1544,7 +1549,7 @@ translational monotiling, even with a face-connected input tile.
 
 We now prove the Euclidean formulation using the tiling convention
 from \cref{sec:definitions}.  For $v\in\R^d$, write
-$\|v\|_\infty=\max_j|v_j|$ for the sup norm.
+$\|v\|_\infty=\max_j|v_j|$ for the ***sup norm***.
 Discrete-to-Euclidean tiling reductions also appear in
 \cite[Section~2]{GTPeriodic}; the unit-cube existence equivalence
 needed here has the direct sampling proof below.

@@ -82,90 +82,70 @@
 
 : abstract
   We prove co-RE-completeness, and thus undecidability, of the following
-  problem: given a single face-connected polycube,
+  problem: given a single (face-connected) polycube,
   decide whether it tiles 3D Euclidean space by translations.
-  %We give a computable reduction from Wang tiling, the problem of tiling
-  %the plane with edge-colored squares whose touching colors must match,
-  %to deciding whether one face-connected finite subset of $\Z^3$ tiles
-  %$\Z^3$ by translations.  Face-connected means that any two points
-  %can be joined within the set by steps of one unit along coordinate axes.
-  We reduce from Wang tiling using the decorated two-prime Sudoku construction of Greenfeld and Tao and a cyclic encoding adapted from OpenAI's 3D aperiodic tile.
-  %We prove hardness by reduction from Wang tiling,
-  %combining the decorated two-prime Sudoku construction of
-  %Greenfeld and Tao, a system of constraints on finite-width arrays,
-  %and a cyclic encoding adapted from OpenAI's 3D aperiodic tile.
-  %Two auxiliary constraints force both arithmetic components to vary
-  %in every column while leaving the Wang labels unrestricted.
-  %We prove both directions of the modified encoding,
-  %combine its tiling equations into one tile
-  %with a cyclic finite coordinate, and apply the effective quotient
-  %reduction of Meyerovitch, Sanadhya, and Solomon.  Kim's connectedness
-  %reduction then produces a single polycube in the same dimension.
-  %The resulting decision
-  %problem is co-recursively enumerable complete: its no instances can be
-  %recognized algorithmically, and every problem with this property
-  %reduces to it.
+  We reduce from Wang tiling using the decorated two-prime Sudoku construction of Greenfeld and Tao and a cyclic encoding adapted from OpenAI's 3D aperiodic tile, and apply a reduction of Kim to make it face-connected.
   Dimension three is optimal: translational monotiling is known to be
   decidable in $\Z^2$ and for a single (possibly disconnected) polyomino in $\R^2$.
-  %The same reduction applies to connected unions of integer unit cubes in
-  %$\R^3$, with arbitrary real translations.
 
 # Introduction
 Following the tiling-equation notation of
 \cite[Section~1.1]{GTUndecidable}, for subsets $A,F$ of an abelian
 group $G$, the notation $A\oplus F=G$
 means that every element of $G$ has exactly one representation as $a+f$
-with $a\in A$ and $f\in F$.  We say that $F$ tiles $G$ if such an $A$
-exists.  The input tile is finite and nonempty; the translation set may
+with $a\in A$ and $f\in F$.  We say that $F$ ***tiles*** $G$ if such an $A$
+exists.  The input ***tile*** is finite and nonempty; the translation set may
 be infinite.  We allow translations only.  Intermediate tiles may be
 disconnected; the final tile will be face-connected.
-A finite set $F\subset\Z^d$ is face-connected if every pair of its
+A finite set $F\subset\Z^d$ is ***face-connected*** if every pair of its
 points can be joined by a sequence of points of $F$, successive points
 differing by a signed coordinate unit vector.
-A polycube is a finite nonempty subset of $\Z^3$, or its corresponding
-union of unit cubes; a polyomino is its two-dimensional counterpart,
+A ***polycube*** is a finite nonempty subset of $\Z^3$, or its corresponding
+union of unit cubes; a ***polyomino*** is its two-dimensional counterpart,
 following the terminology of \cite[Section~1.2]{Kim}.
-A tiling using one tile type is a translational monotiling.
+A tiling using one tile type is a ***translational monotiling***.
 More generally, $B\oplus C=E$ denotes unique representation of every
 point of $E$ as a sum, with no sums outside $E$; $B+C$ denotes the set
 of sums without a uniqueness condition, and $B-C$ is the set of
 differences $b-c$.  For a vector $u$ and an integer $n$, write
 $u+B=\{u+b:b\in B\}$ and $nB=\{nb:b\in B\}$.
 The notation $\sqcup$ denotes a disjoint union.
-A simultaneous tiling system asks for one translation
+A ***simultaneous tiling system*** asks for one translation
 set $A$ satisfying $A\oplus F_\nu=G$ for every specified tile $F_\nu$,
 as in \cite[Section~3]{GTPeriodic}.
 
-For a finite nonempty $F\subset\Z^d$, its unit-cube union is
-$F+[0,1]^d$.  In $\R^d$, a tiling by translations means that each point
+For a finite nonempty $F\subset\Z^d$, its ***unit-cube union*** is
+$F+[0,1]^d$.  In $\R^d$, a ***tiling by translations*** means that each point
 belongs to exactly one translated copy, except on a set of Lebesgue
 measure zero; this is coverage with multiplicity one almost everywhere
 \cite[Section~1.1]{GTPeriodic}.
 
-A subgroup $\Lambda$ has finite index when there are finitely many
-cosets $g+\Lambda$; the group of these cosets is the quotient $G/\Lambda$.
-A set $A$ is invariant under $\Lambda$ if $A+\lambda=A$ for every
-$\lambda\in\Lambda$.  We call a translation set periodic if it is
+A subgroup $\Lambda$ has ***finite index*** when there are finitely many
+***cosets*** $g+\Lambda$; the group of these cosets is the
+***quotient*** $G/\Lambda$.
+A set $A$ is ***invariant*** under $\Lambda$ if $A+\lambda=A$ for every
+$\lambda\in\Lambda$.  We call a translation set ***periodic*** if it is
 invariant under a finite-index subgroup, following
 \cite[Section~1.1]{GTPeriodic}.
 
 Wang tiles were introduced by Wang \cite{Wang}.
-A Wang tile is a unit square with a color on each of its east, north,
-west, and south edges; a Wang tiling assigns tiles from a finite set
+A ***Wang tile*** is a unit square with a color on each of its east, north,
+west, and south edges; a ***Wang tiling*** assigns tiles from a finite set
 to $\Z^2$, without rotating or reflecting them, with equal colors on
 touching edges.  A Wang tile set tiles $\Z^2$ when such an assignment
 exists \cite[Definition~2.6]{GTUndecidable}.
 
-A decision problem is decidable if an algorithm halts on every input
-with the correct yes or no answer.  It is recursively enumerable (RE)
-if an algorithm halts exactly on its yes instances, and co-recursively
-enumerable (co-RE) if an algorithm halts exactly on its no instances.
-A computable many-one reduction maps inputs of one problem to inputs
+A decision problem is ***decidable*** if an algorithm halts on every input
+with the correct yes or no answer.  It is ***recursively enumerable*** (RE)
+if an algorithm halts exactly on its yes instances, and
+***co-recursively enumerable*** (co-RE) if an algorithm halts exactly on its
+no instances.
+A ***computable many-one reduction*** maps inputs of one problem to inputs
 of another, preserving yes and no
-answers.  A problem is co-RE-hard if every co-RE problem has such a
-reduction to it, and co-RE-complete if it is also in co-RE.
-For an encoding, completeness means that an original solution yields
-an encoded solution; soundness means that an encoded solution implies
+answers.  A problem is ***co-RE-hard*** if every co-RE problem has such a
+reduction to it, and ***co-RE-complete*** if it is also in co-RE.
+For an encoding, ***completeness*** means that an original solution yields
+an encoded solution; ***soundness*** means that an encoded solution implies
 an original solution.
 
 : theorem @=thm:main
@@ -189,7 +169,7 @@ Thus the dimension in \cref{thm:main} is optimal.
 The tile itself is part of the input.  No periodic subset of the ambient space
 and no prescribed partial tiling are supplied as additional input.
 
-The reduction combines four constructions.  A Sudoku array has
+The reduction combines four constructions.  A ***Sudoku array*** has
 finitely many columns and integer-indexed rows, where every integer-slope
 line must read as one of a specified finite set of words.
 Greenfeld and Tao encode Wang tilings using such arrays, with two
