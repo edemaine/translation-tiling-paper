@@ -1,0 +1,16 @@
+name = "translation_tiling"
+version = "0.1.0"
+defaultTargets = ["TranslationTiling"]
+
+[leanOptions]
+relaxedAutoImplicit = false
+maxHeartbeats = 2000000
+maxRecDepth = 10000
+
+[[require]]
+name = "lean_wang"
+git = "https://github.com/edemaine/lean-wang.git"
+rev = "6c4711c2329b444bc3096e883912e00773dcce50"
+
+[[lean_lib]]
+name = "TranslationTiling"

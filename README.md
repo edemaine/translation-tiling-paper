@@ -81,9 +81,22 @@ dated September 23, 2026. The bibliography pins repository commit
 The draft uses MSS for arbitrary-tiling descent; it does not substitute
 the periodic-only descent in Section 7 of the OpenAI preprint.
 
-This is a draft mathematical argument, not a formal verification.
-In particular, the finite checks below do not prove the infinite reduction
-or independently verify the imported theorems.
+The Lean formalization is in progress; the main reduction is not yet formally
+proved. The finite checks below do not prove the infinite reduction or
+independently verify the imported theorems.
+
+## Lean formalization
+
+[lean/TranslationTiling/Statements.lean](lean/TranslationTiling/Statements.lean) collects
+the short formal statements. Proved theorems and outstanding `Claims` are
+distinguished explicitly. Proofs are in `lean/TranslationTiling/Proofs/`; the external
+mathematical hypotheses are explicit propositions in `lean/TranslationTiling/External/`.
+
+The project pins the GitHub Wang formalization, rather than a local checkout.
+Build from `lean/` with `lake update`, `lake exe cache get`, and `lake build`.
+See [lean/README.md](lean/README.md) for checked results, remaining proof
+obligations, and existing online formalizations. An axiom audit rejects
+unfinished proofs and assumptions beyond Lean's three standard axioms.
 
 ## Finite verification
 
