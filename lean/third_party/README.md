@@ -15,6 +15,14 @@ The complete upstream license is [openai-math.LICENSE](openai-math.LICENSE).
 | `TranslationTiling/Proofs/FinitePairCounting.lean`, `PrimeDifferencePairs.lean`, `FullDifferenceBound.lean`, `FullDifferencePartition.lean` | Corresponding files, proving existence of a fresh prime full-difference partition |
 | `TranslationTiling/Proofs/Euclidean.lean` | Arguments from `AETilingCountable.lean` and `LatticeThickening.lean`, extended to prove the sampling/rounding equivalence |
 
+The 28 modules in `TranslationTiling/Planar/` port the complete transitive proof
+closure of `PlanarPeriodicity.lean`, with the same basenames as upstream. The
+unused Euclidean definitions in `Model.lean` are omitted. The ports retain the
+upstream proof structure, with namespace/import changes and Lean 4.31 library
+API adaptations. `Proofs/PlanarPeriodicity.lean` supplies the local exact-coverage
+and additive-equivalence bridge. The resulting unconditional theorem is built
+and included in the axiom audit.
+
 Compiler ports (local and upstream basenames agree):
 
 `Activation.lean`, `ActivationOffsets.lean`, `ActivationTiles.lean`, `BlockActivationInverse.lean`, `ChannelDigitBlocks.lean`, `CommonModel.lean`, `CommonSeedOutputs.lean`, `CommonSolution.lean`, `ConstraintCycles.lean`, `CycleTests.lean`, `CyclicCRT.lean`, `CyclicCoordinates.lean`, `CyclicFactorCRT.lean`, `CyclicQuotient.lean`, `CyclicShear.lean`, `CyclicTypes.lean`, `Dependence.lean`, `EncodedSystem.lean`, `EncodingParameters.lean`, `EncodingPrimeSelection.lean`, `GraphTests.lean`, `LabeledDigitBlocks.lean`, `OrdinaryActivation.lean`, `OrdinaryModel.lean`, `QuotientTiling.lean`, `SharedSeedInactive.lean`, `SharedSeedInverse.lean`, `SharedSeedLabelEquiv.lean`, `SharedSeedLabels.lean`, `SharedSeedRegions.lean`, `SharedSeedSizeTransport.lean`, `ShiftMultiplicity.lean`.

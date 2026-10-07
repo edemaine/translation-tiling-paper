@@ -9,8 +9,7 @@ tilings and co-r.e.-completeness along the computable identification of the two
 encodings. Its statements spell out the predicate of `Abstract.Tiles` explicitly,
 so that `Abstract.lean` can cite them by definitional unfolding.
 
-`main_pending` is the single outstanding obligation, owned by the part of the
-project still in progress (see `Claims.completeness` in `Statements.lean`).
+The mathematical inputs are explicit, as in `Statements.lean`.
 -/
 
 namespace TranslationTiling.AbstractBridge
@@ -140,14 +139,9 @@ theorem coREComplete_transfer (h : LeanWang.CoREComplete (@Tiles 3)) :
   · intro α _ p hp
     exact (h.2 p hp).trans ⟨toProto, toProto_computable, tiles_iff⟩
 
-/-- The one outstanding obligation: the main theorem for `Tile 3`. It is to be
-supplied by the compiler development (cf. `Claims.completeness`). -/
-theorem main_pending : LeanWang.CoREComplete (@Tiles 3) := by
-  sorry
-
 /-- Main theorem in the form used by `Abstract.lean`. -/
-theorem coRE_complete : LeanWang.CoREComplete AbsTiles :=
-  coREComplete_transfer main_pending
+theorem coRE_complete (h : ReductionInputs) : LeanWang.CoREComplete AbsTiles :=
+  coREComplete_transfer (TranslationTiling.completeness h)
 
 /-- Co-r.e.-completeness implies undecidability (Mathlib's halting problem). -/
 theorem undecidable_of_coRE_complete (h : LeanWang.CoREComplete AbsTiles) :
@@ -159,7 +153,7 @@ theorem undecidable_of_coRE_complete (h : LeanWang.CoREComplete AbsTiles) :
   have hcomp := ComputablePred.computable_of_manyOneReducible (h.2 _ hre) hc
   exact ComputablePred.halting_problem 0 (by simpa using hcomp.not)
 
-theorem undecidable : ¬ ComputablePred AbsTiles :=
-  undecidable_of_coRE_complete coRE_complete
+theorem undecidable (h : ReductionInputs) : ¬ ComputablePred AbsTiles :=
+  undecidable_of_coRE_complete (coRE_complete h)
 
 end TranslationTiling.AbstractBridge

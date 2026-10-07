@@ -10,8 +10,4 @@ structure ReductionInputs : Prop where
   rigidity : MSS.Rigidity
   connectedness : Kim.Rigidity
 
-/-- Planar periodicity is additionally used for dimension optimality. -/
-structure ExternalInputs : Prop extends ReductionInputs where
-  planar : PlanarPeriodicity
-
 end TranslationTiling

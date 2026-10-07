@@ -128,7 +128,7 @@ theorem connectedReduction_of_reduction (rigid : Kim.Rigidity) (r : WangReductio
   exact ⟨{
     tile := fun T => connectedTile (r.tile T)
     computable := connectedTile_computable.comp r.computable
-    nonempty := fun T hT => connectedTile_nonempty rigid _ (r.nonempty T hT)
+    nonempty := fun T hT => connectedTile_nonempty _ (r.nonempty T hT)
     correct := fun T => (r.correct T).trans (connectedTile_correct rigid _).symm
     connected := fun T _ => connectedTile_connected rigid (r.tile T)
   }⟩

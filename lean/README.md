@@ -7,8 +7,9 @@ dimension three, tileable exactly when the input Wang tiles tile the plane.
 Read [TranslationTiling/Statements.lean](TranslationTiling/Statements.lean) for
 the short public statements. `compiler_effectivity` and `compiler_correct`
 prove uniform computability and correctness. `reduction`, `completeness`,
-`connected_completeness`, and `real_completeness` take only `ReductionInputs`;
-`dimension_optimality` additionally uses planar periodicity. There is no assumed
+`connected_completeness`, `real_completeness`, and `dimension_optimality` take
+only `ReductionInputs`. `planar_periodicity` and `planar_decidability` are
+unconditional. There is no assumed
 compiler certificate or outstanding `Claims` namespace.
 
 ## Build
@@ -47,19 +48,21 @@ associated with `F`. Coverage and uniqueness hold almost everywhere for Lebesgue
 measure, so shared cube boundaries do not count as overlapping interiors.
 `FaceConnected` uses paths of signed coordinate unit steps within the tile.
 
-[ExternalInputs.lean](TranslationTiling/ExternalInputs.lean) packages four explicit
-propositions matching the current draft. `ReductionInputs` contains the three
-inputs used by the connected compiler; `ExternalInputs` additionally includes
-planar periodicity for dimension optimality:
+[ExternalInputs.lean](TranslationTiling/ExternalInputs.lean) packages the three remaining
+explicit mathematical inputs used by the connected compiler in `ReductionInputs`:
 
 | Input | Formal meaning |
 | --- | --- |
 | Greenfeld–Tao | Soundness of the explicit decorated two-prime Sudoku rule, with fixed primes 211 and 223; both arithmetic components are nonconstant in each column. |
 | Meyerovitch–Sanadhya–Solomon | Arbitrary-tiling rigidity of the paper's explicitly defined two component shapes, with scale 201. |
-| Bhattacharya | Every tileable planar tile has a complement with a finite-index subgroup of periods. |
 | Kim | Connectivity, contacts, fundamental-domain coverage, and arbitrary-tiling rigidity of the explicit shell in the updated draft. |
 
-The actual definitions are in `TranslationTiling/External/`. These are parameters,
+Bhattacharya's planar periodicity theorem is now proved in
+`Proofs/PlanarPeriodicity.lean` using the ported proof chain in `Planar/`.
+The theorem supplies a complement with a finite-index subgroup of periods.
+It is included in the axiom audit.
+
+The remaining input definitions are in `TranslationTiling/External/`. These are parameters,
 not global `axiom` declarations. The main computable reduction is not included
 among the external hypotheses. Berger's undecidability/completeness input is
 proved by the pinned Wang dependency, using its independent Kari–Hooper certificate.
@@ -82,8 +85,10 @@ proved by the pinned Wang dependency, using its independent Kari–Hooper certif
 | Computable dimensional embedding and tiling equivalence | `Proofs/Dimension.lean` |
 | Translating a tile preserves tilability | `Proofs/Translation.lean` |
 | Integer/real tiling equivalence, including countability of arbitrary real translation sets and a good sampling grid | `Proofs/Euclidean.lean` |
-| Rectangular periods from the finite-index periodicity input | `Proofs/PeriodicGrid.lean` |
+| Unconditional planar periodicity, using finite periodic decomposition and periodic region replacement | `Planar/*.lean`, `Proofs/PlanarPeriodicity.lean` |
+| Rectangular periods from a finite-index period subgroup | `Proofs/PeriodicGrid.lean` |
 | Primitive-recursive torus certificates, their equivalence with periodic tilings, and planar decidability from periodicity | `Proofs/IntegerResidues.lean`, `Proofs/PeriodicCertificates.lean` |
+| Kim's finite color bounds, nonempty pieces, exact block partition, disjoint colors, internal and external face contacts, and nonempty shells | `Proofs/KimGeometry.lean` |
 | Shell assembly preserves tilability under a fundamental-domain and coset-rigidity hypothesis | `Proofs/ShellAssembly.lean` |
 | Completeness, undecidability, higher dimensions, connected completeness, and dimension optimality | `Proofs/Complexity.lean`, `Compiler/Main.lean` |
 
@@ -133,8 +138,12 @@ Some definitions use `noncomputable` to express fixed finite tables or searched
 witnesses; their uniform effectivity is separately proved. The exhaustive
 enumerations are enormous and are intended for the reduction proof.
 
-The remaining work is to discharge the named mathematical inputs themselves.
-They can be formalized independently without changing the compiler.
+Three inputs remain: decorated Sudoku soundness, arbitrary mixed-tiling MSS
+rigidity, and Kim's complete shell geometry/rigidity statement. The elementary
+partition and piece-contact lemmas for Kim are proved; shell connectivity,
+fundamental-domain coverage, contacts between whole shells, and arbitrary-tiling
+rigidity remain. Compiler output nonemptiness now has no mathematical hypothesis.
+The remaining inputs can be formalized independently of the numerical algorithm.
 
 ## Online formalizations inspected (October 7, 2026)
 
@@ -145,8 +154,8 @@ already cited by the draft. It uses Lean 4.34.1, so direct imports into this
 
 - [PlanarPeriodicity.lean](https://github.com/openai/math/blob/adc7f1241b42e322a6451854ab7e4b4c146bf78a/lean/OAI/Geometry/PeriodicTiling/PlanarPeriodicity.lean)
   contains `plane_tile_has_fullyPeriodic_complement`, the required form of planar
-  periodicity. Its transitive source closure was inspected, but has not been
-  independently built here. It is a promising starting point for discharging
+  periodicity. Its 28-module proof closure has been ported, built, and audited
+  against this project's pinned dependencies. The lattice bridge discharges
   the Bhattacharya hypothesis.
 - [Stacking.lean](https://github.com/openai/math/blob/adc7f1241b42e322a6451854ab7e4b4c146bf78a/lean/OAI/Geometry/PeriodicTiling/Stacking.lean)
   and [Activation.lean](https://github.com/openai/math/blob/adc7f1241b42e322a6451854ab7e4b4c146bf78a/lean/OAI/Geometry/PeriodicTiling/Activation.lean)

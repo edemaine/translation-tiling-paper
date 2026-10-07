@@ -1,5 +1,6 @@
 import TranslationTiling.Compiler.ConnectedAssembly
 import TranslationTiling.ExternalInputs
+import TranslationTiling.Proofs.KimGeometry
 import Mathlib.Data.Finset.Lattice.Fold
 
 namespace TranslationTiling.Compiler
@@ -8,30 +9,8 @@ open scoped Classical
 noncomputable section
 
 theorem mem_cube_iff (l : ℕ) (x : Lattice 3) :
-    x ∈ Kim.cube l ↔ ∀ i, 0 ≤ x i ∧ x i < (l : ℤ) := by
-  constructor
-  · intro hx
-    obtain ⟨a, ha, b, hb, c, hc, he⟩ :=
-      (by simpa only [Kim.cube, List.mem_flatMap, List.mem_map] using hx :
-        ∃ a ∈ List.range l, ∃ b ∈ List.range l, ∃ c ∈ List.range l,
-          ![(a : ℤ), (b : ℤ), (c : ℤ)] = x)
-    subst x
-    have ha' := List.mem_range.mp ha
-    have hb' := List.mem_range.mp hb
-    have hc' := List.mem_range.mp hc
-    intro i
-    fin_cases i <;> simp <;> omega
-  · intro hx
-    have he : ![((x 0).toNat : ℤ), ((x 1).toNat : ℤ), ((x 2).toNat : ℤ)] = x := by
-      funext i
-      fin_cases i <;> simp only [Matrix.cons_val] <;>
-        exact Int.toNat_of_nonneg (hx _).1
-    simp only [Kim.cube, List.mem_flatMap, List.mem_map]
-    refine ⟨(x 0).toNat, List.mem_range.mpr ?_, (x 1).toNat,
-      List.mem_range.mpr ?_, (x 2).toNat, List.mem_range.mpr ?_, he⟩
-    · exact (Int.toNat_lt (hx 0).1).mpr (hx 0).2
-    · exact (Int.toNat_lt (hx 1).1).mpr (hx 1).2
-    · exact (Int.toNat_lt (hx 2).1).mpr (hx 2).2
+    x ∈ Kim.cube l ↔ ∀ i, 0 ≤ x i ∧ x i < (l : ℤ) :=
+  Kim.mem_cube_iff l x
 
 def pointBound (x : Lattice 3) : ℕ :=
   max (x 0).natAbs (max (x 1).natAbs (x 2).natAbs)
@@ -91,9 +70,9 @@ theorem connectedTile_connected (rigid : Kim.Rigidity) (E : Tile 3) :
   connectedAssembly_connected rigid _ _ (by unfold cubeSize; omega)
     (positiveTile_in_cube E)
 
-theorem connectedTile_nonempty (rigid : Kim.Rigidity) (E : Tile 3) (hE : E ≠ []) :
+theorem connectedTile_nonempty (E : Tile 3) (hE : E ≠ []) :
     connectedTile E ≠ [] :=
-  connectedAssembly_nonempty rigid _ _ (by unfold cubeSize; omega)
+  connectedAssembly_nonempty _ _ (by unfold cubeSize; omega)
     (by intro he; exact hE (List.map_eq_nil_iff.mp he))
 
 /-- Both tilability directions and connectedness of the concrete construction,
@@ -113,7 +92,7 @@ theorem exists_connected_tile (h : ReductionInputs) (T : LeanWang.TileSet) :
     have he : {f : Lattice 3 | f ∈ F.toList} = (F : Set (Lattice 3)) := by
       ext f; exact Finset.mem_toList
     rw [he]
-  exact ⟨connectedTile F.toList, connectedTile_nonempty h.connectedness _ hlist,
+  exact ⟨connectedTile F.toList, connectedTile_nonempty _ hlist,
     connectedTile_connected h.connectedness _,
     (hcorrect.trans hlistcorrect).trans (connectedTile_correct h.connectedness _).symm⟩
 

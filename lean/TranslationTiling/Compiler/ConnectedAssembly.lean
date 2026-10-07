@@ -1,5 +1,6 @@
 import TranslationTiling.Compiler.LatticeCompiler
 import TranslationTiling.External.Kim
+import TranslationTiling.Proofs.KimGeometry
 import TranslationTiling.Proofs.ShellAssembly
 import TranslationTiling.Proofs.Translation
 import Mathlib.Logic.Relation
@@ -94,14 +95,13 @@ theorem connectedAssembly_connected (rigid : Kim.Rigidity) (E : Tile 3)
           (mem_connectedAssembly E l _).mpr ⟨v, hv, d, hd, rfl⟩, hcd⟩).trans
         (hpath v hv d b hd hb))
 
-theorem connectedAssembly_nonempty (rigid : Kim.Rigidity) (E : Tile 3)
-    (l : ℕ) (hl : 3 ≤ l) (hE : E ≠ []) : connectedAssembly E l ≠ [] := by
-  obtain ⟨_, hf, _, _⟩ := rigid l hl
-  obtain ⟨⟨_, v⟩, _⟩ := hf.2 0
+theorem connectedAssembly_nonempty (E : Tile 3)
+    (l : ℕ) (hl : 0 < l) (hE : E ≠ []) : connectedAssembly E l ≠ [] := by
+  obtain ⟨v, hv⟩ := List.exists_mem_of_ne_nil (Kim.shell l) (Kim.shell_nonempty l hl)
   obtain ⟨u, hu⟩ := List.exists_mem_of_ne_nil E hE
   intro he
-  have hm := (mem_connectedAssembly E l _).mpr ⟨u, hu, v.val, v.property, rfl⟩
-  simpa [he] using hm
+  have hm := (mem_connectedAssembly E l _).mpr ⟨u, hu, v, hv, rfl⟩
+  simp [he] at hm
 
 end
 end TranslationTiling.Compiler

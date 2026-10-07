@@ -1,4 +1,5 @@
 import TranslationTiling.Statements
+import TranslationTiling.Abstract
 import TranslationTiling.Proofs.Wang
 import TranslationTiling.Proofs.SudokuSoundness
 import TranslationTiling.Proofs.Graph
@@ -25,6 +26,20 @@ mathematical statements occur as explicit parameters, never as Lean axioms. -/
 open Lean Elab Command in
 run_cmd do
   for name in [``TranslationTiling.membership,
+      ``TranslationTiling.Abstract.tiling_coRE_complete,
+      ``TranslationTiling.Abstract.tiling_undecidable,
+      ``TranslationTiling.planar_periodicity,
+      ``TranslationTiling.Kim.color_bounds,
+      ``TranslationTiling.Kim.color_core,
+      ``TranslationTiling.Kim.piece_nonempty,
+      ``TranslationTiling.Kim.cube_blocks,
+      ``TranslationTiling.Kim.blocks_unique,
+      ``TranslationTiling.Kim.rawPiece_partition,
+      ``TranslationTiling.Kim.rawPieces_disjoint,
+      ``TranslationTiling.Kim.pieces_adjacent,
+      ``TranslationTiling.Kim.pieces_external_adjacent,
+      ``TranslationTiling.Kim.shell_nonempty,
+      ``TranslationTiling.Compiler.connectedCompile_nonempty,
       ``TranslationTiling.reduction,
       ``TranslationTiling.compiler_effectivity,
       ``TranslationTiling.compiler_correct,

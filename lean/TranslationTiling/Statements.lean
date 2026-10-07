@@ -2,6 +2,7 @@ import TranslationTiling.ExternalInputs
 import TranslationTiling.Proofs.Complexity
 import TranslationTiling.Proofs.CanonicalLineRule
 import TranslationTiling.Proofs.PeriodicCertificates
+import TranslationTiling.Proofs.PlanarPeriodicity
 import TranslationTiling.Compiler.Main
 
 /-! Short public statements. All imported mathematical inputs are explicit;
@@ -21,7 +22,7 @@ theorem compiler_correct (h : ReductionInputs) (T : LeanWang.TileSet) :
 
 theorem compilation (h : ReductionInputs) (T : LeanWang.TileSet) :
     ∃ F : Tile 3, F ≠ [] ∧ FaceConnected F ∧ (LeanWang.TilesPlane T ↔ Tiles F) :=
-  ⟨Compiler.connectedCompile T, Compiler.connectedCompile_nonempty h.connectedness T,
+  ⟨Compiler.connectedCompile T, Compiler.connectedCompile_nonempty T,
     Compiler.connectedCompile_connected h.connectedness T, compiler_correct h T⟩
 
 theorem lattice_effectivity : Computable Compiler.integerTile :=
@@ -36,8 +37,10 @@ theorem sudoku_equivalence (h : Sudoku.Soundness) (T : LeanWang.TileSet) :
 
 theorem membership (d : ℕ) : LeanWang.CoREPred (@Tiles d) := tiles_coRE d
 
-theorem planar_decidability (h : PlanarPeriodicity) : ComputablePred (@Tiles 2) :=
-  planar_decidable h
+theorem planar_periodicity : PlanarPeriodicity := planarPeriodicity_proved
+
+theorem planar_decidability : ComputablePred (@Tiles 2) :=
+  planar_decidable planar_periodicity
 
 theorem rounding {d : ℕ} (F : Tile d) : RealTiles F ↔ Tiles F := realTiles_iff_tiles F
 
@@ -65,15 +68,15 @@ theorem connected_completeness (h : ReductionInputs) : LeanWang.CoREComplete (@C
 theorem real_completeness (h : ReductionInputs) : LeanWang.CoREComplete (@RealTiles 3) :=
   real_coRE_complete_of_reduction (Compiler.wangReduction h.sudoku h.rigidity)
 
-theorem dimension_optimality (h : ExternalInputs) :
+theorem dimension_optimality (h : ReductionInputs) :
     IsLeast {d : ℕ | ¬ ComputablePred (@Tiles d)} 3 :=
   optimal_dimension_of_planar (Compiler.wangReduction h.sudoku h.rigidity)
-    (planar_decidable h.planar)
+    planar_decidability
 
 theorem connected_output (h : ReductionInputs) (T : LeanWang.TileSet) :
     Compiler.connectedCompile T ≠ [] ∧ FaceConnected (Compiler.connectedCompile T) ∧
       (LeanWang.TilesPlane T ↔ Tiles (Compiler.connectedCompile T)) :=
-  ⟨Compiler.connectedCompile_nonempty h.connectedness T,
+  ⟨Compiler.connectedCompile_nonempty T,
     Compiler.connectedCompile_connected h.connectedness T, compiler_correct h T⟩
 
 end TranslationTiling
