@@ -77,7 +77,9 @@
 : abstract
   We give a computable reduction from Wang tiling, the problem of tiling
   the plane with edge-colored squares whose touching colors must match,
-  to deciding whether one finite subset of $\Z^3$ tiles $\Z^3$ by translations.
+  to deciding whether one face-connected finite subset of $\Z^3$ tiles
+  $\Z^3$ by translations.  Face-connected means that any two points
+  can be joined within the set by steps of one unit along coordinate axes.
   The reduction combines the decorated two-prime Sudoku construction of
   Greenfeld and Tao, a system of constraints on finite-width arrays,
   with a cyclic encoding adapted from OpenAI's
@@ -86,12 +88,14 @@
   the Wang labels unrestricted.  We prove both directions of the
   modified encoding, combine its tiling equations into one tile
   with a cyclic finite coordinate, and apply the effective quotient
-  reduction of Meyerovitch, Sanadhya, and Solomon.  The resulting decision
+  reduction of Meyerovitch, Sanadhya, and Solomon.  Kim's connectedness
+  reduction then produces a single polycube in the same dimension.
+  The resulting decision
   problem is co-recursively enumerable complete: its no instances can be
   recognized algorithmically, and every problem with this property
   reduces to it.  Dimension three is optimal, because translational
   monotiling in $\Z^2$ is decidable.
-  The same reduction applies to finite unions of integer unit cubes in
+  The same reduction applies to connected unions of integer unit cubes in
   $\R^3$, with arbitrary real translations.
 
 # Introduction
@@ -101,7 +105,13 @@ group $G$, the notation $A\oplus F=G$
 means that every element of $G$ has exactly one representation as $a+f$
 with $a\in A$ and $f\in F$.  We say that $F$ tiles $G$ if such an $A$
 exists.  The input tile is finite and nonempty; the translation set may
-be infinite.  We allow disconnected tiles, and allow translations only.
+be infinite.  We allow translations only.  Intermediate tiles may be
+disconnected; the final tile will be face-connected.
+A finite set $F\subset\Z^d$ is face-connected if every pair of its
+points can be joined by a sequence of points of $F$, successive points
+differing by a signed coordinate unit vector.  A polycube is a finite
+face-connected set in $\Z^3$, or its corresponding union of unit cubes,
+following the connectedness convention of \cite[Section~1.2]{Kim}.
 A tiling using one tile type is a translational monotiling.
 More generally, $B\oplus C=E$ denotes unique representation of every
 point of $E$ as a sum, with no sums outside $E$; $B+C$ denotes the set
@@ -141,32 +151,34 @@ an original solution.
 
 : theorem @=thm:main
   There is a computable map from finite nonempty Wang tile sets $\calT$
-  to finite nonempty sets $F_{\calT}\subset\Z^3$ such that
+  to finite nonempty face-connected sets $F_{\calT}\subset\Z^3$ such that
   $$
    \calT\text{ tiles }\Z^2
    \quad\Longleftrightarrow\quad
    F_{\calT}\text{ tiles }\Z^3\text{ by translations}.
   $$
   Consequently, translational monotiling of $\Z^3$ is co-recursively
-  enumerable complete under computable many-one reductions.
+  enumerable complete under computable many-one reductions, even when
+  the input tile is required to be face-connected.
 
 Bhattacharya's periodicity theorem implies decidability for every finite
 tile in $\Z^2$, including disconnected tiles \cite{Bhattacharya}.
 Thus the dimension in \cref{thm:main} is optimal.
-The tile itself is part of the input; neither a fixed universal tile nor
-a connected tile is asserted.  No periodic subset of the ambient space
+The tile itself is part of the input.  No periodic subset of the ambient space
 and no prescribed partial tiling are supplied as additional input.
 
-The construction has three sources.  A Sudoku array has
+The construction has four sources.  A Sudoku array has
 finitely many columns and integer-indexed rows, where every integer-slope
 line must read as one of a specified finite set of words.
 Greenfeld and Tao encode Wang tilings using such arrays, with two
 arithmetic scales providing the coordinates of the simulated plane
 \cite[Section~5]{GTUndecidable}.  OpenAI's preprint encodes a one-prime
 Sudoku obstruction by simultaneous tiling equations with a cyclic
-finite factor \cite[Sections~3--5]{OpenAI2026}.  Finally, an effective
+finite factor \cite[Sections~3--5]{OpenAI2026}.  An effective
 quotient reduction preserves the number of tiles when passing from a
 quotient of $\Z^3$ to $\Z^3$ \cite[Theorem~1.1]{MSS}.
+Kim's reduction then makes the tile face-connected while preserving
+dimension and tileability \cite[Theorem~2.5]{Kim}.
 
 Our modification of the cyclic encoding replaces each arithmetic symbol
 by a pair of arithmetic symbols and a Wang label.  Two auxiliary
@@ -181,7 +193,7 @@ The reduction in \cite{GTUndecidable} allows a variable finite abelian
 factor and a periodic target subset.  Its lattice dimension is part of
 the input; that result alone does not give \cref{thm:main}.
 Here the finite factor is cyclic and the target is the whole group.
-For the last step we use \cite{MSS}, which preserves arbitrary tilings.
+For the quotient step we use \cite{MSS}, which preserves arbitrary tilings.
 The periodic-tiling descent in \cite[Section~7]{OpenAI2026} alone would
 not justify an undecidability reduction.
 
@@ -1167,9 +1179,125 @@ no periods in the first two coordinates.
   This proves both directions without assuming periods of the
   original tiling.
 
+## Making the tile face-connected @=sec:connected
+
+Kim's connectedness reduction applies to any finite number of tiles,
+including one \cite[Theorem~2.5]{Kim}.  We give its finite construction
+in our notation and use its rigidity assertion as a black box.
+For an integer $a\geq1$, write $C_a=\{0,\ldots,a-1\}^3$.
+Given a finite nonempty tile $E\subset\Z^3$, translate it into $C_l$
+for a computable integer $l\geq3$, and set
+$$
+ m=l^3-(l-2)^3,\qquad s=3m+6.
+$$
+Here $m$ counts the points in the outer layer
+$\partial C_l=C_l\setminus((1,1,1)+C_{l-2})$; enumerate them as
+$x_1,\ldots,x_m$ in lexicographic order.
+
+### The interlocking partition
+
+Define a function $\chi_m:C_{m+2}\to\{1,\ldots,m\}$ by
+: equation \label{eq:kim-partition}
+  \chi_m(x,y,z)=
+  \begin{cases}
+    y,&0\leq x\leq m,\ 1\leq y\leq m,\ z=0,\\
+    x,&1\leq x\leq m,\ 0\leq y\leq m,\ z=m+1,\\
+    y,&x=0,\ 1\leq y\leq m,\ 1\leq z\leq m,\\
+    x,&1\leq x\leq m,\ y=0,\ 1\leq z\leq m,\\
+    z,&1\leq x,y\leq m+1,\ 1\leq z\leq m,\\
+    1,&\text{otherwise}.
+  \end{cases}
+Let $Q_i=\chi_m^{-1}(i)$.  This is Kim's partition from
+\cite[Section~2.1]{Kim}: the pieces $Q_i$ are face-connected, and
+every two different pieces meet along a face both inside one box and
+across corresponding faces of neighboring boxes.  More precisely,
+disjoint lattice sets are adjacent when some point of one differs
+from a point of the other by a signed coordinate unit vector; the
+partition satisfies
+$$
+ Q_i\text{ is adjacent to }Q_j\text{ and to }Q_j+(m+2)v
+ \quad(i\ne j,\ v\text{ a signed coordinate unit vector}).
+$$
+These are the internal and external adjacency properties of
+\cite[Lemmas~2.1--2.2]{Kim}.
+
+Replace each point of $Q_i$ by a $3\times3\times3$ block:
+$R_i=3Q_i+C_3$.  Define the three bumps and their matching dents by
+$$
+ B=\{(-1,1,1),(1,-1,1),(1,1,-1)\},\qquad
+ D=\{(s-1,1,1),(1,s-1,1),(1,1,s-1)\},
+$$
+and put $Q'_1=(R_1\setminus D)\cup B$, $Q'_i=R_i$ for $i>1$.
+The thickened pieces retain face-connectedness and their adjacency
+properties.  The bumps and dents enforce a common grid in tilings
+of the assembly
+: equation \label{eq:kim-shell}
+  S_l=\bigsqcup_{i=1}^m(sx_i+Q'_i).
+The sum in this definition is disjoint: moving points by $sx_i$
+does not change their residues modulo $s$, and the pieces $Q'_i$
+together contain exactly one representative of every such residue.
+Thus $|S_l|=s^3$ and $S_l\oplus s\Z^3=\Z^3$.
+
+### The rigidity input and the connected tile
+
+: lemma[Kim's connected assembly] @=lem:kim-shell
+  The set $S_l$ in \eqref{eq:kim-shell} is face-connected.
+  For distinct $u,v\in C_l$, the sets $su+S_l$ and $sv+S_l$ are
+  disjoint and adjacent.  Moreover, if $A\oplus S_l=\Z^3$, then
+  $A=t+s\Z^3$ for some $t\in\Z^3$.
+
+These are \cite[Lemmas~2.3--2.4 and the connectivity argument in
+Theorem~2.5]{Kim}.  The last assertion is the rigidity statement we
+import.  It concerns arbitrary tilings, so it suffices for an existence
+reduction.  The contact property explains how separated points of the
+original tile become joined: their replacements have interlocking
+pieces in overlapping boxes, while their lattice points remain disjoint.
+
+: proposition[Connectedness reduction, Kim] @=prop:connected
+  From any finite nonempty $E\subset\Z^3$ one can compute a finite
+  nonempty face-connected $E^{\rm conn}\subset\Z^3$ such that
+  $$
+   E\text{ tiles }\Z^3
+   \quad\Longleftrightarrow\quad
+   E^{\rm conn}\text{ tiles }\Z^3.
+  $$
+  The construction uses one tile and does not increase dimension.
+
+: proof
+  After the harmless translation $E\subset C_l$ above, define
+  : equation \label{eq:connected-tile}
+    E^{\rm conn}=sE\oplus S_l
+      =\bigsqcup_{e\in E}(se+S_l).
+  Every piece is face-connected and every pair of different pieces
+  is adjacent by \cref{lem:kim-shell}, so their union is face-connected.
+  The representation is unique because $S_l$ is a fundamental domain
+  for $s\Z^3$.  All sets in the construction are finite and explicit.
+
+  If $A\oplus E=\Z^3$, then
+  $$
+   sA\oplus E^{\rm conn}
+      =s(A\oplus E)\oplus S_l=\Z^3.
+  $$
+  Conversely, suppose $A'\oplus E^{\rm conn}=\Z^3$.
+  Decomposing every copy using \eqref{eq:connected-tile} gives a
+  tiling by $S_l$ with translation set $A'\oplus sE$.  By
+  \cref{lem:kim-shell},
+  $$
+   A'\oplus sE=t+s\Z^3
+  $$
+  for some $t\in\Z^3$.  Fix $e_0\in E$; for every $a'\in A'$,
+  the point $a'+se_0$ lies in this coset, so $a'-t\in s\Z^3$.
+  Dividing the displayed unique-representation identity by $s$ gives
+  $$
+   \{(a'-t)/s:a'\in A'\}\oplus E=\Z^3.
+  $$
+  This proves the tiling equivalence, the $k=1$ case of
+  \cite[Theorem~2.5]{Kim}.
+
 : proof[Proof of \cref{thm:main}]
   Construct the domino relations of the input Wang tiles, apply
-  \cref{cor:quotient}, and then apply \cref{thm:MSS}.
+  \cref{cor:quotient}, apply \cref{thm:MSS}, and finally apply
+  \cref{prop:connected}.  The last step makes the output face-connected.
   The composition is a computable many-one reduction and keeps the
   ambient dimension equal to three for every input.  The classical
   domino problem gives co-recursively enumerable hardness.
@@ -1210,8 +1338,7 @@ $F\subset\Z$ by $F\times\{0\}\subset\Z^2$.
 For every fixed $d>3$, the three-dimensional hardness result extends
 by replacing $F$ with $F\times\{0\}^{d-3}$ and taking slices.
 Thus three is precisely the least lattice dimension with undecidable
-translational monotiling.  This assertion permits disconnected tiles;
-connectedness is a separate question not addressed by the construction.
+translational monotiling, even with a face-connected input tile.
 
 ## Arbitrary real translations of unit-cube unions
 
@@ -1257,11 +1384,15 @@ needed here has the direct sampling proof below.
   It is co-recursively enumerable complete to decide whether a
   finite union $F+[0,1]^3$ of integer unit cubes tiles $\R^3$ by
   arbitrary real translations, given the finite set $F\subset\Z^3$.
+  This remains true when $F$ is required to be face-connected, in which
+  case its unit-cube union is connected and has connected interior.
   For the analogous class of unit-square unions in $\R^2$, the
   problem is decidable.
 
 : proof
   Apply \cref{lem:rounding} to \cref{thm:main,prop:planar}.
+  Face-connected cubes can be joined through their shared faces, so
+  both the union and its interior are connected.
 
 : remark
   The sampling argument produces a new tiling with integer translations.

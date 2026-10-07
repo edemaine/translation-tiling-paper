@@ -1,9 +1,9 @@
 # Translational monotiling in dimension three
 
 Working draft of a reduction from Wang tiling to tiling all of `Z^3`
-with translations of a single finite, possibly disconnected tile.
+with translations of a single finite face-connected tile (a polycube).
 The draft also proves co-RE completeness, explains dimension optimality,
-and gives the corresponding result for integer unit-cube unions with
+and gives the corresponding result for connected integer unit-cube unions with
 arbitrary real translations.
 
 ## Files and build
@@ -33,8 +33,9 @@ Edit `paper.texlish`, not `paper.tex`.
 
 The paper defines the decorated Sudoku word rule and canonical solution,
 supplies the graph, dependence, cycle, activation, common-solution,
-and stacking arguments, and explicitly builds the final lattice tile
-from rigid component shapes. The change from the one-prime construction is to
+and stacking arguments, explicitly builds a lattice tile from rigid
+component shapes, and then applies an explicit connectedness construction.
+The change from the one-prime construction is to
 use decorated two-prime symbols and let seed `t` restrict both arithmetic
 components to `t`, leaving the Wang label free. Residues are indexed by
 `S = (Z/(pq)^2 Z)^2`; only the cyclic coordinate of order `|S|` enters the
@@ -50,6 +51,10 @@ The external mathematical inputs are:
    rigidity of the explicitly defined component shapes. The draft supplies
    their assembly and the arbitrary-tiling correspondence of Theorem 1.1.
 4. Bhattacharya, arXiv:1602.05738v1: planar periodicity and decidability.
+5. Kim, arXiv:2508.11725v2, Section 2 and Theorem 2.5: a reduction
+   making tiles face-connected while preserving dimension and tile count.
+   The draft defines its partition and assembly explicitly and supplies
+   the one-tile equivalence using the rigidity statement of Lemma 2.4.
 
 The cyclic gadgets are adapted and reproved from Sections 3–6 of OpenAI's
 *A translational tile with no fully periodic tiling in dimension three*,
