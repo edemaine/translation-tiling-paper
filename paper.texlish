@@ -121,7 +121,7 @@ In 3D, the first undecidability result used 6 prototiles
 %the MIT--ULB CompGeom Group [[Trominoes]],
 and the current record is 2 [[Kim]];
 we improve to the minimum possible number of 3D prototiles, 1.
-3D is also the minimum dimension for undecidability,
+3D is also the minimum dimension for undecidability with 1 prototile,
 given known algorithms for 2D [[Bhattacharya,GTStructure]].
 %even if we allow disconnected polyominoes.
 
@@ -136,7 +136,7 @@ given known algorithms for 2D [[Bhattacharya,GTStructure]].
     Prototiles & 1D & 2D & 3D & $d$D ($d\geq4$) \\
     \midrule
     \rowcolor{bggreen}\cellcolor{white}%
-    1 & R ($\downarrow$) & R \cite{Bhattacharya,GTStructure} & \cellcolor{bgblue}co-RE-c (Thm.~\ref{thm:main})$^{*}$ & \cellcolor{bgblue}co-RE-c ($\leftarrow$)$^{*}$ \\
+    1 & R ($\downarrow$) & R \cite{Bhattacharya,GTStructure} & \cellcolor{bgblue}co-RE-c (Thm.~\ref{thm:undecidability})$^{*}$ & \cellcolor{bgblue}co-RE-c ($\leftarrow$)$^{*}$ \\
     \rowcolor{bgred}\cellcolor{white}%
     2 & \cellcolor{bggreen}R ($\downarrow$) & \cellcolor{bgyellow}OPEN & co-RE-c \cite{Kim} ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
     \rowcolor{bgred}\cellcolor{white}%
@@ -188,8 +188,8 @@ given known algorithms for 2D [[Bhattacharya,GTStructure]].
     "co-RE-c" (red) denotes co-RE-completeness,
     and yellow marks open cases.
     Blue highlights our new one-tile result
-    (\cref{thm:main}) and its extension to higher dimensions by extrusion.
-    Result marked "$^*$" work even when every prototile is face-connected.
+    (\cref{thm:undecidability}) and its extension to higher dimensions by extrusion.
+    Results marked "$^*$" work even when every prototile is face-connected.
     (Unmarked results allow disconnected tiles.)
     Arrows point to adjacent entries that imply the stated result,
     including the connectedness restriction when marked.
@@ -199,6 +199,29 @@ given known algorithms for 2D [[Bhattacharya,GTStructure]].
     %The seven-tile bound was strengthened to orthogonally convex
     %polyominoes in \cite{YZConvex}.
   @=tab:related
+
+: theorem @=thm:undecidability
+  Tiling $\Z^3$ by translations of a single polycube is co-RE-complete,
+  and hence undecidable.
+
+***Co-RE*** is the complexity class of decision problems whose "no" instances
+can be recognized in finite time by an algorithm (Turing machine).
+A problem is ***co-RE-hard*** if every co-RE problem can be reduced to it
+via a computable many-one reduction,
+and ***co-RE-complete*** if it is also in co-RE.
+It is known that some co-RE-complete problems
+(such as "does a given algorithm run forever?")\ are undecidable,
+so co-RE-completeness implies undecidability.
+
+We prove co-RE-hardness by reducing from the problem of Wang tiling,
+introduced by [[Wang]] and proved co-RE-hard by [[Berger]].
+A ***Wang tile*** is a unit square with a color on each of its four edges.
+Given a set $W$ of Wang tiles,
+a ***Wang tiling*** assigns a tile from $W$ to each grid point in $\Z^2$
+such that, when placing those tiles by translation,
+touching edges have the same color.
+Deciding whether a given finite set of Wang tiles admits such a tiling
+is co-RE-complete [[Berger]].
 
 ---
 
@@ -238,33 +261,6 @@ belongs to exactly one translated copy, except on a set of Lebesgue
 measure zero; this is coverage with multiplicity one almost everywhere
 \cite[Section~1.1]{GTPeriodic}.
 
-A subgroup $\Lambda$ has ***finite index*** when there are finitely many
-***cosets*** $g+\Lambda$; the group of these cosets is the
-***quotient*** $G/\Lambda$.
-A set $A$ is ***invariant*** under $\Lambda$ if $A+\lambda=A$ for every
-$\lambda\in\Lambda$.  We call a translation set ***periodic*** if it is
-invariant under a finite-index subgroup, following
-\cite[Section~1.1]{GTPeriodic}.
-
-Wang tiles were introduced by Wang \cite{Wang}.
-A ***Wang tile*** is a unit square with a color on each of its east, north,
-west, and south edges; a ***Wang tiling*** assigns tiles from a finite set
-to $\Z^2$, without rotating or reflecting them, with equal colors on
-touching edges.  A Wang tile set tiles $\Z^2$ when such an assignment
-exists \cite[Definition~2.6]{GTUndecidable}.
-
-A decision problem is ***decidable*** if an algorithm halts on every input
-with the correct yes or no answer.  It is ***recursively enumerable*** (RE)
-if an algorithm halts exactly on its yes instances, and
-***co-recursively enumerable*** (co-RE) if an algorithm halts exactly on its
-no instances.
-A ***computable many-one reduction*** maps inputs of one problem to inputs
-of another, preserving yes and no
-answers.  A problem is ***co-RE-hard*** if every co-RE problem has such a
-reduction to it, and ***co-RE-complete*** if it is also in co-RE.
-For an encoding, ***completeness*** means that an original solution yields
-an encoded solution; ***soundness*** means that an encoded solution implies
-an original solution.
 
 : theorem @=thm:main
   There is a computable map from finite nonempty Wang tile sets $\calT$
