@@ -22,8 +22,8 @@ import TranslationTiling.Compiler.EffectiveInvarianceTiles
 import Lean.Util.CollectAxioms
 
 /-! Reject unfinished proofs, native evaluation axioms, and undeclared mathematical
-assumptions in every public theorem and the main construction lemmas. Imported
-mathematical statements occur as explicit parameters, never as Lean axioms. -/
+assumptions in every public theorem and the main construction lemmas.
+All mathematical inputs to the public results are proved. -/
 
 open Lean Elab Command in
 run_cmd do

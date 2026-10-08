@@ -117,7 +117,7 @@ structure Home {Q C₁ C₂} (a : Placement Q C₁ C₂) where
     (jump = kernelStep Q ∧ residue ∈ cell a.radius)
 
 theorem exists_home {Q C₁ C₂} (a : Placement Q C₁ C₂) : Nonempty (Home a) := by
-  rcases component_mem_pieces Q a.radius a.radius_pos a.radius_le a.vertex_mem with
+  rcases component_mem_pieces Q a.radius a.vertex_mem with
     hv | hv | hv
   · exact ⟨⟨a.vertex, (Finset.mem_sdiff.mp hv).1, 0, by simp, Or.inl ⟨rfl, hv⟩⟩⟩
   · obtain ⟨i, u, hu, he⟩ := hv

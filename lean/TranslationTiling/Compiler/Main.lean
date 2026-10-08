@@ -38,8 +38,7 @@ theorem cyclicCompiler_correct (sound : Sudoku.Soundness) (T : LeanWang.TileSet)
   exact (Effective.family_tiling_iff sound T).trans
     (Effective.stackCompiler_correct _ hN _ (Effective.family_length_pos T))
 
-/-- The main Wang-to-integer-lattice compiler. Its algorithm is independent
-of the imported soundness and rigidity proofs. -/
+/-- The main Wang-to-integer-lattice compiler. -/
 noncomputable def compile (T : LeanWang.TileSet) : Tile 3 := integerTile (cyclicCompiler T)
 
 theorem compile_computable : Computable compile :=

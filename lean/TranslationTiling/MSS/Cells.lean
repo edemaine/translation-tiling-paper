@@ -61,7 +61,7 @@ theorem axis_frame_vertex (j : ℕ) (hj : 0 < j) :
   · subst i; simp only [Pi.single_eq_same]; omega
   · simp only [Pi.single_eq_of_ne hi]; omega
 
-theorem component_mem_pieces (Q j : ℕ) (hj : 0 < j) (hj5 : j ≤ 5)
+theorem component_mem_pieces (Q j : ℕ)
     {v : Lattice 3} (hv : v ∈ component Q j) :
     v ∈ body j ∨
     (∃ i : Fin 3, ∃ u ∈ cell (i.val + 1), v = scale • Pi.single i 1 + u) ∨

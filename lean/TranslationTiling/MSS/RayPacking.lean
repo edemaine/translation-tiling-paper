@@ -50,7 +50,7 @@ theorem mixed_centers_near {Q C₁ C₂} (h : MixedTiling Q C₁ C₂)
   have hd' : d' ∈ C₁ ∪ C₂ := mixed_first_forward_iterate h hd (-t).toNat
   have hdx : d' 0 - c' 0 = delta := by
     dsimp [c', d']
-    simp only [Pi.add_apply, Pi.smul_apply, Pi.single_eq_same, smul_eq_mul, mul_one]
+    simp only [Pi.single_eq_same, mul_one]
     omega
   have hcy (i : Fin 3) (hi : i ≠ 0) : c' i = c i := by
     simp only [c', Pi.add_apply, Pi.smul_apply, Pi.single_eq_of_ne hi,

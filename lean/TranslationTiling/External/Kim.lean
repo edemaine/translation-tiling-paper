@@ -2,8 +2,8 @@ import TranslationTiling.Connectivity
 import TranslationTiling.External.Geometry
 import Mathlib.Data.Fin.VecNotation
 
-/-! Kim's explicitly constructed shell and its imported rigidity statement.
-The connectedness reduction itself is not assumed here. -/
+/-! Kim's explicitly constructed shell and geometric rigidity statements,
+proved in `Proofs.KimRigidity`. -/
 
 namespace TranslationTiling.Kim
 
@@ -47,7 +47,7 @@ def shell (l : ℕ) : Tile 3 :=
 def gridCoset (s : ℕ) (t : Lattice 3) : Set (Lattice 3) :=
   {a | ∃ z : Lattice 3, a = t + (s : ℤ) • z}
 
-/-- The remaining shell input: every tiling complement is a grid coset. -/
+/-- Every shell tiling complement is a grid coset. -/
 def CosetRigidity : Prop :=
   ∀ l : ℕ, 3 ≤ l → ∀ A : Set (Lattice 3),
     ExactTiling A {x | x ∈ shell l} →

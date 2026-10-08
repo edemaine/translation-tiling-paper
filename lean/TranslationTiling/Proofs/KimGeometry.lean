@@ -270,7 +270,8 @@ theorem pieces_external_adjacent (m i j : ℕ) (hi : 1 ≤ i) (him : i ≤ m)
         fin_cases r <;> norm_num [b, scale] <;> omega
     refine ⟨a, ha, b, hb, 0, Or.inl ?_⟩
     funext r
-    fin_cases r <;> simp [a, b, scale] <;> omega
+    fin_cases r <;> simp [a, b, scale]
+    all_goals omega
   · let a : Lattice 3 := 3 • ![(j : ℤ), (m : ℤ) + 1, (i : ℤ)] + ![1, 2, 1]
     let b : Lattice 3 := 3 • ![(j : ℤ), 0, (i : ℤ)] + ![1, 0, 1]
     have ha : a ∈ piece m i := by
@@ -295,7 +296,8 @@ theorem pieces_external_adjacent (m i j : ℕ) (hi : 1 ≤ i) (him : i ≤ m)
         fin_cases r <;> norm_num [b, scale] <;> omega
     refine ⟨a, ha, b, hb, 1, Or.inl ?_⟩
     funext r
-    fin_cases r <;> simp [a, b, scale] <;> omega
+    fin_cases r <;> simp [a, b, scale]
+    all_goals omega
   · let a : Lattice 3 := 3 • ![(i : ℤ), (j : ℤ), (m : ℤ) + 1] + ![1, 1, 2]
     let b : Lattice 3 := 3 • ![(i : ℤ), (j : ℤ), 0] + ![1, 1, 0]
     have ha : a ∈ piece m i := by
@@ -320,7 +322,8 @@ theorem pieces_external_adjacent (m i j : ℕ) (hi : 1 ≤ i) (him : i ≤ m)
         fin_cases r <;> norm_num [b, scale] <;> omega
     refine ⟨a, ha, b, hb, 2, Or.inl ?_⟩
     funext r
-    fin_cases r <;> simp [a, b, scale] <;> omega
+    fin_cases r <;> simp [a, b, scale]
+    all_goals omega
 
 theorem zero_mem_boundary (l : ℕ) (hl : 0 < l) : (0 : Lattice 3) ∈ boundary l := by
   apply List.mem_filter.mpr
@@ -328,8 +331,8 @@ theorem zero_mem_boundary (l : ℕ) (hl : 0 < l) : (0 : Lattice 3) ∈ boundary 
   · intro k
     simp only [Pi.zero_apply]
     omega
-  · simpa using (show ∃ k : Fin 3, (0 : Lattice 3) k = 0 ∨
-        (0 : Lattice 3) k = (l : ℤ) - 1 from ⟨0, Or.inl rfl⟩)
+  · simp only [decide_eq_true_eq]
+    exact ⟨0, Or.inl rfl⟩
 theorem shell_nonempty (l : ℕ) (hl : 0 < l) : shell l ≠ [] := by
   have hz := zero_mem_boundary l hl
   cases he : boundary l with

@@ -19,6 +19,14 @@ theorem bumpAt_mem (i : Fin 3) : bumpAt i ∈ bumps := by
   · apply Or.inr ∘ Or.inl; ext j; fin_cases j <;> norm_num [bumpAt]
   · apply Or.inr ∘ Or.inr; ext j; fin_cases j <;> norm_num [bumpAt]
 
+theorem bumps_eq_bumpAt {u : Lattice 3} (hu : u ∈ bumps) :
+    ∃ i : Fin 3, u = bumpAt i := by
+  simp only [bumps, List.mem_cons, List.not_mem_nil, or_false] at hu
+  rcases hu with rfl | rfl | rfl
+  · refine ⟨0, ?_⟩; ext j; fin_cases j <;> norm_num [bumpAt]
+  · refine ⟨1, ?_⟩; ext j; fin_cases j <;> norm_num [bumpAt]
+  · refine ⟨2, ?_⟩; ext j; fin_cases j <;> norm_num [bumpAt]
+
 theorem dents_eq_dentAt (m : ℕ) {u : Lattice 3} (hu : u ∈ dents m) :
     ∃ i : Fin 3, u = dentAt m i := by
   simp only [dents, List.mem_cons, List.not_mem_nil, or_false] at hu
@@ -41,8 +49,9 @@ theorem dentAt_eq (m : ℕ) (i : Fin 3) :
 
 theorem bump_coordinate (u : Lattice 3) (hu : u ∈ bumps) (i : Fin 3) :
     u i = -1 ∨ u i = 1 := by
-  simp only [bumps, List.mem_cons, List.not_mem_nil, or_false] at hu
-  rcases hu with rfl | rfl | rfl <;> fin_cases i <;> norm_num
+  obtain ⟨j, rfl⟩ := bumps_eq_bumpAt hu
+  unfold bumpAt
+  split_ifs <;> simp
 
 end
 end TranslationTiling.Kim

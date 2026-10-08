@@ -38,7 +38,7 @@ theorem FullAffineApproximation.nonconstant {r : ℕ} (hp : r.Prime)
   exact h12 hval
 
 theorem normalized_line_coefficients {r : ℕ} (hp : r.Prime) (hlarge : 200 < r)
-    (hr : r ^ 2 ≤ Width) {V : Column → ℤ → (ZMod r)ˣ} {B : ZMod r}
+    {V : Column → ℤ → (ZMod r)ˣ} {B : ZMod r}
     (hH : FullAffineApproximation V 0 B 0) (hB : B ≠ 0)
     (d e a b : ℤ) (hab : ¬ (r : ℤ) ∣ a ∨ ¬ (r : ℤ) ∣ b)
     (ht : ∀ n u, lowValuation r (a * n.val + b) = some u → u ≤ threshold r a →
@@ -95,7 +95,7 @@ theorem rescale_vertical_coefficient {r : ℕ} (hp : r.Prime) (hlarge : 200 < r)
       arithmeticReparametrize, zero_mul,
       add_zero, ArithmeticRule.rescale] using hH₁.restrict hr)
   obtain ⟨a, b, hab, ht⟩ := hV 1 0
-  obtain ⟨ha, hb⟩ := normalized_line_coefficients hp hlarge hr hH hB 1 0 a b hab ht
+  obtain ⟨ha, hb⟩ := normalized_line_coefficients hp hlarge hH hB 1 0 a b hab ht
     (Or.inl (by simp))
   simp only [Int.cast_one, mul_one, Int.cast_zero, mul_zero] at ha hb
   have hbd : (r : ℤ) ∣ b := (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).mp hb

@@ -12,7 +12,7 @@ theorem exactTiling_iff (A F : Set G) :
   · intro h x
     obtain ⟨⟨a, f⟩, hx⟩ := h.2 x
     refine ⟨f, ?_, ?_⟩
-    · simpa [← hx] using a.property
+    · simp [← hx]
     · intro g hg
       have he : ((⟨x - g.val, hg⟩ : A), g) = (a, f) := by
         apply h.1
@@ -23,10 +23,10 @@ theorem exactTiling_iff (A F : Set G) :
     constructor
     · rintro ⟨a, f⟩ ⟨b, g⟩ he
       obtain ⟨f₀, _, hu⟩ := h (a.val + f.val)
-      have hf : a.val + f.val - f.val ∈ A := by simpa using a.property
+      have hf : a.val + f.val - f.val ∈ A := by simp
       have hg : a.val + f.val - g.val ∈ A := by
         change a.val + f.val = b.val + g.val at he
-        simpa [he] using b.property
+        simp [he]
       have hfg : f = g := (hu f hf).trans (hu g hg).symm
       subst g
       exact Prod.ext (Subtype.ext (add_right_cancel he)) rfl
@@ -42,7 +42,7 @@ theorem tiles_nonempty {d : ℕ} {F : Tile d} (h : Tiles F) : F ≠ [] := by
   obtain ⟨A, hA⟩ := h
   obtain ⟨f, hf⟩ := exactTiling_tile_nonempty hA
   intro he
-  simpa [he] using hf
+  simp [he] at hf
 
 @[simp] theorem not_tiles_nil (d : ℕ) : ¬ Tiles ([] : Tile d) := by
   intro h

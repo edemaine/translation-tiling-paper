@@ -92,8 +92,7 @@ theorem shell_geometry (l : ℕ) (hl : 0 < l) :
   intro u hu v hv hne
   exact ⟨shell_translates_disjoint l hne, shell_contacts l hu hv hne⟩
 
-/-- To finish the Kim input, only shell connectivity and arbitrary-tiling coset
-rigidity remain. Coverage and contacts are no longer proof obligations. -/
+/-- Combine shell connectivity and coset rigidity with coverage and contacts. -/
 theorem rigidity_of_connected_cosets
     (connected : ∀ l : ℕ, 3 ≤ l → FaceConnected (shell l))
     (cosets : ∀ l : ℕ, 3 ≤ l → ∀ A : Set (Lattice 3),

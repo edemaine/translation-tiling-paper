@@ -91,9 +91,8 @@ then provide Wang adjacencies on every finite rectangle; the pinned Wang
 dependency supplies compactness. This discharges the Sudoku input without
 p-adic compactness or additional hypotheses.
 
-The remaining input definitions are in `TranslationTiling/External/`. These are parameters,
-not global `axiom` declarations. The main computable reduction is not included
-among the external hypotheses. Berger's undecidability/completeness input is
+The input statements are defined in `TranslationTiling/External/` and proved
+by the modules above. Berger's undecidability and completeness theorems are
 proved by the pinned Wang dependency, using its independent Kari–Hooper certificate.
 
 ## Checked proofs

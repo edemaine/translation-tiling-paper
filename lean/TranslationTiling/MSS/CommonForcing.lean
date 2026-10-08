@@ -91,15 +91,15 @@ theorem mixed_common_forward {Q C₁ C₂} (h : MixedTiling Q C₁ C₂)
     have hnz : i = 1 ∨ i = 2 := by have := i.isLt; apply Or.imp (Fin.ext) (Fin.ext); omega
     rcases hnz with rfl | rfl
     · have hh : p 1 - c 1 = 201 := by
-        dsimp [p]; simp only [Pi.add_apply, Pi.smul_apply, Pi.single_eq_same,
-          smul_eq_mul, mul_one, marker, if_neg (by decide : (1 : Fin 3) ≠ 0), add_zero,
+        dsimp [p]
+        simp only [Pi.single_eq_same, mul_one, marker, if_neg (by decide : (1 : Fin 3) ≠ 0), add_zero,
           scale]
         omega
       rw [hd'c, hh] at hy
       omega
     · have hh : p 2 - c 2 = 201 := by
-        dsimp [p]; simp only [Pi.add_apply, Pi.smul_apply, Pi.single_eq_same,
-          smul_eq_mul, mul_one, marker, if_neg (by decide : (2 : Fin 3) ≠ 0), add_zero,
+        dsimp [p]
+        simp only [Pi.single_eq_same, mul_one, marker, if_neg (by decide : (2 : Fin 3) ≠ 0), add_zero,
           scale]
         omega
       rw [hd'c, hh] at hz
@@ -167,7 +167,8 @@ theorem mixed_common_forward {Q C₁ C₂} (h : MixedTiling Q C₁ C₂)
         change -(k : ℤ) ≤ v 2 ∧ v 2 ≤ k at hvj
         omega
     have hh := box_not_body_mem_holes b.radius hbox (avoid v hv)
-    convert hh using 1 <;> abel
+    convert hh using 1
+    abel
   have hmatch := translated_frame_subset_holes b.radius k b.radius_pos b.radius_le hk
     (p - d') allholes
   have he : d' = c + scale • Pi.single i 1 := by

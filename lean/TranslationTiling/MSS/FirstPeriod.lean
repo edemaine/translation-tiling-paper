@@ -115,7 +115,7 @@ theorem mixed_first_backward {Q C₁ C₂} (h : MixedTiling Q C₁ C₂)
   have hau0 := hau 0
   have hbv0 := hbv 0
   rw [huv, hvv] at he0
-  simp only [cornerPoint, if_pos rfl, Pi.add_apply, Pi.smul_apply, kernelStep,
+  simp only [cornerPoint, Pi.add_apply, Pi.smul_apply, kernelStep,
     if_neg (by decide : (0 : Fin 3) ≠ 2), smul_eq_mul, mul_zero, zero_add, marker] at he0
   push_cast at he0
   omega

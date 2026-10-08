@@ -95,7 +95,8 @@ theorem translated_frame_subset_holes (j k : ℕ) (hj : 0 < j) (hj5 : j ≤ 5)
         (fun a b hab => ⟨hsub a hab.1, hsub b hab.2.1, adjacent_add c hab.2.2⟩)
         (frame_path k hk u₀ v hu₀ hv)
     have hh := holes_path_same_frame j r hj hj5 hr hr5 h₀ path
-    convert hh using 1 <;> abel
+    convert hh using 1
+    abel
   obtain ⟨he, hc⟩ := translated_frame_subset_frame k r hk hr (c - marker r) hf
   have hh := sub_eq_zero.mp hc
   simpa only [← he] using hh

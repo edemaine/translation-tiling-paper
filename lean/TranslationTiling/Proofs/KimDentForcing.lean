@@ -31,13 +31,14 @@ theorem raw_block_cannot_cover_dent (l : ℕ) (hl : 0 < l) {A : Set (Lattice 3)}
     · exact Or.inl rfl
     · exact Or.inr rfl
   have hstep (r : Fin 3) : c + Pi.single r (e r) ∈ cube 3 := by
-    apply coordinate_step_cube hc r (e r) (hes r)
+    apply coordinate_step_cube hc r (e r)
     have hcr := (mem_cube_iff 3 _).mp hc r
     dsimp [e]; split_ifs <;> omega
   have hraw (r : Fin 3) : v + Pi.single r (e r) ∈ rawShell l := by
     have hh := hblock _ (hstep r)
     rw [hvc]
-    convert hh using 1 <;> abel
+    convert hh using 1
+    abel
   have missing (r : Fin 3) (hri : r ≠ i) : v + Pi.single r (e r) ∉ shell l := by
     intro hv'
     have hp := dent_transverse_neighbor l hl i r hri (e r) (hes r)
@@ -79,12 +80,7 @@ theorem shell_forward_step (l : ℕ) (hl : 0 < l) {A : Set (Lattice 3)}
   rcases mem_shell_raw_or_bump l hl v.property with hv | hv
   · exact (raw_block_cannot_cover_dent l hl hA ha b.property hne i hv he).elim
   · obtain ⟨u, hu, hv⟩ := hv
-    obtain ⟨j, huj⟩ : ∃ j : Fin 3, u = bumpAt j := by
-      simp only [bumps, List.mem_cons, List.not_mem_nil, or_false] at hu
-      rcases hu with rfl | rfl | rfl
-      · refine ⟨0, ?_⟩; ext r; fin_cases r <;> norm_num [bumpAt]
-      · refine ⟨1, ?_⟩; ext r; fin_cases r <;> norm_num [bumpAt]
-      · refine ⟨2, ?_⟩; ext r; fin_cases r <;> norm_num [bumpAt]
+    obtain ⟨j, huj⟩ := bumps_eq_bumpAt hu
     have hji : j = i := by
       by_contra hji
       let c := bumpAt j + Pi.single j 1
@@ -93,7 +89,7 @@ theorem shell_forward_step (l : ℕ) (hl : 0 < l) {A : Set (Lattice 3)}
         intro r
         by_cases hr : r = j
         · subst r
-          simp only [c, Pi.add_apply, bumpAt, if_pos rfl, ite_true, Pi.single_eq_same]
+          simp only [c, Pi.add_apply, bumpAt, ite_true, Pi.single_eq_same]
           omega
         · have hrv : r.val ≠ j.val := fun h => hr (Fin.ext h)
           simp only [c, Pi.add_apply, bumpAt, if_neg hrv, Pi.single_eq_of_ne hr]
@@ -118,7 +114,8 @@ theorem shell_forward_step (l : ℕ) (hl : 0 < l) {A : Set (Lattice 3)}
       have he' : b.val + (firstSlot l hl + bumpAt i) =
           (a + (scale (boundary l).length : ℤ) • Pi.single i 1) +
             (firstSlot l hl + bumpAt i) := by
-        convert he using 1 <;> abel
+        convert he using 1
+        abel
       exact add_right_cancel he'
     exact hb ▸ b.property
 

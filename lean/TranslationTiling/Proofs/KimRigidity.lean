@@ -41,6 +41,18 @@ theorem positive_steps_iterate {A : Set (Lattice 3)} (s : ℕ)
     simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul, Nat.cast_add, Nat.cast_one]
     ring
 
+/-- Coordinatewise nonnegative grid translations follow from the three forward steps. -/
+theorem positive_steps_vector {A : Set (Lattice 3)} (s : ℕ)
+    (hstep : ∀ a ∈ A, ∀ i : Fin 3, a + (s : ℤ) • Pi.single i 1 ∈ A)
+    {a : Lattice 3} (ha : a ∈ A) (n : Fin 3 → ℕ) :
+    a + (s : ℤ) • (fun i => (n i : ℤ)) ∈ A := by
+  have h₀ := positive_steps_iterate s hstep ha 0 (n 0)
+  have h₁ := positive_steps_iterate s hstep h₀ 1 (n 1)
+  have h₂ := positive_steps_iterate s hstep h₁ 2 (n 2)
+  convert h₂ using 1
+  ext i
+  fin_cases i <;> simp
+
 theorem coset_of_positive_steps (l : ℕ) (hl : 0 < l) (A : Set (Lattice 3))
     (hA : ExactTiling A {v | v ∈ shell l})
     (hstep : ∀ a ∈ A, ∀ i : Fin 3,
@@ -54,71 +66,46 @@ theorem coset_of_positive_steps (l : ℕ) (hl : 0 < l) (A : Set (Lattice 3))
   have subset : A ⊆ gridCoset s t.val := by
     intro a ha
     let n : Fin 3 → ℕ := fun i => (max (t.val i + upper - (a i + f₀.val i)) 0).toNat
-    let a₁ := a + ((s : ℤ) * (n 0 : ℤ)) • Pi.single 0 1
-    let a₂ := a₁ + ((s : ℤ) * (n 1 : ℤ)) • Pi.single 1 1
-    let a₃ := a₂ + ((s : ℤ) * (n 2 : ℤ)) • Pi.single 2 1
-    have ha₁ : a₁ ∈ A := positive_steps_iterate s hstep ha 0 (n 0)
-    have ha₂ : a₂ ∈ A := positive_steps_iterate s hstep ha₁ 1 (n 1)
-    have ha₃ : a₃ ∈ A := positive_steps_iterate s hstep ha₂ 2 (n 2)
-    have eq₃ (i : Fin 3) : a₃ i = a i + (s : ℤ) * (n i : ℤ) := by
-      fin_cases i <;> simp [a₃, a₂, a₁, Pi.single_apply]
-    have above (i : Fin 3) : t.val i + upper ≤ a₃ i + f₀.val i := by
+    let a' := a + (s : ℤ) • (fun i => (n i : ℤ))
+    have ha' : a' ∈ A := positive_steps_vector s hstep ha n
+    have shift_eq (i : Fin 3) : a' i = a i + (s : ℤ) * (n i : ℤ) := rfl
+    have above (i : Fin 3) : t.val i + upper ≤ a' i + f₀.val i := by
       have hn : 0 ≤ (n i : ℤ) ∧ t.val i + upper - (a i + f₀.val i) ≤ (n i : ℤ) := by
         dsimp [n]; omega
       have hmul : (n i : ℤ) ≤ (s : ℤ) * (n i : ℤ) := by nlinarith
-      rw [eq₃]
+      rw [shift_eq]
       omega
-    obtain ⟨⟨b, f⟩, he⟩ := hfund.2 (a₃ + f₀.val)
+    obtain ⟨⟨b, f⟩, he⟩ := hfund.2 (a' + f₀.val)
     have hbA : b.val ∈ A := by
       obtain ⟨z, hz⟩ := b.property
       have hznonneg (i : Fin 3) : 0 ≤ z i := by
         have hf : f.val i ≤ upper := shell_coordinate_upper l f.property i
         have hei := congrFun he i
-        change b.val i + f.val i = a₃ i + f₀.val i at hei
+        change b.val i + f.val i = a' i + f₀.val i at hei
         have hzi := congrFun hz i
         change b.val i = t.val i + (s : ℤ) * z i at hzi
         have hb := above i
         nlinarith
-      have h0 := positive_steps_iterate s hstep t.property 0 (z 0).toNat
-      have h1 := positive_steps_iterate s hstep h0 1 (z 1).toNat
-      have h2 := positive_steps_iterate s hstep h1 2 (z 2).toNat
-      have hnat (i : Fin 3) : ((z i).toNat : ℤ) = z i := by have := hznonneg i; omega
-      have he' : t.val + ((s : ℤ) * ((z 0).toNat : ℤ)) • Pi.single 0 1 +
-          ((s : ℤ) * ((z 1).toNat : ℤ)) • Pi.single 1 1 +
-          ((s : ℤ) * ((z 2).toNat : ℤ)) • Pi.single 2 1 = b.val := by
-        rw [hz]
-        ext i
-        fin_cases i
-        · change t.val 0 + (s : ℤ) * ((z 0).toNat : ℤ) * 1 +
-            (s : ℤ) * ((z 1).toNat : ℤ) * 0 + (s : ℤ) * ((z 2).toNat : ℤ) * 0 =
-              t.val 0 + (s : ℤ) * z 0
-          rw [hnat 0]; ring
-        · change t.val 1 + (s : ℤ) * ((z 0).toNat : ℤ) * 0 +
-            (s : ℤ) * ((z 1).toNat : ℤ) * 1 + (s : ℤ) * ((z 2).toNat : ℤ) * 0 =
-              t.val 1 + (s : ℤ) * z 1
-          rw [hnat 1]; ring
-        · change t.val 2 + (s : ℤ) * ((z 0).toNat : ℤ) * 0 +
-            (s : ℤ) * ((z 1).toNat : ℤ) * 0 + (s : ℤ) * ((z 2).toNat : ℤ) * 1 =
-              t.val 2 + (s : ℤ) * z 2
-          rw [hnat 2]; ring
-      exact he' ▸ h2
-    have hsame : b.val = a₃ := by
-      have he' := hA.1 (a₁ := (⟨b.val, hbA⟩, f)) (a₂ := (⟨a₃, ha₃⟩, f₀)) he
-      exact congrArg (fun p => p.1.val) he'
-    have ha₃grid : a₃ ∈ gridCoset s t.val := hsame ▸ b.property
-    obtain ⟨z, hz⟩ := ha₃grid
+      have hnat : (fun i => ((z i).toNat : ℤ)) = z := by
+        funext i
+        exact Int.toNat_of_nonneg (hznonneg i)
+      rw [hz, ← hnat]
+      exact positive_steps_vector s hstep t.property (fun i => (z i).toNat)
+    have hsame : b.val = a' :=
+      exactTiling_centers_eq hA hbA ha' f.property f₀.property he
+    have ha'grid : a' ∈ gridCoset s t.val := hsame ▸ b.property
+    obtain ⟨z, hz⟩ := ha'grid
     refine ⟨fun i => z i - (n i : ℤ), ?_⟩
     ext i
     have hzi := congrFun hz i
-    change a₃ i = t.val i + (s : ℤ) * z i at hzi
+    change a' i = t.val i + (s : ℤ) * z i at hzi
     change a i = t.val i + (s : ℤ) * (z i - (n i : ℤ))
-    rw [eq₃] at hzi
+    rw [shift_eq] at hzi
     nlinarith
   refine ⟨t.val, Set.Subset.antisymm subset ?_⟩
   intro b hb
   obtain ⟨⟨a, f⟩, he⟩ := hA.2 (b + f₀.val)
-  have hs := hfund.1 (a₁ := (⟨a.val, subset a.property⟩, f)) (a₂ := (⟨b, hb⟩, f₀)) he
-  have haeq : a.val = b := congrArg (fun p => p.1.val) hs
+  have haeq := exactTiling_centers_eq hfund (subset a.property) hb f.property f₀.property he
   exact haeq ▸ a.property
 
 /-- Every arbitrary tiling complement of the explicit shell is a full grid coset. -/

@@ -3,8 +3,8 @@ import Mathlib.Data.Finset.Pi
 import Mathlib.Data.Int.Interval
 import Mathlib.GroupTheory.Index
 
-/-! Explicit hypotheses for MSS Lemma 2.1 and Bhattacharya's planar periodicity.
-Neither an algorithmic reduction nor the paper's main conclusion is assumed. -/
+/-! Statements of MSS rigidity and Bhattacharya's planar periodicity,
+proved in `MSS.GridAssembly` and `Proofs.PlanarPeriodicity`, respectively. -/
 
 namespace TranslationTiling
 

@@ -23,7 +23,7 @@ theorem dents_close_unique (m : ℕ) {u v : Lattice 3}
     by_contra hne
     have hneval : i.val ≠ j.val := fun h => hne (Fin.ext h)
     have hh := hnear i
-    simp only [dentAt, if_pos rfl, if_neg hneval, ite_true] at hh
+    simp only [dentAt, if_neg hneval, ite_true] at hh
     have hs : (6 : ℤ) ≤ scale m := by unfold scale; omega
     omega
   rw [hij]
@@ -61,7 +61,7 @@ theorem dent_not_mem_shell (l : ℕ) (hl : 0 < l) (i : Fin 3) :
     simp only [firstSlot, residue_scale_add]
   have heq := add_left_cancel (shell_residue_injective hd hb hr)
   have heqi := congrFun heq i
-  simp only [dentAt, bumpAt, if_pos rfl, ite_true] at heqi
+  simp only [dentAt, bumpAt, ite_true] at heqi
   have hs := scale_pos (boundary l).length
   omega
 
@@ -83,7 +83,7 @@ theorem dent_block_offset (l : ℕ) (hl : 0 < l) (i : Fin 3)
     omega
 
 theorem coordinate_step_cube {c : Lattice 3} (hc : c ∈ cube 3) (j : Fin 3)
-    (e : ℤ) (he : e = 1 ∨ e = -1) (hce : 0 ≤ c j + e ∧ c j + e < 3) :
+    (e : ℤ) (hce : 0 ≤ c j + e ∧ c j + e < 3) :
     c + Pi.single j e ∈ cube 3 := by
   apply (mem_cube_iff 3 _).mpr
   intro k
@@ -102,10 +102,13 @@ theorem dent_transverse_neighbor (l : ℕ) (hl : 0 < l) (i j : Fin 3) (hji : j �
     rw [hcoff]
     exact if_neg (fun h => hji (Fin.ext h))
   have hc' : c + Pi.single j e ∈ cube 3 :=
-    coordinate_step_cube hc j e he (by rw [hcj]; rcases he with rfl | rfl <;> omega)
+    coordinate_step_cube hc j e (by rw [hcj]; rcases he with rfl | rfl <;> omega)
   have hraw : p + Pi.single j e ∈ rawShell l := by
     have hh := hblock _ hc'
-    convert hh using 1 <;> dsimp [p] <;> rw [hp] <;> abel
+    convert hh using 1
+    dsimp [p]
+    rw [hp]
+    abel
   by_contra hn
   have hnear : ∀ k : Fin 3, -2 ≤ (p + Pi.single j e : Lattice 3) k - p k ∧
       (p + Pi.single j e : Lattice 3) k - p k ≤ 2 := by
@@ -130,7 +133,7 @@ theorem first_block_mem_shell (l : ℕ) (hl : 0 < l) {c : Lattice 3} (hc : c ∈
     obtain ⟨i, hi⟩ := dents_eq_dentAt _ hd
     have hci := (mem_cube_iff 3 _).mp hc i
     rw [hi] at hci
-    simp only [dentAt, if_pos rfl, ite_true] at hci
+    simp only [dentAt, ite_true] at hci
     have hs : (6 : ℤ) ≤ scale (boundary l).length := by unfold scale; omega
     omega
   have hp : c ∈ piece (boundary l).length 1 := by

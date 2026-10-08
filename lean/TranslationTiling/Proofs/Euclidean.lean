@@ -249,7 +249,7 @@ theorem tiles_of_realTiles {d : ℕ} {F : Tile d} (h : RealTiles F) : Tiles F :=
     obtain ⟨x, a, ha, _⟩ := hA.exists
     obtain ⟨f, hf, _⟩ := ha
     intro he
-    simpa [he] using hf
+    simp [he] at hf
   obtain ⟨θ, hgrid, hθ⟩ := good_grid hA hF
   let B : Set (Lattice d) := Set.range (fun a : A => rounded θ a.val)
   refine ⟨B, (exactTiling_iff B _).mpr ?_⟩
