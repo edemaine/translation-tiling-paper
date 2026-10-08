@@ -151,8 +151,8 @@ with the correct yes or no answer.  It is ***recursively enumerable*** (RE)
 if an algorithm halts exactly on its yes instances, and
 ***co-recursively enumerable*** (co-RE) if an algorithm halts exactly on its
 no instances.
-A ***computable many-one reduction*** maps inputs of one problem to inputs
-of another, preserving yes and no
+A ***computable many-one reduction*** is a computable map from inputs of one
+problem to inputs of another, preserving yes and no
 answers.  A problem is ***co-RE-hard*** if every co-RE problem has such a
 reduction to it, and ***co-RE-complete*** if it is also in co-RE.
 For an encoding, ***completeness*** means that an original solution yields
@@ -506,7 +506,8 @@ functions; it is not a factor of $V$.
 Identifying $V$ with $\Cyc m$, where $m=|V|$, gives the target space
 $\Z^2\times(\Z/m\Z)$: a 3D integer grid with a finite coordinate that
 wraps around modulo $m$.  This coordinate encodes all the finite factors
-displayed above; the auxiliary output $z$ below is only one of those factors.
+displayed above; the auxiliary output $z$ below takes values in just the
+factor $\Cyc D$.
 
 Write coordinates of $G$ as $(x,z,(v_i,c_i)_i)$, and project to the
 ***base*** $(x,k)\in\Z^2\times K$ by setting $k_i=v_i\bmod r_i$.
@@ -556,9 +557,9 @@ decorated channel coordinates.
   Partition $H_0$ into $E_0=\{h:\pr_i(h)=0\}$ and $E_*=H_0\setminus E_0$.
   Choose a lift $g$ of $\sigma$ with $\pr_i(g)=0$, and use
   $F=E_*\sqcup(g+E_0)$.  The union is disjoint by its $c_i$ coordinates.
-  At base $b$, the first part covers all output fibers except the one
+  At base $b$, the first part covers all slices of the fiber except the one
   whose $i$th useful output is $c_i(b)$.  The second part covers exactly
-  the output fiber with $i$th useful output $c_i(b-\sigma)$.  Every other
+  the slice with $i$th useful output $c_i(b-\sigma)$.  Every other
   coordinate is filled freely and once in either contribution.
   Exact coverage is therefore equivalent to the stated identity.
 
@@ -993,7 +994,7 @@ on exactly the $j$th digit, so its active set is $\{j\}$.
   This is the block calculation of \cite[Lemma~5.1]{OpenAI2026}.
   Fix a target $((\alpha^*,\xi^*),\beta^*)$.
   The point $\beta^*$ identifies a block and a label $z_0$ in that
-  block.  Any source $k_i'=k_i-l$ lies in the same block.
+  block.  Any preimage of this target must have $k_i'=k_i-l$ in that block.
 
   If its size is $a_i$, the target equations force
   : equation \label{eq:a-inverse}
@@ -1039,7 +1040,7 @@ For $t=1,2$, choose disjoint sets $S_t\subset S$ of respective sizes
 $3$ and $4$, contained in
 : equation \label{eq:seed-regions}
   \{(s_1,s_2)\in S:s_1\equiv0,\ s_2\equiv t\pmod{pq}\}.
-Each of these two sets of residues has $(pq)^2$ points, so the choices
+Each eligible residue class has $(pq)^2$ points, so the choices
 are possible.  Let $S_0=S\setminus(S_1\cup S_2)$.
 Since $D=(pq)^4\equiv1\pmod6$, the number $D-7$ is divisible by $6$.
 Equip these regions with the following set-theoretic label spaces:
@@ -1133,7 +1134,7 @@ this dependence.
 
 : proof
   Restrict a domino solution to $\N^2$ and use its canonical Sudoku
-  array.  Equations @eq:ordinary-outputs,eq:shared-z,eq:seed-outputs
+  array.  @eq:ordinary-outputs,eq:shared-z,eq:seed-outputs
   define all useful, high, and auxiliary outputs of one graph.
   Equation \eqref{eq:shear} supplies its actual $v_i$ coordinates,
   so \eqref{eq:graph} holds.
