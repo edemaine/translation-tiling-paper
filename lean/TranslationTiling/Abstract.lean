@@ -1,6 +1,3 @@
-import Mathlib.Computability.Halting
-import Mathlib.Computability.Primrec.List
-import LeanWang.CoRE
 import TranslationTiling.AbstractBridge
 
 /-!
@@ -12,8 +9,8 @@ that every point of `ℤ³` is written in exactly one way as `a + p`, with `a �
 and `p` in the prototile.
 
 The unconditional statements below use the co-r.e. notions of `LeanWang.CoRE`.
-Their one-line proofs invoke
-`TranslationTiling.AbstractBridge`, which connects them to the rest of the project.
+Their one-line proofs invoke `TranslationTiling.AbstractBridge`, which connects
+them to the rest of the project.
 -/
 
 namespace TranslationTiling.Abstract

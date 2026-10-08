@@ -9,7 +9,7 @@ tilings and co-r.e.-completeness along the computable identification of the two
 encodings. Its statements spell out the predicate of `Abstract.Tiles` explicitly,
 so that `Abstract.lean` can cite them by definitional unfolding.
 
-The mathematical inputs are explicit, as in `Statements.lean`.
+All mathematical inputs are proved, as in `Statements.lean`.
 -/
 
 namespace TranslationTiling.AbstractBridge
@@ -36,11 +36,12 @@ theorem toPoint_injective : Function.Injective toPoint :=
 theorem toPoint_add (f g : Lattice 3) : toPoint (f + g) = toPoint f + toPoint g := rfl
 
 /-- The identification of the two models of `ℤ³`. -/
-def equiv : Lattice 3 ≃ ℤ × ℤ × ℤ where
+def equiv : Lattice 3 ≃+ ℤ × ℤ × ℤ where
   toFun := toPoint
   invFun := ofPoint
   left_inv := ofPoint_toPoint
   right_inv := toPoint_ofPoint
+  map_add' := toPoint_add
 
 theorem toPoint_primrec : Primrec toPoint := by
   unfold toPoint
@@ -86,56 +87,36 @@ theorem exactTiling_iff {G : Type*} [Add G] (A S : Set G) :
     obtain ⟨rfl, rfl⟩ := this
     rfl
 
+/-- The elementary predicate agrees with exact coverage by subtype pairs. -/
+theorem absTiles_iff_exactTiling (P : List (ℤ × ℤ × ℤ)) :
+    AbsTiles P ↔ ∃ A, ExactTiling A {p | p ∈ P} := by
+  simp only [AbsTiles, exactTiling_iff, Set.mem_setOf_eq]
+
 theorem tiles_iff (F : Tile 3) : Tiles F ↔ AbsTiles (toProto F) := by
-  unfold Tiles AbsTiles
-  simp only [exactTiling_iff]
+  have hmap : equiv '' {f | f ∈ F} = {p | p ∈ toProto F} := by
+    ext p
+    exact List.mem_map.symm
+  have hback : equiv.symm '' {p | p ∈ toProto F} = {f | f ∈ F} := by
+    rw [← hmap, Set.image_image]
+    simp
+  rw [absTiles_iff_exactTiling]
   constructor
   · rintro ⟨A, hA⟩
-    refine ⟨equiv.symm ⁻¹' A, fun y => ?_⟩
-    obtain ⟨t, ht, hu⟩ := hA (equiv.symm y)
-    refine ⟨(toPoint t.1, toPoint t.2), ?_, ?_⟩
-    · refine ⟨?_, ?_, ?_⟩
-      · simpa [equiv, ofPoint_toPoint] using ht.1
-      · exact List.mem_map.mpr ⟨t.2, ht.2.1, rfl⟩
-      · show toPoint (t.1 + t.2) = y
-        rw [show t.1 + t.2 = equiv.symm y from ht.2.2]; exact toPoint_ofPoint y
-    · rintro ⟨u, v⟩ ⟨h1, h2, h3⟩
-      obtain ⟨v', hv', rfl⟩ := List.mem_map.mp h2
-      have := hu (ofPoint u, v') ⟨h1, hv', ?_⟩
-      · rw [← this]; simp [toPoint_ofPoint]
-      · apply equiv.injective
-        show toPoint (ofPoint u + v') = toPoint (equiv.symm y)
-        rw [toPoint_add, toPoint_ofPoint]; exact h3.trans (toPoint_ofPoint y).symm
+    exact ⟨equiv '' A, by simpa only [hmap] using exactTiling_transport equiv hA⟩
   · rintro ⟨A, hA⟩
-    refine ⟨equiv ⁻¹' A, fun x => ?_⟩
-    obtain ⟨t, ht, hu⟩ := hA (equiv x)
-    obtain ⟨v', hv', hv⟩ := List.mem_map.mp ht.2.1
-    refine ⟨(ofPoint t.1, v'), ⟨?_, hv', ?_⟩, ?_⟩
-    · simpa [equiv, toPoint_ofPoint] using ht.1
-    · apply equiv.injective
-      show toPoint (ofPoint t.1 + v') = toPoint x
-      rw [toPoint_add, toPoint_ofPoint, hv]; exact ht.2.2
-    · rintro ⟨u, v⟩ ⟨h1, h2, h3⟩
-      have := hu (toPoint u, toPoint v) ⟨h1, List.mem_map.mpr ⟨v, h2, rfl⟩, ?_⟩
-      · have h1' : toPoint u = t.1 := congrArg Prod.fst this
-        have h2' : toPoint v = t.2 := congrArg Prod.snd this
-        refine Prod.ext ?_ (toPoint_injective (h2'.trans hv.symm))
-        show u = ofPoint t.1
-        rw [← h1', ofPoint_toPoint]
-      · show toPoint u + toPoint v = equiv x
-        rw [← toPoint_add]; exact congrArg toPoint h3
+    exact ⟨equiv.symm '' A, by simpa only [hback] using exactTiling_transport equiv.symm hA⟩
+
+@[simp] theorem toProto_ofProto (P : List (ℤ × ℤ × ℤ)) : toProto (ofProto P) = P := by
+  simp [toProto, ofProto, List.map_map, Function.comp_def, toPoint_ofPoint]
+
+@[simp] theorem ofProto_toProto (F : Tile 3) : ofProto (toProto F) = F := by
+  simp [toProto, ofProto, List.map_map, Function.comp_def, ofPoint_toPoint]
 
 theorem coREComplete_transfer (h : LeanWang.CoREComplete (@Tiles 3)) :
     LeanWang.CoREComplete AbsTiles := by
   refine ⟨?_, ?_⟩
-  · refine (h.1.comp ofProto_computable).of_eq fun P => ?_
-    have hP : toProto (ofProto P) = P := by
-      simp [toProto, ofProto, List.map_map, Function.comp_def, toPoint_ofPoint]
-    have e : Tiles (ofProto P) ↔ AbsTiles P := by
-      rw [tiles_iff, hP]
-    exact Part.ext'
-      ⟨fun ⟨h, _⟩ => ⟨(not_congr e).1 h, trivial⟩, fun ⟨h, _⟩ => ⟨(not_congr e).2 h, trivial⟩⟩
-      (fun _ _ => rfl)
+  · refine _root_.REPred.of_eq (LeanWang.REPred.comp h.1 ofProto_computable) fun P => ?_
+    exact not_congr (by simpa only [toProto_ofProto] using tiles_iff (ofProto P))
   · intro α _ p hp
     exact (h.2 p hp).trans ⟨toProto, toProto_computable, tiles_iff⟩
 
@@ -143,15 +124,12 @@ theorem coREComplete_transfer (h : LeanWang.CoREComplete (@Tiles 3)) :
 theorem coRE_complete : LeanWang.CoREComplete AbsTiles :=
   coREComplete_transfer TranslationTiling.completeness
 
-/-- Co-r.e.-completeness implies undecidability (Mathlib's halting problem). -/
+/-- Transfer undecidability from the lattice model using co-r.e.-hardness. -/
 theorem undecidable_of_coRE_complete (h : LeanWang.CoREComplete AbsTiles) :
     ¬ ComputablePred AbsTiles := by
   intro hc
-  have hre : LeanWang.CoREPred fun c : Nat.Partrec.Code => ¬ (Nat.Partrec.Code.eval c 0).Dom :=
-    (Partrec.dom_re (Nat.Partrec.Code.eval_part.comp Computable.id (Computable.const 0))).of_eq
-      fun _ => by simp
-  have hcomp := ComputablePred.computable_of_manyOneReducible (h.2 _ hre) hc
-  exact ComputablePred.halting_problem 0 (by simpa using hcomp.not)
+  exact TranslationTiling.undecidability
+    (ComputablePred.computable_of_manyOneReducible (h.2 _ (membership 3)) hc)
 
 theorem undecidable : ¬ ComputablePred AbsTiles :=
   undecidable_of_coRE_complete coRE_complete
