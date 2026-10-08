@@ -1,17 +1,17 @@
 # Lean formalization
 
-The complete computable Wang-to-tile reduction is proved, conditional on the
-named mathematical inputs. Its output is a nonempty, face-connected tile in
-dimension three, tileable exactly when the input Wang tiles tile the plane.
+The complete computable Wang-to-tile reduction and co-r.e.-completeness in
+dimension three are proved unconditionally. Its output is a nonempty,
+face-connected tile, tileable exactly when the input Wang tiles tile the plane.
 
 Read [TranslationTiling/Statements.lean](TranslationTiling/Statements.lean) for
 the short public statements. `compiler_effectivity` and `compiler_correct`
-prove uniform computability and correctness. `reduction`, `completeness`,
-`connected_completeness`, `real_completeness`, and `dimension_optimality` take
-only `ReductionInputs`. `planar_periodicity` and `planar_decidability` are
-unconditional, as are `sudoku_soundness`, `sudoku_equivalence`, and
-`compiler_connectivity`. There is no assumed
-compiler certificate or outstanding `Claims` namespace.
+prove uniform computability and connected correctness. Every public theorem,
+including `reduction`, `connected_completeness`, `real_completeness`, and
+`dimension_optimality`, has no imported mathematical hypothesis. The former
+inputs appear as proved theorems: `sudoku_soundness`, `mss_rigidity`,
+`kim_coset_rigidity`, and `planar_periodicity`. There is no assumed compiler
+certificate or outstanding `Claims` namespace.
 
 ## Build
 
@@ -34,9 +34,10 @@ Build artifacts from the same dependency commit and toolchain may be reused.
 The full `lake build` passes, including the examples and axiom audit.
 `TranslationTiling/AxiomAudit.lean` rejects every axiom beyond `propext`,
 `Classical.choice`, and `Quot.sound` in the public theorems and selected main lemmas.
-Mathematical hypotheses are theorem parameters. No unfinished proof is accepted.
+Generic auxiliary lemmas use explicit theorem parameters; the public results
+have no unproved mathematical input. No unfinished proof is accepted.
 
-## Definitions and hypotheses
+## Definitions and proved inputs
 
 `Tile d` is a list of points of `Fin d → ℤ`, with the canonical primitive-recursive
 encoding. List membership interprets it as a finite set: order and duplicate
@@ -49,13 +50,31 @@ associated with `F`. Coverage and uniqueness hold almost everywhere for Lebesgue
 measure, so shared cube boundaries do not count as overlapping interiors.
 `FaceConnected` uses paths of signed coordinate unit steps within the tile.
 
-[ExternalInputs.lean](TranslationTiling/ExternalInputs.lean) packages the two remaining
-explicit mathematical inputs used by the connected compiler in `ReductionInputs`:
+[ExternalInputs.lean](TranslationTiling/ExternalInputs.lean) imports the proved
+inputs used by the compiler. The former `ReductionInputs` hypothesis is removed.
 
-| Input | Formal meaning |
+| Proved input | Formal meaning |
 | --- | --- |
-| Meyerovitch–Sanadhya–Solomon | Arbitrary-tiling rigidity of the paper's explicitly defined two component shapes, with scale 201. |
-| Kim | Arbitrary-tiling coset rigidity of the explicit shell (`Kim.CosetRigidity`); connectivity, contacts, and fundamental-domain coverage are proved. |
+| Greenfeld–Tao | Decorated Sudoku soundness (`Sudoku.soundness`). |
+| Meyerovitch–Sanadhya–Solomon | Arbitrary mixed-tiling rigidity of the two scale-201 component shapes (`MSS.rigidity`). |
+| Kim | Arbitrary-tiling coset rigidity and all geometric shell properties (`Kim.cosetRigidity`, `Kim.rigidity`). |
+| Bhattacharya | Existence of a fully periodic planar tiling complement (`planarPeriodicity_proved`). |
+
+Meyerovitch–Sanadhya–Solomon rigidity is proved in
+`MSS/GridAssembly.lean`. The proof uses singleton isolation to force a forward
+ray of centers, coverage to close that ray backwards, and packing to separate
+the transverse rows. The main cubes cover the transverse plane. Whole-frame
+matching then forces the other coordinate steps and the full cubic grid.
+The special frames force both color periods. Reassembly of the marked cells
+proves the converse mixed tiling.
+
+Kim's arbitrary-tiling coset rigidity is proved in `Proofs/KimRigidity.lean`.
+The shell before its unit modifications consists of aligned 3-blocks. Two
+distinct missing points cannot be in one such block. The occupied transverse
+rim of a dent therefore excludes coverage by an ordinary block of another
+copy. A bump must fill the dent, and the occupied corner block forces its
+orientation. This forces all three positive grid steps. Coverage and the
+shell's fundamental-domain property then force a complete grid coset.
 
 Bhattacharya's planar periodicity theorem is now proved in
 `Proofs/PlanarPeriodicity.lean` using the ported proof chain in `Planar/`.
@@ -102,9 +121,11 @@ proved by the pinned Wang dependency, using its independent Kari–Hooper certif
 | Kim's finite color bounds, nonempty pieces, exact block partition, disjoint colors, internal and external piece contacts, and nonempty shells | `Proofs/KimGeometry.lean` |
 | Kim's residue representatives, shell fundamental-domain coverage, volume `s³`, disjoint grid translates, and contacts between whole shells | `Proofs/KimResidues.lean`, `Proofs/KimShellGeometry.lean` |
 | Kim's coarse color classes, dented pieces, cube boundary, and shell are face connected | `Proofs/FacePaths.lean`, `Proofs/Kim*Connectivity.lean` |
+| Unconditional arbitrary-tiling Kim shell coset rigidity | `Proofs/KimBlocks.lean`, `Proofs/KimDefectGeometry.lean`, `Proofs/KimDentForcing.lean`, `Proofs/KimRigidity.lean` |
 | Shell assembly preserves tilability under a fundamental-domain and coset-rigidity hypothesis | `Proofs/ShellAssembly.lean` |
 | MSS frame geometry and a counterexample to the one-point local forcing argument (not to global rigidity) | `MSS/FrameGeometry.lean`, `MSS/LocalForcingCheck.lean` |
 | MSS frame connectivity and separation, neighbors in frames, and uniqueness of the singleton in the punctured body | `MSS/FrameConnectivity.lean`, `MSS/FrameSeparation.lean`, `MSS/FrameIsolation.lean`, `MSS/BodyIsolation.lean` |
+| Unconditional arbitrary mixed-tiling MSS rigidity, including both directions | `MSS/FirstBump.lean`, `MSS/FirstPeriod.lean`, `MSS/RayPacking.lean`, `MSS/TransverseCoverage.lean`, `MSS/FrameMatching.lean`, `MSS/CommonForcing.lean`, `MSS/GridCenters.lean`, `MSS/ColorPeriods.lean`, `MSS/GridAssembly.lean` |
 | Completeness, undecidability, higher dimensions, connected completeness, and dimension optimality | `Proofs/Complexity.lean`, `Compiler/Main.lean` |
 
 `Examples.lean` checks small finite searches, repeated tile entries,
@@ -153,21 +174,17 @@ Some definitions use `noncomputable` to express fixed finite tables or searched
 witnesses; their uniform effectivity is separately proved. The exhaustive
 enumerations are enormous and are intended for the reduction proof.
 
-Two inputs remain: arbitrary mixed-tiling MSS rigidity and arbitrary-tiling
-coset rigidity of Kim's shell. Kim's partition,
-fundamental-domain coverage, disjoint grid translates, contacts, and shell
-connectivity are proved. `Kim.rigidity_of_cosets` reconstructs the complete
-shell input from coset rigidity alone. `ReductionInputs.shellRigidity` assumes
-only `Kim.CosetRigidity`. Compiler output nonemptiness and connectivity have no
-mathematical hypothesis. The remaining inputs can be formalized independently
-of the numerical algorithm.
+All mathematical inputs are proved. The public compiler correctness, connected
+completeness, Euclidean completeness, and dimension-optimality theorems are
+unconditional. No periodicity assumption is imposed on a tiling complement.
 
 The local forcing sentence in MSS Lemma 2.1 does not by itself establish
 rigidity. `MSS.unintended_neighbor` gives two disjoint copies of `baseShape`:
 one at zero and one translated by `(-214, -1, 200)`. The latter covers
 `201 e₂` through its first detached frame, although its translation is not
 `201 e₂`. These two copies are not claimed to extend to a tiling. A proof of
-the full rigidity input must use further coverage constraints.
+the full rigidity input uses further coverage constraints. The checked proof
+in `MSS/GridAssembly.lean` supplies them without that local claim.
 
 ## Online formalizations inspected (October 7, 2026)
 

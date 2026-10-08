@@ -153,7 +153,7 @@ theorem undecidable_of_coRE_complete (h : LeanWang.CoREComplete AbsTiles) :
   have hcomp := ComputablePred.computable_of_manyOneReducible (h.2 _ hre) hc
   exact ComputablePred.halting_problem 0 (by simpa using hcomp.not)
 
-theorem undecidable (h : ReductionInputs) : ¬ ComputablePred AbsTiles :=
-  undecidable_of_coRE_complete (coRE_complete h)
+theorem undecidable : ¬ ComputablePred AbsTiles :=
+  undecidable_of_coRE_complete coRE_complete
 
 end TranslationTiling.AbstractBridge

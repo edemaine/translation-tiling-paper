@@ -11,8 +11,8 @@ partitioned into translates of it: there is a set `A` of translation vectors suc
 that every point of `ℤ³` is written in exactly one way as `a + p`, with `a ∈ A`
 and `p` in the prototile.
 
-The statements below expose the remaining mathematical inputs in `ReductionInputs`
-and use the co-r.e. notions of `LeanWang.CoRE`. Their one-line proofs invoke
+The unconditional statements below use the co-r.e. notions of `LeanWang.CoRE`.
+Their one-line proofs invoke
 `TranslationTiling.AbstractBridge`, which connects them to the rest of the project.
 -/
 
@@ -32,12 +32,11 @@ def Tiles (P : Prototile) : Prop :=
 /-- **Main theorem.** Deciding whether a single prototile in `ℤ³` tiles space is
 co-r.e.-complete: the non-tilers are recursively enumerable, and every co-r.e.
 problem many-one reduces (computably) to tilability. -/
-theorem tiling_coRE_complete (h : ReductionInputs) : LeanWang.CoREComplete Tiles :=
-  AbstractBridge.coRE_complete h
+theorem tiling_coRE_complete : LeanWang.CoREComplete Tiles :=
+  AbstractBridge.coRE_complete
 
-/-- **Corollary.** No algorithm decides whether a prototile in `ℤ³` tiles space.
-The mathematical inputs are explicit. -/
-theorem tiling_undecidable (h : ReductionInputs) : ¬ ComputablePred Tiles :=
-  AbstractBridge.undecidable h
+/-- **Corollary.** No algorithm decides whether a prototile in `ℤ³` tiles space. -/
+theorem tiling_undecidable : ¬ ComputablePred Tiles :=
+  AbstractBridge.undecidable
 
 end TranslationTiling.Abstract

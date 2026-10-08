@@ -76,9 +76,8 @@ theorem connectedTile_nonempty (E : Tile 3) (hE : E ≠ []) :
   connectedAssembly_nonempty _ _ (by unfold cubeSize; omega)
     (by intro he; exact hE (List.map_eq_nil_iff.mp he))
 
-/-- Both tilability directions and connectedness of the concrete construction,
-conditional only on Kim's shell coset rigidity. -/
-theorem exists_connected_tile (h : ReductionInputs) (T : LeanWang.TileSet) :
+/-- Both tilability directions and connectedness of the concrete construction. -/
+theorem exists_connected_tile (T : LeanWang.TileSet) :
     ∃ F : Tile 3, F ≠ [] ∧ FaceConnected F ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles F) := by
   obtain ⟨F, hF, hcorrect⟩ := exists_integer_tile Sudoku.soundness MSS.rigidity T
@@ -95,7 +94,7 @@ theorem exists_connected_tile (h : ReductionInputs) (T : LeanWang.TileSet) :
     rw [he]
   exact ⟨connectedTile F.toList, connectedTile_nonempty _ hlist,
     connectedTile_connected _,
-    (hcorrect.trans hlistcorrect).trans (connectedTile_correct h.shellRigidity _).symm⟩
+    (hcorrect.trans hlistcorrect).trans (connectedTile_correct Kim.cosetRigidity _).symm⟩
 
 end
 end TranslationTiling.Compiler
