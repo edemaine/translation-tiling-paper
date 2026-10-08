@@ -260,14 +260,15 @@ given known algorithms for 2D [[Bhattacharya,GTStructure]].
     to lattice adjacency in $\Z^3$.
     Connectivity of a polycube in $\R^3$ is thus defined according
     to face adjacency of the constituent unit cubes.
+    See @sec:lean-connected.
   [^lean-complete]:
-    \leanlogo{} theorem \texttt{tiling\_coRE\_complete} (see @sec:lean).
+    \leanlogo{} theorem \texttt{tiling\_coRE\_complete}. See @sec:lean-z3.
   [^lean-undecidable]:
-    \leanlogo{} theorem \texttt{tiling\_undecidable}.
+    \leanlogo{} theorem \texttt{tiling\_undecidable}. See @sec:lean-z3.
   [^lean-real]:
-    \leanlogo{} theorem \texttt{real\_tiling\_coRE\_complete}.
+    \leanlogo{} theorem \texttt{real\_tiling\_coRE\_complete}. See @sec:lean-r3.
   [^lean-real-undecidable]:
-    \leanlogo{} theorem \texttt{real\_tiling\_undecidable}.
+    \leanlogo{} theorem \texttt{real\_tiling\_undecidable}. See @sec:lean-r3.
 
 ***Co-RE*** is the complexity class of decision problems whose "no" instances
 can be recognized in finite time by an algorithm (Turing machine).
@@ -380,6 +381,7 @@ The proof of @thm:undecidability is long and technical.
 To make it checkable, we formalized it in the Lean~4 proof assistant,
 building on Mathlib and on the formalization of 
 Wang tiling undecidability (`lean-wang` \cite{LeanWang}).
+The complete Lean proof is available in [the repository](https://github.com/edemaine/translation-tiling-paper/tree/main/lean).
 The key point is that a reader does not need to read the proof,
 or even most of the definitions, to trust the result:
 it suffices to check that the handful of definitions and theorem statements
@@ -415,6 +417,7 @@ are joined by a path of adjacent points inside $P$, i.e.,
 they are related by the reflexive transitive closure of
 the relation "both points are in $P$ and adjacent".
 
+\phantomsection\label{sec:lean-connected}
 \leansnippet{Adjacent,Connected}
 
 ## Tiling \texorpdfstring{$\Z^3$}{Z³}
@@ -437,9 +440,11 @@ no algorithm decides it.
 In both statements, the proof is a single call to a theorem in
 \texttt{[AbstractBridge.lean](https://github.com/edemaine/translation-tiling-paper/blob/main/lean/TranslationTiling/AbstractBridge.lean)}.
 
+\phantomsection\label{sec:lean-z3}
 \leansnippet{tiling_coRE_complete,tiling_undecidable}
 
 ## Tiling \texorpdfstring{$\R^3$}{R³}
+
 The ***solid body*** of $P$ is the union of the closed unit cubes $p+[0,1]^3$ for $p\in P$.
 The prototile $P$ ***tiles $\R^3$*** if there exists a set $A\subseteq\R^3$ of
 (arbitrary real) translations such that, for Lebesgue-almost every $x\in\R^3$,
@@ -453,6 +458,7 @@ there is exactly one $a\in A$ with $x-a$ in the solid body of $P$.
 Tiling $\R^3$ by translations of the solid body of a single finite connected
 polycube is co-RE-complete (and hence undecidable).
 
+\phantomsection\label{sec:lean-r3}
 \leansnippet{real_tiling_coRE_complete,real_tiling_undecidable}
 
 Together, these four Lean theorems establish @thm:undecidability.
@@ -464,10 +470,10 @@ and we do not claim that this paper is a complete human-readable account of it.
 Instead, this paper contains only the part intended for humans:
 an explanation of the problem (@sec:intro),
 the main intuition behind the proof (@sec:overview),
-and the precise formalization of the statement given in @sec:lean.
+and the precise formalization of the statement (@sec:lean).
 The rigor of the proof comes from the Lean formalization rather than from the text.
 
-A much longer, computer-generated technical article, which is not meant for
+A much longer LLM-generated technical article, which is not meant for
 human consumption, gives the full details of the construction and its proofs.
 It and the complete Lean code are available in
 [the repository](https://github.com/edemaine/translation-tiling-paper)
