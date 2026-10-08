@@ -7,9 +7,8 @@ import TranslationTiling.AbstractBridge
 # The 3D tiling problem
 
 A *prototile* is a finite list of points of `ℤ³`. It *tiles space* if `ℤ³` can be
-partitioned into translates of it: there is a set `A` of translation vectors such
-that every point of `ℤ³` is written in exactly one way as `a + p`, with `a ∈ A`
-and `p` in the prototile.
+partitioned into translates of it: there is a set `T` of translation vectors such
+that every point of `ℤ³` lies in exactly one translate `t + P` with `t ∈ T`.
 
 We show that deciding whether a *connected* prototile tiles is co-r.e.-complete,
 both for `ℤ³` and for the solid body in `ℝ³` (union of unit cubes, arbitrary real
@@ -67,7 +66,8 @@ translate `t + Solid P` with `t ∈ T`. -/
 def RealTiles (P : Prototile) : Prop :=
   ∃ T : Set RealPoint, ∀ᵐ x ∂MeasureTheory.volume, ∃! t : RealPoint, t ∈ T ∧ x - t ∈ Solid P
 
-/-- The same holds for the solid body in `ℝ³` with arbitrary real translations. -/
+/-- Deciding whether the solid body of a connected prototile tiles `ℝ³` by arbitrary
+real translations is co-r.e.-complete. -/
 theorem real_tiling_coRE_complete : LeanWang.CoREComplete fun P => Connected P ∧ RealTiles P :=
   AbstractBridge.connected_real_coRE_complete
 

@@ -6,16 +6,16 @@ face-connected tile, tileable exactly when the input Wang tiles tile the plane.
 
 Start with [Abstract.lean](TranslationTiling/Abstract.lean) for the
 human-readable definitions and main theorem statements used in the paper.
-Its prototiles are lists of integer triples; connectivity is defined by paths
-of adjacent points, lattice tiling by unique decompositions, and real tiling
+Its prototiles are lists of points `Fin 3 → ℤ`; connectivity is defined by paths
+of adjacent points, lattice tiling by unique covering translates, and real tiling
 by almost-everywhere unique coverage by translates of the solid body. The
 statements give co-r.e.-completeness for connected prototiles in both `ℤ³`
-and `ℝ³`, and undecidability in `ℤ³`.
+and `ℝ³`, and undecidability in both.
 
 [AbstractBridge.lean](TranslationTiling/AbstractBridge.lean) proves these
-statements from the rest of the development. It identifies integer triples
-with `Fin 3 → ℤ` by computable inverse maps, proves equivalence of the
-connectivity and lattice/real tiling predicates, and transfers co-r.e.-completeness
+statements from the rest of the development, which uses the same model
+`Fin 3 → ℤ` of `ℤ³`. It proves equivalence of the connectivity and lattice/real
+tiling predicates with the project's definitions, and derives co-r.e.-completeness
 and undecidability. The definitions and theorem statements in `Abstract.lean`
 make the claims inspectable; Lean checks the bridge and the underlying proofs.
 
