@@ -88,14 +88,17 @@
   language model (LLM) and is probably poorly written.
 
 # Definitions and Main Theorem @=sec:definitions
+For an abelian group $G$, a ***prototile*** is a finite nonempty subset
+$F\subset G$.  Its translated copies are the sets $a+F$.
 Following the tiling-equation notation of
 \cite[Section~1.1]{GTUndecidable}, for subsets $A,F$ of an abelian
 group $G$, the notation $A\oplus F=G$
 means that every element of $G$ has exactly one representation as $a+f$
 with $a\in A$ and $f\in F$.  We say that $F$ ***tiles*** $G$ if such an $A$
-exists.  The input ***tile*** is finite and nonempty; the translation set may
-be infinite.  We allow translations only.  Intermediate tiles may be
-disconnected; the final tile will be connected.
+exists, and call $A$ its ***set of translations***.
+The prototile is finite, but its set of translations is infinite when $G$
+is infinite.  We allow translations only.  Intermediate prototiles may be
+disconnected; the final prototile will be connected.
 A finite set $F\subset\Z^d$ is ***connected*** if every pair of its
 points can be joined by a sequence of points of $F$, successive points
 differing by a signed coordinate unit vector.
@@ -104,16 +107,19 @@ adjacency, including when they are viewed as unions of unit cubes.
 A ***polycube*** is a finite nonempty subset of $\Z^3$, or its corresponding
 union of unit cubes; a ***polyomino*** is its two-dimensional counterpart,
 following the terminology of \cite[Section~1.2]{Kim}.
-A tiling using one tile type is a ***translational monotiling***.
+A tiling using a single prototile is a ***translational monotiling***.
 More generally, $B\oplus C=E$ denotes unique representation of every
 point of $E$ as a sum, with no sums outside $E$; $B+C$ denotes the set
 of sums without a uniqueness condition, and $B-C$ is the set of
 differences $b-c$.  For a vector $u$ and an integer $n$, write
 $u+B=\{u+b:b\in B\}$ and $nB=\{nb:b\in B\}$.
 The notation $\sqcup$ denotes a disjoint union.
-A ***simultaneous tiling system*** asks for one translation
-set $A$ satisfying $A\oplus F_\nu=G$ for every specified tile $F_\nu$,
+A ***simultaneous tiling system*** consists of a finite family of prototiles
+$F_1,\ldots,F_s$ in a common target space $G$ and asks for one set of
+translations $A$ satisfying $A\oplus F_\nu=G$ for every $\nu$,
 as in \cite[Section~3]{GTPeriodic}.
+Each prototile must individually tile the entire target space using the
+same set of translations.
 
 For a finite nonempty $F\subset\Z^d$, its ***unit-cube union*** is
 $F+[0,1]^d$.  In $\R^d$, a ***tiling by translations*** means that each point
@@ -125,7 +131,7 @@ A subgroup $\Lambda$ has ***finite index*** when there are finitely many
 ***cosets*** $g+\Lambda$; the group of these cosets is the
 ***quotient*** $G/\Lambda$.
 A set $A$ is ***invariant*** under $\Lambda$ if $A+\lambda=A$ for every
-$\lambda\in\Lambda$.  We call a translation set ***periodic*** if it is
+$\lambda\in\Lambda$.  We call a set of translations ***periodic*** if it is
 invariant under a finite-index subgroup, following
 \cite[Section~1.1]{GTPeriodic}.
 
@@ -157,10 +163,10 @@ an original solution.
    F_{\calT}\text{ tiles }\Z^3\text{ by translations}.
   $$
   Consequently, translational monotiling of $\Z^3$ is co-RE-complete
-  under computable many-one reductions, even when the input tile is
+  under computable many-one reductions, even when the input prototile is
   required to be connected.
 
-# The Decorated Sudoku Interface @=sec:sudoku
+# The Two-Prime Sudoku Rule @=sec:sudoku
 We use $\N=\{0,1,2,\ldots\}$ and the domino-system formulation of
 \cite[Definition~2.2]{GTUndecidable}.  A ***domino system*** consists of a finite
 nonempty alphabet $\calT$ and two allowed-pair relations
@@ -191,22 +197,28 @@ $$
  N=p^2q^2,\qquad I=\{0,\ldots,N-1\},\qquad
  \Sigma=\F_p^\times\times\F_q^\times\times\calT.
 $$
+The width $N$ is fixed independently of the Wang tile set.  The alphabet
+has $(p-1)(q-1)|\calT|$ symbols and therefore depends on that set.
 The finite-width board with constraints on all integer-slope lines is
 the Sudoku framework of Greenfeld and Tao
 \cite[Definition~7.4]{GTPeriodic}; we use its general word-rule
 formulation \cite[Definition~3.1]{GTUndecidable}.
 A ***word*** on $I$ is a function $I\to\Sigma$; $\Sigma^I$ denotes the set
 of all such words.  A ***word rule*** is a subset $\calW\subseteq\Sigma^I$.
-An ***array*** $W:I\times\Z\to\Sigma$ satisfies this rule if
+An ***array*** is a function $W:I\times\Z\to\Sigma$.
+It is a ***Sudoku array*** for the word rule $\calW$ if
 : equation \label{eq:line-rule}
    (W(n,dn+e))_{n\in I}\in\calW
    \qquad(d,e\in\Z).
 Write $W=(W_p,W_q,W_{\calT})$ for its three components.
-The first two are its ***arithmetic components***; the third is its
-***Wang decoration***.
+The first two are its ***integer components***, taking values in
+$\{1,\ldots,p-1\}$ and $\{1,\ldots,q-1\}$, respectively, identified with
+the corresponding nonzero residues.  The third is its ***Wang tile label***.
 The ***column*** at $n$ is the function $m\mapsto W(n,m)$ on $\Z$;
-***nonconstancy*** of an arithmetic component means that this component takes
-at least two different values in the column.
+***nonconstancy*** of an integer component means that this component takes
+at least two different values in the column; repetitions are allowed.
+We additionally require both integer components to be nonconstant on
+every column.  This requirement is separate from the Sudoku word rule.
 
 For a nonzero integer $m$, let $\nu_p(m)$ denote the largest integer
 $k\geq0$ for which $p^k$ divides $m$, called its ***$p$-adic valuation***,
@@ -255,7 +267,7 @@ The valuations provide the two coordinates of the simulated domino
 plane.  Given a domino solution $\tau$ on $\N^2$, decorate each height
 $m\ne0$ with the tile $\tau(\nu_p(m),\nu_q(m))$.  After removing common prime
 powers from the coefficients of a line, its low-valuation points test
-a rectangle of adjacent domino positions.  The arithmetic components
+a rectangle of adjacent domino positions.  The integer components
 record last nonzero digits so that the tests remain consistent across
 different lines and valuation scales.  The reverse assertion, that
 these local tests and nonconstant columns force a global domino
@@ -277,7 +289,8 @@ solution, is the substantive theorem we import.
        \bigl(f_p(m),f_q(m),\tau(\nu_p(m),\nu_q(m))\bigr),&m\ne0,\\
        (1,1,t_*),&m=0,
        \end{cases}
-    Then $W$ satisfies \eqref{eq:line-rule}.
+    Then $W$ satisfies \eqref{eq:line-rule}, and both integer components
+    are nonconstant on every column.
 
 The array in \eqref{eq:canonical-sudoku} is called the
 ***canonical Sudoku array*** associated to $\tau$.
@@ -305,7 +318,7 @@ witnesses every constraint in \eqref{eq:explicit-word-rule}.
 At a point where $dn+e=0$, both valuation bounds fail, so its arbitrary
 decoration causes no problem.  For the line $d=e=0$, choose $a=0,b=1$
 and $\sigma(0,0)=t_*$.  This proves the line rule for the entire array.
-Both arithmetic components are nonconstant on every column: heights
+Both integer components are nonconstant on every column: heights
 $1$ and $2$ already give the distinct values $1$ and $2$.
 
 ### A Small Arithmetic Example
@@ -323,7 +336,7 @@ Every displayed height has the same symbol in every column $n$.
 For example, height $45$ gives the full symbol $(2,4,B)$, because
 $f_3(45)=2$, $f_5(45)=4$, and $(\nu_3(45),\nu_5(45))=(2,1)$.
 This illustrates the arithmetic interface, rather than enumerating
-the much larger lattice tile produced by the full reduction.
+the much larger lattice prototile produced by the full reduction.
 
 : figure[tbp]
   \centering
@@ -392,7 +405,7 @@ the much larger lattice tile produced by the full reduction.
     \eqref{eq:canonical-sudoku}. (a) Edge colors specify the Wang tiles.
     (b) Their checkerboard tiling supplies the decoration at each
     valuation address. (c) Sample heights for the toy primes $3,5$;
-    the arithmetic components are suppressed in the table. These
+    the integer components are suppressed in the table. These
     small primes illustrate the formula and do not instantiate the
     imported soundness theorem. The two-prime addressing method is from
     \cite[Section~5]{GTUndecidable}.}
@@ -422,7 +435,7 @@ Indeed, $L_n(x)$ has the nonzero residue $t$ modulo both primes.
 No constraint on the third coordinate is needed in this implication.
 
 : remark
-  The nonconstancy hypothesis concerns each arithmetic component, not
+  The nonconstancy hypothesis concerns each integer component, not
   merely the triple $W$.  Variation of the Wang label alone would not
   suffice.  This is the reason for imposing \eqref{eq:seed-symbols}.
 
@@ -434,6 +447,10 @@ by tiling equations was developed by Greenfeld and Tao
 The graph and cycle gadgets in this section adapt
 \cite[Section~3]{OpenAI2026}.  We give their definitions and proofs for
 the decorated alphabet, and keep the prime choices explicit.
+OpenAI used this encoding for the one-prime Sudoku rule of
+\cite[Section~4]{GTUndecidable}.  Here we adapt it to the two-prime
+Sudoku array problem, including the Wang tile constraints and both
+nonconstant-column conditions.
 
 ## Coordinates and the Graph Equation
 A ***channel*** is an indexed collection of input and output coordinates.
@@ -474,13 +491,17 @@ isomorphism.  Each coordinate in this product is called an ***input digit***.
 Denote by $U_{ij}$ the subgroup with arbitrary $j$th
 digit and all other digits zero; subtraction by an element of $U_{ij}$
 changes only that digit.
-The ***ambient group*** is
+The ***target space*** is the abelian group
 : equation \label{eq:ambient}
    G=\Z^2\times V,\qquad
    V=(\Cyc D)\times\prod_i\bigl((\Cyc{r_i^2})\times P_i\bigr).
 The cyclic orders $D,r_i^2,a_i,b_i$ appearing here are pairwise coprime,
 so $V$ is cyclic.  The residue set $S$ is only an indexing set for
 functions; it is not a factor of $V$.
+Identifying $V$ with $\Cyc m$, where $m=|V|$, gives the target space
+$\Z^2\times(\Z/m\Z)$: a 3D integer grid with a finite coordinate that
+wraps around modulo $m$.  This coordinate encodes all the finite factors
+displayed above; the auxiliary output $z$ below is only one of those factors.
 
 Write coordinates of $G$ as $(x,z,(v_i,c_i)_i)$, and project to the
 ***base*** $(x,k)\in\Z^2\times K$ by setting $k_i=v_i\bmod r_i$.
@@ -523,7 +544,7 @@ decorated channel coordinates.
 
 : lemma @=lem:invariance
   For a channel $i$ and a base shift $\sigma\in\Z^2\times K$, a finite
-  tile can impose $c_i(b-\sigma)=c_i(b)$ for every base point $b=(x,k)$ on graphs
+  prototile can impose $c_i(b-\sigma)=c_i(b)$ for every base point $b=(x,k)$ on graphs
   satisfying \eqref{eq:graph}, without restricting their other outputs.
 : proof
   Let $\pr_i:G\to P_i$ be the coordinate projection.
@@ -560,7 +581,7 @@ The next test is the cycle construction of
 : lemma @=lem:cycle
   Let $C$ be a nonempty cyclically ordered list of distinct channels,
   and choose one label $j(i)\in J_i$ for each $i\in C$.  A finite family of finite
-  tiles imposes the condition that these labels are not all active at
+  prototiles imposes the condition that these labels are not all active at
   the same $x$.  On graphs with \eqref{eq:dependence}, this condition
   is equivalent to the family of tiling equations, regardless of $z$
   and the high outputs.
@@ -570,7 +591,7 @@ The next test is the cycle construction of
   For every choice of maps
   $d_i:P_{\operatorname{prev}(i)}\to U_{i,j(i)}$, define
   $d_i[e]=d_i(e_{\operatorname{prev}(i)})$ on the cycle and $d_i[e]=0$
-  off the cycle.  Include the tile
+  off the cycle.  Include the prototile
   $$
    F_d=\{(0,\zeta,(w_i,e_i)_i): e\in P,\ \zeta\in\Cyc D,
                          \ w_i\bmod r_i=d_i[e]\}.
@@ -601,7 +622,7 @@ The next test is the cycle construction of
   The arguments are distinct, so such maps exist and are among those
   tested.  Extend $\epsilon$ by zero off the cycle.  The inputs $0$ and
   $\epsilon$ have the same image in \eqref{eq:cycle-map}, a contradiction
-  to bijectivity.  All maps and all tiles used are finite.
+  to bijectivity.  All maps and all prototiles used are finite.
 
 \Cref{fig:cycle} illustrates the dependency cycle in this argument.
 
@@ -758,13 +779,13 @@ the prime choices in the full encoding remain those specified in
     \cite[Section~4]{OpenAI2026}. (a) The entries are nonuniform, but
     their marginals are uniform. (b) The same multiplicities written
     as an indexed list. Separate horizontal offsets for repeated
-    entries make the activation tile a set. An inactive ordinary
+    entries make the activation prototile a set. An inactive ordinary
     channel cannot satisfy its required uniform coverage, whereas
     the marginal bijections \eqref{eq:orderings} support the block
     inverse in \cref{lem:block}.}
   \label{fig:activation}
 
-## Finite Activation Tiles
+## Finite Activation Prototiles
 
 Given a horizontal offset $h=(h_1,h_2)$, a useful-output offset
 $e\in P_i$, and a set $E\subseteq\Cyc D$, define a ***batch of offsets*** by
@@ -808,7 +829,7 @@ For ordinary channels the entire $z$-coordinate is available in each
 batch; for seeds the $z$-offset is zero.
 Distinct horizontal offsets make the batches disjoint, even when
 their $e_\delta$ values coincide.  Thus these are sets of offsets,
-not weighted tiles.  Each has cardinality
+not weighted prototiles.  Each has cardinality
 $$
  |F_i^{\rm act}|=D\prod_\ell r_\ell|P_\ell|=|H_0|.
 $$
@@ -897,9 +918,11 @@ The activation equation for channel $i$ is $A\oplus F_i^{\rm act}=G$.
   But $a_i$ is $2$ or $3$, and $D=(pq)^4$ is divisible by neither.
   This proves that each seed must activate somewhere.
 
-Let $\mathscr F$ consist of $H_0$, all dependence tiles, all exclusion
-tiles, and all activation tiles.  This finite family is computable
-from the domino system.
+Let $\mathscr F$ consist of $H_0$, all dependence prototiles, all exclusion
+prototiles, and all activation prototiles.  This finite family is computable
+from the domino system.  Its size depends on the input Wang tile set:
+the exclusion tests range over forbidden words in the input-dependent
+alphabet $\Sigma$.
 
 : proposition[Soundness] @=prop:soundness
   If the equations $A\oplus F=G$, $F\in\mathscr F$, have a common
@@ -920,7 +943,7 @@ from the domino system.
   $$
    W(n,L_n(x^{(t)}))\in B_t\qquad(n\in I).
   $$
-  Both arithmetic components therefore take the distinct values
+  Both integer components therefore take the distinct values
   $1$ and $2$ in every column.  \Cref{thm:GT} gives a domino solution
   on $\N^2$, and compactness gives one on $\Z^2$.
 # One Common Solution @=sec:completeness
@@ -1097,7 +1120,7 @@ this dependence.
   has exactly one preimage in \eqref{eq:seed-map}.
   The calculation works for either choice of $i$, using the same
   function $z$.  The representing batch may differ between the two
-  equations, as is permitted for a common tiling set.
+  equations, as is permitted for a common set of translations.
 
 : proposition[Completeness] @=prop:completeness
   If the input domino system tiles $\Z^2$, then the equations
@@ -1121,9 +1144,9 @@ this dependence.
 
 : theorem @=thm:cyclic-system
   There is an algorithm taking a domino system to a finite cyclic
-  group $V$ and a finite family of nonempty finite subsets
-  $\mathscr F$ of $\Z^2\times V$ such that the system has a
-  domino solution if and only if there is one set $A$ satisfying
+  group $V$ and a finite family of prototiles
+  $\mathscr F$ in $\Z^2\times V$ such that the system has a
+  domino solution if and only if there is one set of translations $A$ satisfying
   $A\oplus F=\Z^2\times V$ for every $F\in\mathscr F$.
 
 : proof
@@ -1131,11 +1154,11 @@ this dependence.
   All choices in the construction concern finite sets, maps, prime
   searches, or Chinese remainder calculations.  They can be made by
   fixed enumeration orders.  In particular, no knowledge of a domino
-  solution is needed to construct the tiles.  The infinite solution
+  solution is needed to construct the prototiles.  The infinite solution
   is used only to prove completeness.
-# One Tile in Three Dimensions @=sec:reduction
+# A Single Prototile in Three Dimensions @=sec:reduction
 
-## Stacking the Simultaneous Equations
+## Stacking the Prototiles
 
 The stacking step is an existence equivalence, not merely a way to
 transfer aperiodicity.  We record its proof to make that distinction
@@ -1165,12 +1188,12 @@ We use the prime-cyclic version in \cite[Section~6]{OpenAI2026}.
   exists; its color classes are nonempty and realize zero as well.
 
 : lemma @=lem:stack
-  Let $F_1,\ldots,F_s$ be nonempty finite subsets of an abelian group
+  Let $F_1,\ldots,F_s$ be prototiles in an abelian group
   $H$, and choose a partition as in \cref{lem:partition}.  Set
   $$
    F^{\rm st}=\bigcup_{\nu=1}^s(F_\nu\times E_\nu).
   $$
-  Then $F^{\rm st}$ tiles $H\times\Cyc\ell$ if and only if one set
+  Then $F^{\rm st}$ tiles $H\times\Cyc\ell$ if and only if one set of translations
   $A$ satisfies $A\oplus F_\nu=H$ for all $\nu$.
 
 : proof
@@ -1194,31 +1217,34 @@ We use the prime-cyclic version in \cite[Section~6]{OpenAI2026}.
   $g$ with each $F_\nu$, as required.
 
 : corollary @=cor:quotient
-  From a domino system one can compute a positive integer $Q$ and a
-  finite nonempty tile $F\subset\Z^2\times\Cyc Q$ that tiles the
+  From a domino system one can compute a positive integer $m$ and a
+  prototile $F\subset\Z^2\times\Cyc m$ that tiles the
   whole group if and only if the domino system is solvable.
 
 : proof
   Apply \cref{lem:stack} to \cref{thm:cyclic-system}, choosing $\ell$
   coprime to $|V|$.  The group $V\times\Cyc\ell$ is cyclic of order
-  $Q=\ell|V|$.  All steps are effective.
+  $m=\ell|V|$.  Thus stacking enlarges the modulus while keeping the
+  finite coordinate cyclic.  All steps are effective.
 
 ## Removing the Finite Coordinate
 
-We give the finite tile construction from
+We apply the quotient-to-lattice reduction of
 \cite[Theorem~1.1]{MSS} in the special case needed here.  Its only
 imported geometric assertion is the rigidity of the component shapes
 defined below.
 
 Put
 $$
- \Gamma=\Z^2\times\Cyc Q,\qquad
- \pi(x_1,x_2,x_3)=(x_1,x_2,x_3\bmod Q),\qquad
- w=(0,0,Q).
+ \Gamma=\Z^2\times\Cyc m,\qquad
+ \pi(x_1,x_2,x_3)=(x_1,x_2,x_3\bmod m),\qquad
+ w=(0,0,m).
 $$
 The kernel is $L=\Z w$.  A ***fundamental domain*** for $L$ is a set
 containing exactly one representative of every coset of $L$; we use
-$D_Q=\Z^2\times\{0,\ldots,Q-1\}$.
+$D_m=\Z^2\times\{0,\ldots,m-1\}$.
+Thus $\Gamma$ is the quotient of $\Z^3$ that identifies
+$(x_1,x_2,x_3)$ with $(x_1,x_2,x_3+m)$.
 
 ### Rigid Component Shapes
 
@@ -1227,12 +1253,12 @@ the ***boxes*** and their ***one-cell-thick frames*** by
 $$
  B_k=\{-k,\ldots,k\}^3,\qquad H_k=B_k\setminus B_{k-1}\quad(k\geq1).
 $$
-Take $m=100$, $n=2m+1=201$, and $v_j=(12j,0,0)$ for $1\leq j\leq5$.
-The five boxes $v_j+B_5$ are disjoint, lie strictly inside $B_m$,
+Take $b=100$, $n=2b+1=201$, and $v_j=(12j,0,0)$ for $1\leq j\leq5$.
+The five boxes $v_j+B_5$ are disjoint, lie strictly inside $B_b$,
 and avoid zero.  Define
 : equation \label{eq:rigid-shapes}
   \begin{aligned}
-   T&=\left(B_m\setminus\bigcup_{j=1}^3(v_j+H_j)\right)
+   T&=\left(B_b\setminus\bigcup_{j=1}^3(v_j+H_j)\right)
           \sqcup\bigcup_{j=1}^3(ne_j+v_j+H_j),\\
    T_1&=(T\setminus(v_4+H_4))\sqcup(nw+v_4+H_4),\\
    T_2&=(T\setminus(v_5+H_5))\sqcup(nw+v_5+H_5).
@@ -1240,17 +1266,18 @@ and avoid zero.  Define
 Thus each removed frame is reattached at a displacement that is a
 multiple of $n$.  The first three frames distinguish the coordinate
 directions; the extra frame distinguishes the type $1$ or $2$ and
-links copies separated by $nw$.  These are finite subsets of the
-lattice, including their detached bumps.
+links copies separated by $nw$.  The removed frames form ***dents***, and
+the reattached frames form matching ***bumps***.  These are finite subsets
+of the lattice, including their detached bumps.
 
 Each shape has exactly one point in every residue class modulo
-$n\Z^3$: it is obtained from the box $B_m$ by moving selected points
+$n\Z^3$: it is obtained from the box $B_b$ by moving selected points
 by vectors in $n\Z^3$.  Moreover, the representatives in $T_1$ and
 $T_2$ of any given residue differ by an element of $nL$, because
 their type-specific moves are by $nw$.  These observations are direct
 checks on the shapes; forcing every tiling to respect their intended
 placement is the following black box.
-By a ***mixed tiling*** with shapes $T_1,T_2$ and translation sets $C_1,C_2$
+By a ***mixed tiling*** with prototiles $T_1,T_2$ and sets of translations $C_1,C_2$
 we mean that all copies $c+T_j$, $c\in C_j$, $j=1,2$, together cover
 $\Z^3$ exactly once.
 
@@ -1268,23 +1295,25 @@ The normalization $0\in C_1\cup C_2$ is harmless: translate any tiling
 so that one of its component translation vectors is zero.
 Here invariance under $nL$ means exactly $C_j+nw=C_j$; it imposes
 no periods in the first two coordinates.
+The matching bumps and dents force alignment to the scaled grid
+$n\Z^3$ and repetition every $m$ grid steps in the third coordinate.
 
 ### Assembly and the Tiling Correspondence
 
 : theorem[Meyerovitch--Sanadhya--Solomon] @=thm:MSS
-  Given $Q\geq1$ and a finite nonempty
-  $F\subset\Z^2\times\Cyc Q$, one can compute a finite nonempty
+  Given $m\geq1$ and a finite nonempty
+  $F\subset\Z^2\times\Cyc m$, one can compute a finite nonempty
   $\widetilde F\subset\Z^3$ such that
   $$
-   F\text{ tiles }\Z^2\times\Cyc Q
+   F\text{ tiles }\Z^2\times\Cyc m
    \quad\Longleftrightarrow\quad
    \widetilde F\text{ tiles }\Z^3.
   $$
 
 : proof
   Translate $F$ first to contain zero, and take its finite set of
-  representatives $U=\pi^{-1}(F)\cap D_Q$.  In particular $0\in U$
-  and $\pi$ is injective on $U$.  The tile is explicitly
+  representatives $U=\pi^{-1}(F)\cap D_m$.  In particular $0\in U$
+  and $\pi$ is injective on $U$.  The prototile is explicitly
   : equation \label{eq:quotient-tile}
     \widetilde F=T_2\sqcup
           \bigsqcup_{u\in U\setminus\{0\}}(nu+T_1).
@@ -1315,8 +1344,8 @@ no periods in the first two coordinates.
   gives $nB\oplus\widetilde F=\Z^3$.
 
   Conversely, let $\widetilde A\oplus\widetilde F=\Z^3$ and translate
-  $\widetilde A$ so that $0\in\widetilde A$.  Decompose every tile
-  into its component pieces.  The component translation sets are
+  $\widetilde A$ so that $0\in\widetilde A$.  Decompose every translated copy
+  into its component pieces.  Their sets of translations are
   $$
    C_2=\widetilde A,\qquad
    C_1=\bigsqcup_{u\in U\setminus\{0\}}(\widetilde A+nu).
@@ -1340,36 +1369,36 @@ no periods in the first two coordinates.
   This proves both directions without assuming periods of the
   original tiling.
 
-## Making the Tile Connected @=sec:connected
+## Making the Prototile Connected @=sec:connected
 
-Kim's connectedness reduction applies to any finite number of tiles,
+Kim's connectedness reduction preserves the number of prototiles,
 including one \cite[Theorem~2.5]{Kim}.  We give its finite construction
 in our notation and use its rigidity assertion as a black box.
 For an integer $a\geq0$, write $C_a=\{0,\ldots,a-1\}^3$, with
 $C_0=\varnothing$.
-Given a finite nonempty tile $E\subset\Z^3$, translate it into $C_l$
+Given a prototile $E\subset\Z^3$, translate it into $C_l$
 for a computable integer $l\geq2$, and set
 $$
- m=l^3-(l-2)^3,\qquad s=3m+6.
+ c=l^3-(l-2)^3,\qquad s=3c+6.
 $$
-Here $m$ counts the points in the ***outer layer***
+Here $c$ counts the points in the ***outer layer***
 $\partial C_l=C_l\setminus((1,1,1)+C_{l-2})$; enumerate them as
-$x_1,\ldots,x_m$ in lexicographic order.
+$x_1,\ldots,x_c$ in lexicographic order.
 
 ### The Interlocking Partition
 
-Define a function $\chi_m:C_{m+2}\to\{1,\ldots,m\}$ by
+Define a function $\chi_c:C_{c+2}\to\{1,\ldots,c\}$ by
 : equation \label{eq:kim-partition}
-  \chi_m(x,y,z)=
+  \chi_c(x,y,z)=
   \begin{cases}
-    y,&0\leq x\leq m,\ 1\leq y\leq m,\ z=0,\\
-    x,&1\leq x\leq m,\ 0\leq y\leq m,\ z=m+1,\\
-    y,&x=0,\ 1\leq y\leq m,\ 1\leq z\leq m,\\
-    x,&1\leq x\leq m,\ y=0,\ 1\leq z\leq m,\\
-    z,&1\leq x,y\leq m+1,\ 1\leq z\leq m,\\
+    y,&0\leq x\leq c,\ 1\leq y\leq c,\ z=0,\\
+    x,&1\leq x\leq c,\ 0\leq y\leq c,\ z=c+1,\\
+    y,&x=0,\ 1\leq y\leq c,\ 1\leq z\leq c,\\
+    x,&1\leq x\leq c,\ y=0,\ 1\leq z\leq c,\\
+    z,&1\leq x,y\leq c+1,\ 1\leq z\leq c,\\
     1,&\text{otherwise}.
   \end{cases}
-Let $Q_i=\chi_m^{-1}(i)$.  This is Kim's partition from
+Let $Q_i=\chi_c^{-1}(i)$.  This is Kim's partition from
 \cite[Section~2.1]{Kim}: the pieces $Q_i$ are connected, and
 every two different pieces meet along a face both inside one box and
 across corresponding faces of neighboring boxes.  More precisely,
@@ -1377,7 +1406,7 @@ disjoint lattice sets are ***adjacent*** when some point of one differs
 from a point of the other by a signed coordinate unit vector; the
 partition satisfies
 $$
- Q_i\text{ is adjacent to }Q_j\text{ and to }Q_j+(m+2)v
+ Q_i\text{ is adjacent to }Q_j\text{ and to }Q_j+(c+2)v
  \quad(i\ne j,\ v\text{ a signed coordinate unit vector}).
 $$
 These are the internal and external adjacency properties of
@@ -1395,13 +1424,13 @@ The thickened pieces retain connectedness and their adjacency
 properties.  The bumps and dents enforce a common grid in tilings
 of the assembly
 : equation \label{eq:kim-shell}
-  S_l=\bigsqcup_{i=1}^m(sx_i+Q'_i).
+  S_l=\bigsqcup_{i=1}^c(sx_i+Q'_i).
 The sum in this definition is disjoint: moving points by $sx_i$
 does not change their residues modulo $s$, and the pieces $Q'_i$
 together contain exactly one representative of every such residue.
 Thus $|S_l|=s^3$ and $S_l\oplus s\Z^3=\Z^3$.
 
-### The Rigidity Input and the Connected Tile
+### The Rigidity Input and the Connected Prototile
 
 : lemma[Kim's connected assembly] @=lem:kim-shell
   The set $S_l$ in \eqref{eq:kim-shell} is connected.
@@ -1413,7 +1442,7 @@ These are \cite[Lemmas~2.3--2.4 and the connectivity argument in
 Theorem~2.5]{Kim}.  The last assertion is the rigidity statement we
 import.  It concerns arbitrary tilings, so it suffices for an existence
 reduction.  The contact property explains how separated points of the
-original tile become joined: their replacements have interlocking
+original prototile become joined: their replacements have interlocking
 pieces in overlapping boxes, while their lattice points remain disjoint.
 
 : proposition[Connectedness reduction, Kim] @=prop:connected
@@ -1424,7 +1453,7 @@ pieces in overlapping boxes, while their lattice points remain disjoint.
    \quad\Longleftrightarrow\quad
    E^{\rm conn}\text{ tiles }\Z^3.
   $$
-  The construction uses one tile and does not increase dimension.
+  The construction preserves the number of prototiles (one) and the dimension.
 
 : proof
   After the harmless translation $E\subset C_l$ above, define
@@ -1443,7 +1472,7 @@ pieces in overlapping boxes, while their lattice points remain disjoint.
   $$
   Conversely, suppose $A'\oplus E^{\rm conn}=\Z^3$.
   Decomposing every copy using \eqref{eq:connected-tile} gives a
-  tiling by $S_l$ with translation set $A'\oplus sE$.  By
+  tiling by $S_l$ with set of translations $A'\oplus sE$.  By
   \cref{lem:kim-shell},
   $$
    A'\oplus sE=t+s\Z^3
@@ -1480,7 +1509,7 @@ pieces in overlapping boxes, while their lattice points remain disjoint.
 ### An Explicit Connected Example
 
 Take $E=\{(0,0,0),(1,1,1)\}\subset C_2$. Its two points are not
-face-adjacent. With $l=2$, the outer layer is all of $C_2$, so $m=8$
+face-adjacent. With $l=2$, the outer layer is all of $C_2$, so $c=8$
 and $s=30$. Thus the construction gives
 $$
  E^{\rm conn}=S_2\sqcup((30,30,30)+S_2),\qquad
@@ -1508,7 +1537,7 @@ output of the full Wang-to-polycube reduction.
     \end{minipage}%
   }
   \hfil
-  \subcaptionbox{Connected tile: $54{,}000$ cubes\label{fig:connected-output}}[.37\linewidth]{%
+  \subcaptionbox{Connected prototile: $54{,}000$ cubes\label{fig:connected-output}}[.37\linewidth]{%
     \begin{minipage}[c][3.6cm][c]{\linewidth}
       \centering
       \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{figures/kim-connected.pdf}
@@ -1531,7 +1560,7 @@ output of the full Wang-to-polycube reduction.
   $F$ tiles $\Z^2$ by translations.
 
 : proof
-  Bhattacharya proved that every such tile admitting a tiling also
+  Bhattacharya proved that every such prototile admitting a tiling also
   admits a tiling invariant under a finite-index subgroup of $\Z^2$
   [[Bhattacharya]].  Every finite-index subgroup contains $m\Z^2$
   for some positive integer $m$.
@@ -1548,7 +1577,7 @@ $F\subset\Z$ by $F\times\{0\}\subset\Z^2$.
 For every fixed $d>3$, the three-dimensional hardness result extends
 by replacing $F$ with $F\times\{0\}^{d-3}$ and taking slices.
 Thus three is precisely the least lattice dimension with undecidable
-translational monotiling, even with a connected input tile.
+translational monotiling, even with a connected input prototile.
 
 ## Arbitrary Real Translations of Unit-Cube Unions
 
@@ -1607,7 +1636,7 @@ from \cite[Corollary~1.1]{RationalPolygons}.
 
 : remark
   The sampling argument produces a new tiling with integer translations.
-  It does not assert that the original real translation set was integral,
+  It does not assert that the original set of real translations was integral,
   and no preservation of its period group is used.
 
 \bibliographystyle: alpha-key
