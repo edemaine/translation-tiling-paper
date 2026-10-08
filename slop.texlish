@@ -89,6 +89,7 @@
   **Warning:** This technical article was written by a large language model
   (LLM) and is not intended for consumption by humans.
   See [the repository](https://github.com/edemaine/translation-tiling-paper)
+  [[TilingRepo]]
   for the human-readable overview and the complete Lean code that verifies
   the proof.
 
