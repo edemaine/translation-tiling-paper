@@ -1,6 +1,6 @@
 import TranslationTiling.Compiler.LatticeCompiler
 import TranslationTiling.External.Kim
-import TranslationTiling.Proofs.KimShellGeometry
+import TranslationTiling.Proofs.KimShellConnectivity
 import TranslationTiling.Proofs.ShellAssembly
 import TranslationTiling.Proofs.Translation
 import Mathlib.Logic.Relation
@@ -102,10 +102,10 @@ theorem connectedAssembly_connected_of_shell (E : Tile 3) (l : ℕ)
           (mem_connectedAssembly E l _).mpr ⟨v, hv, d, hd, rfl⟩, hcd⟩).trans
         (hpath v hv d b hd hb))
 
-theorem connectedAssembly_connected (rigid : Kim.Rigidity) (E : Tile 3)
-    (l : ℕ) (hl : 3 ≤ l) (hE : ∀ u ∈ E, u ∈ Kim.cube l) :
+theorem connectedAssembly_connected (E : Tile 3)
+    (l : ℕ) (hl : 0 < l) (hE : ∀ u ∈ E, u ∈ Kim.cube l) :
     FaceConnected (connectedAssembly E l) :=
-  connectedAssembly_connected_of_shell E l (rigid l hl).1 hE
+  connectedAssembly_connected_of_shell E l (Kim.shell_connected l hl) hE
 
 theorem connectedAssembly_nonempty (E : Tile 3)
     (l : ℕ) (hl : 0 < l) (hE : E ≠ []) : connectedAssembly E l ≠ [] := by

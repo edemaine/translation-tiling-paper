@@ -16,6 +16,10 @@ theorem reduction (h : ReductionInputs) : Nonempty ConnectedWangReduction :=
 theorem compiler_effectivity : Computable Compiler.connectedCompile :=
   Compiler.connectedCompile_computable
 
+/-- Connectivity of the compiler output has no mathematical input. -/
+theorem compiler_connectivity (T : LeanWang.TileSet) :
+    FaceConnected (Compiler.connectedCompile T) := Compiler.connectedCompile_connected T
+
 theorem compiler_correct (h : ReductionInputs) (T : LeanWang.TileSet) :
     LeanWang.TilesPlane T ↔ Tiles (Compiler.connectedCompile T) :=
   Compiler.connectedCompile_correct h T
@@ -23,7 +27,7 @@ theorem compiler_correct (h : ReductionInputs) (T : LeanWang.TileSet) :
 theorem compilation (h : ReductionInputs) (T : LeanWang.TileSet) :
     ∃ F : Tile 3, F ≠ [] ∧ FaceConnected F ∧ (LeanWang.TilesPlane T ↔ Tiles F) :=
   ⟨Compiler.connectedCompile T, Compiler.connectedCompile_nonempty T,
-    Compiler.connectedCompile_connected h.connectedness T, compiler_correct h T⟩
+    Compiler.connectedCompile_connected T, compiler_correct h T⟩
 
 theorem lattice_effectivity : Computable Compiler.integerTile :=
   Compiler.integerTile_computable
@@ -77,6 +81,6 @@ theorem connected_output (h : ReductionInputs) (T : LeanWang.TileSet) :
     Compiler.connectedCompile T ≠ [] ∧ FaceConnected (Compiler.connectedCompile T) ∧
       (LeanWang.TilesPlane T ↔ Tiles (Compiler.connectedCompile T)) :=
   ⟨Compiler.connectedCompile_nonempty T,
-    Compiler.connectedCompile_connected h.connectedness T, compiler_correct h T⟩
+    Compiler.connectedCompile_connected T, compiler_correct h T⟩
 
 end TranslationTiling

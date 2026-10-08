@@ -123,14 +123,14 @@ theorem connectedTile_computable : Computable connectedTile := connectedTile_pri
 
 /-- Any computable lattice compiler extends to a computable connected compiler;
 all shell effectivity is proved here, rather than imported with rigidity. -/
-theorem connectedReduction_of_reduction (rigid : Kim.Rigidity) (r : WangReduction) :
+theorem connectedReduction_of_reduction (rigid : Kim.CosetRigidity) (r : WangReduction) :
     Nonempty ConnectedWangReduction := by
   exact ⟨{
     tile := fun T => connectedTile (r.tile T)
     computable := connectedTile_computable.comp r.computable
     nonempty := fun T hT => connectedTile_nonempty _ (r.nonempty T hT)
     correct := fun T => (r.correct T).trans (connectedTile_correct rigid _).symm
-    connected := fun T _ => connectedTile_connected rigid (r.tile T)
+    connected := fun T _ => connectedTile_connected (r.tile T)
   }⟩
 
 end TranslationTiling.Compiler

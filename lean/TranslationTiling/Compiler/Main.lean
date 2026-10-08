@@ -69,19 +69,19 @@ theorem connectedCompile_computable : Computable connectedCompile :=
 theorem connectedCompile_nonempty (T : LeanWang.TileSet) :
     connectedCompile T ≠ [] := connectedTile_nonempty _ (compile_nonempty T)
 
-theorem connectedCompile_connected (rigid : Kim.Rigidity) (T : LeanWang.TileSet) :
-    FaceConnected (connectedCompile T) := connectedTile_connected rigid _
+theorem connectedCompile_connected (T : LeanWang.TileSet) :
+    FaceConnected (connectedCompile T) := connectedTile_connected _
 
 theorem connectedCompile_correct (h : ReductionInputs) (T : LeanWang.TileSet) :
     LeanWang.TilesPlane T ↔ TranslationTiling.Tiles (connectedCompile T) :=
   (compile_correct h.sudoku h.rigidity T).trans
-    (connectedTile_correct h.connectedness _).symm
+    (connectedTile_correct h.shellRigidity _).symm
 
 noncomputable def connectedWangReduction (h : ReductionInputs) : ConnectedWangReduction where
   tile := connectedCompile
   computable := connectedCompile_computable
   nonempty := fun T _ => connectedCompile_nonempty T
   correct := connectedCompile_correct h
-  connected := fun T _ => connectedCompile_connected h.connectedness T
+  connected := fun T _ => connectedCompile_connected T
 
 end TranslationTiling.Compiler

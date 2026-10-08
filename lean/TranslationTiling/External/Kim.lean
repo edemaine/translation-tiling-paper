@@ -47,6 +47,12 @@ def shell (l : ℕ) : Tile 3 :=
 def gridCoset (s : ℕ) (t : Lattice 3) : Set (Lattice 3) :=
   {a | ∃ z : Lattice 3, a = t + (s : ℤ) • z}
 
+/-- The remaining shell input: every tiling complement is a grid coset. -/
+def CosetRigidity : Prop :=
+  ∀ l : ℕ, 3 ≤ l → ∀ A : Set (Lattice 3),
+    ExactTiling A {x | x ∈ shell l} →
+      ∃ t, A = gridCoset (scale (boundary l).length) t
+
 /-- The precise shell input from Kim, arXiv:2508.11725v2, Section 2.
 Both the grid fundamental domain and arbitrary-tiling rigidity are exposed. -/
 def Rigidity : Prop :=

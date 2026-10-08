@@ -60,14 +60,15 @@ theorem positiveTile_in_cube (E : Tile 3) :
 def connectedTile (E : Tile 3) : Tile 3 :=
   connectedAssembly (positiveTile E) (cubeSize E)
 
-theorem connectedTile_correct (rigid : Kim.Rigidity) (E : Tile 3) :
+theorem connectedTile_correct (rigid : Kim.CosetRigidity) (E : Tile 3) :
     TranslationTiling.Tiles (connectedTile E) ↔ TranslationTiling.Tiles E :=
-  (connectedAssembly_tiles_iff rigid _ _ (by unfold cubeSize; omega)).trans
+  (connectedAssembly_tiles_iff_of_cosets _ _ (by unfold cubeSize; omega)
+    (rigid (cubeSize E) (by unfold cubeSize; omega))).trans
     (tiles_translate_iff E _)
 
-theorem connectedTile_connected (rigid : Kim.Rigidity) (E : Tile 3) :
+theorem connectedTile_connected (E : Tile 3) :
     FaceConnected (connectedTile E) :=
-  connectedAssembly_connected rigid _ _ (by unfold cubeSize; omega)
+  connectedAssembly_connected _ _ (by unfold cubeSize; omega)
     (positiveTile_in_cube E)
 
 theorem connectedTile_nonempty (E : Tile 3) (hE : E ≠ []) :
@@ -93,8 +94,8 @@ theorem exists_connected_tile (h : ReductionInputs) (T : LeanWang.TileSet) :
       ext f; exact Finset.mem_toList
     rw [he]
   exact ⟨connectedTile F.toList, connectedTile_nonempty _ hlist,
-    connectedTile_connected h.connectedness _,
-    (hcorrect.trans hlistcorrect).trans (connectedTile_correct h.connectedness _).symm⟩
+    connectedTile_connected _,
+    (hcorrect.trans hlistcorrect).trans (connectedTile_correct h.shellRigidity _).symm⟩
 
 end
 end TranslationTiling.Compiler

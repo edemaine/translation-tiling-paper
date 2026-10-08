@@ -8,6 +8,6 @@ namespace TranslationTiling
 structure ReductionInputs : Prop where
   sudoku : Sudoku.Soundness
   rigidity : MSS.Rigidity
-  connectedness : Kim.Rigidity
+  shellRigidity : Kim.CosetRigidity
 
 end TranslationTiling

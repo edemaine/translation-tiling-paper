@@ -9,7 +9,7 @@ the short public statements. `compiler_effectivity` and `compiler_correct`
 prove uniform computability and correctness. `reduction`, `completeness`,
 `connected_completeness`, `real_completeness`, and `dimension_optimality` take
 only `ReductionInputs`. `planar_periodicity` and `planar_decidability` are
-unconditional. There is no assumed
+unconditional, as is `compiler_connectivity`. There is no assumed
 compiler certificate or outstanding `Claims` namespace.
 
 ## Build
@@ -55,7 +55,7 @@ explicit mathematical inputs used by the connected compiler in `ReductionInputs`
 | --- | --- |
 | Greenfeld–Tao | Soundness of the explicit decorated two-prime Sudoku rule, with fixed primes 211 and 223; both arithmetic components are nonconstant in each column. |
 | Meyerovitch–Sanadhya–Solomon | Arbitrary-tiling rigidity of the paper's explicitly defined two component shapes, with scale 201. |
-| Kim | Connectivity, contacts, fundamental-domain coverage, and arbitrary-tiling rigidity of the explicit shell in the updated draft. |
+| Kim | Arbitrary-tiling coset rigidity of the explicit shell (`Kim.CosetRigidity`); connectivity, contacts, and fundamental-domain coverage are proved. |
 
 Bhattacharya's planar periodicity theorem is now proved in
 `Proofs/PlanarPeriodicity.lean` using the ported proof chain in `Planar/`.
@@ -90,6 +90,7 @@ proved by the pinned Wang dependency, using its independent Kari–Hooper certif
 | Primitive-recursive torus certificates, their equivalence with periodic tilings, and planar decidability from periodicity | `Proofs/IntegerResidues.lean`, `Proofs/PeriodicCertificates.lean` |
 | Kim's finite color bounds, nonempty pieces, exact block partition, disjoint colors, internal and external piece contacts, and nonempty shells | `Proofs/KimGeometry.lean` |
 | Kim's residue representatives, shell fundamental-domain coverage, volume `s³`, disjoint grid translates, and contacts between whole shells | `Proofs/KimResidues.lean`, `Proofs/KimShellGeometry.lean` |
+| Kim's coarse color classes, dented pieces, cube boundary, and shell are face connected | `Proofs/FacePaths.lean`, `Proofs/Kim*Connectivity.lean` |
 | Shell assembly preserves tilability under a fundamental-domain and coset-rigidity hypothesis | `Proofs/ShellAssembly.lean` |
 | Completeness, undecidability, higher dimensions, connected completeness, and dimension optimality | `Proofs/Complexity.lean`, `Compiler/Main.lean` |
 
@@ -140,15 +141,13 @@ witnesses; their uniform effectivity is separately proved. The exhaustive
 enumerations are enormous and are intended for the reduction proof.
 
 Three inputs remain: decorated Sudoku soundness, arbitrary mixed-tiling MSS
-rigidity, and the remaining parts of Kim's shell input. Kim's partition,
-fundamental-domain coverage, disjoint grid translates, and contacts between whole
-shells are proved. `Kim.rigidity_of_connected_cosets` reconstructs the complete
-input from just shell connectivity and arbitrary-tiling coset rigidity, which
-remain to be proved. The compiler uses the proved coverage and contacts;
-`connectedAssembly_tiles_iff_of_cosets` and
-`connectedAssembly_connected_of_shell` expose exactly the remaining assumptions.
-Compiler output nonemptiness has no mathematical hypothesis.
-The remaining inputs can be formalized independently of the numerical algorithm.
+rigidity, and arbitrary-tiling coset rigidity of Kim's shell. Kim's partition,
+fundamental-domain coverage, disjoint grid translates, contacts, and shell
+connectivity are proved. `Kim.rigidity_of_cosets` reconstructs the complete
+shell input from coset rigidity alone. `ReductionInputs.shellRigidity` assumes
+only `Kim.CosetRigidity`. Compiler output nonemptiness and connectivity have no
+mathematical hypothesis. The remaining inputs can be formalized independently
+of the numerical algorithm.
 
 ## Online formalizations inspected (October 7, 2026)
 
