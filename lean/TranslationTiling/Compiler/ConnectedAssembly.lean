@@ -1,6 +1,6 @@
 import TranslationTiling.Compiler.LatticeCompiler
 import TranslationTiling.External.Kim
-import TranslationTiling.Proofs.KimGeometry
+import TranslationTiling.Proofs.KimShellGeometry
 import TranslationTiling.Proofs.ShellAssembly
 import TranslationTiling.Proofs.Translation
 import Mathlib.Logic.Relation
@@ -42,10 +42,12 @@ private theorem shellScaleHom_injective (l : ℕ) :
   have hp : 0 < Kim.scale (Kim.boundary l).length := by unfold Kim.scale; omega
   exact_mod_cast hp.ne'
 
-theorem connectedAssembly_tiles_iff (rigid : Kim.Rigidity) (E : Tile 3)
-    (l : ℕ) (hl : 3 ≤ l) :
+/-- Coverage is proved; the tilability converse only needs coset rigidity. -/
+theorem connectedAssembly_tiles_iff_of_cosets (E : Tile 3) (l : ℕ) (hl : 0 < l)
+    (hcoset : ∀ A : Set (Lattice 3), ExactTiling A {x | x ∈ Kim.shell l} →
+      ∃ t, A = Kim.gridCoset (Kim.scale (Kim.boundary l).length) t) :
     TranslationTiling.Tiles (connectedAssembly E l) ↔ TranslationTiling.Tiles E := by
-  obtain ⟨_, hfund, _, hcoset⟩ := rigid l hl
+  have hfund := Kim.shell_exactTiling l hl
   have hrange : Set.range (shellScaleHom l) =
       Kim.gridCoset (Kim.scale (Kim.boundary l).length) 0 := by
     ext x
@@ -60,6 +62,11 @@ theorem connectedAssembly_tiles_iff (rigid : Kim.Rigidity) (E : Tile 3)
   exact (shell_assembly_iff (shellScaleHom l) (shellScaleHom_injective l)
     {u | u ∈ E} {v | v ∈ Kim.shell l} (hrange.symm ▸ hfund) hcoset).symm
 
+theorem connectedAssembly_tiles_iff (rigid : Kim.Rigidity) (E : Tile 3)
+    (l : ℕ) (hl : 3 ≤ l) :
+    TranslationTiling.Tiles (connectedAssembly E l) ↔ TranslationTiling.Tiles E :=
+  connectedAssembly_tiles_iff_of_cosets E l (by omega) (rigid l hl).2.2.2
+
 private theorem adjacent_translate (t : Lattice 3) {a b : Lattice 3}
     (h : FaceAdjacent a b) : FaceAdjacent (t + a) (t + b) := by
   obtain ⟨i, hi⟩ := h
@@ -68,10 +75,10 @@ private theorem adjacent_translate (t : Lattice 3) {a b : Lattice 3}
   · exact Or.inl (by rw [hi, add_assoc])
   · exact Or.inr (by rw [hi, add_assoc])
 
-theorem connectedAssembly_connected (rigid : Kim.Rigidity) (E : Tile 3)
-    (l : ℕ) (hl : 3 ≤ l) (hE : ∀ u ∈ E, u ∈ Kim.cube l) :
+/-- The contact property is proved; connectivity only needs a connected shell. -/
+theorem connectedAssembly_connected_of_shell (E : Tile 3) (l : ℕ)
+    (hconn : FaceConnected (Kim.shell l)) (hE : ∀ u ∈ E, u ∈ Kim.cube l) :
     FaceConnected (connectedAssembly E l) := by
-  obtain ⟨hconn, _, hcontact, _⟩ := rigid l hl
   intro x hx y hy
   obtain ⟨u, hu, a, ha, rfl⟩ := (mem_connectedAssembly E l x).mp hx
   obtain ⟨v, hv, b, hb, rfl⟩ := (mem_connectedAssembly E l y).mp hy
@@ -88,12 +95,17 @@ theorem connectedAssembly_connected (rigid : Kim.Rigidity) (E : Tile 3)
   by_cases huv : u = v
   · subst v
     exact hpath u hu a b ha hb
-  · obtain ⟨_, c, hc, d, hd, hcd⟩ := hcontact u (hE u hu) v (hE v hv) huv
+  · obtain ⟨c, hc, d, hd, hcd⟩ := Kim.shell_contacts l (hE u hu) (hE v hv) huv
     exact (hpath u hu a c ha hc).trans
       ((Relation.ReflTransGen.single
         ⟨(mem_connectedAssembly E l _).mpr ⟨u, hu, c, hc, rfl⟩,
           (mem_connectedAssembly E l _).mpr ⟨v, hv, d, hd, rfl⟩, hcd⟩).trans
         (hpath v hv d b hd hb))
+
+theorem connectedAssembly_connected (rigid : Kim.Rigidity) (E : Tile 3)
+    (l : ℕ) (hl : 3 ≤ l) (hE : ∀ u ∈ E, u ∈ Kim.cube l) :
+    FaceConnected (connectedAssembly E l) :=
+  connectedAssembly_connected_of_shell E l (rigid l hl).1 hE
 
 theorem connectedAssembly_nonempty (E : Tile 3)
     (l : ℕ) (hl : 0 < l) (hE : E ≠ []) : connectedAssembly E l ≠ [] := by

@@ -88,7 +88,8 @@ proved by the pinned Wang dependency, using its independent Kari–Hooper certif
 | Unconditional planar periodicity, using finite periodic decomposition and periodic region replacement | `Planar/*.lean`, `Proofs/PlanarPeriodicity.lean` |
 | Rectangular periods from a finite-index period subgroup | `Proofs/PeriodicGrid.lean` |
 | Primitive-recursive torus certificates, their equivalence with periodic tilings, and planar decidability from periodicity | `Proofs/IntegerResidues.lean`, `Proofs/PeriodicCertificates.lean` |
-| Kim's finite color bounds, nonempty pieces, exact block partition, disjoint colors, internal and external face contacts, and nonempty shells | `Proofs/KimGeometry.lean` |
+| Kim's finite color bounds, nonempty pieces, exact block partition, disjoint colors, internal and external piece contacts, and nonempty shells | `Proofs/KimGeometry.lean` |
+| Kim's residue representatives, shell fundamental-domain coverage, volume `s³`, disjoint grid translates, and contacts between whole shells | `Proofs/KimResidues.lean`, `Proofs/KimShellGeometry.lean` |
 | Shell assembly preserves tilability under a fundamental-domain and coset-rigidity hypothesis | `Proofs/ShellAssembly.lean` |
 | Completeness, undecidability, higher dimensions, connected completeness, and dimension optimality | `Proofs/Complexity.lean`, `Compiler/Main.lean` |
 
@@ -139,10 +140,14 @@ witnesses; their uniform effectivity is separately proved. The exhaustive
 enumerations are enormous and are intended for the reduction proof.
 
 Three inputs remain: decorated Sudoku soundness, arbitrary mixed-tiling MSS
-rigidity, and Kim's complete shell geometry/rigidity statement. The elementary
-partition and piece-contact lemmas for Kim are proved; shell connectivity,
-fundamental-domain coverage, contacts between whole shells, and arbitrary-tiling
-rigidity remain. Compiler output nonemptiness now has no mathematical hypothesis.
+rigidity, and the remaining parts of Kim's shell input. Kim's partition,
+fundamental-domain coverage, disjoint grid translates, and contacts between whole
+shells are proved. `Kim.rigidity_of_connected_cosets` reconstructs the complete
+input from just shell connectivity and arbitrary-tiling coset rigidity, which
+remain to be proved. The compiler uses the proved coverage and contacts;
+`connectedAssembly_tiles_iff_of_cosets` and
+`connectedAssembly_connected_of_shell` expose exactly the remaining assumptions.
+Compiler output nonemptiness has no mathematical hypothesis.
 The remaining inputs can be formalized independently of the numerical algorithm.
 
 ## Online formalizations inspected (October 7, 2026)
