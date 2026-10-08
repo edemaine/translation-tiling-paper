@@ -440,7 +440,7 @@ A much longer, computer-generated technical article, which is not meant for
 human consumption, gives the full details of the construction and its proofs;
 it and the complete Lean code are available in the repository
 \cite{TilingRepo} (<https://github.com/edemaine/translation-tiling-paper>)
-(files `slop.pdf` and `lean/`, respectively).
+(files `slop.texlish` and `lean/`, respectively).
 We intend to expand this paper with further human-readable explanations
 of the proof.
 
