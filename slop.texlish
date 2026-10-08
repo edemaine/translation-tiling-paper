@@ -193,7 +193,7 @@ Solvability on $\N^2$ is equivalent to solvability on $\Z^2$
 Indeed, a solution on the quadrant provides solutions on every finite
 square by restriction and translation; compactness then gives a
 solution on the plane.  Restriction proves the reverse implication.
-We use the classical co-RE-completeness of this domino problem \cite{Berger,GTUndecidable}.
+We use the classical co-RE-completeness of this domino problem [[Berger,GTUndecidable]].
 
 For a prime $r$, write $\F_r=\Z/r\Z$ for its field of residues and
 $\F_r^\times$ for the nonzero residues.

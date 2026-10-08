@@ -178,36 +178,39 @@ given known algorithms for 2D [[Bhattacharya,GTStructure]].
   \centering
   \small
   \renewcommand{\arraystretch}{1.3}
-  \begin{tabularx}{\textwidth}{c*{4}{>{\centering\arraybackslash}X}}
+  \begin{tabularx}{\textwidth}{c
+    >{\hsize=0.75\hsize\linewidth=\hsize\centering\arraybackslash}X
+    >{\hsize=1.25\hsize\linewidth=\hsize\centering\arraybackslash}X
+    *{2}{>{\centering\arraybackslash}X}}
     \toprule
     \multicolumn{5}{c}{\textbf{Translations only}} \\
     \midrule
     Prototiles & 1D & 2D & 3D & $d$D ($d\geq4$) \\
     \midrule
     \rowcolor{bggreen}\cellcolor{white}%
-    1 & R ($\downarrow$) & R \cite{Bhattacharya,GTStructure} & \cellcolor{bgblue}co-RE-c (Thm.~\ref{thm:undecidability})$^{*}$ & \cellcolor{bgblue}co-RE-c ($\leftarrow$)$^{*}$ \\
+    1 & R ($\downarrow$) & R [[Bhattacharya,GTStructure]] & \cellcolor{bgblue}co-RE-c (Thm.~\ref{thm:undecidability})$^{*}$ & \cellcolor{bgblue}co-RE-c ($\leftarrow$)$^{*}$ \\
     \rowcolor{bgred}\cellcolor{white}%
-    2 & \cellcolor{bggreen}R ($\downarrow$) & \cellcolor{bgyellow}OPEN & co-RE-c \cite{Kim} ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
+    2 & \cellcolor{bggreen}R ($\downarrow$) & \cellcolor{bgyellow}OPEN & co-RE-c [[Kim]] ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
     \rowcolor{bgred}\cellcolor{white}%
-    3 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c \cite{Trominoes} & co-RE-c \cite{YangThree,Trominoes} ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
+    3 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c [[Trominoes]] & co-RE-c [[YangThree,Trominoes]] ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
     \rowcolor{bgred}\cellcolor{white}%
-    4 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c \cite{YZFour} ($\uparrow$) & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
+    4 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c [[YZFour]] ($\uparrow$) & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
     \rowcolor{bgred}\cellcolor{white}%
-    5 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c \cite{KimPlane}$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
+    5 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c [[KimPlane]]$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
     \rowcolor{bgred}\cellcolor{white}%
-    6 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c \cite{YangSix} ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
+    6 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c [[YangSix]] ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
     \rowcolor{bgred}\cellcolor{white}%
-    7 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c \cite{YZSeven,YZConvex} ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
+    7 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c [[YZSeven,YZConvex]] ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
     \rowcolor{bgred}\cellcolor{white}%
-    8 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c \cite{YZEight} ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
+    8 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c [[YZEight]] ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
     \rowcolor{bgred}\cellcolor{white}%
-    9 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c \cite{YangNine} ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
+    9 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c [[YangNine]] ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
     \rowcolor{bgred}\cellcolor{white}%
-    10 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c \cite{YangTen} ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
+    10 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c [[YangTen]] ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
     \rowcolor{bgred}\cellcolor{white}%
-    11 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c \cite{Ollinger} ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
+    11 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c [[Ollinger]] ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
     \rowcolor{bgred}\cellcolor{white}%
-    $n$ & \cellcolor{bggreen}R \cite{GTUndecidable} & co-RE-c \cite{Berger,Golomb} ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
+    $n$ & \cellcolor{bggreen}R [[GTUndecidable]] & co-RE-c [[Berger,Golomb]] ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
     \bottomrule
   \end{tabularx}
 
@@ -221,16 +224,16 @@ given known algorithms for 2D [[Bhattacharya,GTStructure]].
   %   \rowcolor{bgyellow}\cellcolor{white}%
   %   1 & \cellcolor{bggreen}R ($\downarrow$) & OPEN & OPEN & OPEN \\
   %   \rowcolor{bgred}\cellcolor{white}%
-  %   2 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c \cite{Trominoes} & co-RE-c \cite{Trominoes} & co-RE-c ($\leftarrow$) \\
+  %   2 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c [[Trominoes]] & co-RE-c [[Trominoes]] & co-RE-c ($\leftarrow$) \\
   %   \rowcolor{bgred}\cellcolor{white}%
   %   3 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c ($\uparrow$) & co-RE-c ($\uparrow$) & co-RE-c ($\uparrow$) \\
   %   \rowcolor{bgred}\cellcolor{white}%
-  %   $n$ & \cellcolor{bggreen}R \cite{GTUndecidable} & co-RE-c \cite{Berger,Golomb} ($\uparrow$) & co-RE-c ($\uparrow$) & co-RE-c ($\uparrow$) \\
+  %   $n$ & \cellcolor{bggreen}R [[GTUndecidable]] & co-RE-c [[Berger,Golomb]] ($\uparrow$) & co-RE-c ($\uparrow$) & co-RE-c ($\uparrow$) \\
   %   \bottomrule
   % \end{tabularx}
 
   \caption: Complexity of tiling the whole integer lattice by translations with
-    possibly disconnected polycubes, organized as in Table~3 of \cite{Trominoes}.
+    possibly disconnected polycubes, organized as in \cite[Table~3]{Trominoes}.
     Rows bound the number of prototiles; $n$ means an arbitrary finite
     input set. The last column applies to every fixed $d\geq4$.
     "R" (green) denotes decidability,
@@ -243,10 +246,10 @@ given known algorithms for 2D [[Bhattacharya,GTStructure]].
     Arrows point to adjacent entries that imply the stated result,
     including the connectedness restriction when marked.
     % The lower panel allows grid-preserving rotations.
-    %The 2D three-tile construction uses one disconnected tile \cite{Trominoes};
-    %the four-tile result also allows disconnected tiles \cite{YZFour}.
+    %The 2D three-tile construction uses one disconnected tile [[Trominoes]];
+    %the four-tile result also allows disconnected tiles [[YZFour]].
     %The seven-tile bound was strengthened to orthogonally convex
-    %polyominoes in \cite{YZConvex}.
+    %polyominoes in [[YZConvex]].
   @=tab:related
 
 : theorem @=thm:undecidability
@@ -336,6 +339,8 @@ as summarized in @fig:reduction:
    two integers; the Sudoku rule organizes these integers using powers of
    two fixed distinct primes $p,q$, whose exponents encode the two coordinates
    of the simulated plane.
+   The line rules compare neighboring positions in this simulated plane
+   to enforce matching edge colors.
    We additionally require that neither integer component is constant
    down any column.
 2. We adapt OpenAI's cyclic tiling encoding \cite[Sections~3--5]{OpenAI2026}
@@ -345,6 +350,8 @@ as summarized in @fig:reduction:
    which uses a one-prime Sudoku rule.)
    This adaptation is our main new work: it enforces the Wang tile constraints
    and both nonconstant-column conditions simultaneously.
+   The set of translations encodes the Sudoku array, and the prototiles
+   test the rules: forbidden combinations of symbols cause overlaps or gaps.
    The result is a finite family of prototiles (depending on the Wang tile set)
    that each tile a target space using the same infinite set of translations,
    if and only if the required Sudoku array exists.
@@ -357,6 +364,11 @@ as summarized in @fig:reduction:
    to combine the prototiles from the previous step
    into a single prototile that tiles a (larger) target space
    if and only if such a common set of translations exists.
+   %The construction places each prototile in its own group of layers
+   %of an auxiliary cyclic coordinate. These groups are chosen so that
+   %any two shifted copies of the same group overlap, forcing each point
+   %of the original target space to be covered exactly once by each
+   %original prototile.
    This construction enlarges $m$ in the target space $\Z^2 \times (\Z/m\Z)$.
 4. We apply the reduction of Meyerovitch, Sanadhya, and Solomon
    \cite[Theorem~1.1]{MSS}, which converts tiling problems in a quotient
@@ -374,13 +386,15 @@ as summarized in @fig:reduction:
 5. We use a reduction of Kim \cite[Theorem~2.5]{Kim}
    which makes the prototile connected
    while preserving dimension, the number of prototiles, and tileability.
+   This construction scales up the prototile, giving space to connect the
+   lattice points by thin corridors, with bumps and dents to force alignment.
 
 # Formal Verification in Lean @=sec:lean
 
 The proof of @thm:undecidability is long and technical.
 To make it checkable, we formalized it in the Lean~4 proof assistant,
 building on Mathlib and on the formalization of 
-Wang tiling undecidability (`lean-wang` \cite{LeanWang}).
+Wang tiling undecidability (`lean-wang` [[LeanWang]]).
 The complete Lean proof is available in [the repository](https://github.com/edemaine/translation-tiling-paper/tree/main/lean).
 The key point is that a reader does not need to read the proof,
 or even most of the definitions, to trust the result:
@@ -445,7 +459,7 @@ In both statements, the proof is a single call to a theorem in
 
 ## Tiling \texorpdfstring{$\R^3$}{R³}
 
-Points of $\R^3$ are functions $\{1,2,3\}\to\R$.
+%Points of $\R^3$ are functions $\{1,2,3\}\to\R$.
 The ***solid body*** of $P$ is the union of the closed unit cubes $p+[0,1]^3$ for $p\in P$.
 The prototile $P$ ***tiles $\R^3$*** if there exists a set $T\subseteq\R^3$ of
 (arbitrary real) translations such that, for Lebesgue-almost every $x\in\R^3$,
@@ -478,14 +492,18 @@ A much longer LLM-generated technical article, which is not meant for
 human consumption, gives the full details of the construction and its proofs.
 It and the complete Lean code are available in
 [the repository](https://github.com/edemaine/translation-tiling-paper)
-\cite{TilingRepo}
+[[TilingRepo]]
 (files \texttt{[slop.texlish](https://github.com/edemaine/translation-tiling-paper/blob/main/slop.texlish)}
 and \texttt{[lean/](https://github.com/edemaine/translation-tiling-paper/tree/main/lean)}, respectively).
 We intend to expand this paper with further human-readable explanations
 of the proof.
 
-\section*{Acknowledgments}
-This paper was typeset with [Texlish](https://texlish.org/) \cite{Texlish}.
+#* Acknowledgments
+
+This paper was typeset with [Texlish](https://texlish.org/) [[Texlish]].
+We used the following LLM models:
+GPT 6.1 Sol, GPT 6 Astra,
+Claude Sonnet 5.5, Claude Opus 5.5, and Claude Fable 5.1.
 
 \FloatBarrier
 \bibliographystyle: alpha-key
