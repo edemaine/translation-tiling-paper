@@ -84,8 +84,11 @@
 \urlstyle{same}
 
 : tcolorbox[colback=figorange!6!white,colframe=figorange!65!black,boxrule=0.6pt,arc=2pt,left=10pt,right=10pt,top=8pt,bottom=8pt]
-  **Warning:** This technical overview was written by a large
-  language model (LLM) and is probably poorly written.
+  **Warning:** This technical article was written by a large language model
+  (LLM) and is not intended for consumption by humans.
+  See [the repository](https://github.com/edemaine/translation-tiling-paper)
+  for the human-written overview and the complete Lean code that verifies
+  the proof.
 
 # Definitions and Main Theorem @=sec:definitions
 For an abelian group $G$, a ***prototile*** is a finite nonempty subset

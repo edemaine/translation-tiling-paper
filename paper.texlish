@@ -1,4 +1,6 @@
 ::version >= 0.2.0
+::styles
+  @ = \cref
 
 %\title: Undecidability of Polycube Monotiling by Translation in 3D
 \title: Tiling 3D by Translates of a Single Polycube is Undecidable
@@ -128,6 +130,14 @@
   Dimension three is optimal: translational monotiling is known to be
   decidable in $\Z^2$ and for a single (possibly disconnected) polyomino in $\R^2$.
 
+: tcolorbox[colback=figblue!6!white,colframe=figblue!65!black,boxrule=0.6pt,arc=2pt,left=10pt,right=10pt,top=8pt,bottom=8pt]
+  This paper gives a human-readable overview of the
+  results, proof ideas, and formal theorem statements. The proof is verified
+  in Lean. See @sec:approach for details of our approach, and
+  [the repository](https://github.com/edemaine/translation-tiling-paper)
+  [[TilingRepo]]
+  for the complete Lean code and a longer LLM-written technical article.
+
 # Introduction @=sec:intro
 
 Given $k$ finite subsets of $\Z^d$ (***prototiles***),
@@ -136,7 +146,7 @@ to cover all of $\Z^d$ without overlaps?
 For which values of $k$ and $d$ is this problem decidable?
 In this paper, we prove undecidability for $k=1$ and $d=3$.
 
-The decidability question has a long history, summarized in Table~@tab:related.
+The decidability question has a long history, summarized in @tab:related.
 The first result is Golomb's implementation [[Golomb]]
 of the undecidable Wang tiling problem [[Berger]],
 which works in 2D but requires arbitrarily many prototiles.
@@ -437,7 +447,7 @@ and we do not claim that this paper is a complete human-readable account of it.
 Instead, this paper contains only the part intended for humans:
 an explanation of the problem (\cref{sec:intro}),
 the main intuition behind the proof (\cref{sec:overview}),
-and the precise formalization of the statement given in \cref{sec:lean}.
+and the precise formalization of the statement given in \cref{sec:leaGn}.
 The rigor of the proof comes from the Lean formalization rather than from the text.
 
 A much longer, computer-generated technical article, which is not meant for
