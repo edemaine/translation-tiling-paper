@@ -1,3 +1,4 @@
+import LeanWang.CoRE
 import TranslationTiling.AbstractBridge
 
 /-!
