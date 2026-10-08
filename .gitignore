@@ -12,3 +12,4 @@ slop.pdf
 slop.tex
 build/
 lean/.lake/
+lean-snippets/.stamp
