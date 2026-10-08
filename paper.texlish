@@ -501,6 +501,8 @@ of the proof.
 
 #* Acknowledgments
 
+We thank the MIT CompGeom Group for helpful discussions
+and for providing an inspiring atmosphere.
 This paper was typeset with [Texlish](https://texlish.org/) [[Texlish]].
 We used the following LLM models:
 GPT 6.1 Sol, GPT 6 Astra,
