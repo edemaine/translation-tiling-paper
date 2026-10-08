@@ -140,8 +140,8 @@ theorem coREComplete_transfer (h : LeanWang.CoREComplete (@Tiles 3)) :
     exact (h.2 p hp).trans ⟨toProto, toProto_computable, tiles_iff⟩
 
 /-- Main theorem in the form used by `Abstract.lean`. -/
-theorem coRE_complete (h : ReductionInputs) : LeanWang.CoREComplete AbsTiles :=
-  coREComplete_transfer (TranslationTiling.completeness h)
+theorem coRE_complete : LeanWang.CoREComplete AbsTiles :=
+  coREComplete_transfer TranslationTiling.completeness
 
 /-- Co-r.e.-completeness implies undecidability (Mathlib's halting problem). -/
 theorem undecidable_of_coRE_complete (h : LeanWang.CoREComplete AbsTiles) :

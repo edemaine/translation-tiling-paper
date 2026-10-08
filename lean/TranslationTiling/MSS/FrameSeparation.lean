@@ -47,6 +47,6 @@ theorem connected_piece_inside_frame (k : ℕ) (hk : 0 < k) (F : Tile 3)
     ∀ y ∈ F, y ∈ box (k - 1) := by
   intro y hy
   apply path_avoiding_frame k hk hinner
-  exact (hF x hx y hy).mono fun z hz => havoid z hz
+  exact FacePath.mono (hF x hx y hy) fun z hz => havoid z hz
 
 end TranslationTiling.MSS

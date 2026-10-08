@@ -104,6 +104,7 @@ proved by the pinned Wang dependency, using its independent Kari–Hooper certif
 | Kim's coarse color classes, dented pieces, cube boundary, and shell are face connected | `Proofs/FacePaths.lean`, `Proofs/Kim*Connectivity.lean` |
 | Shell assembly preserves tilability under a fundamental-domain and coset-rigidity hypothesis | `Proofs/ShellAssembly.lean` |
 | MSS frame geometry and a counterexample to the one-point local forcing argument (not to global rigidity) | `MSS/FrameGeometry.lean`, `MSS/LocalForcingCheck.lean` |
+| MSS frame connectivity and separation, neighbors in frames, and uniqueness of the singleton in the punctured body | `MSS/FrameConnectivity.lean`, `MSS/FrameSeparation.lean`, `MSS/FrameIsolation.lean`, `MSS/BodyIsolation.lean` |
 | Completeness, undecidability, higher dimensions, connected completeness, and dimension optimality | `Proofs/Complexity.lean`, `Compiler/Main.lean` |
 
 `Examples.lean` checks small finite searches, repeated tile entries,

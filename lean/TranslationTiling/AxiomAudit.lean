@@ -14,6 +14,7 @@ import TranslationTiling.Proofs.Decidability
 import TranslationTiling.Proofs.Canonical
 import TranslationTiling.Proofs.FiniteWordRule
 import TranslationTiling.MSS.LocalForcingCheck
+import TranslationTiling.MSS.BodyIsolation
 import TranslationTiling.Compiler.EffectiveGraphCompiler
 import TranslationTiling.Compiler.EffectiveActivationOffsets
 import TranslationTiling.Compiler.EffectiveStacking
@@ -158,6 +159,8 @@ run_cmd do
       ``TranslationTiling.Sudoku.canonical_lineRule,
       ``TranslationTiling.Sudoku.exists_twoPrime_residue,
       ``TranslationTiling.sudoku_soundness,
+      ``TranslationTiling.mss_rigidity,
+      ``TranslationTiling.main_compiler_correct,
       ``TranslationTiling.Sudoku.ArithmeticRule.global_affine_approximation,
       ``TranslationTiling.Sudoku.arithmetic_initial_affine,
       ``TranslationTiling.Sudoku.decorated_initial_structure,
@@ -176,6 +179,27 @@ run_cmd do
       ``TranslationTiling.MSS.mem_frame_iff,
       ``TranslationTiling.MSS.baseShape_bounds,
       ``TranslationTiling.MSS.unintended_neighbor,
+      ``TranslationTiling.MSS.path_avoiding_frame,
+      ``TranslationTiling.MSS.connected_piece_inside_frame,
+      ``TranslationTiling.MSS.frame_connected,
+      ``TranslationTiling.MSS.frame_has_neighbor,
+      ``TranslationTiling.MSS.opposite_neighbors_in_frame,
+      ``TranslationTiling.MSS.body_subset_component,
+      ``TranslationTiling.MSS.mem_holes_witness,
+      ``TranslationTiling.MSS.body_isolated_point,
+      ``TranslationTiling.MSS.component_isolated_point,
+      ``TranslationTiling.MSS.mixed_first_forward,
+      ``TranslationTiling.MSS.mixed_first_period,
+      ``TranslationTiling.MSS.mixed_centers_near,
+      ``TranslationTiling.MSS.mixed_transverse_cover,
+      ``TranslationTiling.MSS.translated_frame_subset_frame,
+      ``TranslationTiling.MSS.translated_frame_subset_holes,
+      ``TranslationTiling.MSS.mixed_common_forward,
+      ``TranslationTiling.MSS.mixed_grid_centers,
+      ``TranslationTiling.MSS.mixed_color_periods,
+      ``TranslationTiling.MSS.mixed_rigidity_necessary,
+      ``TranslationTiling.MSS.mixed_rigidity_sufficient,
+      ``TranslationTiling.MSS.rigidity,
       ``TranslationTiling.Sudoku.allowed_iff_bounded,
       ``TranslationTiling.Sudoku.allowedBool_eq_true,
       ``TranslationTiling.Sudoku.mem_allowedWords] do

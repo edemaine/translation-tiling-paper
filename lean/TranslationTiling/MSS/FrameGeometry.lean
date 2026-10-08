@@ -31,9 +31,13 @@ theorem mem_frame_iff (k : ℕ) (hk : 0 < k) (v : Lattice 3) :
     rcases hi with hi | hi <;> omega
 
 def bodyCenter (i : Fin 4) : Lattice 3 :=
-  ![0, ![213, 0, 0], ![24, 201, 0], ![36, 0, 201]] i
+  fun k => if i.val = 0 then 0 else if i.val = 1 then
+    (if k.val = 0 then 213 else 0) else if i.val = 2 then
+    (if k.val = 0 then 24 else if k.val = 1 then 201 else 0) else
+    (if k.val = 0 then 36 else if k.val = 2 then 201 else 0)
 
-def bodyRadius (i : Fin 4) : ℕ := ![100, 1, 2, 3] i
+def bodyRadius (i : Fin 4) : ℕ :=
+  if i.val = 0 then 100 else if i.val = 1 then 1 else if i.val = 2 then 2 else 3
 
 /-- The detached frames and the main body lie in four separated boxes. -/
 theorem baseShape_bounds (v : Lattice 3) (hv : v ∈ baseShape) :

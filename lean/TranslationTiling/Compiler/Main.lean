@@ -48,18 +48,17 @@ theorem compile_computable : Computable compile :=
 theorem compile_nonempty (T : LeanWang.TileSet) : compile T ≠ [] :=
   integerTile_nonempty _ (cyclicCompiler_nonempty T)
 
-theorem compile_correct (sound : Sudoku.Soundness) (rigid : MSS.Rigidity)
-    (T : LeanWang.TileSet) : LeanWang.TilesPlane T ↔ TranslationTiling.Tiles (compile T) :=
-  (cyclicCompiler_correct sound T).trans
-    (integerTile_correct rigid _ (cyclicCompiler_pos T) (cyclicCompiler_nonempty T))
+theorem compile_correct (T : LeanWang.TileSet) :
+    LeanWang.TilesPlane T ↔ TranslationTiling.Tiles (compile T) :=
+  (cyclicCompiler_correct Sudoku.soundness T).trans
+    (integerTile_correct MSS.rigidity _ (cyclicCompiler_pos T) (cyclicCompiler_nonempty T))
 
-/-- All mathematical inputs are explicit; uniform compiler effectivity is proved. -/
-noncomputable def wangReduction (sound : Sudoku.Soundness) (rigid : MSS.Rigidity) :
-    WangReduction where
+/-- The unconditional computable Wang-to-integer-tile reduction. -/
+noncomputable def wangReduction : WangReduction where
   tile := compile
   computable := compile_computable
   nonempty := fun T _ => compile_nonempty T
-  correct := compile_correct sound rigid
+  correct := compile_correct
 
 noncomputable def connectedCompile (T : LeanWang.TileSet) : Tile 3 := connectedTile (compile T)
 
@@ -74,7 +73,7 @@ theorem connectedCompile_connected (T : LeanWang.TileSet) :
 
 theorem connectedCompile_correct (h : ReductionInputs) (T : LeanWang.TileSet) :
     LeanWang.TilesPlane T ↔ TranslationTiling.Tiles (connectedCompile T) :=
-  (compile_correct Sudoku.soundness h.rigidity T).trans
+  (compile_correct T).trans
     (connectedTile_correct h.shellRigidity _).symm
 
 noncomputable def connectedWangReduction (h : ReductionInputs) : ConnectedWangReduction where
