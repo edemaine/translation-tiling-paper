@@ -1,1 +1,1 @@
-abbrev Point := ℤ × ℤ × ℤ
+abbrev Point := Fin 3 → ℤ
