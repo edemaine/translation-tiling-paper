@@ -121,16 +121,16 @@ gadget algebra.
 
 Start with [Abstract.lean](lean/TranslationTiling/Abstract.lean), the
 human-readable definitions and main theorem statements typeset in the paper.
-It defines finite prototiles as lists of integer triples, face-connectivity,
-lattice tiling by unique decompositions, and real tiling by almost-everywhere
+It defines finite prototiles as lists of points `Fin 3 → ℤ`, face-connectivity,
+lattice tiling by unique covering translates, and real tiling by almost-everywhere
 unique coverage by translates of the union of closed unit cubes. It states
 co-RE completeness and undecidability for connected prototiles in both
 `Z^3` and `R^3`.
 
 [AbstractBridge.lean](lean/TranslationTiling/AbstractBridge.lean) proves these
-results using the rest of the formalization. It checks the computable conversion
-between integer triples and `Fin 3 → ℤ`, proves that connectivity and both tiling
-predicates agree, and transfers the complexity results. Readers can check what
+results using the rest of the formalization, which uses the same model `Fin 3 → ℤ`
+of `ℤ³`. It proves that connectivity and both tiling predicates agree with the
+project's definitions, and derives the complexity results. Readers can check what
 is claimed in `Abstract.lean`; Lean verifies the bridge and the underlying proofs.
 
 [Statements.lean](lean/TranslationTiling/Statements.lean) collects the broader
