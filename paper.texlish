@@ -128,7 +128,7 @@
   Dimension three is optimal: translational monotiling is known to be
   decidable in $\Z^2$ and for a single (possibly disconnected) polyomino in $\R^2$.
 
-# Introduction
+# Introduction @=sec:intro
 
 Given $k$ finite subsets of $\Z^d$ (***prototiles***),
 can (infinitely many) copies of those subsets be *translated*
@@ -235,12 +235,12 @@ given known algorithms for 2D [[Bhattacharya,GTStructure]].
   @=tab:related
 
 : theorem @=thm:undecidability
-  Tiling $\Z^3$ by translations of a single finite connected[^1]
+  Tiling $\Z^3$ by translations of a single finite connected[^connected]
   subset of $\Z^3$ is co-RE-complete,[^lean-complete] and hence undecidable.[^lean-undecidable]
   Replacing each lattice point by a unit cube,
-  tiling $\R^3$ by translations of a single finite connected[^1]
-  polycube in $\R^3$ is co-RE-complete[^lean-real], and hence undecidable.
-  [^1]:
+  tiling $\R^3$ by translations of a single finite connected[^connected]
+  polycube in $\R^3$ is co-RE-complete,[^lean-real] and hence undecidable.
+  [^connected]:
     Connectivity of a set in $\Z^3$ is defined according
     to lattice adjacency in $\Z^3$.
     Connectivity of a polycube in $\R^3$ is thus defined according
@@ -260,6 +260,8 @@ and ***co-RE-complete*** if it is also in co-RE.
 It is known that some co-RE-complete problems
 (such as "does a given algorithm run forever?")\ are undecidable,
 so co-RE-completeness implies undecidability.
+
+# Proof Overview @=sec:overview
 
 We prove co-RE-hardness by reducing from the problem of Wang tiling,
 introduced by [[Wang]] and proved co-RE-hard by [[Berger]].
@@ -360,8 +362,8 @@ as summarized in \cref{fig:reduction}:
 
 The proof of \cref{thm:undecidability} is long and technical.
 To make it checkable, we formalized it in the Lean~4 proof assistant,
-building on Mathlib and on the Wang-tiling development of Demaine
-(`lean-wang` \cite{LeanWang}), which supplies the undecidability of Wang tiling.
+building on Mathlib and on the formalization of 
+Wang tiling undecidability (`lean-wang` \cite{LeanWang}).
 The key point is that a reader does not need to read the proof,
 or even the supporting definitions, to trust the result:
 it suffices to check that the handful of definitions and theorem statements
@@ -369,13 +371,14 @@ in a single file, `Abstract.lean`, accurately express the claim.
 The Lean proof assistant then verifies that these statements are consequences of the
 proof, using only Lean's three standard axioms
 (`propext`, `Classical.choice`, `Quot.sound`);
-this is machine-checked by an axiom audit in the repository.
+the latter property is machine-checked by an axiom audit in the repository.
 We typeset the statements of `Abstract.lean` below; the file itself
 (`lean/TranslationTiling/Abstract.lean`) is the authoritative version.
 It imports only Mathlib and the co-RE definitions of `lean-wang`
 (`CoREPred` and `CoREComplete`, defined in the same way as in the introduction),
 together with a short file `AbstractBridge.lean` whose job is to connect
-these statements to the notation used in the rest of the development.
+these statements to the notation used in the rest of the formalization
+(but which need not be checked by a human).
 
 **Prototiles.**
 A *prototile* is a finite list $P$ of points of $\Z^3$
@@ -432,20 +435,22 @@ These two theorems are exactly the two halves of \cref{thm:undecidability}.
 We made heavy use of AI to find, write, and formalize the proof,
 and we do not claim that this paper is a complete human-readable account of it.
 Instead, this paper contains only the part intended for humans:
-an explanation of the problem, the main intuitions behind the proof
-(\cref{fig:reduction} and the five steps above),
+an explanation of the problem (\cref{sec:intro}),
+the main intuition behind the proof (\cref{sec:overview}),
 and the precise formalization of the statement given in \cref{sec:lean}.
 The rigor of the proof comes from the Lean formalization rather than from the text.
+
 A much longer, computer-generated technical article, which is not meant for
-human consumption, gives the full details of the construction and its proofs;
-it and the complete Lean code are available in the repository
-\cite{TilingRepo} (<https://github.com/edemaine/translation-tiling-paper>)
+human consumption, gives the full details of the construction and its proofs.
+It and the complete Lean code are available in
+[the repository](https://github.com/edemaine/translation-tiling-paper)
+\cite{TilingRepo}
 (files `slop.texlish` and `lean/`, respectively).
 We intend to expand this paper with further human-readable explanations
 of the proof.
 
 \section*{Acknowledgments}
-This paper was typeset with Texlish \cite{Texlish} (<https://texlish.org/>).
+This paper was typeset with [Texlish](https://texlish.org/) \cite{Texlish}.
 
 \FloatBarrier
 \bibliographystyle: alpha-key
