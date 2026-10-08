@@ -14,10 +14,10 @@ dimensions is decidable.
 
 ## Read the paper
 
-- **[Paper (PDF)](paper.pdf)** — Human-written overview of the results,
+- **[Paper (PDF)](paper.pdf)** — Human-readable overview of the results,
   proof ideas, and Lean formalization.
 - **[Technical overview (PDF)](slop.pdf)** — LLM-written definitions,
-  constructions, and proofs, intended to be read independently.
+  constructions, and proofs, not intended to be read by humans.
 
 ## Source and formalization
 
