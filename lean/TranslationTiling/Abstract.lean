@@ -20,14 +20,14 @@ the statements to the rest of the project.
 namespace TranslationTiling.Abstract
 
 /-- A point of `ℤ³`. -/
-abbrev Point := ℤ × ℤ × ℤ
+abbrev Point := Fin 3 → ℤ
 
 /-- A prototile: a finite set of points of `ℤ³`, given as a list. -/
 abbrev Prototile := List Point
 
 /-- Two points are adjacent when their `ℓ¹` distance is one. -/
 def Adjacent (a b : Point) : Prop :=
-  |a.1 - b.1| + |a.2.1 - b.2.1| + |a.2.2 - b.2.2| = 1
+  ∑ i, |a i - b i| = 1
 
 /-- `P` is (face-)connected: any two of its points are joined by a path of
 adjacent points inside `P`. -/
@@ -36,10 +36,10 @@ def Connected (P : Prototile) : Prop :=
 
 /-! ### Tiling `ℤ³` -/
 
-/-- `P` tiles `ℤ³`: for some set `A` of translations, every point `x` equals `a + p`
-for exactly one pair with `a ∈ A` and `p ∈ P`. -/
+/-- `P` tiles `ℤ³`: for some set `T` of translations, every point `x` lies in exactly
+one translate `t + P` with `t ∈ T`, i.e., for exactly one `t ∈ T` we have `x - t ∈ P`. -/
 def Tiles (P : Prototile) : Prop :=
-  ∃ A : Set Point, ∀ x : Point, ∃! t : Point × Point, t.1 ∈ A ∧ t.2 ∈ P ∧ t.1 + t.2 = x
+  ∃ T : Set Point, ∀ x : Point, ∃! t : Point, t ∈ T ∧ x - t ∈ P
 
 /-- **Main theorem.** Deciding whether a connected prototile in `ℤ³` tiles space is
 co-r.e.-complete: the non-tilers are recursively enumerable, and every co-r.e.
@@ -54,16 +54,18 @@ theorem tiling_undecidable : ¬ ComputablePred fun P => Connected P ∧ Tiles P 
 
 /-! ### Tiling `ℝ³` -/
 
-/-- The solid body of a prototile: the union of its unit cubes, the cube of `p ∈ P`
-being the translate of the unit cube `[0, 1]³` by `p`. -/
-def Solid (P : Prototile) : Set (Fin 3 → ℝ) :=
-  {x | ∃ p ∈ P, x - ![(p.1 : ℝ), p.2.1, p.2.2] ∈ Set.Icc 0 1}
+/-- A point of `ℝ³`. -/
+abbrev RealPoint := Fin 3 → ℝ
 
-/-- The solid body of `P` tiles `ℝ³` by translations: for some set `A ⊆ ℝ³` of
-(arbitrary real) translations, almost every point of `ℝ³` lies in exactly one
-translate `a + Solid P`. -/
+/-- The solid body of a prototile: the union of the unit cubes `p + [0, 1]³`, `p ∈ P`. -/
+def Solid (P : Prototile) : Set RealPoint :=
+  {x | ∃ p ∈ P, ∀ i, p i ≤ x i ∧ x i ≤ p i + 1}
+
+/-- The solid body of `P` tiles `ℝ³` by translations: for some set `T ⊆ ℝ³` of
+(arbitrary real) translations, almost every point `x` of `ℝ³` lies in exactly one
+translate `t + Solid P` with `t ∈ T`. -/
 def RealTiles (P : Prototile) : Prop :=
-  ∃ A : Set (Fin 3 → ℝ), ∀ᵐ x ∂MeasureTheory.volume, ∃! a : A, x - a.val ∈ Solid P
+  ∃ T : Set RealPoint, ∀ᵐ x ∂MeasureTheory.volume, ∃! t : RealPoint, t ∈ T ∧ x - t ∈ Solid P
 
 /-- The same holds for the solid body in `ℝ³` with arbitrary real translations. -/
 theorem real_tiling_coRE_complete : LeanWang.CoREComplete fun P => Connected P ∧ RealTiles P :=

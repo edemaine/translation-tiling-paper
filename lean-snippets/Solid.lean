@@ -1,2 +1,2 @@
-def Solid (P : Prototile) : Set (Fin 3 → ℝ) :=
-  {x | ∃ p ∈ P, x - ![(p.1 : ℝ), p.2.1, p.2.2] ∈ Set.Icc 0 1}
+def Solid (P : Prototile) : Set RealPoint :=
+  {x | ∃ p ∈ P, ∀ i, p i ≤ x i ∧ x i ≤ p i + 1}
