@@ -221,4 +221,7 @@ theorem undecidable_of_coRE_complete {α : Type} [Primcodable α] {p : α → Pr
 theorem connected_undecidable : ¬ ComputablePred fun P => AbsConnected P ∧ AbsTiles P :=
   undecidable_of_coRE_complete connected_coRE_complete
 
+theorem connected_real_undecidable : ¬ ComputablePred fun P => AbsConnected P ∧ AbsRealTiles P :=
+  undecidable_of_coRE_complete connected_real_coRE_complete
+
 end TranslationTiling.AbstractBridge

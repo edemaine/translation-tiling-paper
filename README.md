@@ -124,8 +124,8 @@ human-readable definitions and main theorem statements typeset in the paper.
 It defines finite prototiles as lists of integer triples, face-connectivity,
 lattice tiling by unique decompositions, and real tiling by almost-everywhere
 unique coverage by translates of the union of closed unit cubes. It states
-co-RE completeness for connected prototiles in both `Z^3` and `R^3`, and
-undecidability for `Z^3`.
+co-RE completeness and undecidability for connected prototiles in both
+`Z^3` and `R^3`.
 
 [AbstractBridge.lean](lean/TranslationTiling/AbstractBridge.lean) proves these
 results using the rest of the formalization. It checks the computable conversion

@@ -48,7 +48,7 @@
   cleveref: capitalise,nameinlink,noabbrev
 \usetikzlibrary{arrows.meta,positioning,calc}
 \lstdefinelanguage{lean}{
-  morekeywords={abbrev,def,theorem,fun,by},
+  morekeywords={import,abbrev,def,theorem,fun,by},
   morekeywords=[2]{Prop,Type,Set,List,Fin,Nat},
   sensitive=true, morecomment=[l]{--}, morestring=[b]"}
 \lstdefinestyle{lean}{language=lean, basicstyle=\ttfamily\small, columns=fullflexible,
@@ -111,6 +111,11 @@
 \setlength{\emergencystretch}{2em}
 \setlist{itemsep=3pt,topsep=5pt}
 \urlstyle{same}
+
+% Force \boldmath in \section etc. titles without upsetting hyperref.
+% Warning: Redefines all instances of \bfseries to turn on \boldmath too.
+\let\realbfseries=\bfseries
+\def\bfseries{\realbfseries\boldmath}
 
 % Put figures and text together
 \def\textfraction{0.01}
@@ -249,7 +254,7 @@ given known algorithms for 2D [[Bhattacharya,GTStructure]].
   subset of $\Z^3$ is co-RE-complete,[^lean-complete] and hence undecidable.[^lean-undecidable]
   Replacing each lattice point by a unit cube,
   tiling $\R^3$ by translations of a single finite connected[^connected]
-  polycube in $\R^3$ is co-RE-complete,[^lean-real] and hence undecidable.
+  polycube in $\R^3$ is co-RE-complete,[^lean-real] and hence undecidable.[^lean-real-undecidable]
   [^connected]:
     Connectivity of a set in $\Z^3$ is defined according
     to lattice adjacency in $\Z^3$.
@@ -261,6 +266,8 @@ given known algorithms for 2D [[Bhattacharya,GTStructure]].
     \leanlogo{} theorem \texttt{tiling\_undecidable}.
   [^lean-real]:
     \leanlogo{} theorem \texttt{real\_tiling\_coRE\_complete}.
+  [^lean-real-undecidable]:
+    \leanlogo{} theorem \texttt{real\_tiling\_undecidable}.
 
 ***Co-RE*** is the complexity class of decision problems whose "no" instances
 can be recognized in finite time by an algorithm (Turing machine).
@@ -376,67 +383,79 @@ Wang tiling undecidability (`lean-wang` \cite{LeanWang}).
 The key point is that a reader does not need to read the proof,
 or even most of the definitions, to trust the result:
 it suffices to check that the handful of definitions and theorem statements
-in a single file, `Abstract.lean`, accurately express the claim.
+in a single file, \texttt{[Abstract.lean](https://github.com/edemaine/translation-tiling-paper/blob/main/lean/TranslationTiling/Abstract.lean)}, accurately express the claim.
 The Lean proof assistant then verifies the proofs of these statements,
 and that they rely on only Lean's three standard axioms
 (`propext`, `Classical.choice`, `Quot.sound`).
-We typeset the statements of `Abstract.lean` below; the file itself
-(`lean/TranslationTiling/Abstract.lean`) is the authoritative version.
+
+In the rest of this section, we explain the statements from \texttt{[Abstract.lean](https://github.com/edemaine/translation-tiling-paper/blob/main/lean/TranslationTiling/Abstract.lean)}.
+(The source file \texttt{[lean/TranslationTiling/Abstract.lean](https://github.com/edemaine/translation-tiling-paper/blob/main/lean/TranslationTiling/Abstract.lean)}
+remains the authoritative version.)
 It imports only Mathlib and the co-RE definitions of `lean-wang`
 (`CoREPred` and `CoREComplete`, defined in the same way as in the introduction),
-together with a short file `AbstractBridge.lean` whose job is to connect
+together with a short file \texttt{[AbstractBridge.lean](https://github.com/edemaine/translation-tiling-paper/blob/main/lean/TranslationTiling/AbstractBridge.lean)} whose job is to connect
 these statements to the notation used in the rest of the formalization
 (but which need not be checked by a human).
 
-**Prototiles.**
-A ***prototile*** is a finite list $P$ of points of $\Z^3$
-(a list, so that it can be given as input to an algorithm; repetitions are immaterial).
+\leansnippet{Imports}
+
+## Prototiles
+
+A ***prototile*** is a finite list $P$ of points in $\Z^3$.
+It is a list (not a set) so that it can be given as input to an algorithm;
+repetitions are immaterial.
 
 \leansnippet{Point,Prototile}
 
-**Connectivity.**
+## Connectivity
+
 Two points $a,b\in\Z^3$ are ***adjacent*** if $\|a-b\|_1=1$.
-The prototile $P$ is ***connected*** if any two of its points are joined by a path of adjacent points
-inside $P$ (formally, they are related by the reflexive transitive closure of
-"both points are in $P$ and adjacent").
+A prototile $P$ is ***connected*** if any two points in $P$
+are joined by a path of adjacent points inside $P$, i.e.,
+they are related by the reflexive transitive closure of
+the relation "both points are in $P$ and adjacent".
 
 \leansnippet{Adjacent,Connected}
 
-**Tiling $\Z^3$.**
+## Tiling \texorpdfstring{$\Z^3$}{Z³}
+
 $P$ ***tiles*** $\Z^3$ if there exists a set $A\subseteq\Z^3$ of translation vectors
 such that every $x\in\Z^3$ can be written in exactly one way as $x=a+p$
 with $a\in A$ and $p\in P$.
-No periodicity or finiteness assumption is placed on $A$.
+(No periodicity or finiteness assumption is placed on $A$.)
 
 \leansnippet{Tiles}
 
-**Main theorem for $\Z^3$.**
+## Main Theorem for \texorpdfstring{$\Z^3$}{Z³}
+
 Deciding whether a connected prototile tiles $\Z^3$ is co-RE-complete
 (`LeanWang.CoREComplete`, from `lean-wang`):
 the non-tilers are recursively enumerable, and every co-RE problem reduces to
 it by a computable many-one reduction.
 Consequently (and using only Mathlib's notion of computable predicate)
 no algorithm decides it.
-In both statements, the proof is a single call to a theorem of the bridge file.
+In both statements, the proof is a single call to a theorem in
+\texttt{[AbstractBridge.lean](https://github.com/edemaine/translation-tiling-paper/blob/main/lean/TranslationTiling/AbstractBridge.lean)}.
 
 \leansnippet{tiling_coRE_complete,tiling_undecidable}
 
-**Tiling $\R^3$.**
-The ***solid body*** `Solid P` of $P$ is the union of the closed unit cubes $p+[0,1]^3$ for $p\in P$.
+## Tiling \texorpdfstring{$\R^3$}{R³}
+The ***solid body*** of $P$ is the union of the closed unit cubes $p+[0,1]^3$ for $p\in P$.
 The prototile $P$ ***tiles $\R^3$*** if there exists a set $A\subseteq\R^3$ of
 (arbitrary real) translations such that, for Lebesgue-almost every $x\in\R^3$,
-there is exactly one $a\in A$ with $x-a\in\mathrm{Solid}(P)$.
-(Almost every, so that cubes may share boundaries.)
+there is exactly one $a\in A$ with $x-a$ in the solid body of $P$.
+("Almost every" so that cubes may share boundaries.)
 
 \leansnippet{Solid,RealTiles}
 
-**Main theorem for $\R^3$.**
+## Main Theorem for \texorpdfstring{$\R^3$}{R³}
+
 Tiling $\R^3$ by translations of the solid body of a single finite connected
 polycube is co-RE-complete (and hence undecidable).
 
-\leansnippet{real_tiling_coRE_complete}
+\leansnippet{real_tiling_coRE_complete,real_tiling_undecidable}
 
-These two theorems are exactly the two halves of @thm:undecidability.
+Together, these four Lean theorems establish @thm:undecidability.
 
 # Our Approach to the Proof @=sec:approach
 
@@ -453,7 +472,8 @@ human consumption, gives the full details of the construction and its proofs.
 It and the complete Lean code are available in
 [the repository](https://github.com/edemaine/translation-tiling-paper)
 \cite{TilingRepo}
-(files `slop.texlish` and `lean/`, respectively).
+(files \texttt{[slop.texlish](https://github.com/edemaine/translation-tiling-paper/blob/main/slop.texlish)}
+and \texttt{[lean/](https://github.com/edemaine/translation-tiling-paper/tree/main/lean)}, respectively).
 We intend to expand this paper with further human-readable explanations
 of the proof.
 

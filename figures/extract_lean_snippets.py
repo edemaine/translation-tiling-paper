@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Split lean/TranslationTiling/Abstract.lean into one snippet file per declaration
+"""Extract imports and split lean/TranslationTiling/Abstract.lean into one snippet file per declaration
 (doc comments and section comments removed; theorem proofs elided) in lean-snippets/, so the paper
 typesets exactly the Lean code."""
 import re
@@ -12,11 +12,15 @@ out = root / "lean-snippets"
 out.mkdir(exist_ok=True)
 
 text = src.read_text()
+imports = re.match(r"(?:import [^\n]+\n)+", text)
+if imports is None:
+    sys.exit("cannot find the opening import block")
+(out / "Imports.lean").write_text(imports.group())
 body = text.split("namespace TranslationTiling.Abstract", 1)[1]
 body = body.rsplit("end TranslationTiling.Abstract", 1)[0]
 body = re.sub(r"/-!.*?-/", "", body, flags=re.S)   # section comments
 body = re.sub(r"/--.*?-/\s*", "", body, flags=re.S)  # doc comments
-names = []
+names = ["Imports"]
 for block in re.split(r"\n\s*\n", body):
     block = block.strip("\n")
     if not block.strip():

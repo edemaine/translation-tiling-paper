@@ -30,6 +30,8 @@ run_cmd do
   for name in [``TranslationTiling.membership,
       ``TranslationTiling.Abstract.tiling_coRE_complete,
       ``TranslationTiling.Abstract.tiling_undecidable,
+      ``TranslationTiling.Abstract.real_tiling_coRE_complete,
+      ``TranslationTiling.Abstract.real_tiling_undecidable,
       ``TranslationTiling.planar_periodicity,
       ``TranslationTiling.Kim.color_bounds,
       ``TranslationTiling.Kim.color_core,

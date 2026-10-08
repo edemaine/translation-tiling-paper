@@ -69,4 +69,9 @@ def RealTiles (P : Prototile) : Prop :=
 theorem real_tiling_coRE_complete : LeanWang.CoREComplete fun P => Connected P ∧ RealTiles P :=
   AbstractBridge.connected_real_coRE_complete
 
+/-- No algorithm decides whether a connected prototile tiles `ℝ³` by arbitrary
+real translations. (Mathlib notions only.) -/
+theorem real_tiling_undecidable : ¬ ComputablePred fun P => Connected P ∧ RealTiles P :=
+  AbstractBridge.connected_real_undecidable
+
 end TranslationTiling.Abstract
