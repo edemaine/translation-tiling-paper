@@ -232,7 +232,7 @@ given known algorithms for 2D [[Bhattacharya,GTStructure]].
     "co-RE-c" (red) denotes co-RE-completeness,
     and yellow marks open cases.
     Blue highlights our new one-tile result
-    (\cref{thm:undecidability}) and its extension to higher dimensions by extrusion.
+    (@thm:undecidability) and its extension to higher dimensions by extrusion.
     Results marked "$^*$" work even when every prototile is connected.
     (Unmarked results allow disconnected tiles.)
     Arrows point to adjacent entries that imply the stated result,
@@ -256,7 +256,7 @@ given known algorithms for 2D [[Bhattacharya,GTStructure]].
     Connectivity of a polycube in $\R^3$ is thus defined according
     to face adjacency of the constituent unit cubes.
   [^lean-complete]:
-    \leanlogo{} theorem \texttt{tiling\_coRE\_complete} (see \cref{sec:lean}).
+    \leanlogo{} theorem \texttt{tiling\_coRE\_complete} (see @sec:lean).
   [^lean-undecidable]:
     \leanlogo{} theorem \texttt{tiling\_undecidable}.
   [^lean-real]:
@@ -289,7 +289,7 @@ to a finite connected set $F_{\calT}\subset\Z^3$ such that
 $\calT$ tiles $\Z^2$ if and only if
 $F_{\calT}$ tiles $\Z^3$ by translations.
 To achieve this, we combine five constructions,
-as summarized in \cref{fig:reduction}:
+as summarized in @fig:reduction:
 
 : figure[tbp]
   \centering
@@ -370,7 +370,7 @@ as summarized in \cref{fig:reduction}:
 
 # Formal Verification in Lean @=sec:lean
 
-The proof of \cref{thm:undecidability} is long and technical.
+The proof of @thm:undecidability is long and technical.
 To make it checkable, we formalized it in the Lean~4 proof assistant,
 building on Mathlib and on the formalization of 
 Wang tiling undecidability (`lean-wang` \cite{LeanWang}).
@@ -438,16 +438,16 @@ polycube is co-RE-complete (and hence undecidable).
 
 \leansnippet{real_tiling_coRE_complete}
 
-These two theorems are exactly the two halves of \cref{thm:undecidability}.
+These two theorems are exactly the two halves of @thm:undecidability.
 
 # Our Approach to the Proof @=sec:approach
 
 We made heavy use of AI to find, write, and formalize the proof,
 and we do not claim that this paper is a complete human-readable account of it.
 Instead, this paper contains only the part intended for humans:
-an explanation of the problem (\cref{sec:intro}),
-the main intuition behind the proof (\cref{sec:overview}),
-and the precise formalization of the statement given in \cref{sec:leaGn}.
+an explanation of the problem (@sec:intro),
+the main intuition behind the proof (@sec:overview),
+and the precise formalization of the statement given in @sec:lean.
 The rigor of the proof comes from the Lean formalization rather than from the text.
 
 A much longer, computer-generated technical article, which is not meant for

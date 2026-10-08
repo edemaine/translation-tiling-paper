@@ -1,4 +1,6 @@
 ::version >= 0.2.0
+::styles
+  @ = \cref
 
 %\title: Undecidability of Polycube Monotiling by Translation in 3D
 \title: Tiling 3D by Translates of a Single Polycube is Undecidable
@@ -329,12 +331,12 @@ $1$ and $2$ already give the distinct values $1$ and $2$.
 Let $A$ have east and north colors $0$ and west and south colors $1$,
 and let $B$ have the opposite colors. These two Wang tiles force a
 checkerboard, with $\tau(u,v)=A$ when $u+v$ is even and $B$ otherwise.
-\Cref{fig:sudoku-example} shows how the valuation pair addresses this
+@fig:sudoku-example shows how the valuation pair addresses this
 tiling in the canonical array. For readability, the figure uses the
 toy primes $p=3,q=5$, as in the arithmetic illustration of
 \cite[Figure~5.1]{GTUndecidable}. The canonical formula and its
 line-rule verification above apply to these primes, but we make no
-soundness claim for them: \cref{thm:GT} uses $p,q>200$.
+soundness claim for them: @thm:GT uses $p,q>200$.
 Every displayed height has the same symbol in every column $n$.
 For example, height $45$ gives the full symbol $(2,4,B)$, because
 $f_3(45)=2$, $f_5(45)=4$, and $(\nu_3(45),\nu_5(45))=(2,1)$.
@@ -627,7 +629,7 @@ The next test is the cycle construction of
   $\epsilon$ have the same image in \eqref{eq:cycle-map}, a contradiction
   to bijectivity.  All maps and all prototiles used are finite.
 
-\Cref{fig:cycle} illustrates the dependency cycle in this argument.
+@fig:cycle illustrates the dependency cycle in this argument.
 
 : figure[tbp]
   \centering
@@ -674,7 +676,7 @@ The next test is the cycle construction of
     for every choice of the maps.}
   \label{fig:cycle}
 
-Apply \cref{lem:cycle} to every word outside $\calW$, using the cycle
+Apply @lem:cycle to every word outside $\calW$, using the cycle
 of all ordinary channels.  Also apply it to the pair $(\eta_t,n)$
 with labels $*$ and $j$, for every $j\in\Sigma\setminus B_t$.
 The resulting equations are exactly the conditions
@@ -729,10 +731,10 @@ Thus both maps
   \end{aligned}
 are bijections.  Repeated entries in the list have different indices.
 
-\Cref{fig:activation} gives a small example of this list on
+@fig:activation gives a small example of this list on
 $(\Cyc2)\times(\Cyc3)$. Only the multiplicity pattern is illustrated;
 the prime choices in the full encoding remain those specified in
-\cref{sec:encoding}.
+@sec:encoding.
 
 : figure[tbp]
   \centering
@@ -785,7 +787,7 @@ the prime choices in the full encoding remain those specified in
     entries make the activation prototile a set. An inactive ordinary
     channel cannot satisfy its required uniform coverage, whereas
     the marginal bijections \eqref{eq:orderings} support the block
-    inverse in \cref{lem:block}.}
+    inverse in @lem:block.}
   \label{fig:activation}
 
 ## Finite Activation Prototiles
@@ -936,7 +938,7 @@ alphabet $\Sigma$.
   $$
    W(n,m)=\min\calA_n((0,m)).
   $$
-  The minimum exists by \cref{lem:active-everywhere}.  Dependence on
+  The minimum exists by @lem:active-everywhere.  Dependence on
   $L_n$ means that $W(n,L_n(x))$ belongs to $\calA_n(x)$.
   Thus the first exclusion in \eqref{eq:exclusions} proves the line
   rule at every $x=(d,e)$.
@@ -947,7 +949,7 @@ alphabet $\Sigma$.
    W(n,L_n(x^{(t)}))\in B_t\qquad(n\in I).
   $$
   Both integer components therefore take the distinct values
-  $1$ and $2$ in every column.  \Cref{thm:GT} gives a domino solution
+  $1$ and $2$ in every column.  @thm:GT gives a domino solution
   on $\N^2$, and compactness gives one on $\Z^2$.
 # One Common Solution @=sec:completeness
 
@@ -1018,7 +1020,7 @@ on exactly the $j$th digit, so its active set is $\{j\}$.
 ## Ordinary Outputs
 
 Suppose the domino system has a solution, and let $W$ be the canonical
-array of \cref{thm:GT}.  For ordinary channel $i$ set
+array of @thm:GT.  For ordinary channel $i$ set
 : equation \label{eq:ordinary-outputs}
   j_i(x)=W(i,L_i(x)),\qquad
   c_i(x,k)=C_{i,j_i(x)}(k_i),\qquad
@@ -1027,7 +1029,7 @@ The active set is exactly $\{j_i(x)\}$, and the useful output has
 the required dependence.  Every activation offset for this channel
 satisfies $L_i(h)=0$, so all sources in its test use the same label
 $j_i(x)$ and the same block partition.  The test map is therefore
-\eqref{eq:block-map}.  \Cref{lem:block,lem:fiber} verify every ordinary
+\eqref{eq:block-map}.  @lem:block,lem:fiber verify every ordinary
 activation equation.  This calculation permits any valid Sudoku array;
 the canonical choice will only be needed to accommodate the seeds.
 
@@ -1077,7 +1079,7 @@ only on $s(x)$ and $k_i$, as required.  Its high output need not have
 this dependence.
 
 : lemma @=lem:seed-completeness
-  With \cref{eq:shared-z,eq:seed-outputs}, both seed activation
+  With @eq:shared-z,eq:seed-outputs, both seed activation
   equations hold for the same graph outputs.
 
 : proof
@@ -1097,7 +1099,7 @@ this dependence.
   $y_{i'}(s')=y_{i'}(s'')-x_1$.
   This uniquely determines $s'$ and $\tau=s(x)-s'$ before $l$ or
   $\delta$ has been chosen.  For this fixed $\tau$, apply
-  \cref{lem:block} to the offsets $h_1(l,\delta,\tau)$.
+  @lem:block to the offsets $h_1(l,\delta,\tau)$.
   It gives unique $l,\delta$ producing $(c_i^*,\beta_i^*)$.
   Their congruences preserve the already recovered value of $z$.
 
@@ -1131,18 +1133,18 @@ this dependence.
 
 : proof
   Restrict a domino solution to $\N^2$ and use its canonical Sudoku
-  array.  Equations \cref{eq:ordinary-outputs,eq:shared-z,eq:seed-outputs}
+  array.  Equations @eq:ordinary-outputs,eq:shared-z,eq:seed-outputs
   define all useful, high, and auxiliary outputs of one graph.
   Equation \eqref{eq:shear} supplies its actual $v_i$ coordinates,
   so \eqref{eq:graph} holds.
 
   The useful outputs have the required dependencies.
-  \Cref{lem:block,lem:seed-completeness} prove every activation
+  @lem:block,lem:seed-completeness prove every activation
   equation.  At each $x$, the singleton ordinary active sets form
   the allowed word $(W(n,L_n(x)))_{n\in I}$, so all word exclusions
   hold.  When seed $\eta_t$ is active, \eqref{eq:seed-regions} and
   \eqref{eq:canonical-seed} put every ordinary active label in $B_t$.
-  Thus all seed exclusions hold as well.  \Cref{lem:cycle} verifies
+  Thus all seed exclusions hold as well.  @lem:cycle verifies
   their tiling equations on this same graph.
 
 : theorem @=thm:cyclic-system
@@ -1153,7 +1155,7 @@ this dependence.
   $A\oplus F=\Z^2\times V$ for every $F\in\mathscr F$.
 
 : proof
-  Soundness and completeness are \cref{prop:soundness,prop:completeness}.
+  Soundness and completeness are @prop:soundness,prop:completeness.
   All choices in the construction concern finite sets, maps, prime
   searches, or Chinese remainder calculations.  They can be made by
   fixed enumeration orders.  In particular, no knowledge of a domino
@@ -1192,7 +1194,7 @@ We use the prime-cyclic version in \cite[Section~6]{OpenAI2026}.
 
 : lemma @=lem:stack
   Let $F_1,\ldots,F_s$ be prototiles in an abelian group
-  $H$, and choose a partition as in \cref{lem:partition}.  Set
+  $H$, and choose a partition as in @lem:partition.  Set
   $$
    F^{\rm st}=\bigcup_{\nu=1}^s(F_\nu\times E_\nu).
   $$
@@ -1225,7 +1227,7 @@ We use the prime-cyclic version in \cite[Section~6]{OpenAI2026}.
   whole group if and only if the domino system is solvable.
 
 : proof
-  Apply \cref{lem:stack} to \cref{thm:cyclic-system}, choosing $\ell$
+  Apply @lem:stack to @thm:cyclic-system, choosing $\ell$
   coprime to $|V|$.  The group $V\times\Cyc\ell$ is cyclic of order
   $m=\ell|V|$.  Thus stacking enlarges the modulus while keeping the
   finite coordinate cyclic.  All steps are effective.
@@ -1342,7 +1344,7 @@ $n\Z^3$ and repetition every $m$ grid steps in the third coordinate.
    C_1=\bigsqcup_{u\in U\setminus\{0\}}n(B+u).
   $$
   These sets partition $n\Z^3$ and are invariant under $nw$.
-  \Cref{lem:rigid} gives an exact mixed tiling by $T_1,T_2$.
+  @lem:rigid gives an exact mixed tiling by $T_1,T_2$.
   Grouping its components according to \eqref{eq:quotient-tile}
   gives $nB\oplus\widetilde F=\Z^3$.
 
@@ -1355,7 +1357,7 @@ $n\Z^3$ and repetition every $m$ grid steps in the third coordinate.
   $$
   The displayed union is disjoint, because a repeated translation
   vector would repeat a nonempty copy of $T_1$ in an exact tiling.
-  \Cref{lem:rigid} implies that $C_1,C_2$ partition $n\Z^3$ and
+  @lem:rigid implies that $C_1,C_2$ partition $n\Z^3$ and
   are invariant under $nw$.  In particular
   $\widetilde A\subset n\Z^3$.  Writing
   $B=\{a/n:a\in\widetilde A\}\subset\Z^3$,
@@ -1464,7 +1466,7 @@ pieces in overlapping boxes, while their lattice points remain disjoint.
     E^{\rm conn}=sE\oplus S_l
       =\bigsqcup_{e\in E}(se+S_l).
   Every piece is connected and every pair of different pieces
-  is adjacent by \cref{lem:kim-shell}, so their union is connected.
+  is adjacent by @lem:kim-shell, so their union is connected.
   The representation is unique because $S_l$ is a fundamental domain
   for $s\Z^3$.  All sets in the construction are finite and explicit.
 
@@ -1476,7 +1478,7 @@ pieces in overlapping boxes, while their lattice points remain disjoint.
   Conversely, suppose $A'\oplus E^{\rm conn}=\Z^3$.
   Decomposing every copy using \eqref{eq:connected-tile} gives a
   tiling by $S_l$ with set of translations $A'\oplus sE$.  By
-  \cref{lem:kim-shell},
+  @lem:kim-shell,
   $$
    A'\oplus sE=t+s\Z^3
   $$
@@ -1489,10 +1491,10 @@ pieces in overlapping boxes, while their lattice points remain disjoint.
   This proves the tiling equivalence, the $k=1$ case of
   \cite[Theorem~2.5]{Kim}.
 
-: proof[Proof of \cref{thm:main}]
+: proof[Proof of @thm:main]
   Construct the domino relations of the input Wang tiles, apply
-  \cref{cor:quotient}, apply \cref{thm:MSS}, and finally apply
-  \cref{prop:connected}.  The last step makes the output connected.
+  @cor:quotient, apply @thm:MSS, and finally apply
+  @prop:connected.  The last step makes the output connected.
   The composition is a computable many-one reduction and keeps the
   ambient dimension equal to three for every input.  The classical
   domino problem gives co-RE-hardness.
@@ -1518,7 +1520,7 @@ $$
  E^{\rm conn}=S_2\sqcup((30,30,30)+S_2),\qquad
  |S_2|=27{,}000,\quad |E^{\rm conn}|=54{,}000.
 $$
-\Cref{fig:connected} renders these exact sets as unit-cube unions.
+@fig:connected renders these exact sets as unit-cube unions.
 The two copies of $S_2$ are disjoint and share unit-square faces,
 joining the two components without adding a separate connector.
 This is an example of the connectedness step, rather than the
@@ -1585,7 +1587,7 @@ translational monotiling, even with a connected input prototile.
 ## Arbitrary Real Translations of Unit-Cube Unions
 
 We now prove the Euclidean formulation using the tiling convention
-from \cref{sec:definitions}.  For $v\in\R^d$, write
+from @sec:definitions.  For $v\in\R^d$, write
 $\|v\|_\infty=\max_j|v_j|$ for the ***sup norm***.
 Discrete-to-Euclidean tiling reductions also appear in
 \cite[Section~2]{GTPeriodic}; the unit-cube existence equivalence
@@ -1630,7 +1632,7 @@ needed here has the direct sampling proof below.
   problem is decidable.
 
 : proof
-  Apply \cref{lem:rounding} to \cref{thm:main,prop:planar}.
+  Apply @lem:rounding to @thm:main,prop:planar.
   The lattice paths in $F$ give chains of cubes sharing faces, so
   both the union and its interior are connected.
 
