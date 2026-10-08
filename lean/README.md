@@ -4,8 +4,24 @@ The complete computable Wang-to-tile reduction and co-r.e.-completeness in
 dimension three are proved unconditionally. Its output is a nonempty,
 face-connected tile, tileable exactly when the input Wang tiles tile the plane.
 
-Read [TranslationTiling/Statements.lean](TranslationTiling/Statements.lean) for
-the short public statements. `compiler_effectivity` and `compiler_correct`
+Start with [Abstract.lean](TranslationTiling/Abstract.lean) for the
+human-readable definitions and main theorem statements used in the paper.
+Its prototiles are lists of integer triples; connectivity is defined by paths
+of adjacent points, lattice tiling by unique decompositions, and real tiling
+by almost-everywhere unique coverage by translates of the solid body. The
+statements give co-r.e.-completeness for connected prototiles in both `ℤ³`
+and `ℝ³`, and undecidability in `ℤ³`.
+
+[AbstractBridge.lean](TranslationTiling/AbstractBridge.lean) proves these
+statements from the rest of the development. It identifies integer triples
+with `Fin 3 → ℤ` by computable inverse maps, proves equivalence of the
+connectivity and lattice/real tiling predicates, and transfers co-r.e.-completeness
+and undecidability. The definitions and theorem statements in `Abstract.lean`
+make the claims inspectable; Lean checks the bridge and the underlying proofs.
+
+Read [Statements.lean](TranslationTiling/Statements.lean) for the broader public
+interface, including the compiler and dimension-optimality results.
+`compiler_effectivity` and `compiler_correct`
 prove uniform computability and connected correctness. Every public theorem,
 including `reduction`, `connected_completeness`, `real_completeness`, and
 `dimension_optimality`, has no imported mathematical hypothesis. The former
@@ -104,7 +120,7 @@ proved by the pinned Wang dependency, using its independent Kari–Hooper certif
 | Primitive-recursive finite satisfiability test; co-r.e. membership in every fixed dimension | `Proofs/FiniteSearch.lean` |
 | Primitive-recursive finite cut test, computable face-connectivity, and connected co-r.e. membership in every fixed dimension | `Proofs/FiniteConnectivity.lean` |
 | Total computable witness search, computable prime search, and decidability from positive certificates | `Proofs/ComputableSearch.lean`, `Proofs/Decidability.lean` |
-| Quadrant/plane Wang equivalence; soundness from an activated label system and the raw Sudoku hypothesis | `Proofs/Wang.lean`, `Proofs/SudokuSoundness.lean` |
+| Quadrant/plane Wang equivalence; extraction of Wang tilings from an activated label system and Sudoku soundness | `Proofs/Wang.lean`, `Proofs/SudokuSoundness.lean` |
 | Last-nonzero-digit arithmetic, two-prime CRT, canonical Sudoku solutions, and unconditional Sudoku–Wang equivalence | `Proofs/Arithmetic.lean`, `Proofs/Canonical.lean`, `Proofs/WordResidues.lean`, `Proofs/CanonicalLineRule.lean` |
 | Initial and finite-depth arithmetic structure, rescaling compatibility, decorated rectangle extraction, and Sudoku soundness | `SudokuArithmetic/*.lean` |
 | Bounded coefficient equivalence, executable finite word-rule search, and exact enumeration of allowed words | `Proofs/FiniteWordRule.lean` |
@@ -121,7 +137,7 @@ proved by the pinned Wang dependency, using its independent Kari–Hooper certif
 | Kim's residue representatives, shell fundamental-domain coverage, volume `s³`, disjoint grid translates, and contacts between whole shells | `Proofs/KimResidues.lean`, `Proofs/KimShellGeometry.lean` |
 | Kim's coarse color classes, dented pieces, cube boundary, and shell are face connected | `Proofs/FacePaths.lean`, `Proofs/Kim*Connectivity.lean` |
 | Unconditional arbitrary-tiling Kim shell coset rigidity | `Proofs/KimBlocks.lean`, `Proofs/KimDefectGeometry.lean`, `Proofs/KimDentForcing.lean`, `Proofs/KimRigidity.lean` |
-| Shell assembly preserves tilability under a fundamental-domain and coset-rigidity hypothesis | `Proofs/ShellAssembly.lean` |
+| Generic shell-assembly equivalence from fundamental-domain coverage and coset rigidity | `Proofs/ShellAssembly.lean` |
 | MSS frame geometry and a counterexample to the one-point local forcing argument (not to global rigidity) | `MSS/FrameGeometry.lean`, `MSS/LocalForcingCheck.lean` |
 | MSS frame connectivity and separation, neighbors in frames, and uniqueness of the singleton in the punctured body | `MSS/FrameConnectivity.lean`, `MSS/FrameSeparation.lean`, `MSS/FrameIsolation.lean`, `MSS/BodyIsolation.lean` |
 | Unconditional arbitrary mixed-tiling MSS rigidity, including both directions | `MSS/FirstBump.lean`, `MSS/FirstPeriod.lean`, `MSS/RayPacking.lean`, `MSS/TransverseCoverage.lean`, `MSS/FrameMatching.lean`, `MSS/CommonForcing.lean`, `MSS/GridCenters.lean`, `MSS/ColorPeriods.lean`, `MSS/GridAssembly.lean` |
@@ -181,15 +197,14 @@ The local forcing sentence in MSS Lemma 2.1 does not by itself establish
 rigidity. `MSS.unintended_neighbor` gives two disjoint copies of `baseShape`:
 one at zero and one translated by `(-214, -1, 200)`. The latter covers
 `201 e₂` through its first detached frame, although its translation is not
-`201 e₂`. These two copies are not claimed to extend to a tiling. A proof of
-the full rigidity input uses further coverage constraints. The checked proof
-in `MSS/GridAssembly.lean` supplies them without that local claim.
+`201 e₂`. These two copies are not claimed to extend to a tiling. The full rigidity
+proof in `MSS/GridAssembly.lean` uses further coverage constraints.
 
 ## Online formalizations inspected (October 7, 2026)
 
 The most relevant source is
 [`openai/math`, commit `adc7f1241b42e322a6451854ab7e4b4c146bf78a`](https://github.com/openai/math/tree/adc7f1241b42e322a6451854ab7e4b4c146bf78a/lean/OAI/Geometry/PeriodicTiling),
-already cited by the draft. It uses Lean 4.34.1, so direct imports into this
+already cited by the paper. It uses Lean 4.34.1, so direct imports into this
 4.31.0 project require a port.
 
 - [PlanarPeriodicity.lean](https://github.com/openai/math/blob/adc7f1241b42e322a6451854ab7e4b4c146bf78a/lean/OAI/Geometry/PeriodicTiling/PlanarPeriodicity.lean)

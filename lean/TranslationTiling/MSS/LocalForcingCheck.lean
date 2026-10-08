@@ -3,7 +3,8 @@ import TranslationTiling.MSS.FrameGeometry
 /-! A check on the one-point local forcing argument in MSS Lemma 2.1.
 This does not refute the global rigidity theorem. It shows that covering the
 neighboring cube center while avoiding the original copy does not alone force
-the intended neighbor. A proof of rigidity must use the remaining coverage. -/
+the intended neighbor. The global proof in `MSS.GridAssembly` uses further
+coverage constraints. -/
 
 namespace TranslationTiling.MSS
 

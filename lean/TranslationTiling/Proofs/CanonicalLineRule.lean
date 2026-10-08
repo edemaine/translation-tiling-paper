@@ -31,8 +31,7 @@ private theorem valid_shiftedRectangle {T : LeanWang.TileSet}
   · intro u v hv
     simpa only [Nat.add_assoc] using hτ.2 (k + u.val, l + v.val)
 
-/-- The canonical decorated solution satisfies every integer-slope line.
-This completeness direction is proved without the imported soundness hypothesis. -/
+/-- The canonical decorated solution satisfies every integer-slope line. -/
 theorem canonical_lineRule {T : LeanWang.TileSet}
     (τ : ℕ × ℕ → LeanWang.TileIn T) (hτ : LeanWang.ValidQuarterTiling T τ)
     (zeroTile : LeanWang.TileIn T := τ (0, 0)) : LineRule (canonical τ zeroTile) := by

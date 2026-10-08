@@ -4,7 +4,7 @@ import Mathlib.Data.Nat.Factorial.Basic
 namespace TranslationTiling
 
 /-- A finite-index period subgroup contains a whole rectangular grid.
-Thus the imported planar theorem supplies periods suitable for a torus search. -/
+This supplies periods suitable for a finite torus search. -/
 theorem FullyPeriodic.grid {d : ℕ} {A : Set (Lattice d)} (h : FullyPeriodic A) :
     ∃ m : ℕ, 0 < m ∧ ∀ v : Lattice d, Period A (m • v) := by
   obtain ⟨P, hP, hp⟩ := h

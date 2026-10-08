@@ -80,7 +80,7 @@ theorem shell_connected (l : ℕ) (hl : 0 < l) : FaceConnected (shell l) := by
   exact route _ _ (boundary_connected l hl _ (List.getElem_mem hi) _ (List.getElem_mem hj))
     _ _ ⟨i, hi, rfl, a, ha, rfl⟩ ⟨j, hj, rfl, b, hb, rfl⟩
 
-/-- Arbitrary-tiling coset rigidity is the only remaining Kim input. -/
+/-- Combine proved shell connectivity and geometry with coset rigidity. -/
 theorem rigidity_of_cosets
     (cosets : CosetRigidity) : Rigidity :=
   rigidity_of_connected_cosets (fun l hl => shell_connected l (by omega)) cosets

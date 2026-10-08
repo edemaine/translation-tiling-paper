@@ -121,8 +121,8 @@ theorem connectedTile_primrec : Primrec connectedTile := by unfold connectedTile
 
 theorem connectedTile_computable : Computable connectedTile := connectedTile_primrec.to_comp
 
-/-- Any computable lattice compiler extends to a computable connected compiler;
-all shell effectivity is proved here, rather than imported with rigidity. -/
+/-- Extend a computable lattice compiler to a connected compiler using
+coset rigidity and the proved shell effectivity. -/
 theorem connectedReduction_of_reduction (rigid : Kim.CosetRigidity) (r : WangReduction) :
     Nonempty ConnectedWangReduction := by
   exact ⟨{

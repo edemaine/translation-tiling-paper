@@ -4,8 +4,8 @@ import TranslationTiling.Proofs.FullDifferencePartition
 namespace TranslationTiling.Stacking
 
 /-- A sufficiently large fresh cyclic prime consolidates any finite nonempty
-family of tiling equations. This proves the existence equivalence; a computable
-choice of the partition is a separate obligation. -/
+family of tiling equations. The computable partition choice is proved in
+`Compiler.EffectivePartition`. -/
 theorem exists_cyclic_stack {H : Type*} [AddCommGroup H]
     (s : ℕ) (hs : 0 < s) (F : Fin s → Finset H)
     (hF : ∀ i, (F i).Nonempty) (forbidden : Finset ℕ) (lower : ℕ) :

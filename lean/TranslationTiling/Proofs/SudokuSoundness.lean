@@ -4,8 +4,8 @@ import Mathlib.Tactic.NormNum
 
 namespace TranslationTiling.Sudoku
 
-/-- The properties obtained from dependence, exclusions, and activation.
-This interface is a proof obligation for the gadget construction, not an external hypothesis. -/
+/-- The active-label properties obtained from dependence, exclusions, and
+activation by `Compiler.activeSystemOfSolves` in `Compiler.Soundness`. -/
 structure ActiveSystem (T : LeanWang.TileSet) where
   labels : Column → ℤ → Finset (Symbol T)
   nonempty : ∀ n m, (labels n m).Nonempty
