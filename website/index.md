@@ -23,6 +23,7 @@ dimensions is decidable.
 
 The [GitHub repository](https://github.com/edemaine/translation-tiling-paper)
 contains the document sources, figures, finite verification code, and a
-complete Lean formalization of the reduction and main results. See the
+[complete Lean formalization](https://github.com/edemaine/translation-tiling-paper/tree/main/lean)
+of the reduction and main results. See the
 [formalization notes](https://github.com/edemaine/translation-tiling-paper/blob/main/lean/README.md)
 for formal statements, checked proofs, and build instructions.
