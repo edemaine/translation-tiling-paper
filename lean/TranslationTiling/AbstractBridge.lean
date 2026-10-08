@@ -112,26 +112,113 @@ theorem tiles_iff (F : Tile 3) : Tiles F ↔ AbsTiles (toProto F) := by
 @[simp] theorem ofProto_toProto (F : Tile 3) : ofProto (toProto F) = F := by
   simp [toProto, ofProto, List.map_map, Function.comp_def, ofPoint_toPoint]
 
-theorem coREComplete_transfer (h : LeanWang.CoREComplete (@Tiles 3)) :
-    LeanWang.CoREComplete AbsTiles := by
+/-! ### Connected prototiles -/
+
+/-- Face adjacency: the points are at `ℓ¹` distance one. -/
+def AbsAdjacent (a b : ℤ × ℤ × ℤ) : Prop :=
+  |a.1 - b.1| + |a.2.1 - b.2.1| + |a.2.2 - b.2.2| = 1
+
+/-- The predicate of `Abstract.Connected`, spelled out. -/
+def AbsConnected (P : List (ℤ × ℤ × ℤ)) : Prop :=
+  ∀ p ∈ P, ∀ q ∈ P, Relation.ReflTransGen (fun a b => a ∈ P ∧ b ∈ P ∧ AbsAdjacent a b) p q
+
+theorem faceAdjacent_iff (a b : Lattice 3) :
+    FaceAdjacent a b ↔ AbsAdjacent (toPoint a) (toPoint b) := by
+  constructor
+  · rintro ⟨i, h | h⟩ <;> subst h <;> fin_cases i <;> simp [AbsAdjacent, toPoint]
+  · intro h
+    simp only [AbsAdjacent, toPoint, abs_eq_max_neg] at h
+    have h' : (b 0 = a 0 + 1 ∧ b 1 = a 1 ∧ b 2 = a 2) ∨ (b 0 = a 0 ∧ b 1 = a 1 + 1 ∧ b 2 = a 2) ∨
+        (b 0 = a 0 ∧ b 1 = a 1 ∧ b 2 = a 2 + 1) ∨ (a 0 = b 0 + 1 ∧ a 1 = b 1 ∧ a 2 = b 2) ∨
+        (a 0 = b 0 ∧ a 1 = b 1 + 1 ∧ a 2 = b 2) ∨ (a 0 = b 0 ∧ a 1 = b 1 ∧ a 2 = b 2 + 1) := by
+      omega
+    rcases h' with ⟨h0, h1, h2⟩ | ⟨h0, h1, h2⟩ | ⟨h0, h1, h2⟩ | ⟨h0, h1, h2⟩ | ⟨h0, h1, h2⟩ |
+      ⟨h0, h1, h2⟩
+    · exact ⟨0, Or.inl (by ext j; fin_cases j <;> simp [h0, h1, h2, add_comm])⟩
+    · exact ⟨1, Or.inl (by ext j; fin_cases j <;> simp [h0, h1, h2, add_comm])⟩
+    · exact ⟨2, Or.inl (by ext j; fin_cases j <;> simp [h0, h1, h2, add_comm])⟩
+    · exact ⟨0, Or.inr (by ext j; fin_cases j <;> simp [h0, h1, h2, add_comm])⟩
+    · exact ⟨1, Or.inr (by ext j; fin_cases j <;> simp [h0, h1, h2, add_comm])⟩
+    · exact ⟨2, Or.inr (by ext j; fin_cases j <;> simp [h0, h1, h2, add_comm])⟩
+
+theorem faceConnected_iff (F : Tile 3) : FaceConnected F ↔ AbsConnected (toProto F) := by
+  constructor
+  · intro h p hp q hq
+    obtain ⟨x, hx, rfl⟩ := List.mem_map.mp hp
+    obtain ⟨y, hy, rfl⟩ := List.mem_map.mp hq
+    refine Relation.ReflTransGen.lift toPoint ?_ (h x hx y hy)
+    rintro a b ⟨ha, hb, hab⟩
+    exact ⟨List.mem_map_of_mem ha, List.mem_map_of_mem hb, (faceAdjacent_iff a b).mp hab⟩
+  · intro h x hx y hy
+    have := h _ (List.mem_map_of_mem (f := toPoint) hx) _ (List.mem_map_of_mem (f := toPoint) hy)
+    have key : ∀ a b : ℤ × ℤ × ℤ, (a ∈ toProto F ∧ b ∈ toProto F ∧ AbsAdjacent a b) →
+        (ofPoint a ∈ F ∧ ofPoint b ∈ F ∧ FaceAdjacent (ofPoint a) (ofPoint b)) := by
+      rintro a b ⟨ha, hb, hab⟩
+      obtain ⟨a', ha', rfl⟩ := List.mem_map.mp ha
+      obtain ⟨b', hb', rfl⟩ := List.mem_map.mp hb
+      simp only [ofPoint_toPoint]
+      exact ⟨ha', hb', (faceAdjacent_iff a' b').mpr hab⟩
+    simpa [ofPoint_toPoint] using Relation.ReflTransGen.lift ofPoint key this
+
+/-! ### Real translations -/
+
+/-- The solid body of a prototile: the union of its unit cubes. -/
+def AbsSolid (P : List (ℤ × ℤ × ℤ)) : Set (Fin 3 → ℝ) :=
+  {x | ∃ p ∈ P, x - ![(p.1 : ℝ), p.2.1, p.2.2] ∈ Set.Icc 0 1}
+
+/-- The predicate of `Abstract.RealTiles`, spelled out. -/
+def AbsRealTiles (P : List (ℤ × ℤ × ℤ)) : Prop :=
+  ∃ A : Set (Fin 3 → ℝ), ∀ᵐ x ∂MeasureTheory.volume, ∃! a : A, x - a.val ∈ AbsSolid P
+
+theorem realTiles_iff (F : Tile 3) : RealTiles F ↔ AbsRealTiles (toProto F) := by
+  have hc : ∀ y : Fin 3 → ℝ, y ∈ CubeUnion F ↔ y ∈ AbsSolid (toProto F) := by
+    intro y
+    simp only [CubeUnion, AbsSolid, toProto, List.mem_map, Set.mem_setOf_eq,
+      exists_exists_and_eq_and]
+    refine exists_congr fun f => and_congr_right fun _ => ?_
+    simp only [toPoint, Set.mem_Icc, Pi.le_def]
+    constructor
+    · intro h
+      refine ⟨fun i => ?_, fun i => ?_⟩ <;> fin_cases i <;> simp [(h _).1, (h _).2] <;> linarith [(h 0).1, (h 0).2, (h 1).1, (h 1).2, (h 2).1, (h 2).2]
+    · rintro ⟨h0, h1⟩ i
+      have a := h0 i
+      have b := h1 i
+      fin_cases i <;> simp at a b ⊢ <;> constructor <;> linarith
+  unfold RealTiles AbsRealTiles
+  simp only [hc]
+
+/-! ### Transfer -/
+
+theorem transfer {q : Tile 3 → Prop} {q' : List (ℤ × ℤ × ℤ) → Prop}
+    (h : LeanWang.CoREComplete q) (hiff : ∀ F, q F ↔ q' (toProto F)) :
+    LeanWang.CoREComplete q' := by
   refine ⟨?_, ?_⟩
   · refine _root_.REPred.of_eq (LeanWang.REPred.comp h.1 ofProto_computable) fun P => ?_
-    exact not_congr (by simpa only [toProto_ofProto] using tiles_iff (ofProto P))
+    exact not_congr (by simpa only [toProto_ofProto] using hiff (ofProto P))
   · intro α _ p hp
-    exact (h.2 p hp).trans ⟨toProto, toProto_computable, tiles_iff⟩
+    exact (h.2 p hp).trans ⟨toProto, toProto_computable, hiff⟩
 
-/-- Main theorem in the form used by `Abstract.lean`. -/
-theorem coRE_complete : LeanWang.CoREComplete AbsTiles :=
-  coREComplete_transfer TranslationTiling.completeness
+theorem connected_coRE_complete :
+    LeanWang.CoREComplete fun P => AbsConnected P ∧ AbsTiles P :=
+  transfer TranslationTiling.connected_completeness fun F => by
+    rw [← faceConnected_iff, ← tiles_iff]; rfl
 
-/-- Transfer undecidability from the lattice model using co-r.e.-hardness. -/
-theorem undecidable_of_coRE_complete (h : LeanWang.CoREComplete AbsTiles) :
-    ¬ ComputablePred AbsTiles := by
+theorem connected_real_coRE_complete :
+    LeanWang.CoREComplete fun P => AbsConnected P ∧ AbsRealTiles P :=
+  transfer TranslationTiling.connected_completeness fun F => by
+    rw [← faceConnected_iff, ← realTiles_iff, realTiles_iff_tiles]; rfl
+
+/-- Co-r.e.-completeness implies undecidability (Mathlib's halting problem). -/
+theorem undecidable_of_coRE_complete {α : Type} [Primcodable α] {p : α → Prop}
+    (h : LeanWang.CoREComplete p) : ¬ ComputablePred p := by
   intro hc
-  exact TranslationTiling.undecidability
-    (ComputablePred.computable_of_manyOneReducible (h.2 _ (membership 3)) hc)
+  have hre : LeanWang.CoREPred fun c : Nat.Partrec.Code => ¬ (Nat.Partrec.Code.eval c 0).Dom :=
+    (Partrec.dom_re (Nat.Partrec.Code.eval_part.comp Computable.id (Computable.const 0))).of_eq
+      fun _ => by simp
+  have hcomp := ComputablePred.computable_of_manyOneReducible (h.2 _ hre) hc
+  exact ComputablePred.halting_problem 0 (by simpa using hcomp.not)
 
-theorem undecidable : ¬ ComputablePred AbsTiles :=
-  undecidable_of_coRE_complete coRE_complete
+theorem connected_undecidable : ¬ ComputablePred fun P => AbsConnected P ∧ AbsTiles P :=
+  undecidable_of_coRE_complete connected_coRE_complete
 
 end TranslationTiling.AbstractBridge
