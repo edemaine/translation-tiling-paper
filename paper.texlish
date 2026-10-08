@@ -40,7 +40,7 @@
   aliascnt
   xurl
   natbib: numbers,sort&compress
-  hyperref: colorlinks=true,allcolors=blue
+  hyperref
   cleveref: capitalise,nameinlink,noabbrev
 \usetikzlibrary{arrows.meta,positioning,calc}
 \definecolor{figblue}{RGB}{41,110,166}
@@ -87,6 +87,17 @@
 \numberwithin{equation}{section}
 \setlength{\emergencystretch}{2em}
 \setlist{itemsep=3pt,topsep=5pt}
+\urlstyle{same}
+
+% Put figures and text together
+\def\textfraction{0.01}
+\def\topfraction{0.99}
+\def\bottomfraction{0.99}
+\def\floatpagefraction{0.8}
+\def\dblfloatpagefraction{0.8}
+\setcounter{topnumber}{10}
+\setcounter{bottomnumber}{10}
+\setcounter{totalnumber}{20}
 
 : abstract
   We prove co-RE-completeness, and thus undecidability, of the following
@@ -246,28 +257,27 @@ as summarized in \cref{fig:reduction}:
   \begin{tikzpicture}[
     font=\small, >=Latex,
     stage/.style={draw=black!55, rounded corners=2pt, fill=black!3,
-      text width=4.0cm, minimum height=1.05cm, align=center},
+      text width=4.0cm, minimum height=1.4cm, align=center},
+    arrowlabel/.style={font=\small\bfseries, fill=white, inner sep=2pt},
     reductionarrow/.style={->, semithick, draw=black!65}]
-    \node[stage] (wang) at (0,0) {Wang tiling\\of the plane};
-    \node[stage] (sudoku) at (5.3,0) {Decorated Sudoku array\\arithmetic components\\nonconstant in each column};
-    \node[stage] (system) at (10.6,0) {Simultaneous tiling equations\\with a cyclic finite factor};
-    \node[stage] (stacked) at (0,-2) {One tile in $\Z^2$\\with a cyclic finite factor};
-    \node[stage] (lattice) at (5.3,-2) {One finite lattice tile\\in $\Z^3$};
-    \node[stage] (connected) at (10.6,-2) {One connected tile\\in $\Z^3$};
-    \draw[reductionarrow] (wang) -- (sudoku);
-    \draw[reductionarrow] (sudoku) -- (system);
+    \node[stage] (wang) at (0,0) {Wang tiling\\of $\Z^2$};
+    \node[stage] (sudoku) at (5.5,0) {Sudoku array};
+    \node[stage] (system) at (11,0) {Family of prototiles\\in $\Z^2\times(\Z/m\Z)$\\with a common\\set of translations};
+    \node[stage] (stacked) at (0,-2.4) {Single prototile\\in $\Z^2\times(\Z/m\Z)$\\with a larger $m$};
+    \node[stage] (lattice) at (5.5,-2.4) {Single prototile\\in $\Z^3$};
+    \node[stage] (connected) at (11,-2.4) {Single connected prototile\\in $\Z^3$};
+    \draw[reductionarrow] (wang) -- node[arrowlabel,above] {1} (sudoku);
+    \draw[reductionarrow] (sudoku) -- node[arrowlabel,above] {2} (system);
     \draw[reductionarrow,rounded corners=4pt]
-      (system.east) -- (13.2,0) -- (13.2,-1)
-      -- (-2.6,-1) -- (-2.6,-2) -- (stacked.west);
-    \draw[reductionarrow] (stacked) -- (lattice);
-    \draw[reductionarrow] (lattice) -- (connected);
+      (system.east) -- (13.5,0) -- (13.5,-1.2)
+      -- node[arrowlabel] {3} (-2.5,-1.2)
+      -- (-2.5,-2.4) -- (stacked.west);
+    \draw[reductionarrow] (stacked) -- node[arrowlabel,above] {4} (lattice);
+    \draw[reductionarrow] (lattice) -- node[arrowlabel,above] {5} (connected);
   \end{tikzpicture}
-  \caption{Reduction chain in our proof.
-    Arrows indicate the direction of the reduction; every step preserves
-    existence of a solution in both directions. The Sudoku interface is from
-    \cite[Section~5]{GTUndecidable}; the cyclic encoding adapts
-    \cite[Sections~3--6]{OpenAI2026}; the lattice and connectedness steps
-    use \cite[Theorem~1.1]{MSS} and \cite[Theorem~2.5]{Kim}, respectively.}
+  \caption{The five reductions in our construction.
+    Arrow numbers match the steps in the text; every reduction preserves
+    existence of a solution in both directions.}
   \label{fig:reduction}
 
 1. Greenfeld and Tao \cite[Section~5]{GTUndecidable} reduce Wang tiling

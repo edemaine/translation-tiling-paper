@@ -81,7 +81,7 @@ conditional only on the paper's three explicitly named mathematical inputs. -/
 theorem exists_connected_tile (h : ReductionInputs) (T : LeanWang.TileSet) :
     ∃ F : Tile 3, F ≠ [] ∧ FaceConnected F ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles F) := by
-  obtain ⟨F, hF, hcorrect⟩ := exists_integer_tile h.sudoku h.rigidity T
+  obtain ⟨F, hF, hcorrect⟩ := exists_integer_tile Sudoku.soundness h.rigidity T
   have hlist : F.toList ≠ [] := by
     intro he
     obtain ⟨x, hx⟩ := hF

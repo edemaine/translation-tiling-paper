@@ -13,6 +13,7 @@ import TranslationTiling.Proofs.ComputableSearch
 import TranslationTiling.Proofs.Decidability
 import TranslationTiling.Proofs.Canonical
 import TranslationTiling.Proofs.FiniteWordRule
+import TranslationTiling.MSS.LocalForcingCheck
 import TranslationTiling.Compiler.EffectiveGraphCompiler
 import TranslationTiling.Compiler.EffectiveActivationOffsets
 import TranslationTiling.Compiler.EffectiveStacking
@@ -156,6 +157,25 @@ run_cmd do
       ``TranslationTiling.Sudoku.canonical_nonconstantColumns,
       ``TranslationTiling.Sudoku.canonical_lineRule,
       ``TranslationTiling.Sudoku.exists_twoPrime_residue,
+      ``TranslationTiling.sudoku_soundness,
+      ``TranslationTiling.Sudoku.ArithmeticRule.global_affine_approximation,
+      ``TranslationTiling.Sudoku.arithmetic_initial_affine,
+      ``TranslationTiling.Sudoku.decorated_initial_structure,
+      ``TranslationTiling.Sudoku.rescale_vertical_coefficient,
+      ``TranslationTiling.Sudoku.exists_normalize,
+      ``TranslationTiling.Sudoku.normalized_rescale_p_nonconstant,
+      ``TranslationTiling.Sudoku.normalized_rescale_q_nonconstant,
+      ``TranslationTiling.Sudoku.no_positive_vertical_period,
+      ``TranslationTiling.Sudoku.arithmetic_finite_structure,
+      ``TranslationTiling.Sudoku.decorated_finite_structure,
+      ``TranslationTiling.Sudoku.scaled_word_coefficients,
+      ``TranslationTiling.Sudoku.canonical_row_decoration,
+      ``TranslationTiling.Sudoku.canonical_adjacent_rows,
+      ``TranslationTiling.Sudoku.exists_valid_rectangle,
+      ``TranslationTiling.Sudoku.soundness,
+      ``TranslationTiling.MSS.mem_frame_iff,
+      ``TranslationTiling.MSS.baseShape_bounds,
+      ``TranslationTiling.MSS.unintended_neighbor,
       ``TranslationTiling.Sudoku.allowed_iff_bounded,
       ``TranslationTiling.Sudoku.allowedBool_eq_true,
       ``TranslationTiling.Sudoku.mem_allowedWords] do

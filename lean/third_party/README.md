@@ -23,6 +23,17 @@ API adaptations. `Proofs/PlanarPeriodicity.lean` supplies the local exact-covera
 and additive-equivalence bridge. The resulting unconditional theorem is built
 and included in the axiom audit.
 
+The six ports in `TranslationTiling/SudokuArithmetic/` retain the upstream
+basenames `WordRule.lean`, `WordAffineAlgebra.lean`, `WordAffineCount.lean`,
+`WordAffineGeometry.lean`, `WordAffine.lean`, and `WordObstruction.lean`.
+They establish initial affine structure and the obstruction to positive
+vertical periods for the one-prime arithmetic rule. Unused word-enumeration
+and compiler declarations are omitted from `WordRule.lean`. The ports change
+namespaces and imports and adapt tactics to Lean 4.31. The remaining modules
+in that directory develop the full-board bridge, rescaling coefficient
+compatibility, finite-depth classification, simultaneous CRT straightening,
+and decorated Sudoku soundness locally.
+
 Compiler ports (local and upstream basenames agree):
 
 `Activation.lean`, `ActivationOffsets.lean`, `ActivationTiles.lean`, `BlockActivationInverse.lean`, `ChannelDigitBlocks.lean`, `CommonModel.lean`, `CommonSeedOutputs.lean`, `CommonSolution.lean`, `ConstraintCycles.lean`, `CycleTests.lean`, `CyclicCRT.lean`, `CyclicCoordinates.lean`, `CyclicFactorCRT.lean`, `CyclicQuotient.lean`, `CyclicShear.lean`, `CyclicTypes.lean`, `Dependence.lean`, `EncodedSystem.lean`, `EncodingParameters.lean`, `EncodingPrimeSelection.lean`, `GraphTests.lean`, `LabeledDigitBlocks.lean`, `OrdinaryActivation.lean`, `OrdinaryModel.lean`, `QuotientTiling.lean`, `SharedSeedInactive.lean`, `SharedSeedInverse.lean`, `SharedSeedLabelEquiv.lean`, `SharedSeedLabels.lean`, `SharedSeedRegions.lean`, `SharedSeedSizeTransport.lean`, `ShiftMultiplicity.lean`.

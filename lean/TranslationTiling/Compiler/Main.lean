@@ -74,7 +74,7 @@ theorem connectedCompile_connected (T : LeanWang.TileSet) :
 
 theorem connectedCompile_correct (h : ReductionInputs) (T : LeanWang.TileSet) :
     LeanWang.TilesPlane T ↔ TranslationTiling.Tiles (connectedCompile T) :=
-  (compile_correct h.sudoku h.rigidity T).trans
+  (compile_correct Sudoku.soundness h.rigidity T).trans
     (connectedTile_correct h.shellRigidity _).symm
 
 noncomputable def connectedWangReduction (h : ReductionInputs) : ConnectedWangReduction where

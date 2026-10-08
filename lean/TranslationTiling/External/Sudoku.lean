@@ -3,7 +3,7 @@ import Mathlib.Algebra.Field.ZMod
 
 /-! Greenfeld–Tao, arXiv:2309.09504v2, Definition 5.1 and Proposition 5.2.
 The finite low-valuation tests below give the paper's word rule without an
-unbounded integer valuation. Only soundness is an external hypothesis. -/
+unbounded integer valuation. Soundness is proved in `SudokuArithmetic/Soundness`. -/
 
 namespace TranslationTiling.Sudoku
 
@@ -60,7 +60,7 @@ def NonconstantColumns {T : LeanWang.TileSet} (W : Array T) : Prop :=
   (∀ n, ∃ m m', (W n m).1 ≠ (W n m').1) ∧
   (∀ n, ∃ m m', (W n m).2.1 ≠ (W n m').2.1)
 
-/-- Precisely the imported Sudoku soundness implication, before quadrant compactness. -/
+/-- The Sudoku soundness implication proved in `SudokuArithmetic/Soundness`. -/
 def Soundness : Prop :=
   ∀ T (W : Array T), LineRule W → NonconstantColumns W →
     ∃ τ : ℕ × ℕ → LeanWang.TileIn T, LeanWang.ValidQuarterTiling T τ

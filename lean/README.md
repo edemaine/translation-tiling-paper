@@ -9,7 +9,8 @@ the short public statements. `compiler_effectivity` and `compiler_correct`
 prove uniform computability and correctness. `reduction`, `completeness`,
 `connected_completeness`, `real_completeness`, and `dimension_optimality` take
 only `ReductionInputs`. `planar_periodicity` and `planar_decidability` are
-unconditional, as is `compiler_connectivity`. There is no assumed
+unconditional, as are `sudoku_soundness`, `sudoku_equivalence`, and
+`compiler_connectivity`. There is no assumed
 compiler certificate or outstanding `Claims` namespace.
 
 ## Build
@@ -48,12 +49,11 @@ associated with `F`. Coverage and uniqueness hold almost everywhere for Lebesgue
 measure, so shared cube boundaries do not count as overlapping interiors.
 `FaceConnected` uses paths of signed coordinate unit steps within the tile.
 
-[ExternalInputs.lean](TranslationTiling/ExternalInputs.lean) packages the three remaining
+[ExternalInputs.lean](TranslationTiling/ExternalInputs.lean) packages the two remaining
 explicit mathematical inputs used by the connected compiler in `ReductionInputs`:
 
 | Input | Formal meaning |
 | --- | --- |
-| Greenfeld–Tao | Soundness of the explicit decorated two-prime Sudoku rule, with fixed primes 211 and 223; both arithmetic components are nonconstant in each column. |
 | Meyerovitch–Sanadhya–Solomon | Arbitrary-tiling rigidity of the paper's explicitly defined two component shapes, with scale 201. |
 | Kim | Arbitrary-tiling coset rigidity of the explicit shell (`Kim.CosetRigidity`); connectivity, contacts, and fundamental-domain coverage are proved. |
 
@@ -61,6 +61,16 @@ Bhattacharya's planar periodicity theorem is now proved in
 `Proofs/PlanarPeriodicity.lean` using the ported proof chain in `Planar/`.
 The theorem supplies a complement with a finite-index subgroup of periods.
 It is included in the axiom audit.
+
+Greenfeld–Tao's decorated Sudoku soundness is proved in
+`SudokuArithmetic/Soundness.lean`. The proof projects the decorated rule to
+each arithmetic component, establishes affine structure on the whole board,
+proves compatibility under prime rescaling, and iterates to arbitrary finite
+valuation depth. A simultaneous CRT shear makes both components canonical
+at the required depths. Constant rows and the tested columns `1`, `p`, and `q`
+then provide Wang adjacencies on every finite rectangle; the pinned Wang
+dependency supplies compactness. This discharges the Sudoku input without
+p-adic compactness or additional hypotheses.
 
 The remaining input definitions are in `TranslationTiling/External/`. These are parameters,
 not global `axiom` declarations. The main computable reduction is not included
@@ -77,7 +87,8 @@ proved by the pinned Wang dependency, using its independent Kari–Hooper certif
 | Primitive-recursive finite cut test, computable face-connectivity, and connected co-r.e. membership in every fixed dimension | `Proofs/FiniteConnectivity.lean` |
 | Total computable witness search, computable prime search, and decidability from positive certificates | `Proofs/ComputableSearch.lean`, `Proofs/Decidability.lean` |
 | Quadrant/plane Wang equivalence; soundness from an activated label system and the raw Sudoku hypothesis | `Proofs/Wang.lean`, `Proofs/SudokuSoundness.lean` |
-| Last-nonzero-digit arithmetic, two-prime CRT, and the canonical Sudoku solution; Sudoku–Wang equivalence conditional on soundness | `Proofs/Arithmetic.lean`, `Proofs/Canonical.lean`, `Proofs/WordResidues.lean`, `Proofs/CanonicalLineRule.lean` |
+| Last-nonzero-digit arithmetic, two-prime CRT, canonical Sudoku solutions, and unconditional Sudoku–Wang equivalence | `Proofs/Arithmetic.lean`, `Proofs/Canonical.lean`, `Proofs/WordResidues.lean`, `Proofs/CanonicalLineRule.lean` |
+| Initial and finite-depth arithmetic structure, rescaling compatibility, decorated rectangle extraction, and Sudoku soundness | `SudokuArithmetic/*.lean` |
 | Bounded coefficient equivalence, executable finite word-rule search, and exact enumeration of allowed words | `Proofs/FiniteWordRule.lean` |
 | Graph equation and arbitrary-tiling stacking equivalence | `Proofs/Graph.lean`, `Proofs/Stacking*.lean` |
 | Existence of fresh prime full-difference partitions and cyclic consolidation | `Proofs/FullDifferencePartition.lean` and its counting lemmas, `Proofs/CyclicStacking.lean` |
@@ -92,6 +103,7 @@ proved by the pinned Wang dependency, using its independent Kari–Hooper certif
 | Kim's residue representatives, shell fundamental-domain coverage, volume `s³`, disjoint grid translates, and contacts between whole shells | `Proofs/KimResidues.lean`, `Proofs/KimShellGeometry.lean` |
 | Kim's coarse color classes, dented pieces, cube boundary, and shell are face connected | `Proofs/FacePaths.lean`, `Proofs/Kim*Connectivity.lean` |
 | Shell assembly preserves tilability under a fundamental-domain and coset-rigidity hypothesis | `Proofs/ShellAssembly.lean` |
+| MSS frame geometry and a counterexample to the one-point local forcing argument (not to global rigidity) | `MSS/FrameGeometry.lean`, `MSS/LocalForcingCheck.lean` |
 | Completeness, undecidability, higher dimensions, connected completeness, and dimension optimality | `Proofs/Complexity.lean`, `Compiler/Main.lean` |
 
 `Examples.lean` checks small finite searches, repeated tile entries,
@@ -103,8 +115,8 @@ It uses kernel evaluation.
 
 `Compiler/Completeness.lean` proves equivalence of the graph, dependence, cycle,
 ordinary activation, and paired-seed constraints with Wang tilability. It uses
-one common auxiliary solution for completeness and the decorated Sudoku input
-for soundness. `Consolidation.lean` stacks the finite family into a cyclic tile.
+one common auxiliary solution for completeness and the proved decorated Sudoku
+soundness theorem. `Consolidation.lean` stacks the finite family into a cyclic tile.
 `LatticeCompiler.lean` proves arbitrary-tiling descent and completeness using the
 explicit MSS components. `ConnectedCompiler.lean` applies Kim's shells and proves
 face-connectivity. These semantic constructions have corresponding uniform
@@ -140,14 +152,21 @@ Some definitions use `noncomputable` to express fixed finite tables or searched
 witnesses; their uniform effectivity is separately proved. The exhaustive
 enumerations are enormous and are intended for the reduction proof.
 
-Three inputs remain: decorated Sudoku soundness, arbitrary mixed-tiling MSS
-rigidity, and arbitrary-tiling coset rigidity of Kim's shell. Kim's partition,
+Two inputs remain: arbitrary mixed-tiling MSS rigidity and arbitrary-tiling
+coset rigidity of Kim's shell. Kim's partition,
 fundamental-domain coverage, disjoint grid translates, contacts, and shell
 connectivity are proved. `Kim.rigidity_of_cosets` reconstructs the complete
 shell input from coset rigidity alone. `ReductionInputs.shellRigidity` assumes
 only `Kim.CosetRigidity`. Compiler output nonemptiness and connectivity have no
 mathematical hypothesis. The remaining inputs can be formalized independently
 of the numerical algorithm.
+
+The local forcing sentence in MSS Lemma 2.1 does not by itself establish
+rigidity. `MSS.unintended_neighbor` gives two disjoint copies of `baseShape`:
+one at zero and one translated by `(-214, -1, 200)`. The latter covers
+`201 e₂` through its first detached frame, although its translation is not
+`201 e₂`. These two copies are not claimed to extend to a tiling. A proof of
+the full rigidity input must use further coverage constraints.
 
 ## Online formalizations inspected (October 7, 2026)
 
@@ -166,15 +185,17 @@ already cited by the draft. It uses Lean 4.34.1, so direct imports into this
   provide generic stacking and histogram arguments. Selected parts have been
   ported and checked in this project; see the license/provenance record below.
 - [WordRule.lean](https://github.com/openai/math/blob/adc7f1241b42e322a6451854ab7e4b4c146bf78a/lean/OAI/Geometry/PeriodicTiling/WordRule.lean)
-  treats the one-prime arithmetic rule. It does not discharge the decorated
-  two-prime Wang soundness hypothesis used here.
+  treats the one-prime arithmetic rule. Its initial affine structure and
+  vertical-period obstruction proof closure have been ported. The additional
+  finite-depth, two-prime, and decoration arguments in this project prove
+  the required decorated soundness theorem.
 - [MarkedTileDescent.lean](https://github.com/openai/math/blob/adc7f1241b42e322a6451854ab7e4b4c146bf78a/lean/OAI/Geometry/PeriodicTiling/MarkedTileDescent.lean)
   descends fully periodic tilings. That restriction does not provide the
   arbitrary-tiling MSS equivalence required by this reduction.
 
 Targeted web and GitHub searches by authors, paper IDs, and Lean terminology
-found no exact formalization of the decorated two-prime soundness, the stated
-MSS rigid-component input, or Kim's connectedness input. This is a search result,
+found no preexisting exact formalization of the decorated two-prime soundness,
+the stated MSS rigid-component input, or Kim's coset rigidity input. This is a search result,
 not a proof of their absence.
 
 See [third_party/README.md](third_party/README.md) for copied-source provenance.

@@ -1,5 +1,6 @@
 import TranslationTiling.Proofs.WordResidues
 import TranslationTiling.Proofs.Wang
+import TranslationTiling.SudokuArithmetic.Soundness
 
 namespace TranslationTiling.Sudoku
 
@@ -82,15 +83,14 @@ theorem canonical_lineRule {T : LeanWang.TileSet}
       else τ (padicValInt p (d * n.val + e), padicValInt q (d * n.val + e))) = τ (k + u, l + v)
     rw [if_neg hn, hpv, hqv]
 
-/-- The explicit decorated Sudoku problem has exactly the Wang tilability
-instances, conditional only on the raw imported soundness implication. -/
-theorem sudoku_iff_wang (sound : Soundness) (T : LeanWang.TileSet) :
+/-- The explicit decorated Sudoku problem has exactly the Wang tilability instances. -/
+theorem sudoku_iff_wang (T : LeanWang.TileSet) :
     LeanWang.TilesPlane T ↔ ∃ W : Array T, LineRule W ∧ NonconstantColumns W := by
   constructor
   · intro hT
     obtain ⟨τ, hτ⟩ := (wang_plane_iff_quadrant T).mp hT
     exact ⟨canonical τ, canonical_lineRule τ hτ, canonical_nonconstantColumns τ⟩
   · rintro ⟨W, hW, hcols⟩
-    exact (wang_plane_iff_quadrant T).mpr (sound T W hW hcols)
+    exact (wang_plane_iff_quadrant T).mpr (soundness T W hW hcols)
 
 end TranslationTiling.Sudoku

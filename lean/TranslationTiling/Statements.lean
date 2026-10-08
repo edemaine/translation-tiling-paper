@@ -35,9 +35,11 @@ theorem lattice_effectivity : Computable Compiler.integerTile :=
 theorem shell_effectivity : Computable Compiler.connectedTile :=
   Compiler.connectedTile_computable
 
-theorem sudoku_equivalence (h : Sudoku.Soundness) (T : LeanWang.TileSet) :
+theorem sudoku_soundness : Sudoku.Soundness := Sudoku.soundness
+
+theorem sudoku_equivalence (T : LeanWang.TileSet) :
     LeanWang.TilesPlane T ↔ ∃ W : Sudoku.Array T,
-      Sudoku.LineRule W ∧ Sudoku.NonconstantColumns W := Sudoku.sudoku_iff_wang h T
+      Sudoku.LineRule W ∧ Sudoku.NonconstantColumns W := Sudoku.sudoku_iff_wang T
 
 theorem membership (d : ℕ) : LeanWang.CoREPred (@Tiles d) := tiles_coRE d
 
@@ -49,14 +51,14 @@ theorem planar_decidability : ComputablePred (@Tiles 2) :=
 theorem rounding {d : ℕ} (F : Tile d) : RealTiles F ↔ Tiles F := realTiles_iff_tiles F
 
 theorem completeness (h : ReductionInputs) : LeanWang.CoREComplete (@Tiles 3) :=
-  coRE_complete_of_reduction (Compiler.wangReduction h.sudoku h.rigidity)
+  coRE_complete_of_reduction (Compiler.wangReduction Sudoku.soundness h.rigidity)
 
 theorem undecidability (h : ReductionInputs) : ¬ ComputablePred (@Tiles 3) :=
-  undecidable_of_reduction (Compiler.wangReduction h.sudoku h.rigidity)
+  undecidable_of_reduction (Compiler.wangReduction Sudoku.soundness h.rigidity)
 
 theorem higher_dimension (h : ReductionInputs) {d : ℕ} (hd : 3 ≤ d) :
     LeanWang.CoREComplete (@Tiles d) :=
-  coRE_complete_in_dimension (Compiler.wangReduction h.sudoku h.rigidity) hd
+  coRE_complete_in_dimension (Compiler.wangReduction Sudoku.soundness h.rigidity) hd
 
 theorem real_membership (d : ℕ) : LeanWang.CoREPred (@RealTiles d) := realTiles_coRE d
 
@@ -70,11 +72,11 @@ theorem connected_completeness (h : ReductionInputs) : LeanWang.CoREComplete (@C
   connected_complete_of_reduction (Compiler.connectedWangReduction h)
 
 theorem real_completeness (h : ReductionInputs) : LeanWang.CoREComplete (@RealTiles 3) :=
-  real_coRE_complete_of_reduction (Compiler.wangReduction h.sudoku h.rigidity)
+  real_coRE_complete_of_reduction (Compiler.wangReduction Sudoku.soundness h.rigidity)
 
 theorem dimension_optimality (h : ReductionInputs) :
     IsLeast {d : ℕ | ¬ ComputablePred (@Tiles d)} 3 :=
-  optimal_dimension_of_planar (Compiler.wangReduction h.sudoku h.rigidity)
+  optimal_dimension_of_planar (Compiler.wangReduction Sudoku.soundness h.rigidity)
     planar_decidability
 
 theorem connected_output (h : ReductionInputs) (T : LeanWang.TileSet) :

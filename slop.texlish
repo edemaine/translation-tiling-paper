@@ -38,7 +38,7 @@
   aliascnt
   xurl
   natbib: numbers,sort&compress
-  hyperref: colorlinks=true,allcolors=blue
+  hyperref
   cleveref: capitalise,nameinlink,noabbrev
 \usetikzlibrary{arrows.meta,positioning,calc}
 \definecolor{figblue}{RGB}{41,110,166}
@@ -81,6 +81,7 @@
 \numberwithin{equation}{section}
 \setlength{\emergencystretch}{2em}
 \setlist{itemsep=3pt,topsep=5pt}
+\urlstyle{same}
 
 : tcolorbox[colback=figorange!6!white,colframe=figorange!65!black,boxrule=0.6pt,arc=2pt,left=10pt,right=10pt,top=8pt,bottom=8pt]
   **Warning:** This technical overview was written by a large
