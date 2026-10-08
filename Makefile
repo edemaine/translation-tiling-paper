@@ -1,8 +1,14 @@
-.PHONY: all figures
+.PHONY: all figures website
 PYTHON ?= python3
+PANDOC ?= pandoc
 FIGURE_PDFS = figures/kim-input.pdf figures/kim-shell.pdf figures/kim-connected.pdf
 
 all: paper.pdf slop.pdf
+
+website: paper.pdf slop.pdf website/index.md website/style.css
+	mkdir -p build/site
+	$(PANDOC) --standalone --to=html5 --css=style.css website/index.md -o build/site/index.html
+	cp website/style.css paper.pdf slop.pdf build/site/
 
 figures:
 	$(PYTHON) figures/generate_connected.py
