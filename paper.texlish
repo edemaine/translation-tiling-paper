@@ -238,36 +238,8 @@ finite Wang tile set $\calT$
 to a finite connected set $F_{\calT}\subset\Z^3$ such that
 $\calT$ tiles $\Z^2$ if and only if
 $F_{\calT}$ tiles $\Z^3$ by translations.
-To achieve this, we combine four constructions.
-
-1. Greenfeld and Tao \cite[Section~5]{GTUndecidable} reduce Wang tiling
-   to finding a ***Sudoku array*** --- a grid with infinitely many rows
-   and a fixed number of columns, independent of the Wang tile set,
-   such that every integer-slope line reads as one of a specified finite
-   set of words.
-   Their decorated two-prime rule uses powers of two distinct primes
-   to encode the two coordinates of the simulated plane, with a Wang
-   tile label included in each symbol.
-2. OpenAI \cite[Sections~3--5]{OpenAI2026} encodes Greenfeld and Tao's
-   one-prime Sudoku rule and its nonconstant-column condition as several
-   tiling equations on $\Z^2\times(\Z/Q\Z)$ sharing one translation set.
-   We adapt this encoding to the decorated two-prime rule and combine
-   the equations into one tile while keeping the finite coordinate cyclic
-   \cite[Section~6]{OpenAI2026}.
-3. An effective quotient reduction preserves
-   the number of tiles when passing from a quotient of $\Z^3$ to $\Z^3$
-   \cite[Theorem~1.1]{MSS}.
-4. We use a reduction of Kim \cite[Theorem~2.5]{Kim}
-   which makes the tile connected while preserving dimension and tileability.
-
-Our modification of the cyclic encoding replaces each arithmetic symbol
-by a pair of arithmetic symbols and a Wang label.  Two auxiliary
-constraints restrict only the arithmetic coordinates and force both
-components to vary in every column.  A Wang tiling supplies an array
-that supports both constraints simultaneously.  We include the
-finite-group construction and its inverse calculations to verify this compatibility; constructing
-separate solutions of the different tiling equations would not suffice.
-\Cref{fig:reduction} summarizes the existence equivalences.
+To achieve this, we combine five constructions,
+as summarized in \cref{fig:reduction}:
 
 : figure[tbp]
   \centering
@@ -298,13 +270,54 @@ separate solutions of the different tiling equations would not suffice.
     use \cite[Theorem~1.1]{MSS} and \cite[Theorem~2.5]{Kim}, respectively.}
   \label{fig:reduction}
 
-The reduction in \cite{GTUndecidable} allows a variable finite abelian
-factor and a periodic target subset.  Its lattice dimension is part of
-the input; that result alone does not give \cref{thm:undecidability}.
-Here the finite factor is cyclic and the target is the whole group.
-For the quotient step we use \cite{MSS}, which preserves arbitrary tilings.
-The periodic-tiling descent in \cite[Section~7]{OpenAI2026} alone would
-not justify an undecidability reduction.
+1. Greenfeld and Tao \cite[Section~5]{GTUndecidable} reduce Wang tiling
+   to finding a ***Sudoku array*** --- a grid with infinitely many rows
+   and a fixed number of columns (independent of the Wang tile set)
+   such that every integer-slope line reads as one of a specified finite
+   set of words.
+   Specifically, each grid symbol specifies a Wang tile together with
+   two integers; the Sudoku rules organize these integers using powers of
+   two fixed distinct primes $p,q$, whose exponents encode the two coordinates
+   of the simulated plane.
+   We additionally require that neither integer component is constant
+   down any column.
+2. We adapt OpenAI's cyclic tiling encoding \cite[Sections~3--5]{OpenAI2026}
+   to the Sudoku array problem from the previous step.
+   (OpenAI originally applied this encoding to a different construction
+   of Greenfeld and Tao's \cite[Section~4]{GTUndecidable},
+   which uses a one-prime Sudoku rule.)
+   This adaptation is our main new work: it enforces the Wang tile constraints
+   and both nonconstant-column conditions simultaneously.
+   The result is a finite family of prototiles
+   (whose size depends on the Wang tile set)
+   that each tile a target space using the same infinite set of translations,
+   if and only if the required Sudoku array exists.
+   The target space being tiled is $\Z^2 \times (\Z/m\Z)$,
+   a 3D integer grid whose $z$ coordinate wraps around modulo~$m$
+   (where $m$ depends on the Wang tile set).
+3. We apply OpenAI's stacking construction \cite[Section~6]{OpenAI2026}
+   (based on an earlier construction of Greenfeld and Tao
+   \cite[Theorem~3.1 and Lemma~3.2]{GTPeriodic})
+   to combine the prototiles from the previous step
+   into a single prototile that tiles a (larger) target space
+   if and only if such a common set of translations exists.
+   This construction enlarges $m$ in the target space $\Z^2 \times (\Z/m\Z)$.
+4. We apply the reduction of Meyerovitch, Sanadhya, and Solomon
+   \cite[Theorem~1.1]{MSS}, which converts tiling problems in a quotient
+   of $\Z^3$ into tiling problems in $\Z^3$,
+   while preserving the number of prototiles.
+   Our target space $\Z^2 \times (\Z/m\Z)$ is such a ***quotient***:
+   it identifies each point $(x,y,z)$ with $(x,y,z+m)$.
+   Their construction uses matching bumps and dents
+   to force alignment to a scaled grid and
+   to force repetition every $m$ grid steps in the $z$ direction.
+   Thus we convert the prototile from the previous step
+   into a single finite 3D prototile
+   that tiles $\Z^3$ if and only if the original prototile
+   tiles the quotient space $\Z^2 \times (\Z/m\Z)$.
+5. We use a reduction of Kim \cite[Theorem~2.5]{Kim}
+   which makes the prototile connected
+   while preserving dimension, the number of prototiles, and tileability.
 
 \FloatBarrier
 \bibliographystyle: alpha-key
