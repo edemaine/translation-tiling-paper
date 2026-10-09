@@ -10,6 +10,20 @@ polycube is connected through faces. More precisely, the problem is co-RE
 complete. Dimension three is optimal: the corresponding problem in two
 dimensions is decidable.
 
+## Overview
+
+- **[Paper (PDF)](https://edemaine.github.io/translation-tiling-paper/paper.pdf)**:
+  human-readable overview of the results, proof ideas, and Lean formalization.
+  Start here.
+  Also [arXiv:2610.12392](https://arxiv.org/abs/2610.12392).
+- **[Technical overview (PDF)](https://edemaine.github.io/translation-tiling-paper/slop.pdf)**:
+  LLM-written definitions, theorem statements, constructions, and proofs;
+  not intended to be read by humans.
+- **[Lean formalization](#lean-formalization)**: complete checked proofs of the
+  reduction, main results, and mathematical inputs. Start with
+  [Abstract.lean](lean/TranslationTiling/Abstract.lean) for the definitions
+  and main theorem statements used in the paper.
+
 ## Files and build
 
 - [paper.texlish](paper.texlish): human-written overview of the results,

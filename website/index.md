@@ -16,6 +16,7 @@ dimensions is decidable.
 
 - **[Paper (PDF)](paper.pdf)** — Human-readable overview of the results,
   proof ideas, and Lean formalization.
+  Also [arXiv:2610.12392](https://arxiv.org/abs/2610.12392).
 - **[Technical overview (PDF)](slop.pdf)** — LLM-written definitions,
   constructions, and proofs, not intended to be read by humans.
 
