@@ -118,8 +118,7 @@ theorem allBadAssignments_card_le
   calc
     (∏ j : Fin k, (Fintype.card C ^ 2 - (Good j).card)) ≤
         ∏ _j : Fin k, (Fintype.card C ^ 2 - g) :=
-      Finset.prod_le_prod (fun _ _ => Nat.zero_le _)
-        (fun j _ => Nat.sub_le_sub_left (hgood j) _)
+      Finset.prod_le_prod (fun j _ => Nat.sub_le_sub_left (hgood j) _)
     _ = (Fintype.card C ^ 2 - g) ^ k := by simp
 
 end

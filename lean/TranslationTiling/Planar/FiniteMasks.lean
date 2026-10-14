@@ -129,7 +129,7 @@ def maskAction (m : AddMonoidAlgebra R G) (a : G → R) (x : G) : R :=
 
 @[simp] theorem maskAction_single (y : G) (c : R) (a : G → R) (x : G) :
     maskAction (AddMonoidAlgebra.single y c) a x = c * a (x - y) := by
-  simp [maskAction, AddMonoidAlgebra.coeff, AddMonoidAlgebra.single]
+  simp [maskAction]
 
 theorem maskAction_add (m n : AddMonoidAlgebra R G) (a : G → R) (x : G) :
     maskAction (m + n) a x = maskAction m a x + maskAction n a x := by

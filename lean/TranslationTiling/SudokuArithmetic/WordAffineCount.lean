@@ -30,7 +30,7 @@ theorem card_wordExceptionalCells_le (N p : ℕ) (bad : ℤ → ℤ → ℤ → 
     rw [Int.card_Ico]
     omega
   have hD : (Finset.Icc (-1 : ℤ) 1).card = 3 := by
-    norm_num [Int.card_Icc]; decide
+    norm_num [Int.card_Icc]
   have hinner : ∀ d ∈ Finset.Icc (-1 : ℤ) 1,
       ((Finset.Ico (-(N : ℤ)) (2 * (N : ℤ))).biUnion fun e =>
         ((Finset.Ico (0 : ℤ) N).filter (bad d e)).image
@@ -80,7 +80,7 @@ theorem card_wordBlockedOrigins_le (B : Finset (ℤ × ℤ)) :
   calc
     _ ≤ ((Finset.Icc (0 : ℤ) 3).product (Finset.Icc (0 : ℤ) 3)).card :=
       Finset.card_image_le
-    _ = 16 := by norm_num [Finset.card_product, Int.card_Icc]; decide
+    _ = 16 := by norm_num [Finset.card_product, Int.card_Icc]
 
 theorem mem_wordBlockedOrigins (B : Finset (ℤ × ℤ)) (r q : ℤ)
     (i j : Fin 4) (hc : (r + i.val, q + j.val) ∈ B) :

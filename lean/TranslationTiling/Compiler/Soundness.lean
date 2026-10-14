@@ -30,7 +30,7 @@ def activeSystemOfSolves {A : Set (Ambient E)} (hA : Solves E A) : Sudoku.Active
     simp only [lineValue, zero_mul, add_zero]
     ring
   refine {
-    labels := fun n m => Finset.univ.filter (Active E o (.inl n) (0, m))
+    labels := fun n m => Finset.univ.filter (fun j => Active E o (.inl n) (0, m) j)
     nonempty := ?_
     allowed := ?_
     seed₁ := ?_

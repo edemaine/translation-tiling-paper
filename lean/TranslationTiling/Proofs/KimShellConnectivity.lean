@@ -13,7 +13,7 @@ theorem shell_piece_path (l i : ℕ) (hi : i < (boundary l).length)
       ((scale (boundary l).length : ℤ) • (boundary l)[i] + a)
       ((scale (boundary l).length : ℤ) • (boundary l)[i] + b) := by
   apply Relation.ReflTransGen.lift (fun z =>
-    (scale (boundary l).length : ℤ) • (boundary l)[i] + z) _
+    (scale (boundary l).length : ℤ) • (boundary l)[i] + z) _ a b
     (piece_connected (boundary l).length (i + 1) (by omega) (by omega) a ha b hb)
   intro x y hxy
   exact ⟨(mem_shell_iff _ _).mpr ⟨i, hi, x, hxy.1, rfl⟩,

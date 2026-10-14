@@ -31,10 +31,10 @@ certificate or outstanding `Claims` namespace.
 
 ## Build
 
-The project uses Lean 4.31.0 and the GitHub dependency
-[`edemaine/lean-wang`](https://github.com/edemaine/lean-wang/tree/6c4711c2329b444bc3096e883912e00773dcce50),
-pinned to `6c4711c2329b444bc3096e883912e00773dcce50`. There is no local-path
-dependency. `lake-manifest.json` also pins mathlib and its transitive dependencies.
+The project uses Lean 4.35.0 and the GitHub dependency
+[`edemaine/lean-wang`](https://github.com/edemaine/lean-wang/tree/64268a3aaaef3eac65559352ef94f62ab9c00482),
+pinned to `64268a3aaaef3eac65559352ef94f62ab9c00482`. There is no local-path
+dependency. `lake-manifest.json` also pins mathlib v4.35.0 and its transitive dependencies.
 
 From the paper repository's root:
 
@@ -204,8 +204,7 @@ proof in `MSS/GridAssembly.lean` uses further coverage constraints.
 
 The most relevant source is
 [`openai/math`, commit `adc7f1241b42e322a6451854ab7e4b4c146bf78a`](https://github.com/openai/math/tree/adc7f1241b42e322a6451854ab7e4b4c146bf78a/lean/OAI/Geometry/PeriodicTiling),
-already cited by the paper. It uses Lean 4.34.1, so direct imports into this
-4.31.0 project require a port.
+already cited by the paper.
 
 - [PlanarPeriodicity.lean](https://github.com/openai/math/blob/adc7f1241b42e322a6451854ab7e4b4c146bf78a/lean/OAI/Geometry/PeriodicTiling/PlanarPeriodicity.lean)
   contains `plane_tile_has_fullyPeriodic_complement`, the required form of planar

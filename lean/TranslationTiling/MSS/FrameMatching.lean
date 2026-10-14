@@ -93,7 +93,7 @@ theorem translated_frame_subset_holes (j k : ℕ) (hj : 0 < j) (hj5 : j ≤ 5)
     have path : FacePath (fun z => z ∈ holes j) (c + u₀) (c + v) :=
       Relation.ReflTransGen.lift (c + ·)
         (fun a b hab => ⟨hsub a hab.1, hsub b hab.2.1, adjacent_add c hab.2.2⟩)
-        (frame_path k hk u₀ v hu₀ hv)
+        u₀ v (frame_path k hk u₀ v hu₀ hv)
     have hh := holes_path_same_frame j r hj hj5 hr hr5 h₀ path
     convert hh using 1
     abel

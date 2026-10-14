@@ -87,7 +87,7 @@ theorem connectedAssembly_connected_of_shell (E : Tile 3) (l : ℕ)
       (hc : c ∈ Kim.shell l) (hd : d ∈ Kim.shell l) :
       Relation.ReflTransGen (fun a b => a ∈ connectedAssembly E l ∧
         b ∈ connectedAssembly E l ∧ FaceAdjacent a b) (s • w + c) (s • w + d) := by
-    apply Relation.ReflTransGen.lift (fun z => s • w + z) _ (hconn c hc d hd)
+    apply Relation.ReflTransGen.lift (fun z => s • w + z) _ c d (hconn c hc d hd)
     intro a b hab
     exact ⟨(mem_connectedAssembly E l _).mpr ⟨w, hw, a, hab.1, rfl⟩,
       (mem_connectedAssembly E l _).mpr ⟨w, hw, b, hab.2.1, rfl⟩,

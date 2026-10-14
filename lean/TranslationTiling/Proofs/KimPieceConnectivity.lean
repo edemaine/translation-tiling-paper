@@ -146,7 +146,7 @@ theorem block_path_to_center (m i : ℕ) (q c : Lattice 3)
       by
         obtain ⟨k, hk | hk⟩ := hab.2.2
         · exact ⟨k, Or.inl (by rw [hk, add_assoc])⟩
-        · exact ⟨k, Or.inr (by rw [hk, add_assoc])⟩⟩) small
+        · exact ⟨k, Or.inr (by rw [hk, add_assoc])⟩⟩) c ![1, 1, 1] small
 
 theorem internal_not_dent (m : ℕ) (v : Lattice 3)
     (hv : ∀ k, v k ≤ (scale m : ℤ) - 2) : v ∉ dents m := by
@@ -236,7 +236,8 @@ theorem centers_connected (m i : ℕ) (hi : 1 ≤ i) (him : i ≤ m)
     (q r : Lattice 3) (hq : q ∈ cube (m + 2)) (hr : r ∈ cube (m + 2))
     (hqi : color m q = i) (hri : color m r = i) :
     FacePath (fun z => z ∈ piece m i) (blockCenter q) (blockCenter r) := by
-  apply Relation.ReflTransGen.lift' blockCenter _ (color_connected m i hi him q r hq hr hqi hri)
+  apply Relation.ReflTransGen.lift' blockCenter _ q r
+    (color_connected m i hi him q r hq hr hqi hri)
   intro a b hab
   obtain ⟨k, hk | hk⟩ := hab.2.2
   · exact center_edge_forward m i a b hab.1.1 hab.2.1.1 hab.1.2 hab.2.1.2 k hk

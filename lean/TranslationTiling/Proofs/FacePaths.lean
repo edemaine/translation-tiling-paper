@@ -19,11 +19,13 @@ theorem adjacent_symm {d : ℕ} {x y : Lattice d} (h : FaceAdjacent x y) :
 theorem reverse {d : ℕ} {P : Lattice d → Prop} {x y : Lattice d}
     (h : FacePath P x y) : FacePath P y x := by
   apply Relation.reflTransGen_swap.mp
-  exact h.mono fun _ _ hab => ⟨hab.2.1, hab.1, adjacent_symm hab.2.2⟩
+  exact Relation.ReflTransGen.mono
+    (fun _ _ hab => ⟨hab.2.1, hab.1, adjacent_symm hab.2.2⟩) x y h
 
 theorem mono {d : ℕ} {P Q : Lattice d → Prop} {x y : Lattice d}
     (h : FacePath P x y) (hPQ : ∀ z, P z → Q z) : FacePath Q x y :=
-  Relation.ReflTransGen.mono (fun a b hab => ⟨hPQ a hab.1, hPQ b hab.2.1, hab.2.2⟩) h
+  Relation.ReflTransGen.mono
+    (fun a b hab => ⟨hPQ a hab.1, hPQ b hab.2.1, hab.2.2⟩) x y h
 
 theorem step {d : ℕ} {P : Lattice d → Prop} {x y : Lattice d}
     (hx : P x) (hy : P y) (h : FaceAdjacent x y) : FacePath P x y :=

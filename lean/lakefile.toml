@@ -10,7 +10,7 @@ maxRecDepth = 10000
 [[require]]
 name = "lean_wang"
 git = "https://github.com/edemaine/lean-wang.git"
-rev = "6c4711c2329b444bc3096e883912e00773dcce50"
+rev = "64268a3aaaef3eac65559352ef94f62ab9c00482"
 
 [[lean_lib]]
 name = "TranslationTiling"

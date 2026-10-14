@@ -41,12 +41,9 @@ theorem color_bounds (m : ℕ) (hm : 0 < m) (v : Lattice 3) :
 
 theorem color_core (m i : ℕ) (hi : 1 ≤ i) (him : i ≤ m) :
     color m ![1, 1, (i : ℤ)] = i := by
-  simp only [color, Matrix.cons_val]
-  simp only [show (i : ℤ) ≠ 0 by omega, and_false, if_false,
-    show ¬ (i : ℤ) = (m : ℤ) + 1 by omega, one_ne_zero,
-    false_and]
-  rw [if_pos (by omega)]
-  exact Int.toNat_natCast i
+  unfold color
+  dsimp
+  split_ifs <;> omega
 
 theorem piece_nonempty (m i : ℕ) (hi : 1 ≤ i) (him : i ≤ m) :
     piece m i ≠ [] := by
@@ -158,10 +155,9 @@ theorem color_side (m i j : ℕ) (hi : 1 ≤ i) (him : i ≤ m)
 theorem color_inside (m x y z : ℕ) (hx : 1 ≤ x) (hxm : x ≤ m + 1)
     (hy : 1 ≤ y) (hym : y ≤ m + 1) (hz : 1 ≤ z) (hzm : z ≤ m) :
     color m ![(x : ℤ), (y : ℤ), (z : ℤ)] = z := by
-  simp only [color, Matrix.cons_val]
-  rw [if_neg (by omega), if_neg (by omega), if_neg (by omega),
-    if_neg (by omega), if_pos (by omega)]
-  exact Int.toNat_natCast z
+  unfold color
+  dsimp
+  split_ifs <;> omega
 theorem mem_piece_of_block {m i : ℕ} {q c : Lattice 3}
     (hq : q ∈ cube (m + 2)) (hi : color m q = i) (hc : c ∈ cube 3)
     (hnd : 3 • q + c ∉ dents m) : 3 • q + c ∈ piece m i := by

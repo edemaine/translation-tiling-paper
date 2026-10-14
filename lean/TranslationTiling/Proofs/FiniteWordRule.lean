@@ -108,7 +108,8 @@ instance allowedDecidable (T : LeanWang.TileSet) (w : Column → Symbol T) :
 def allowedBool (T : LeanWang.TileSet) (w : Column → Symbol T) : Bool := decide (Allowed T w)
 
 @[simp] theorem allowedBool_eq_true (T : LeanWang.TileSet) (w : Column → Symbol T) :
-    allowedBool T w = true ↔ Allowed T w := by simp [allowedBool]
+    allowedBool T w = true ↔ Allowed T w :=
+  ⟨of_decide_eq_true, decide_eq_true⟩
 
 /-- An executable finite collection of all allowed words over the decorated alphabet.
 It is intended as construction data, not as a practical enumeration. -/
