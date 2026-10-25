@@ -1,0 +1,1005 @@
+% leanquote.sty -- typeset Lean declarations by name, copied verbatim from Lean sources.
+%
+%   \leanquotesetup{project=../lean/}            % root of the Lake project (optional)
+%   \leanfile{Path/To/File.lean}                  % current file (alias: \leanquotefile)
+%   \leanquote[options]{Name1, Name2, ...}        % quote from the current file
+%   \leanquoteimports[options]                    % its import block (or the name :imports)
+%   \leanfilequote[options]{Path/To/File.lean}{Name1, Name2, ...}   % explicit file
+%
+% A declaration is found by its `def`/`theorem`/... line in column 0 and runs while lines are
+% indented (or start with `|`, `termination_by`, `decreasing_by`, `deriving`); its doc comment
+% is shown with the `doc` option. Names may be short (`Tiles`) or qualified (`Abstract.Tiles`).
+% An unknown name is an error. If the file is newer than its compiled `.olean`
+% (under `project`/.lake/build/lib/lean/), LaTeX warns that it may not be what Lean checked.
+% Optional: if `leanquote-export` was run, its export (under `project`/.lake/build/leanquote/, or
+% next to the `.lean` file) is used automatically for exact declaration boundaries, as long as
+% the `.lean` file has not changed since; otherwise the `.lean` file is read directly.
+%
+% Copyright 2026 Stefan Langerman and Erik D. Demaine. MIT License.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesExplPackage{leanquote}{2026-10-26}{0.14}{Typeset Lean declarations by name}
+\RequirePackage{listings}
+\RequirePackage{xcolor}
+\RequirePackage{graphicx}
+\RequirePackage{tcolorbox}
+\RequirePackage{amssymb}
+\tcbuselibrary{skins,breakable}
+
+% ---------------------------------------------------------------- options
+\tl_new:N \l__leanquote_lst_tl
+\tl_new:N \l_leanquote_verify_tl
+\bool_new:N \l_leanquote_check_bool
+\keys_define:nn { leanquote }
+  {
+    root  .tl_set:N   = \l_leanquote_root_tl ,
+    root  .initial:n  = {} ,
+    doc   .bool_set:N = \l_leanquote_doc_bool ,
+    doc   .default:n  = true ,
+    doc   .initial:n  = false ,
+    proof .bool_set:N = \l_leanquote_proof_bool ,
+    proof .default:n  = true ,
+    proof .initial:n  = true ,
+    style .tl_set:N   = \l_leanquote_style_tl ,
+    style .initial:n  = leanquote ,
+    box   .bool_set:N = \l_leanquote_box_bool ,
+    box   .default:n  = true ,
+    box   .initial:n  = true ,
+    logo  .tl_set:N   = \l_leanquote_logo_tl ,
+    logo  .initial:n  = {} ,
+    verify .choices:nn = { true , false , auto }
+      { \tl_set_eq:NN \l_leanquote_verify_tl \l_keys_choice_tl } ,
+    verify .default:n  = true ,
+    verify .initial:n  = auto ,
+    check  .meta:n     = { verify = #1 } ,
+    check  .default:n  = true ,
+    source .tl_set:N  = \l_leanquote_source_tl ,
+    source .initial:n = {} ,
+    project .tl_set:N  = \l_leanquote_project_tl ,
+    project .initial:n = {} ,
+    olean .tl_set:N   = \l_leanquote_olean_tl ,
+    olean .initial:n  = {} ,
+    unknown .code:n   =
+      \tl_put_right:Nx \l__leanquote_lst_tl
+        { , \l_keys_key_str \tl_if_blank:nF {#1} { = \exp_not:n {#1} } } ,
+  }
+% Listings settings given to \leanquotesetup (unknown keys) are kept for the whole document
+% (or group); those given to a quote or \leanfile are added to them.
+\tl_new:N \l__leanquote_setuplst_tl
+\NewDocumentCommand \leanquotesetup { m }
+  {
+    \tl_set_eq:NN \l__leanquote_lst_tl \l__leanquote_setuplst_tl
+    \keys_set:nn { leanquote } {#1}
+    \tl_set_eq:NN \l__leanquote_setuplst_tl \l__leanquote_lst_tl
+  }
+
+% ---------------------------------------------------------------- messages
+\msg_new:nnn { leanquote } { not-found }
+  { Lean~declaration~`#1'~not~found~in~#2. }
+\msg_new:nnn { leanquote } { ambiguous }
+  { Lean~name~`#1'~matches~several~declarations~in~#2;~using~the~first.~
+    Use~a~fully~qualified~name. }
+\msg_new:nnn { leanquote } { no-file }
+  { File~`#1'~not~found. }
+\msg_new:nnn { leanquote } { stale }
+  { #1~has~changed~since~#2~was~exported.~The~code~shown~may~be~out~of~date:~
+    rebuild~and~run~leanquote-export~again. }
+\msg_new:nnn { leanquote } { uncompiled }
+  { #1~is~newer~than~its~compiled~file~#2.~The~code~shown~may~not~be~what~Lean~checked~
+    (the~quote~is~marked~UNVERIFIED):~run~lake~build. }
+\msg_new:nnn { leanquote } { using-export }
+  { Using~#2~for~exact~declaration~boundaries~of~#1. }
+\msg_new:nnn { leanquote } { stale-fallback }
+  { #1~has~changed~since~it~was~exported~to~#2.~Reading~#1~directly~instead;~
+    re-run~leanquote-export~for~exact~declaration~boundaries. }
+\msg_new:nnn { leanquote } { no-olean }
+  { No~compiled~file~#2~for~#1,~so~leanquote~cannot~check~that~Lean~compiled~it~
+    (verify=true:~the~quote~is~marked~UNVERIFIED).~Set~project~to~the~root~of~its~Lake~
+    project~or~olean~to~the~compiled~file,~or~use~verify=auto. }
+\msg_new:nnn { leanquote } { no-imports }
+  { No~import~lines~found~at~the~top~of~#1. }
+\msg_new:nnn { leanquote } { failed }
+  { The~last~lake~build~of~#1~failed:~its~compiled~file~#2~is~missing~
+    (the~quote~is~marked~UNVERIFIED).~Fix~the~Lean~file~and~run~lake~build. }
+\msg_new:nnn { leanquote } { sorry-file }
+  { #1~contains~sorry,~according~to~Lake's~build~log~(quotes~from~it~are~marked~
+    SORRY~IN~FILE).~Run~leanquote-export~to~see~which~declarations~depend~on~it. }
+\msg_new:nnn { leanquote } { sorry-decl }
+  { Lean~declaration~#1~depends~on~sorry~(the~quote~is~marked~USES~SORRY). }
+\msg_new:nnn { leanquote } { extra-axioms }
+  { Lean~declaration~#1~depends~on~axioms~beyond~propext,~Classical.choice~and~
+    Quot.sound:~#2~(the~quote~is~marked~EXTRA~AXIOMS). }
+\msg_new:nnn { leanquote } { no-olean-auto }
+  { No~compiled~file~#2~for~#1;~leanquote~cannot~check~it~here~(verify=auto). }
+
+\cs_generate_variant:Nn \msg_warning:nnnn { nnnV , nnVn }
+\cs_generate_variant:Nn \msg_error:nnn { nnV }
+\cs_generate_variant:Nn \msg_error:nnnn { nnVV }
+\cs_generate_variant:Nn \msg_info:nnnn { nnnV }
+\cs_generate_variant:Nn \file_if_exist:nTF { V }
+\cs_generate_variant:Nn \file_if_exist:nF { V }
+\cs_generate_variant:Nn \file_if_exist:nT { V }
+\cs_generate_variant:Nn \str_range:nnn { e }
+
+% ---------------------------------------------------------------- state
+\ior_new:N \g__leanquote_ior
+\iow_new:N \g__leanquote_iow
+\int_new:N \g__leanquote_count_int
+\str_new:N \l__leanquote_name_str
+\str_new:N \l__leanquote_file_str
+\str_new:N \l__leanquote_out_str
+\bool_new:N \l__leanquote_inside_bool
+\bool_new:N \l__leanquote_found_bool
+\bool_new:N \l__leanquote_first_bool
+\int_new:N \l__leanquote_matches_int
+\prop_new:N \g__leanquote_checked_prop
+
+% Write one line to the output file.
+% Lines of the declaration being extracted are collected in a buffer, then written.
+\seq_new:N \l__leanquote_buf_seq
+\cs_new_protected:Npn \__leanquote_write:n #1 { \seq_put_right:Nn \l__leanquote_buf_seq {#1} }
+
+% ---------------------------------------------------------------- hiding proofs (proof=false)
+% For a theorem or lemma, cut at the `:=` that starts the proof (outside brackets and `--`
+% comments) and print `:= ...` instead. Definitions keep their bodies.
+\int_new:N \l__leanquote_depth_int
+\int_new:N \l__leanquote_pos_int
+\int_new:N \l__leanquote_cut_int
+\int_new:N \l__leanquote_prev_int
+\bool_new:N \l__leanquote_intheorem_bool
+\bool_new:N \l__leanquote_cutdone_bool
+\str_new:N \l__leanquote_line_str
+\cs_new_protected:Npn \__leanquote_find_cut:N #1
+  {% #1 = str variable holding one line; sets \l__leanquote_cut_int (0 = no cut in this line)
+    \int_zero:N \l__leanquote_pos_int
+    \int_zero:N \l__leanquote_cut_int
+    \int_zero:N \l__leanquote_prev_int
+    \str_map_inline:Nn #1
+      {
+        \int_incr:N \l__leanquote_pos_int
+        \int_case:nn { `##1 }
+          {
+            { 40 }    { \int_incr:N \l__leanquote_depth_int }   % (
+            { 91 }    { \int_incr:N \l__leanquote_depth_int }   % [
+            { 123 }   { \int_incr:N \l__leanquote_depth_int }   % {
+            { 10216 } { \int_incr:N \l__leanquote_depth_int }   % ⟨ (Unicode engines)
+            { 41 }    { \int_decr:N \l__leanquote_depth_int }
+            { 93 }    { \int_decr:N \l__leanquote_depth_int }
+            { 125 }   { \int_decr:N \l__leanquote_depth_int }
+            { 10217 } { \int_decr:N \l__leanquote_depth_int }
+            { 61 }                                              % =
+              {
+                \bool_lazy_and:nnT
+                  { \int_compare_p:nNn { \l__leanquote_prev_int } = { 58 } }
+                  { \int_compare_p:nNn { \l__leanquote_depth_int } < { 1 } }
+                  {
+                    \int_set:Nn \l__leanquote_cut_int { \l__leanquote_pos_int - 1 }
+                    \str_map_break:
+                  }
+              }
+            { 45 }                                              % -
+              {
+                \int_compare:nNnT { \l__leanquote_prev_int } = { 45 }
+                  { \str_map_break: }
+              }
+          }
+        \int_set:Nn \l__leanquote_prev_int { `##1 }
+      }
+  }
+\cs_new_protected:Npn \__leanquote_flush:
+  {
+    \bool_if:NTF \l_leanquote_proof_bool
+      { \seq_map_inline:Nn \l__leanquote_buf_seq { \iow_now:Nn \g__leanquote_iow {##1} } }
+      {
+        \bool_set_false:N \l__leanquote_intheorem_bool
+        \bool_set_false:N \l__leanquote_cutdone_bool
+        \int_zero:N \l__leanquote_depth_int
+        \seq_map_inline:Nn \l__leanquote_buf_seq
+          {
+            \bool_if:NF \l__leanquote_cutdone_bool
+              {
+                \str_set:Nn \l__leanquote_line_str {##1}
+                \bool_if:NF \l__leanquote_intheorem_bool
+                  {
+                    \regex_match:nnT
+                      { \A (?:@\[ [^\]]* \] \s*)?
+                           (?:(?:private|protected|noncomputable|nonrec) \s+)*
+                           (?:theorem|lemma) \s }
+                      {##1}
+                      { \bool_set_true:N \l__leanquote_intheorem_bool }
+                  }
+                \bool_if:NTF \l__leanquote_intheorem_bool
+                  {
+                    \__leanquote_find_cut:N \l__leanquote_line_str
+                    \int_compare:nNnTF { \l__leanquote_cut_int } > { 0 }
+                      {
+                        \tl_set:Ne \l_tmpa_tl
+                          { \str_range:Nnn \l__leanquote_line_str {1} { \l__leanquote_cut_int - 1 } }
+                        \regex_replace_once:nnN { \s* \Z } { } \l_tmpa_tl
+                        \iow_now:Ne \g__leanquote_iow { \l_tmpa_tl \c_space_tl := ~ ... }
+                        \bool_set_true:N \l__leanquote_cutdone_bool
+                      }
+                      { \iow_now:Nn \g__leanquote_iow {##1} }
+                  }
+                  { \iow_now:Nn \g__leanquote_iow {##1} }
+              }
+          }
+      }
+    \seq_clear:N \l__leanquote_buf_seq
+  }
+
+
+% ---------------------------------------------------------------- .leanquote exports
+% `@@axioms a b c` line of an export: flag sorry and axioms beyond the standard three.
+\tl_new:N \l__leanquote_axlist_tl
+\tl_new:N \l__leanquote_extra_tl
+\cs_new_protected:Npn \__leanquote_axioms:n #1
+  {
+    \tl_set:Ne \l__leanquote_axlist_tl { \str_range:nnn {#1} {10} {-1} }
+    \regex_match:nVT { sorryAx } \l__leanquote_axlist_tl
+      {
+        \bool_set_true:N \l__leanquote_sorrydecl_bool
+        \msg_warning:nnV { leanquote } { sorry-decl } \l__leanquote_name_str
+      }
+    \tl_set_eq:NN \l__leanquote_extra_tl \l__leanquote_axlist_tl
+    \regex_replace_all:nnN { propext | Classical\.choice | Quot\.sound | sorryAx } { } \l__leanquote_extra_tl
+    \tl_trim_spaces:N \l__leanquote_extra_tl
+    \tl_if_blank:VF \l__leanquote_extra_tl
+      {
+        \bool_set_true:N \l__leanquote_axioms_bool
+        \msg_warning:nnVV { leanquote } { extra-axioms } \l__leanquote_name_str \l__leanquote_axlist_tl
+      }
+  }
+\cs_generate_variant:Nn \regex_match:nnT { nV }
+\cs_generate_variant:Nn \msg_warning:nnn { nnV }
+\cs_generate_variant:Nn \msg_warning:nnnn { nnVV }
+\cs_new_protected:Npn \__leanquote_from_export:n #1
+  {
+    \bool_set_false:N \l__leanquote_inside_bool
+    \bool_set_false:N \l__leanquote_found_bool
+    \int_zero:N \l__leanquote_matches_int
+    \ior_open:Nn \g__leanquote_ior {#1}
+    \ior_str_map_inline:Nn \g__leanquote_ior
+      {
+        \bool_if:NTF \l__leanquote_inside_bool
+          {
+            \str_if_eq:nnTF {##1} { @@end }
+              { \bool_set_false:N \l__leanquote_inside_bool }
+              {
+                \regex_match:nnTF { \A @@axioms } {##1}
+                  { \bool_if:NT \l_leanquote_check_bool { \__leanquote_axioms:n {##1} } }
+                  {
+                    \regex_match:nnTF { \A @@doc\x{20} } {##1}
+                      {
+                        \bool_if:NT \l_leanquote_doc_bool
+                          { \seq_put_right:Ne \l__leanquote_buf_seq { \str_range:nnn {##1} {7} {-1} } }
+                      }
+                      { \__leanquote_write:n {##1} }
+                  }
+              }
+          }
+          {
+            \regex_match:nnT { \A @@begin\x{20} (.*\.)? \u{l__leanquote_name_str} \Z } {##1}
+              {
+                \int_incr:N \l__leanquote_matches_int
+                \bool_if:NF \l__leanquote_found_bool
+                  {
+                    \bool_set_true:N \l__leanquote_inside_bool
+                    \bool_set_true:N \l__leanquote_found_bool
+                  }
+              }
+          }
+      }
+    \ior_close:N \g__leanquote_ior
+  }
+
+% ---------------------------------------------------------------- .lean files
+% A declaration starts at a line `[@[...]] [modifiers] def|theorem|... Name` in column 0, with
+% the doc comment and attribute lines just above it, and continues while lines are blank,
+% indented, or start with `|`, `termination_by`, `decreasing_by` or `deriving`.
+\seq_new:N \l__leanquote_doc_seq
+\seq_new:N \l__leanquote_attr_seq
+\seq_new:N \l__leanquote_blank_seq
+\bool_new:N \l__leanquote_indoc_bool
+\bool_new:N \l__leanquote_consumed_bool
+\cs_new_protected:Npn \__leanquote_src_inside:n #1
+  {
+    \regex_match:nnTF { \A \s* \Z } {#1}
+      { \seq_put_right:Nn \l__leanquote_blank_seq { } \bool_set_true:N \l__leanquote_consumed_bool }
+      {
+        \regex_match:nnTF { \A ( \s | \| | termination_by | decreasing_by | deriving ) } {#1}
+          {
+            \seq_map_inline:Nn \l__leanquote_blank_seq { \__leanquote_write:n { } }
+            \seq_clear:N \l__leanquote_blank_seq
+            \__leanquote_write:n {#1}
+            \bool_set_true:N \l__leanquote_consumed_bool
+          }
+          {
+            \bool_set_false:N \l__leanquote_inside_bool
+            \seq_clear:N \l__leanquote_blank_seq
+          }
+      }
+  }
+\seq_new:N \l__leanquote_decl_seq
+\str_new:N \l__leanquote_declname_str
+% Does the declared name match the requested one? Either may be a dotted suffix of the other.
+\cs_generate_variant:Nn \regex_match:nnTF { nV }
+\prg_new_protected_conditional:Npnn \__leanquote_names_match: { TF }
+  {
+    \str_if_eq:NNTF \l__leanquote_declname_str \l__leanquote_name_str
+      { \prg_return_true: }
+      {
+        \regex_match:nVTF { \. \u{l__leanquote_name_str} \Z } \l__leanquote_declname_str
+          { \prg_return_true: }
+          {
+            \regex_match:nVTF { \. \u{l__leanquote_declname_str} \Z } \l__leanquote_name_str
+              { \prg_return_true: } { \prg_return_false: }
+          }
+      }
+  }
+\cs_new_protected:Npn \__leanquote_src_start:n #1
+  {
+                \int_incr:N \l__leanquote_matches_int
+                \bool_if:NF \l__leanquote_found_bool
+                  {
+                    \bool_set_true:N \l__leanquote_found_bool
+                    \bool_set_true:N \l__leanquote_inside_bool
+                    \bool_if:NT \l_leanquote_doc_bool
+                      { \seq_map_inline:Nn \l__leanquote_doc_seq { \__leanquote_write:n {##1} } }
+                    \seq_map_inline:Nn \l__leanquote_attr_seq { \__leanquote_write:n {##1} }
+                    \__leanquote_write:n {#1}
+                  }
+              }
+\cs_new_protected:Npn \__leanquote_src_other:n #1
+  {
+                \regex_match:nnTF { \A @\[ } {#1}
+                  { \seq_put_right:Nn \l__leanquote_attr_seq {#1} }
+                  {
+                    \regex_match:nnF { \A \s* \Z } {#1}
+                      {
+                        \seq_clear:N \l__leanquote_doc_seq
+                        \seq_clear:N \l__leanquote_attr_seq
+                      }
+                  }
+              }
+\cs_new_protected:Npn \__leanquote_src_outside:n #1
+  {
+    \bool_if:NTF \l__leanquote_indoc_bool
+      {
+        \seq_put_right:Nn \l__leanquote_doc_seq {#1}
+        \regex_match:nnT { -/ } {#1} { \bool_set_false:N \l__leanquote_indoc_bool }
+      }
+      {
+        \regex_match:nnTF { \A /-- } {#1}
+          {
+            \seq_clear:N \l__leanquote_doc_seq
+            \seq_clear:N \l__leanquote_attr_seq
+            \seq_put_right:Nn \l__leanquote_doc_seq {#1}
+            \regex_match:nnF { \A /-- .* -/ } {#1} { \bool_set_true:N \l__leanquote_indoc_bool }
+          }
+          {
+            \regex_extract_once:nnNTF
+              { \A (?:@\[ [^\]]* \] \s*)?
+                   (?:(?:private|protected|noncomputable|partial|unsafe|nonrec) \s+)*
+                   (?:def|theorem|lemma|abbrev|structure|inductive|instance|class|axiom|opaque)
+                   \s+ ([^\s:(\[\{]+) }
+              {#1} \l__leanquote_decl_seq
+              {
+                \str_set:Ne \l__leanquote_declname_str { \seq_item:Nn \l__leanquote_decl_seq {2} }
+                \__leanquote_names_match:TF { \__leanquote_src_start:n {#1} } { \__leanquote_src_other:n {#1} }
+              }
+              { \__leanquote_src_other:n {#1} }
+
+          }
+      }
+  }
+% ---------------------------------------------------------------- the import block
+% The `module` / `[public|private|meta] import` lines at the top of a file. A comment before them
+% (e.g. a copyright header) is skipped; the block ends at the first other non-blank line.
+\bool_new:N \l__leanquote_inheader_bool
+\bool_new:N \l__leanquote_incomment_bool
+\cs_new_protected:Npn \__leanquote_import_line:n #1
+  {
+    \bool_if:NTF \l__leanquote_incomment_bool
+      { \regex_match:nnT { -/ } {#1} { \bool_set_false:N \l__leanquote_incomment_bool } }
+      {
+        \regex_match:nnTF
+          { \A (?: module \s* \Z | (?:(?:public|private|meta) \s+)* import \s ) } {#1}
+          {
+            \bool_set_true:N \l__leanquote_found_bool
+            \bool_set_true:N \l__leanquote_inheader_bool
+            \__leanquote_write:n {#1}
+          }
+          {
+            \regex_match:nnF { \A \s* (?: \Z | -- ) } {#1}
+              {
+                \bool_if:NTF \l__leanquote_inheader_bool
+                  { \ior_map_break: }
+                  {
+                    \regex_match:nnTF { \A /- } {#1}
+                      {
+                        \regex_match:nnF { -/ } {#1}
+                          { \bool_set_true:N \l__leanquote_incomment_bool }
+                      }
+                      { \ior_map_break: }
+                  }
+              }
+          }
+      }
+  }
+\cs_new_protected:Npn \__leanquote_imports:n #1
+  {% #1 = .lean file, or export (its @@src lines)
+    \bool_set_false:N \l__leanquote_found_bool
+    \bool_set_false:N \l__leanquote_inheader_bool
+    \bool_set_false:N \l__leanquote_incomment_bool
+    \int_set:Nn \l__leanquote_matches_int { 1 }
+    \ior_open:Nn \g__leanquote_ior {#1}
+    \str_if_eq:eeTF { \str_range:nnn {#1} {-5} {-1} } { .lean }
+      { \ior_str_map_inline:Nn \g__leanquote_ior { \__leanquote_import_line:n {##1} } }
+      {
+        \ior_str_map_inline:Nn \g__leanquote_ior
+          {
+            \regex_match:nnT { \A @@src (\x{20} | \Z) } {##1}
+              { \exp_args:Ne \__leanquote_import_line:n { \str_range:nnn {##1} {7} {-1} } }
+          }
+      }
+    \ior_close:N \g__leanquote_ior
+  }
+\cs_generate_variant:Nn \__leanquote_imports:n { V }
+\str_const:Nn \c__leanquote_imports_str { :imports }
+\bool_new:N \l__leanquote_hasdecl_bool
+
+\cs_new_protected:Npn \__leanquote_from_source:n #1
+  {
+    \bool_set_false:N \l__leanquote_inside_bool
+    \bool_set_false:N \l__leanquote_found_bool
+    \bool_set_false:N \l__leanquote_indoc_bool
+    \int_zero:N \l__leanquote_matches_int
+    \seq_clear:N \l__leanquote_doc_seq
+    \seq_clear:N \l__leanquote_attr_seq
+    \seq_clear:N \l__leanquote_blank_seq
+    \ior_open:Nn \g__leanquote_ior {#1}
+    \ior_str_map_inline:Nn \g__leanquote_ior
+      {
+        \bool_set_false:N \l__leanquote_consumed_bool
+        \bool_if:NT \l__leanquote_inside_bool { \__leanquote_src_inside:n {##1} }
+        \bool_if:NF \l__leanquote_consumed_bool { \__leanquote_src_outside:n {##1} }
+      }
+    \ior_close:N \g__leanquote_ior
+  }
+
+% Compare modification dates of a `.lean` file and its compiled `.olean` (once per file per run).
+\str_new:N \l__leanquote_olean_str
+\bool_new:N \l__leanquote_unverified_bool
+\tl_new:N \l__leanquote_status_tl
+\str_new:N \l__leanquote_trace_str
+\bool_new:N \l__leanquote_sorryfile_bool
+\bool_new:N \l__leanquote_sorrydecl_bool
+\bool_new:N \l__leanquote_axioms_bool
+\tl_new:N \l__leanquote_mark_tl
+\cs_generate_variant:Nn \ior_open:Nn { NV }
+\cs_new_protected:Npn \__leanquote_check_compiled:nn #1#2
+  {% #1 = source path as read, #2 = path relative to the Lake project root
+    % Status per file, computed once: s = stale (source newer than .olean), o = ok, n = no .olean.
+    \prop_get:NnNF \g__leanquote_checked_prop {#1} \l__leanquote_status_tl
+      {
+        \tl_if_blank:VTF \l_leanquote_olean_tl
+          {
+            \str_set:Ne \l__leanquote_olean_str
+              { \l_leanquote_project_tl .lake/build/lib/lean/ \str_range:nnn {#2} {1} {-6} .olean }
+          }
+          { \str_set:NV \l__leanquote_olean_str \l_leanquote_olean_tl }
+        \str_set:Ne \l__leanquote_trace_str
+          { \str_range:Nnn \l__leanquote_olean_str {1} {-7} .trace }
+        \file_if_exist:VTF \l__leanquote_olean_str
+          {
+            \file_compare_timestamp:nNnTF {#1} > { \l__leanquote_olean_str }
+              {
+                \tl_set:Nn \l__leanquote_status_tl { s }
+                \msg_warning:nnnV { leanquote } { uncompiled } {#1} \l__leanquote_olean_str
+              }
+              {
+                \tl_set:Nn \l__leanquote_status_tl { o }
+                \file_if_exist:VT \l__leanquote_trace_str
+                  {
+                    \ior_open:NV \g__leanquote_ior \l__leanquote_trace_str
+                    \ior_str_map_inline:Nn \g__leanquote_ior
+                      {
+                        \regex_match:nnT { declaration\ uses\ \x{60}sorry\x{60} } {##1}
+                          {
+                            \tl_set:Nn \l__leanquote_status_tl { y }
+                            \ior_map_break:
+                          }
+                      }
+                    \ior_close:N \g__leanquote_ior
+                    \str_if_eq:VnT \l__leanquote_status_tl { y }
+                      { \msg_warning:nnn { leanquote } { sorry-file } {#1} }
+                  }
+              }
+          }
+          {
+            \file_if_exist:VTF \l__leanquote_trace_str
+              {
+                \tl_set:Nn \l__leanquote_status_tl { f }
+                \msg_warning:nnnV { leanquote } { failed } {#1} \l__leanquote_olean_str
+              }
+              {
+                \tl_set:Nn \l__leanquote_status_tl { n }
+                \str_if_eq:VnTF \l_leanquote_verify_tl { true }
+                  { \msg_warning:nnnV { leanquote } { no-olean } {#1} \l__leanquote_olean_str }
+                  { \msg_info:nnnV { leanquote } { no-olean-auto } {#1} \l__leanquote_olean_str }
+              }
+          }
+        \prop_gput:NnV \g__leanquote_checked_prop {#1} \l__leanquote_status_tl
+      }
+    \str_case:VnF \l__leanquote_status_tl
+      {
+        { s } { \bool_set_true:N \l__leanquote_unverified_bool }
+        { f } { \bool_set_true:N \l__leanquote_unverified_bool }
+        { y } { \bool_set_true:N \l__leanquote_sorryfile_bool }
+        { n }
+          {
+            \str_if_eq:VnT \l_leanquote_verify_tl { true }
+              { \bool_set_true:N \l__leanquote_unverified_bool }
+          }
+      }
+      { }
+  }
+\cs_generate_variant:Nn \str_case:nnF { Vn }
+\cs_generate_variant:Nn \prop_gput:Nnn { NnV }
+\cs_generate_variant:Nn \str_if_eq_p:nn { Vn }
+
+% ---------------------------------------------------------------- freshness check
+% Compare the source text stored in an export (`@@src` lines) with the current source file,
+% found at `root` + the `@@source` path. Done once per export per run.
+\str_new:N \l__leanquote_stored_str
+\str_new:N \l__leanquote_current_str
+\str_new:N \l__leanquote_srcpath_str
+\cs_new_protected:Npn \__leanquote_check:n #1
+  {
+    \prop_if_in:NnF \g__leanquote_checked_prop {#1}
+      {
+        \prop_gput:Nnn \g__leanquote_checked_prop {#1} { }
+        \str_clear:N \l__leanquote_stored_str
+        \str_clear:N \l__leanquote_srcpath_str
+        \ior_open:Nn \g__leanquote_ior {#1}
+        \ior_str_map_inline:Nn \g__leanquote_ior
+          {
+            \regex_match:nnT { \A @@src\x{20} } {##1}
+              { \str_put_right:Ne \l__leanquote_stored_str { \str_range:nnn {##1} {7} {-1} | } }
+            \regex_match:nnT { \A @@src \Z } {##1}
+              { \str_put_right:Nn \l__leanquote_stored_str { | } }
+            \regex_match:nnT { \A @@source\x{20} } {##1}
+              { \str_set:Ne \l__leanquote_srcpath_str { \l_leanquote_root_tl \str_range:nnn {##1} {10} {-1} } }
+          }
+        \ior_close:N \g__leanquote_ior
+        \tl_if_blank:VF \l_leanquote_source_tl
+          { \str_set:NV \l__leanquote_srcpath_str \l_leanquote_source_tl }
+        \file_if_exist:nT { \l__leanquote_srcpath_str }
+          {
+            \str_clear:N \l__leanquote_current_str
+            \ior_open:Nn \g__leanquote_ior { \l__leanquote_srcpath_str }
+            \ior_str_map_inline:Nn \g__leanquote_ior
+              { \str_put_right:Nn \l__leanquote_current_str { ##1 | } }
+            \ior_close:N \g__leanquote_ior
+            \str_if_eq:NNF \l__leanquote_stored_str \l__leanquote_current_str
+              { \msg_warning:nnVn { leanquote } { stale } \l__leanquote_srcpath_str {#1} }
+          }
+      }
+  }
+
+% Is the export #1 up to date with the source #2? Sets \l__leanquote_fresh_bool; cached per run.
+\bool_new:N \l__leanquote_fresh_bool
+\prop_new:N \g__leanquote_fresh_prop
+\cs_new_protected:Npn \__leanquote_export_fresh:nn #1#2
+  {
+    \prop_get:NnNTF \g__leanquote_fresh_prop {#1} \l_tmpb_tl
+      { \bool_set:Nn \l__leanquote_fresh_bool { \str_if_eq_p:Vn \l_tmpb_tl { 1 } } }
+      {
+        \str_clear:N \l__leanquote_stored_str
+        \ior_open:Nn \g__leanquote_ior {#1}
+        \ior_str_map_inline:Nn \g__leanquote_ior
+          {
+            \regex_match:nnT { \A @@src\x{20} } {##1}
+              { \str_put_right:Ne \l__leanquote_stored_str { \str_range:nnn {##1} {7} {-1} | } }
+            \regex_match:nnT { \A @@src \Z } {##1}
+              { \str_put_right:Nn \l__leanquote_stored_str { | } }
+          }
+        \ior_close:N \g__leanquote_ior
+        \str_clear:N \l__leanquote_current_str
+        \ior_open:Nn \g__leanquote_ior {#2}
+        \ior_str_map_inline:Nn \g__leanquote_ior
+          { \str_put_right:Nn \l__leanquote_current_str { ##1 | } }
+        \ior_close:N \g__leanquote_ior
+        \str_if_eq:NNTF \l__leanquote_stored_str \l__leanquote_current_str
+          {
+            \bool_set_true:N \l__leanquote_fresh_bool
+            \prop_gput:Nnn \g__leanquote_fresh_prop {#1} { 1 }
+            \msg_info:nnnn { leanquote } { using-export } {#2} {#1}
+          }
+          {
+            \bool_set_false:N \l__leanquote_fresh_bool
+            \prop_gput:Nnn \g__leanquote_fresh_prop {#1} { 0 }
+            \msg_warning:nnnn { leanquote } { stale-fallback } {#2} {#1}
+          }
+      }
+  }
+\cs_generate_variant:Nn \__leanquote_export_fresh:nn { VV }
+\cs_generate_variant:Nn \__leanquote_from_export:n { V }
+\str_new:N \l__leanquote_export_str
+\bool_new:N \l__leanquote_useexport_bool
+
+% ---------------------------------------------------------------- main command
+\cs_new_protected:Npn \__leanquote_typeset:nn #1#2
+  {
+    \bool_set_false:N \l__leanquote_unverified_bool
+    \bool_set_false:N \l__leanquote_sorryfile_bool
+    \bool_set_false:N \l__leanquote_sorrydecl_bool
+    \bool_set_false:N \l__leanquote_axioms_bool
+    \bool_set_false:N \l__leanquote_hasdecl_bool
+    \bool_set:Nn \l_leanquote_check_bool { ! \str_if_eq_p:Vn \l_leanquote_verify_tl { false } }
+    \str_set:Nn \l__leanquote_file_str {#1}
+    \str_if_eq:eeT { \str_range:Nnn \l__leanquote_file_str {-5} {-1} } { .lean }
+      { \str_set:Ne \l__leanquote_file_str { \l_leanquote_project_tl #1 } }
+    \file_if_exist:VF \l__leanquote_file_str
+      { \msg_error:nnV { leanquote } { no-file } \l__leanquote_file_str }
+    \bool_lazy_and:nnT
+      { \l_leanquote_check_bool }
+      { \str_if_eq_p:ee { \str_range:Nnn \l__leanquote_file_str {-10} {-1} } { .leanquote } }
+      { \__leanquote_check:n {#1} }
+    \bool_lazy_and:nnT
+      { \l_leanquote_check_bool }
+      { \str_if_eq_p:ee { \str_range:Nnn \l__leanquote_file_str {-5} {-1} } { .lean } }
+      { \exp_args:NV \__leanquote_check_compiled:nn \l__leanquote_file_str {#1} }
+    \bool_set_false:N \l__leanquote_useexport_bool
+    \str_if_eq:eeT { \str_range:Nnn \l__leanquote_file_str {-5} {-1} } { .lean }
+      {
+        \str_set:Ne \l__leanquote_export_str
+          { \l_leanquote_project_tl .lake/build/leanquote/ \str_range:nnn {#1} {1} {-6} .leanquote }
+        \file_if_exist:VF \l__leanquote_export_str
+          {
+            \str_set:Ne \l__leanquote_export_str
+              { \l_leanquote_project_tl \str_range:nnn {#1} {1} {-6} .leanquote }
+          }
+        \file_if_exist:VT \l__leanquote_export_str
+          {
+            \__leanquote_export_fresh:VV \l__leanquote_export_str \l__leanquote_file_str
+            \bool_set_eq:NN \l__leanquote_useexport_bool \l__leanquote_fresh_bool
+          }
+      }
+    \int_gincr:N \g__leanquote_count_int
+    \str_set:Ne \l__leanquote_out_str
+      { \c_sys_jobname_str -leanquote- \int_use:N \g__leanquote_count_int .lean }
+    \iow_open:Nn \g__leanquote_iow { \l__leanquote_out_str }
+    \bool_set_true:N \l__leanquote_first_bool
+    \clist_map_inline:nn {#2}
+      {
+        \tl_set:Ne \l_tmpa_tl { \tl_to_str:n {##1} }
+        \tl_trim_spaces:N \l_tmpa_tl
+        \str_set:NV \l__leanquote_name_str \l_tmpa_tl
+        \bool_if:NF \l__leanquote_first_bool { \iow_now:Nn \g__leanquote_iow { } }
+        \seq_clear:N \l__leanquote_buf_seq
+        \bool_set_false:N \l__leanquote_first_bool
+        \str_if_eq:NNTF \l__leanquote_name_str \c__leanquote_imports_str
+          {
+            \__leanquote_imports:V \l__leanquote_file_str
+            \bool_if:NF \l__leanquote_found_bool
+              { \msg_error:nnV { leanquote } { no-imports } \l__leanquote_file_str }
+          }
+          {
+            \bool_set_true:N \l__leanquote_hasdecl_bool
+            \bool_if:NTF \l__leanquote_useexport_bool
+              { \__leanquote_from_export:V \l__leanquote_export_str }
+              {
+                \str_if_eq:eeTF { \str_range:Nnn \l__leanquote_file_str {-5} {-1} } { .lean }
+                  { \exp_args:NV \__leanquote_from_source:n \l__leanquote_file_str }
+                  { \__leanquote_from_export:n {#1} }
+              }
+            \bool_if:NF \l__leanquote_found_bool
+              { \msg_error:nnVV { leanquote } { not-found } \l__leanquote_name_str \l__leanquote_file_str }
+          }
+        \int_compare:nNnT { \l__leanquote_matches_int } > { 1 }
+          { \msg_warning:nnVn { leanquote } { ambiguous } \l__leanquote_name_str {#1} }
+        \__leanquote_flush:
+      }
+    \iow_close:N \g__leanquote_iow
+    % The mark, most serious first; the build log's file-level sorry only without an export.
+    \tl_clear:N \l__leanquote_mark_tl
+    \bool_if:NTF \l__leanquote_unverified_bool
+      { \tl_set:Nn \l__leanquote_mark_tl { UNVERIFIED } }
+      {
+        \bool_if:NTF \l__leanquote_sorrydecl_bool
+          { \tl_set:Nn \l__leanquote_mark_tl { USES~SORRY } }
+          {
+            \bool_lazy_all:nTF
+              { { \l__leanquote_sorryfile_bool } { ! \l__leanquote_useexport_bool } { \l__leanquote_hasdecl_bool } }
+              { \tl_set:Nn \l__leanquote_mark_tl { SORRY~IN~FILE } }
+              {
+                \bool_if:NT \l__leanquote_axioms_bool
+                  { \tl_set:Nn \l__leanquote_mark_tl { EXTRA~AXIOMS } }
+              }
+          }
+      }
+    \bool_if:NTF \l_leanquote_box_bool
+      { \begin{leanquotebox} }
+      {
+        \tl_if_empty:NF \l__leanquote_mark_tl
+          { \par\noindent\leanquotebadgetext{\l__leanquote_mark_tl}\par }
+      }
+    \use:e
+      {
+        \exp_not:N \lstinputlisting
+          [ style = \l_leanquote_style_tl \exp_not:V \l__leanquote_lst_tl ]
+          { \l__leanquote_out_str }
+      }
+    \bool_if:NT \l_leanquote_box_bool { \end{leanquotebox} }
+  }
+% \leanfilequote[options]{file}{names}: quote declarations from an explicit file.
+\NewDocumentCommand \leanfilequote { O{} m m }
+  {
+    \group_begin:
+      \tl_set_eq:NN \l__leanquote_lst_tl \l__leanquote_setuplst_tl
+      \keys_set:nn { leanquote } {#1}
+      \__leanquote_typeset:nn {#2} {#3}
+    \group_end:
+  }
+% \leanfile[options]{file}: set the current file (and options) for the following \leanquote.
+\tl_new:N \l_leanquote_file_tl
+\tl_new:N \l__leanquote_fileopts_tl
+\msg_new:nnn { leanquote } { no-current-file }
+  { \token_to_str:N \leanquote\ used~before~any~\token_to_str:N \leanfile\
+    (or~\token_to_str:N \leanquotefile). }
+\msg_new:nnn { leanquote } { leanfile-taken }
+  { \token_to_str:N \leanfile\ is~already~defined~(for~example~by~blueprint~macros),~
+    so~leanquote~leaves~it~alone.~Use~\token_to_str:N \leanquotefile\ instead. }
+\NewDocumentCommand \leanquotefile { O{} m }
+  {
+    \tl_set:Nn \l_leanquote_file_tl {#2}
+    \tl_set:Nn \l__leanquote_fileopts_tl {#1}
+  }
+% \leanfile is the short name of \leanquotefile, defined now if it is free. If a document's
+% macros (e.g. a blueprint's) define \leanfile before leanquote is loaded, they keep it.
+\cs_if_exist:NTF \leanfile
+  { \msg_warning:nn { leanquote } { leanfile-taken } }
+  { \NewCommandCopy \leanfile \leanquotefile }
+% \leanquoteimports[options]: quote the import block of the current file.
+\NewDocumentCommand \leanquoteimports { O{} } { \leanquote[#1]{:imports} }
+% \leanquote[options]{names}: quote declarations from the current file.
+\NewDocumentCommand \leanquote { O{} m }
+  {
+    \tl_if_blank:VTF \l_leanquote_file_tl
+      { \msg_error:nn { leanquote } { no-current-file } }
+      {
+        \group_begin:
+          \tl_set_eq:NN \l__leanquote_lst_tl \l__leanquote_setuplst_tl
+          \keys_set:nV { leanquote } \l__leanquote_fileopts_tl
+          \keys_set:nn { leanquote } {#1}
+          \exp_args:NV \__leanquote_typeset:nn \l_leanquote_file_tl {#2}
+        \group_end:
+      }
+  }
+
+% ---------------------------------------------------------------- box
+% Printed after the logo image. The Lean trademark policy requires the Lean logo to be
+% accompanied by a small trademark symbol; redefine as empty for other logos.
+\definecolor{leanquotelogoblue}{HTML}{386EE0}
+\cs_new:Npn \leanquotelogomark
+  {
+    \raisebox { \dimexpr 1.6ex - \height \relax }
+      { \scalebox{0.65} { \textcolor{leanquotelogoblue} { \fontsize{5}{5} \fontfamily{cmss} \selectfont TM } } }
+  }
+% The mark shown on quotes that are not known to be fully checked by Lean:
+% UNVERIFIED, USES SORRY, SORRY IN FILE or EXTRA AXIOMS. \leanquotebadge is drawn on a red
+% background in the box; \leanquotebadgetext is used without a box.
+\cs_new:Npn \leanquotebadge #1
+  { \textcolor{white}{ \textsf{ \bfseries \scriptsize #1 } } }
+\cs_new:Npn \leanquotebadgetext #1
+  { \textcolor{red!75!black}{ \textsf{ \bfseries \scriptsize #1 } } }
+\newtcolorbox{leanquotebox}{breakable, enhanced, colback=black!3, colframe=black!45,
+  boxrule=0.5pt, arc=2pt, left=6pt, right=6pt, top=3pt, bottom=3pt,
+  overlay~unbroken~and~first={
+    \file_if_exist:VTF \l_leanquote_logo_tl
+      {
+        \node[anchor=north~east, inner~sep=3pt, draw=black!45, fill=white,
+          line~width=0.5pt, rounded~corners=2pt] (leanquotelogo) at (frame.north~east)
+          { \includegraphics[height=1.6ex]{\l_leanquote_logo_tl} \leanquotelogomark } ;
+        \tl_if_empty:NF \l__leanquote_mark_tl
+          {
+            \node[anchor=north~east, inner~sep=3pt, fill=red!75!black, rounded~corners=2pt]
+              at ([xshift=-3pt]leanquotelogo.north~west) { \leanquotebadge{\l__leanquote_mark_tl} } ;
+          }
+      }
+      {
+        \tl_if_empty:NF \l__leanquote_mark_tl
+          {
+            \node[anchor=north~east, inner~sep=3pt, fill=red!75!black, rounded~corners=2pt]
+              at (frame.north~east) { \leanquotebadge{\l__leanquote_mark_tl} } ;
+          }
+      }
+  }}
+\ExplSyntaxOff
+% ---------------------------------------------------------------- listings style
+\lstdefinelanguage{leanquote-lean}{
+  % 1: keywords and commands
+  morekeywords={def,theorem,lemma,abbrev,structure,inductive,instance,class,where,fun,
+    by,have,show,from,let,in,if,then,else,match,with,do,return,namespace,end,section,
+    variable,open,import,noncomputable,private,protected,example,axiom,deriving,calc,
+    universe,mutual,opaque,partial,unsafe,nonrec,extends,attribute,set_option,notation,
+    infix,infixl,infixr,prefix,postfix,macro,syntax,module,public,meta,termination_by,
+    decreasing_by,at,only,using},
+  % 2: sorts and common types of core Lean and Mathlib (add your own with morekeywords=[2]{...})
+  morekeywords=[2]{Prop,Type,Sort,True,False,Nat,Int,Rat,Real,Complex,Bool,Fin,Set,Finset,
+    Multiset,List,Array,Option,Prod,Sum,Sigma,Subtype,Unit,PUnit,Empty,String,Char,Function,
+    Equiv,Matrix,Polynomial,MvPolynomial,PowerSeries,ZMod,Ideal,Submodule,Subgroup,Finsupp,
+    EuclideanSpace,ENNReal,NNReal,EReal,ENat,PNat,Filter,Measure,SimpleGraph,Group,Ring,
+    Field,Module,Algebra,TopologicalSpace,MetricSpace,Decidable,DecidableEq,Inhabited,
+    Nonempty,Fintype,Finite,Countable,Exists,And,Or,Not,Eq,Ne,Iff},
+  % 3: common tactics (visible when proofs are shown)
+  morekeywords=[3]{rfl,simp,simpa,exact,intro,intros,apply,refine,rw,rewrite,constructor,
+    cases,rcases,obtain,induction,omega,decide,norm_num,linarith,nlinarith,positivity,aesop,
+    ring,ring_nf,field_simp,use,unfold,contradiction,exfalso,specialize,trivial,
+    assumption,subst,ext,funext,congr,gcongr,tauto,push_neg,by_contra,by_cases,
+    native_decide,all_goals,any_goals,show_term,infer_instance},
+  % 4: sorry, in red
+  morekeywords=[4]{sorry,admit},
+  sensitive=true, morecomment=[l]{--}, morecomment=[n]{/-}{-/}, morestring=[b]"}
+\definecolor{leanquotekeyword}{RGB}{41,110,166}
+\definecolor{leanquotetype}{RGB}{38,128,89}
+\definecolor{leanquotetactic}{RGB}{136,84,150}
+% A word right after a dot is part of a qualified name (Mathlib.MeasureTheory.Measure, x.Set):
+% it is not coloured as a keyword, type or tactic. The head of a name (Set in Set.univ) still is.
+\lst@Key{leanquotenodot}{false}[t]{\lstKV@SetIf{#1}\lst@ifleanquotenodot}
+\lst@AddToHook{Output}{%
+  \lst@ifleanquotenodot
+    \ifx\lst@lastother.%
+      \ifx\lst@currstyle\relax \let\lst@thestyle\lst@identifierstyle
+      \else \let\lst@thestyle\lst@currstyle \fi
+    \fi
+  \fi}
+% Lean's Unicode symbols, typeset as math. Under pdfLaTeX they become listings `literate`
+% replacements; under LuaLaTeX and XeLaTeX they are made active inside listings.
+\def\leanquote@table{%
+  \leanquote@pair{ℕ}{\mathbb{N}}%
+  \leanquote@pair{ℤ}{\mathbb{Z}}%
+  \leanquote@pair{ℚ}{\mathbb{Q}}%
+  \leanquote@pair{ℝ}{\mathbb{R}}%
+  \leanquote@pair{ℂ}{\mathbb{C}}%
+  \leanquote@pair{→}{\to}%
+  \leanquote@pair{←}{\leftarrow}%
+  \leanquote@pair{↔}{\leftrightarrow}%
+  \leanquote@pair{↦}{\mapsto}%
+  \leanquote@pair{⇒}{\Rightarrow}%
+  \leanquote@pair{∀}{\forall}%
+  \leanquote@pair{∃}{\exists}%
+  \leanquote@pair{¬}{\neg}%
+  \leanquote@pair{∧}{\wedge}%
+  \leanquote@pair{∨}{\vee}%
+  \leanquote@pair{≠}{\neq}%
+  \leanquote@pair{≤}{\le}%
+  \leanquote@pair{≥}{\ge}%
+  \leanquote@pair{≈}{\approx}%
+  \leanquote@pair{≡}{\equiv}%
+  \leanquote@pair{∈}{\in}%
+  \leanquote@pair{∉}{\notin}%
+  \leanquote@pair{⊆}{\subseteq}%
+  \leanquote@pair{⊂}{\subset}%
+  \leanquote@pair{∪}{\cup}%
+  \leanquote@pair{∩}{\cap}%
+  \leanquote@pair{⋃}{\bigcup}%
+  \leanquote@pair{⋂}{\bigcap}%
+  \leanquote@pair{∅}{\emptyset}%
+  \leanquote@pair{∑}{\sum}%
+  \leanquote@pair{∏}{\prod}%
+  \leanquote@pair{∫}{\int}%
+  \leanquote@pair{∂}{\partial}%
+  \leanquote@pair{∘}{\circ}%
+  \leanquote@pair{×}{\times}%
+  \leanquote@pair{·}{\cdot}%
+  \leanquote@pair{•}{\bullet}%
+  \leanquote@pair{√}{\surd}%
+  \leanquote@pair{∞}{\infty}%
+  \leanquote@pair{⊤}{\top}%
+  \leanquote@pair{⊥}{\bot}%
+  \leanquote@pair{≃}{\simeq}%
+  \leanquote@pair{≅}{\cong}%
+  \leanquote@pair{∣}{\mid}%
+  \leanquote@pair{‖}{\|}%
+  \leanquote@pair{⟨}{\langle}%
+  \leanquote@pair{⟩}{\rangle}%
+  \leanquote@pair{⦃}{\{\!|}%
+  \leanquote@pair{⦄}{|\!\}}%
+  \leanquote@pair{⨅}{\bigwedge}%
+  \leanquote@pair{⨆}{\bigvee}%
+  \leanquote@pair{α}{\alpha}%
+  \leanquote@pair{β}{\beta}%
+  \leanquote@pair{γ}{\gamma}%
+  \leanquote@pair{δ}{\delta}%
+  \leanquote@pair{ε}{\varepsilon}%
+  \leanquote@pair{ζ}{\zeta}%
+  \leanquote@pair{η}{\eta}%
+  \leanquote@pair{θ}{\theta}%
+  \leanquote@pair{ι}{\iota}%
+  \leanquote@pair{κ}{\kappa}%
+  \leanquote@pair{λ}{\lambda}%
+  \leanquote@pair{μ}{\mu}%
+  \leanquote@pair{ν}{\nu}%
+  \leanquote@pair{ξ}{\xi}%
+  \leanquote@pair{π}{\pi}%
+  \leanquote@pair{ρ}{\rho}%
+  \leanquote@pair{σ}{\sigma}%
+  \leanquote@pair{τ}{\tau}%
+  \leanquote@pair{φ}{\varphi}%
+  \leanquote@pair{χ}{\chi}%
+  \leanquote@pair{ψ}{\psi}%
+  \leanquote@pair{ω}{\omega}%
+  \leanquote@pair{Γ}{\Gamma}%
+  \leanquote@pair{Δ}{\Delta}%
+  \leanquote@pair{Θ}{\Theta}%
+  \leanquote@pair{Λ}{\Lambda}%
+  \leanquote@pair{Σ}{\Sigma}%
+  \leanquote@pair{Π}{\Pi}%
+  \leanquote@pair{Φ}{\Phi}%
+  \leanquote@pair{Ψ}{\Psi}%
+  \leanquote@pair{Ω}{\Omega}%
+  \leanquote@pair{₀}{_0}%
+  \leanquote@pair{₁}{_1}%
+  \leanquote@pair{₂}{_2}%
+  \leanquote@pair{₃}{_3}%
+  \leanquote@pair{₄}{_4}%
+  \leanquote@pair{₅}{_5}%
+  \leanquote@pair{₆}{_6}%
+  \leanquote@pair{₇}{_7}%
+  \leanquote@pair{₈}{_8}%
+  \leanquote@pair{₉}{_9}%
+  \leanquote@pair{ᵢ}{_i}%
+  \leanquote@pair{ⱼ}{_j}%
+  \leanquote@pair{⁰}{^0}%
+  \leanquote@pair{¹}{^1}%
+  \leanquote@pair{²}{^2}%
+  \leanquote@pair{³}{^3}%
+  \leanquote@pair{⁴}{^4}%
+  \leanquote@pair{⁵}{^5}%
+  \leanquote@pair{⁶}{^6}%
+  \leanquote@pair{⁷}{^7}%
+  \leanquote@pair{⁸}{^8}%
+  \leanquote@pair{⁹}{^9}%
+  \leanquote@pair{⁻}{^-}%
+  \leanquote@pair{ⁿ}{^n}%
+  \leanquote@pair{ᶜ}{^c}%
+  \leanquote@pair{ᶠ}{^{\mathsf f}}%
+  \leanquote@pair{ᵐ}{^{\mathrm m}}%
+  \leanquote@pair{ℓ}{\ell}%
+}
+\ExplSyntaxOn
+\tl_new:N \l__leanquote_literate_tl
+\clist_new:N \g__leanquote_unicode_clist
+\bool_lazy_or:nnTF { \sys_if_engine_luatex_p: } { \sys_if_engine_xetex_p: }
+  {
+    \cs_set_protected:cpn { leanquote@pair } #1#2
+      {
+        \cs_gset_protected:cpn { __leanquote_u_ \int_eval:n { `#1 } } { \ensuremath {#2} }
+        \char_gset_active_eq:nc { `#1 } { __leanquote_u_ \int_eval:n { `#1 } }
+        \clist_gput_right:Ne \g__leanquote_unicode_clist { \int_eval:n { `#1 } }
+      }
+    \use:c { leanquote@table }
+    \lst@AddToHook { SelectCharTable }
+      { \clist_map_inline:Nn \g__leanquote_unicode_clist { \char_set_catcode_active:n {##1} } }
+  }
+  {
+    \cs_set:cpn { leanquote@pair } #1#2 { \exp_not:n { {#1} { {$#2$} } 1 } }
+    \tl_set:Ne \l__leanquote_literate_tl { \use:c { leanquote@table } }
+  }
+\use:e
+  {
+    \exp_not:N \lstdefinestyle { leanquote }
+      {
+        \exp_not:n {language=leanquote-lean, leanquotenodot, basicstyle=\ttfamily\small, columns=fullflexible,
+  keepspaces=true, showstringspaces=false, extendedchars=false, upquote=true,
+  keywordstyle=\bfseries\color{leanquotekeyword}, keywordstyle=[2]\color{leanquotetype},
+  keywordstyle=[3]\color{leanquotetactic}, keywordstyle=[4]\bfseries\color{red!75!black},
+  commentstyle=\itshape\color{black!60},
+  breaklines=true, breakatwhitespace=true, postbreak=\mbox{\hspace{1em}}}
+        \tl_if_empty:NF \l__leanquote_literate_tl
+          { , literate = \exp_not:V \l__leanquote_literate_tl }
+      }
+  }
+\ExplSyntaxOff

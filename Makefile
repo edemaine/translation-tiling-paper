@@ -16,9 +16,8 @@ figures:
 paper.tex slop.tex: %.tex: %.texlish
 	texlish $<
 
-lean-snippets/.stamp: lean/TranslationTiling/Abstract.lean figures/extract_lean_snippets.py
-	$(PYTHON) figures/extract_lean_snippets.py
-	touch $@
-
-paper.pdf slop.pdf: %.pdf: %.tex paper.bib alpha-key.bst $(FIGURE_PDFS) lean-snippets/.stamp
+paper.pdf slop.pdf: %.pdf: %.tex paper.bib alpha-key.bst $(FIGURE_PDFS)
 	latexmk -pdf -interaction=nonstopmode -halt-on-error $<
+
+# Lean excerpts are quoted by name from Abstract.lean with leanquote.sty.
+paper.pdf: lean/TranslationTiling/Abstract.lean leanquote.sty figures/lean-logo.pdf

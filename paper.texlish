@@ -39,33 +39,17 @@
   placeins
   xcolor: table
   tikz
-  listings
   tcolorbox
+  leanquote
   aliascnt
   xurl
   natbib: numbers,sort&compress
   hyperref
   cleveref: capitalise,nameinlink,noabbrev
 \usetikzlibrary{arrows.meta,positioning,calc}
-\lstdefinelanguage{lean}{
-  morekeywords={import,abbrev,def,theorem,fun,by},
-  morekeywords=[2]{Prop,Type,Set,List,Fin,Nat},
-  sensitive=true, morecomment=[l]{--}, morestring=[b]"}
-\lstdefinestyle{lean}{language=lean, basicstyle=\ttfamily\small, columns=fullflexible,
-  keepspaces=true, showstringspaces=false, extendedchars=false,
-  keywordstyle=\bfseries\color{figblue}, keywordstyle=[2]\color{figgreen},
-  literate={ℤ}{{$\mathbb{Z}$}}1 {ℝ}{{$\mathbb{R}$}}1 {×}{{$\times$}}1 {→}{{$\to$}}1
-    {∀}{{$\forall$}}1 {∃}{{$\exists$}}1 {∈}{{$\in$}}1
-    {∧}{{$\wedge$}}1 {≤}{{$\le$}}1 {¬}{{$\neg$}}1 {∂}{{$\partial$}}1 {∑}{{$\sum$}}1 {ᵐ}{{$^{\mathrm m}$}}1}
-\tcbuselibrary{skins}
-\newtcolorbox{leanbox}{colback=black!3,colframe=black!45,boxrule=0.5pt,arc=2pt,
-  left=6pt,right=6pt,top=3pt,bottom=3pt,enhanced,
-  overlay={\node[anchor=north east,inner sep=3pt,draw=black!45,fill=white,line width=0.5pt,
-    rounded corners=2pt] at (frame.north east)
-    {\includegraphics[height=1.6ex]{figures/lean-logo.pdf}};}}
-\newcommand{\leanlogo}{\raisebox{-0.15ex}{\includegraphics[height=1.5ex]{figures/lean-logo.pdf}}}
-\newcommand{\leanitem}[1]{\leansep\lstinputlisting[style=lean]{lean-snippets/#1.lean}\def\leansep{\vspace{2pt}}}
-\newcommand{\leansnippet}[1]{\begin{leanbox}\def\leansep{}\let\do\leanitem\docsvlist{#1}\end{leanbox}}
+\leanquotesetup{project=lean/, logo=figures/lean-logo.pdf, proof=false}
+\leanfile{TranslationTiling/Abstract.lean}
+\newcommand{\leanlogo}{\raisebox{-0.15ex}{\includegraphics[height=1.5ex]{figures/lean-logo.pdf}\leanquotelogomark}}
 \definecolor{figblue}{RGB}{41,110,166}
 \definecolor{figorange}{RGB}{217,107,38}
 \definecolor{figgreen}{RGB}{38,128,89}
@@ -413,7 +397,7 @@ together with a short file \texttt{[AbstractBridge.lean](https://github.com/edem
 these statements to the definitions used in the rest of the formalization
 (but which need not be checked by a human).
 
-\leansnippet{Imports}
+\leanquoteimports
 
 ## Prototiles
 
@@ -421,7 +405,7 @@ A ***prototile*** is a finite list $P$ of points in $\Z^3$.
 It is a list (not a set) so that it can be given as input to an algorithm;
 repetitions are immaterial.
 
-\leansnippet{Point,Prototile}
+\leanquote{Point, Prototile}
 
 ## Connectivity
 
@@ -432,7 +416,7 @@ they are related by the reflexive transitive closure of
 the relation "both points are in $P$ and adjacent".
 
 \phantomsection\label{sec:lean-connected}
-\leansnippet{Adjacent,Connected}
+\leanquote{Adjacent, Connected}
 
 ## Tiling \texorpdfstring{$\Z^3$}{Z³}
 
@@ -441,7 +425,7 @@ such that every $x\in\Z^3$ lies in exactly one translate $t+P$ with $t\in T$,
 i.e., there is exactly one $t\in T$ with $x-t\in P$.
 (No periodicity or finiteness assumption is placed on $T$.)
 
-\leansnippet{Tiles}
+\leanquote{Tiles}
 
 ## Main Theorem for \texorpdfstring{$\Z^3$}{Z³}
 
@@ -455,7 +439,7 @@ In both statements, the proof is a single call to a theorem in
 \texttt{[AbstractBridge.lean](https://github.com/edemaine/translation-tiling-paper/blob/main/lean/TranslationTiling/AbstractBridge.lean)}.
 
 \phantomsection\label{sec:lean-z3}
-\leansnippet{tiling_coRE_complete,tiling_undecidable}
+\leanquote{tiling_coRE_complete, tiling_undecidable}
 
 ## Tiling \texorpdfstring{$\R^3$}{R³}
 
@@ -467,7 +451,7 @@ The prototile $P$ ***tiles $\R^3$*** if there exists a set $T\subseteq\R^3$ of
 there is exactly one $t\in T$ with $x-t$ in the solid body of $P$.
 ("Almost every" so that cubes may share boundaries.)
 
-\leansnippet{RealPoint,Solid,RealTiles}
+\leanquote{RealPoint, Solid, RealTiles}
 
 ## Main Theorem for \texorpdfstring{$\R^3$}{R³}
 
@@ -475,7 +459,7 @@ Tiling $\R^3$ by translations of the solid body of a single finite connected
 polycube is co-RE-complete (and hence undecidable).
 
 \phantomsection\label{sec:lean-r3}
-\leansnippet{real_tiling_coRE_complete,real_tiling_undecidable}
+\leanquote{real_tiling_coRE_complete, real_tiling_undecidable}
 
 Together, these four Lean theorems establish @thm:undecidability.
 
@@ -507,6 +491,9 @@ This paper was typeset with [Texlish](https://texlish.org/) [[Texlish]].
 We used the following LLM models:
 GPT 6.1 Sol, GPT 6 Astra,
 Claude Sonnet 5.5, Claude Opus 5.5, and Claude Fable 5.1.
+The Lean code excerpts are typeset with the
+[leanquote](https://github.com/slef/leanquote) package.
+The Lean name and logo are trademarks of the Lean Focused Research Organization (FRO), LLC.
 
 \FloatBarrier
 \bibliographystyle: alpha-key

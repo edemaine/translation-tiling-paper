@@ -1,1 +1,0 @@
-abbrev Prototile := List Point
