@@ -60,7 +60,7 @@ read independently. Both documents use `paper.bib` and build independently.
 Keep numbered references within each document.
 The Lean excerpts in the paper are quoted by name, verbatim from
 [Abstract.lean](lean/TranslationTiling/Abstract.lean), by the
-[leanquote](https://github.com/slef/leanquote) package (v0.14, vendored as
+[leanquote](https://github.com/slef/leanquote) package (v0.15, vendored as
 [leanquote.sty](leanquote.sty)). If `lean/.lake` holds a build whose
 `Abstract.olean` is older than `Abstract.lean`, the quotes are marked
 UNVERIFIED: run `lake build` in `lean/` first. Without a Lean build

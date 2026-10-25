@@ -493,7 +493,7 @@ GPT 6.1 Sol, GPT 6 Astra,
 Claude Sonnet 5.5, Claude Opus 5.5, and Claude Fable 5.1.
 The Lean code excerpts are typeset with the
 [leanquote](https://github.com/slef/leanquote) package.
-The Lean name and logo are trademarks of the Lean Focused Research Organization (FRO), LLC.
+\leanquotetrademark
 
 \FloatBarrier
 \bibliographystyle: alpha-key

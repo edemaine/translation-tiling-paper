@@ -17,7 +17,7 @@
 %
 % Copyright 2026 Stefan Langerman and Erik D. Demaine. MIT License.
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesExplPackage{leanquote}{2026-10-26}{0.14}{Typeset Lean declarations by name}
+\ProvidesExplPackage{leanquote}{2026-10-26}{0.15}{Typeset Lean declarations by name}
 \RequirePackage{listings}
 \RequirePackage{xcolor}
 \RequirePackage{graphicx}
@@ -787,6 +787,10 @@
     \raisebox { \dimexpr 1.6ex - \height \relax }
       { \scalebox{0.65} { \textcolor{leanquotelogoblue} { \fontsize{5}{5} \fontfamily{cmss} \selectfont TM } } }
   }
+% \leanquotetrademark: the trademark notice, to be printed once per paper (e.g. in the
+% acknowledgments).
+\NewDocumentCommand \leanquotetrademark { }
+  { Lean~and~the~Lean~logo~are~trademarks~of~Lean~FRO. }
 % The mark shown on quotes that are not known to be fully checked by Lean:
 % UNVERIFIED, USES SORRY, SORRY IN FILE or EXTRA AXIOMS. \leanquotebadge is drawn on a red
 % background in the box; \leanquotebadgetext is used without a box.
