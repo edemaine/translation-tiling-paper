@@ -26,6 +26,9 @@ dimensions is decidable.
 
 ## Files and build
 
+On `FWCG2026`, `paper.texlish` contains the FWCG extended abstract;
+the full paper remains on `main` and arXiv.
+
 - [paper.texlish](paper.texlish): human-written overview of the results,
   proof ideas, and Lean formalization.
 - [slop.texlish](slop.texlish): LLM-written technical overview, with definitions,

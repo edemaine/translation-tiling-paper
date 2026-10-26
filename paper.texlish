@@ -1,4 +1,5 @@
 ::version >= 0.2.0
+\documentclass[10pt,letterpaper,twocolumn]{article}
 ::styles
   @ = \cref
 
@@ -52,6 +53,7 @@
   morekeywords=[2]{Prop,Type,Set,List,Fin,Nat},
   sensitive=true, morecomment=[l]{--}, morestring=[b]"}
 \lstdefinestyle{lean}{language=lean, basicstyle=\ttfamily\small, columns=fullflexible,
+  breaklines=true, breakindent=1em,
   keepspaces=true, showstringspaces=false, extendedchars=false,
   keywordstyle=\bfseries\color{figblue}, keywordstyle=[2]\color{figgreen},
   literate={ℤ}{{$\mathbb{Z}$}}1 {ℝ}{{$\mathbb{R}$}}1 {×}{{$\times$}}1 {→}{{$\to$}}1
@@ -135,14 +137,6 @@
   Dimension three is optimal: translational monotiling is known to be
   decidable in $\Z^2$ and for a single (possibly disconnected) polyomino in $\R^2$.
 
-: tcolorbox[colback=figblue!6!white,colframe=figblue!65!black,boxrule=0.6pt,arc=2pt,left=10pt,right=10pt,top=8pt,bottom=8pt]
-  This paper gives a human-readable overview of the
-  results, proof ideas, and formal theorem statements. The proof is verified
-  in Lean. See @sec:approach for details of our approach, and
-  [the repository](https://github.com/edemaine/translation-tiling-paper)
-  [[TilingRepo]]
-  for the complete Lean code and a longer LLM-written technical article.
-
 # Introduction @=sec:intro
 
 Given $k$ finite subsets of $\Z^d$ (***prototiles***),
@@ -174,7 +168,7 @@ we improve to the minimum possible number of 3D prototiles, 1.
 given known algorithms for 2D [[Bhattacharya,GTStructure]].
 %even if we allow disconnected polyominoes.
 
-: table[tbp]
+: table*[tbp]
   \centering
   \small
   \renewcommand{\arraystretch}{1.3}
@@ -302,7 +296,7 @@ $F_{\calT}$ tiles $\Z^3$ by translations.
 To achieve this, we combine five constructions,
 as summarized in @fig:reduction:
 
-: figure[tbp]
+: figure*[tbp]
   \centering
   \begin{tikzpicture}[
     font=\small, >=Latex,
@@ -497,12 +491,14 @@ The rigor of the proof comes from the Lean formalization rather than from the te
 
 A much longer LLM-generated technical article, which is not meant for
 human consumption, gives the full details of the construction and its proofs.
-It and the complete Lean code are available in
+It and the complete Lean code are linked from the project website [[TilingWebsite]]
+and available in
 [the repository](https://github.com/edemaine/translation-tiling-paper)
 [[TilingRepo]]
 (files \texttt{[slop.texlish](https://github.com/edemaine/translation-tiling-paper/blob/main/slop.texlish)}
 and \texttt{[lean/](https://github.com/edemaine/translation-tiling-paper/tree/main/lean)}, respectively).
-We intend to expand this paper with further human-readable explanations
+This paper is also available on arXiv [[TranslationTiling]].
+We intend to expand that paper with further human-readable explanations
 of the proof.
 
 #* Acknowledgments
@@ -514,6 +510,7 @@ We used the following LLM models:
 GPT 6.1 Sol, GPT 6 Astra,
 Claude Sonnet 5.5, Claude Opus 5.5, and Claude Fable 5.1.
 
+\setlength{\bibsep}{0pt}
 \FloatBarrier
 \bibliographystyle: alpha-key
 \bibliography: paper
