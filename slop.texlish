@@ -85,6 +85,16 @@
 \setlist{itemsep=3pt,topsep=5pt}
 \urlstyle{same}
 
+% Put figures and text together
+\def\textfraction{0.01}
+\def\topfraction{0.99}
+\def\bottomfraction{0.99}
+\def\floatpagefraction{0.8}
+\def\dblfloatpagefraction{0.8}
+\setcounter{topnumber}{10}
+\setcounter{bottomnumber}{10}
+\setcounter{totalnumber}{20}
+
 : tcolorbox[colback=figorange!6!white,colframe=figorange!65!black,boxrule=0.6pt,arc=2pt,left=10pt,right=10pt,top=8pt,bottom=8pt]
   **Warning:** This technical article was written by a large language model
   (LLM) and is not intended for consumption by humans.
@@ -1237,9 +1247,9 @@ We use the prime-cyclic version in \cite[Section~6]{OpenAI2026}.
 ## Removing the Finite Coordinate
 
 We apply the quotient-to-lattice reduction of
-\cite[Theorem~1.1]{MSS} in the special case needed here.  Its only
-imported geometric assertion is the rigidity of the component shapes
-defined below.
+\cite[Theorem~1.1]{MSS} in the special case needed here.  We define
+its component shapes and prove their rigidity before assembling the
+lattice prototile.
 
 Put
 $$
@@ -1262,7 +1272,7 @@ $$
 $$
 Take $b=100$, $n=2b+1=201$, and $v_j=(12j,0,0)$ for $1\leq j\leq5$.
 The five boxes $v_j+B_5$ are disjoint, lie strictly inside $B_b$,
-and avoid zero.  Define
+and avoid zero.  Define the following shapes, illustrated in @fig:mss-components:
 : equation \label{eq:rigid-shapes}
   \begin{aligned}
    T&=\left(B_b\setminus\bigcup_{j=1}^3(v_j+H_j)\right)
@@ -1270,6 +1280,89 @@ and avoid zero.  Define
    T_1&=(T\setminus(v_4+H_4))\sqcup(nw+v_4+H_4),\\
    T_2&=(T\setminus(v_5+H_5))\sqcup(nw+v_5+H_5).
   \end{aligned}
+: figure[tbp]
+  \centering
+  % Wireframes mark the outer boundaries of hollow lattice shells.
+  \newcommand{\msswirebox}[1]{%
+    \draw (-#1,-#1,-#1) -- (#1,-#1,-#1) -- (#1,#1,-#1)
+      -- (-#1,#1,-#1) -- cycle;
+    \draw (-#1,-#1,#1) -- (#1,-#1,#1) -- (#1,#1,#1)
+      -- (-#1,#1,#1) -- cycle;
+    \draw (-#1,-#1,-#1) -- (-#1,-#1,#1);
+    \draw (#1,-#1,-#1) -- (#1,-#1,#1);
+    \draw (#1,#1,-#1) -- (#1,#1,#1);
+    \draw (-#1,#1,-#1) -- (-#1,#1,#1);%
+  }
+  \subcaptionbox{Base shape $T$: move three frames}[.49\linewidth]{%
+    \begin{tikzpicture}[x={(.95cm,-.35cm)},y={(.65cm,.35cm)},z={(0cm,.9cm)},
+        scale=1.35,font=\small,>=Latex]
+      \path[use as bounding box] (canvas cs:x=-2.6cm,y=-1.8cm)
+        rectangle (canvas cs:x=3.1cm,y=4.1cm);
+      \begin{scope}[draw=black!35]
+        \msswirebox{1}
+      \end{scope}
+      \foreach \x/\r/\shade/\dx/\dy/\dz/\i in {
+          -.65/.13/figblue/2.6/0/0/1,
+          0/.18/figorange/0/2.6/0/2,
+          .65/.23/figgreen/0/0/2.6/3} {
+        \begin{scope}[shift={(\x,0,0)},draw=\shade]
+          \begin{scope}[dashed]
+            \msswirebox{\r}
+          \end{scope}
+          \draw[->,thick] (0,0,\r) -- (\dx,\dy,\dz+\r)
+            node[midway,fill=white,inner sep=1pt] {$ne_{\i}$};
+          \begin{scope}[shift={(\dx,\dy,\dz)}]
+            \msswirebox{\r}
+          \end{scope}
+          \node[above=2pt] at (\dx,\dy,\dz+\r) {$H_{\i}$};
+        \end{scope}
+      }
+      \node[xshift=-8pt] at (-.7,-.7,-1.65) {Main box $B_b$};
+    \end{tikzpicture}%
+  }
+  \hfil
+  \subcaptionbox{Component $T_j$: move one extra frame}[.49\linewidth]{%
+    \begin{tikzpicture}[x={(.95cm,-.35cm)},y={(.65cm,.35cm)},z={(0cm,.9cm)},
+        scale=1.35,font=\small,>=Latex]
+      \path[use as bounding box] (canvas cs:x=-2.6cm,y=-1.8cm)
+        rectangle (canvas cs:x=3.1cm,y=4.1cm);
+      \begin{scope}[draw=black!35]
+        \msswirebox{1}
+        \foreach \x/\r/\dx/\dy/\dz in {
+            -.65/.13/2.6/0/0,0/.18/0/2.6/0,.65/.23/0/0/2.6} {
+          \begin{scope}[shift={(\x,0,0)},dashed]
+            \msswirebox{\r}
+          \end{scope}
+          \begin{scope}[shift={(\x+\dx,\dy,\dz)}]
+            \msswirebox{\r}
+          \end{scope}
+        }
+      \end{scope}
+      \begin{scope}[shift={(-.5,-.45,0)},draw=figblue]
+        \begin{scope}[dashed]
+          \msswirebox{.25}
+        \end{scope}
+        \draw[->,thick] (0,0,.25) -- (0,0,3.65)
+          node[midway,left,fill=white,inner sep=1pt] {$nw$};
+        \begin{scope}[shift={(0,0,3.4)}]
+          \msswirebox{.25}
+        \end{scope}
+        \node[above=2pt] at (0,0,3.65) {$H_{j+3}$};
+      \end{scope}
+    \end{tikzpicture}%
+  }
+  \caption{The rigid component shapes in \eqref{eq:rigid-shapes},
+    shown schematically with frame sizes and separations exaggerated.
+    Colored wireframes indicate hollow, one-cell-thick shells, not solid boxes.
+    Dashed frames are removed; solid frames are reattached at the indicated
+    displacements. (a) Three different frame sizes distinguish the coordinate
+    directions. (b) For $j=1,2$, moving the extra frame $H_{j+3}$
+    distinguishes $T_1$ from $T_2$ and enforces repetition along
+    $w=(0,0,m)$; the rest of $T$ is unchanged.
+    The lattice prototile $\widetilde F$ is assembled from translated copies
+    of $T_1,T_2$ as in \eqref{eq:quotient-tile}.}
+  \label{fig:mss-components}
+
 Thus each removed frame is reattached at a displacement that is a
 multiple of $n$.  The first three frames distinguish the coordinate
 directions; the extra frame distinguishes the type $1$ or $2$ and
@@ -1283,7 +1376,7 @@ by vectors in $n\Z^3$.  Moreover, the representatives in $T_1$ and
 $T_2$ of any given residue differ by an element of $nL$, because
 their type-specific moves are by $nw$.  These observations are direct
 checks on the shapes; forcing every tiling to respect their intended
-placement is the following black box.
+placement is the content of the next lemma.
 By a ***mixed tiling*** with prototiles $T_1,T_2$ and sets of translations $C_1,C_2$
 we mean that all copies $c+T_j$, $c\in C_j$, $j=1,2$, together cover
 $\Z^3$ exactly once.
@@ -1304,6 +1397,199 @@ Here invariance under $nL$ means exactly $C_j+nw=C_j$; it imposes
 no periods in the first two coordinates.
 The matching bumps and dents force alignment to the scaled grid
 $n\Z^3$ and repetition every $m$ grid steps in the third coordinate.
+
+: figure[t]
+  \centering
+  \subcaptionbox{View along the second coordinate\label{fig:mss-local-projection}}[.62\linewidth]{%
+    \begin{tikzpicture}[x=.014cm,y=.014cm,font=\small,>=Latex]
+      \path[use as bounding box] (-350,-140) rectangle (240,440);
+      % Exact projections of the unions of closed unit cubes centered at T
+      % and at a+T. The second bump projects inside the main body.
+      \filldraw[fill=figblue!15,draw=figblue] (-100.5,-100.5) rectangle (100.5,100.5);
+      \filldraw[fill=figblue!45,draw=figblue] (211.5,-1.5) rectangle (214.5,1.5);
+      \filldraw[fill=figblue!45,draw=figblue] (32.5,197.5) rectangle (39.5,204.5);
+      \filldraw[fill=figorange!15,draw=figorange] (-314.5,99.5) rectangle (-113.5,300.5);
+      \filldraw[fill=figorange!45,draw=figorange] (-2.5,198.5) rectangle (.5,201.5);
+      \filldraw[fill=figorange!45,draw=figorange] (-181.5,397.5) rectangle (-174.5,404.5);
+      \fill[figblue] (0,0) circle[radius=1.5pt];
+      \node[below=3pt,text=figblue] at (0,0) {$0$};
+      \fill[figorange] (-214,200) circle[radius=1.5pt];
+      \node[above=3pt,text=figorange] at (-214,200) {$a$};
+      \node[text=figblue] at (0,55) {$T$};
+      \node[text=figorange] at (-214,255) {$a+T$};
+      \draw[<-,black!70] (0,201) -- (0,310);
+      \node[above,align=center] at (0,310) {Neighboring center\\$ne_3=(0,0,201)$};
+      \node[anchor=west,align=left,text=figblue] (bump) at (110,145) {Bumps of $T$};
+      \draw[->,figblue] (bump.south) -- (213,2);
+      \draw[->,figblue] (bump.west) -- (40,201);
+      \draw[->,black!65] (-320,-120) -- (-250,-120) node[right] {$x_1$};
+      \draw[->,black!65] (-320,-120) -- (-320,-50) node[above] {$x_3$};
+      \node at (-214,65) {$a=(-214,-1,200)$};
+    \end{tikzpicture}%
+  }
+  \hfil
+  \subcaptionbox{Magnified layer of the covering bump in the plane $x_2=0$;
+    each square is one unit cube.\label{fig:mss-local-bump}}[.35\linewidth]{%
+    \begin{tikzpicture}[x=.85cm,y=.85cm,font=\small,>=Latex]
+      \path[use as bounding box] (-3.4,-1.9) rectangle (2.3,7.65);
+      \fill[figorange!25] (-2.5,-.5) rectangle (.5,2.5);
+      \draw[step=1,shift={(-.5,-.5)},figorange] (-2,0) grid (1,3);
+      \fill (0,2) circle[radius=2pt];
+      \draw[<-] (0,2) -- (1,3.1);
+      \node[above,align=center] at (.4,3.1) {$(0,0,201)$\\$=a+(214,1,1)$};
+      \foreach \x in {-2,-1,0} {
+        \node[below] at (\x,-.6) {$\x$};
+      }
+      \foreach \z/\label in {0/199,1/200,2/201} {
+        \node[left] at (-2.6,\z) {$\label$};
+      }
+      \node at (-1,-1.35) {$x_1$};
+      \node at (-2.95,3) {$x_3$};
+    \end{tikzpicture}%
+  }
+  \caption{Failure of the local forcing claim in \cite[Lemma~2.1]{MSS}
+    for the base shape $T$ illustrated in @fig:mss-components(a).
+    (a) Exact projections of $T$ (blue) and $a+T$ (orange), drawn to
+    scale as unions of unit cubes centered at lattice points.
+    Their projections are disjoint, so the copies are disjoint in $\Z^3$.
+    Dents and the second bump are hidden by the main body in this view.
+    (b) The translated first bump nevertheless covers the neighboring
+    center $ne_3$, at the marked lattice point.
+    This is a partial placement, not a tiling; the rigidity theorem
+    and the reduction remain correct in the setting used here.}
+  \label{fig:mss-local-gap}
+
+The local forcing argument in the proof of the more general claim
+\cite[Lemma~2.1]{MSS}
+has a gap.  For the base shape $T$ above, $T$ and
+$(-214,-1,200)+T$ are disjoint, yet the latter covers
+$ne_3=(0,0,201)$ via the point $(214,1,1)\in T$ in a detached bump,
+despite not being translated by $ne_3$.
+@fig:mss-local-gap shows this placement and magnifies the covering bump.
+Our Lean theorem \texttt{MSS.unintended\_neighbor} verifies this
+counterexample to the local claim, which concerns a partial placement.
+The following proof of @lem:rigid uses further coverage constraints;
+its Lean formalization culminates in \path{MSS/GridAssembly.lean}.
+
+: proof[Proof of @lem:rigid]
+  Suppose first that the copies form a mixed tiling, and put
+  $C=C_1\cup C_2$.  Call a translation vector the ***center*** of its
+  copy.  Since zero belongs to both component shapes, exact coverage
+  gives $C_1\cap C_2=\varnothing$.
+
+  **First-coordinate rows.**
+  In either component shape, $v_1$ is the only lattice point with no
+  face-adjacent point in the same shape.  Indeed, removing $v_1+H_1$
+  isolates its center, whereas every other retained body point and
+  every detached frame point has a neighbor in its piece.  For a copy
+  centered at $c$, consider $p=c+ne_1+v_1$, the center of its first
+  detached frame.  All six face-neighbors of $p$ belong to that frame,
+  while $p$ itself must be covered by another copy.  The covering point
+  in that copy must therefore be isolated, so it is its $v_1$ point.
+  Its center is $c+ne_1$.  Thus $c+ne_1\in C$ for every $c\in C$.
+
+  These forward rows give a useful separation property:
+  $$
+    c,d\in C,\quad |d_2-c_2|,|d_3-c_3|\leq200
+    \quad\Longrightarrow\quad
+    d_2=c_2,\ d_3=c_3,\ d_1-c_1\in n\Z.
+  $$
+  To prove it, shift one of the two centers forward by a nonnegative
+  multiple of $ne_1$ so that their first-coordinate difference lies
+  in $[-100,100]$.  The negative-first-coordinate halves of their main
+  boxes contain no dents.  Under the displayed transverse bounds,
+  those two retained halves intersect, so exact coverage forces the
+  shifted centers to coincide.
+
+  The rows also extend backward.  Otherwise, if $c-ne_1\notin C$,
+  the separation property and forward closure exclude every center
+  strictly to the left of $c$ with the same transverse coordinates.
+  Consider the two points
+  $$
+    c+(-301,100,100),\qquad c+(-201,100,100).
+  $$
+  The separation property rules out coverage by a main body or any
+  of the three common bumps.  Both points must therefore lie in
+  type-specific bumps.  The corresponding centers differ by at most
+  $10$ in each transverse coordinate, since these bumps all move by
+  the same vector $nw$.  Their first-coordinate difference lies in
+  $[79,121]$: the target points differ by $100$, and the first
+  coordinates within a type-specific bump range from $44$ to $65$.
+  This contradicts divisibility by $n=201$ in the separation property.
+  Consequently $C+ne_1=C$.
+
+  **Coverage by the projected main boxes.**
+  Every $(y,z)\in\Z^2$ lies in the projection of some $c+B_b$,
+  $c\in C$.  Otherwise, cover the four points $(50r,y,z)$,
+  $r=0,1,2,3$.  None can lie in a main body or a first bump, so each
+  is in a second, third, or type-specific bump.  Two points use the
+  same category.  The corresponding centers are within $10$ in both
+  transverse coordinates, and hence their first-coordinate difference
+  is a multiple of $201$.  But their target coordinates differ by
+  $50$, $100$, or $150$, whereas the first-coordinate range within
+  any one category has width at most $21$.  Their center difference
+  therefore lies between $29$ and $171$, a contradiction.
+
+  **Forcing the remaining coordinate steps.**
+  For $i=2,3$, take the whole common bump $p+H_i$, where
+  $p=c+ne_i+v_i$.  Projected coverage gives a main box containing the
+  transverse coordinates of $p$; shifting its center along its
+  first-coordinate row gives $d\in C$ with $p\in d+B_b$.
+  Here $d\ne c$.  The bump cannot intersect the retained body at $d$.
+  Choose the point of $p+H_i$ displaced in the first coordinate
+  toward $d$.  It is still inside $d+B_b$, so it lies in a dent.
+  All dents have first coordinate between $11$ and $65$ and other
+  coordinates between $-5$ and $5$, relative to $d$.  These bounds
+  put $p-d$ in $[8,68]\times[-5,5]^2$, so the entire frame
+  $p+H_i$ lies inside $d+B_b$.  It must therefore lie entirely in
+  the union of that copy's dents.
+
+  Each frame is face-connected, and the dents are separated by more
+  than one lattice step, so this whole frame lies in a single dent.
+  A translate of $H_i$ can be contained in $H_k$ only when $i=k$
+  and the translation is zero: the extreme coordinates give $i\leq k$,
+  and if $i<k$, a corner directed toward the center lies strictly
+  inside $B_{k-1}$, contradicting membership in $H_k$.
+  Thus the matching dent is $d+v_i+H_i$, giving $d=c+ne_i$.
+  This step uses coverage to fit an entire frame into a dent.
+
+  We now have forward closure of $C$ in all three coordinate
+  directions.  For any two centers, shift them forward in directions
+  $e_2,e_3$ to reduce both transverse differences to $[-100,100]$.
+  The separation property shows that the reduced differences are
+  zero and their first-coordinate difference is divisible by $n$.
+  Hence all centers are congruent modulo $n\Z^3$, and normalization
+  gives $C\subseteq n\Z^3$.  Conversely, projected coverage supplies
+  a center with the transverse coordinates of any prescribed point
+  of $n\Z^3$, since two such coordinates differing by at most $100$
+  must agree.  First-coordinate row invariance then supplies the
+  prescribed center itself.  Therefore $C=n\Z^3$.
+
+  **Periods of the individual types.**
+  For a type-$j$ copy at $c$, the grid contains a copy at $c+nw$.
+  If its type were different, its body would retain the entire frame
+  $v_{j+3}+H_{j+3}$, overlapping the type-$j$ bump from $c$.
+  Thus moving by $nw$ preserves the type.  Every grid point has a
+  predecessor under this move, so $C_j+nw=C_j$ for $j=1,2$.
+
+  **Converse.**
+  Suppose $C_1\sqcup C_2=n\Z^3$ and each $C_j$ is invariant under
+  $nw$.  Start with the disjoint tiling by the boxes $c+B_b$,
+  $c\in n\Z^3$, assigning type $j$ at centers in $C_j$.
+  Every common dent is filled exactly by the corresponding bump
+  from the center $c-ne_i$.  Every type-$j$ dent is filled exactly
+  by the type-$j$ bump from $c-nw$, whose type agrees by invariance.
+  These moves replace pairwise disjoint frame regions, so coverage
+  remains exact and yields the required mixed tiling.
+
+  The row and separation arguments are formalized in
+  \path{MSS/FirstBump.lean}, \path{MSS/RayPacking.lean}, and
+  \path{MSS/FirstPeriod.lean}; projected coverage and whole-frame
+  matching in \path{MSS/TransverseCoverage.lean},
+  \path{MSS/CommonForcing.lean}, and \path{MSS/FrameMatching.lean};
+  grid alignment, type periods, and the converse in
+  \path{MSS/GridCenters.lean}, \path{MSS/ColorPeriods.lean}, and
+  \path{MSS/GridAssembly.lean}.
 
 ### Assembly and the Tiling Correspondence
 

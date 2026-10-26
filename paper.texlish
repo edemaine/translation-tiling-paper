@@ -373,7 +373,13 @@ as summarized in @fig:reduction:
 4. We apply the reduction of Meyerovitch, Sanadhya, and Solomon
    \cite[Theorem~1.1]{MSS}, which converts tiling problems in a quotient
    of $\Z^3$ into tiling problems in $\Z^3$,
-   while preserving the number of prototiles.
+   while preserving the number of prototiles.%
+   \footnote:
+     The proof of \cite[Lemma~2.1]{MSS} has a gap in its local forcing argument:
+     covering a neighboring box center without overlap does not force
+     the claimed placement. Our Lean formalization gives a counterexample
+     to this local claim and proves that their reduction is nonetheless
+     correct in our setting.
    Our target space $\Z^2 \times (\Z/m\Z)$ is such a ***quotient***:
    it identifies each point $(x,y,z)$ with $(x,y,z+m)$.
    Their construction uses matching bumps and dents
