@@ -84,6 +84,9 @@
 \setlength{\emergencystretch}{2em}
 \setlist{itemsep=3pt,topsep=5pt}
 \urlstyle{same}
+\newcommand{\leanfile}[1]{\begingroup\def\UrlBreaks{\do\/}\href{https://github.com/edemaine/translation-tiling-paper/blob/main/lean/TranslationTiling/#1}{\path{#1}}\endgroup}
+\newcommand{\leandecl}[1]{\begingroup\def\UrlBreaks{\do\.\do\_}\path{#1}\endgroup}
+\newcommand{\leanref}[2]{\leandecl{#2}\space in\space\leanfile{#1}}
 
 % Put figures and text together
 \def\textfraction{0.01}
@@ -104,6 +107,10 @@
   the proof.
 
 # Definitions and Main Theorem @=sec:definitions
+Lean references below give declaration names and link their source files
+on GitHub.  Names omit the common prefix \path{TranslationTiling.};
+file paths are relative to \path{lean/TranslationTiling/}.
+
 For an abelian group $G$, a ***prototile*** is a finite nonempty subset
 $F\subset G$.  Its translated copies are the sets $a+F$.
 Following the tiling-equation notation of
@@ -181,6 +188,13 @@ an original solution.
   Consequently, translational monotiling of $\Z^3$ is co-RE-complete
   under computable many-one reductions, even when the input prototile is
   required to be connected.
+
+The reduction is \leandecl{Compiler.connectedCompile}, with
+\leandecl{Compiler.connectedCompile_computable},
+\leandecl{Compiler.connectedCompile_connected}, and
+\leandecl{Compiler.connectedCompile_correct} in \leanfile{Compiler/Main.lean}.
+The completeness conclusion is
+\leanref{Abstract.lean}{Abstract.tiling_coRE_complete}.
 
 # The Two-Prime Sudoku Rule @=sec:sudoku
 We use $\N=\{0,1,2,\ldots\}$ and the domino-system formulation of
@@ -278,6 +292,9 @@ digit are determined modulo $r^2$.  Enumerate these coefficient residues,
 all assignments $\sigma$ on the corresponding rectangle, and all words
 obeying their constraints.  Taking their union computes $\calW$ without
 an infinite search or a domino solution.
+The bounded search is justified by
+\leandecl{Sudoku.allowed_iff_bounded}; its word enumeration is
+\leanref{Proofs/FiniteWordRule.lean}{Sudoku.allowedWords}.
 
 The valuations provide the two coordinates of the simulated domino
 plane.  Given a domino solution $\tau$ on $\N^2$, decorate each height
@@ -312,6 +329,8 @@ The array in \eqref{eq:canonical-sudoku} is called the
 ***canonical Sudoku array*** associated to $\tau$.
 Part \textup{(i)} is the implication of
 \cite[Proposition~5.2]{GTUndecidable} that we use as a black box.
+It is formalized as
+\leanref{SudokuArithmetic/Soundness.lean}{Sudoku.soundness}.
 For completeness, we verify part \textup{(ii)} directly.
 On the line $m=dn+e$ with $(d,e)\ne(0,0)$, put
 $$
@@ -336,6 +355,9 @@ decoration causes no problem.  For the line $d=e=0$, choose $a=0,b=1$
 and $\sigma(0,0)=t_*$.  This proves the line rule for the entire array.
 Both integer components are nonconstant on every column: heights
 $1$ and $2$ already give the distinct values $1$ and $2$.
+The corresponding Lean results are
+\leanref{Proofs/CanonicalLineRule.lean}{Sudoku.canonical_lineRule} and
+\leanref{Proofs/Canonical.lean}{Sudoku.canonical_nonconstantColumns}.
 
 ### A Small Arithmetic Example
 
@@ -547,6 +569,8 @@ $\beta_i:\Z^2\times K\to K_i$, called its ***high output***, via
    \quad\text{in }\Cyc{r_i^2}.
 This parametrizes the possible lifts of $k_i$ bijectively.  It is a choice
 of coordinates on fibers, not a splitting of cyclic groups.
+The graph characterization is
+\leanref{Compiler/GraphTests.lean}{Compiler.kernelTile_iff_graph}.
 
 ## Controlling Dependence
 We next require functions
@@ -573,11 +597,14 @@ decorated channel coordinates.
   the slice with $i$th useful output $c_i(b-\sigma)$.  Every other
   coordinate is filled freely and once in either contribution.
   Exact coverage is therefore equivalent to the stated identity.
+  This is \leanref{Compiler/GraphTests.lean}{Compiler.invarianceTile_iff}.
 
 Apply this lemma to generators of $K_\ell$ for every $\ell\ne i$,
 then to the horizontal shift $u_n$ in ordinary channel $n$, and to
 the two shifts $(M,0),(0,M)$ in each seed channel.  These finitely
 many equations are equivalent to \eqref{eq:dependence}.
+Their combined equivalence is
+\leanref{Compiler/Dependence.lean}{Compiler.dependenceTiles_iff}.
 
 For a graph with these dependencies, put $g_{i,x}(k_i)=c_i(x,k)$.
 Following \cite[Section~3.3]{OpenAI2026}, define its ***active labels*** by
@@ -640,6 +667,8 @@ The next test is the cycle construction of
   tested.  Extend $\epsilon$ by zero off the cycle.  The inputs $0$ and
   $\epsilon$ have the same image in \eqref{eq:cycle-map}, a contradiction
   to bijectivity.  All maps and all prototiles used are finite.
+  The equivalence is
+  \leanref{Compiler/CycleTests.lean}{Compiler.cycle_exclusion_iff}.
 
 @fig:cycle illustrates the dependency cycle in this argument.
 
@@ -885,6 +914,9 @@ The activation equation for channel $i$ is $A\oplus F_i^{\rm act}=G$.
   $z$ in an ordinary batch, whereas a seed batch retains the source
   value of $z$.  Exact coverage is therefore precisely the stated
   bijection condition.
+  These two characterizations are
+  \leandecl{Compiler.ordinaryActivationTile_iff} and
+  \leanref{Compiler/ActivationTiles.lean}{Compiler.seedActivationTile_iff}.
 
 : lemma @=lem:active-everywhere
   In every common solution of the graph, dependence, and activation
@@ -934,6 +966,8 @@ The activation equation for channel $i$ is $A\oplus F_i^{\rm act}=G$.
   Because $b_i>D$, the first sum is zero, so $a_i$ divides $D$.
   But $a_i$ is $2$ or $3$, and $D=(pq)^4$ is divisible by neither.
   This proves that each seed must activate somewhere.
+  The two conclusions are \leandecl{Compiler.ordinary_active_of_tile} and
+  \leanref{Compiler/Activation.lean}{Compiler.seed_active_somewhere_of_tile}.
 
 Let $\mathscr F$ consist of $H_0$, all dependence prototiles, all exclusion
 prototiles, and all activation prototiles.  This finite family is computable
@@ -963,6 +997,8 @@ alphabet $\Sigma$.
   Both integer components therefore take the distinct values
   $1$ and $2$ in every column.  @thm:GT gives a domino solution
   on $\N^2$, and compactness gives one on $\Z^2$.
+  This implication is
+  \leanref{Compiler/Soundness.lean}{Compiler.wang_of_solves}.
 # One Common Solution @=sec:completeness
 
 We prove the converse by lifting the canonical array from
@@ -1028,6 +1064,8 @@ on exactly the $j$th digit, so its active set is $\{j\}$.
           \quad\text{in }\Cyc{b_i}.
   The second bijection fixes $\delta$; the source label is
   $\xi^*-e_\delta^b$, and again $k_i'$ and $l$ follow uniquely.
+  The explicit inverse is packaged as the equivalence
+  \leanref{Compiler/BlockActivationInverse.lean}{Compiler.BlockShiftData.blockInverseEquiv}.
 
 ## Ordinary Outputs
 
@@ -1138,6 +1176,8 @@ this dependence.
   The calculation works for either choice of $i$, using the same
   function $z$.  The representing batch may differ between the two
   equations, as is permitted for a common set of translations.
+  The simultaneous construction is checked by
+  \leanref{Compiler/CommonSeedOutputs.lean}{Compiler.seedActualForward_bijective}.
 
 : proposition[Completeness] @=prop:completeness
   If the input domino system tiles $\Z^2$, then the equations
@@ -1158,6 +1198,10 @@ this dependence.
   \eqref{eq:canonical-seed} put every ordinary active label in $B_t$.
   Thus all seed exclusions hold as well.  @lem:cycle verifies
   their tiling equations on this same graph.
+  In Lean, \leandecl{Compiler.CommonModel.common_solution} in
+  \leanfile{Compiler/CommonSolution.lean} verifies the graph, and
+  \leanref{Compiler/Completeness.lean}{Compiler.exists_solution_of_wang}
+  constructs it from a Wang tiling.
 
 : theorem @=thm:cyclic-system
   There is an algorithm taking a domino system to a finite cyclic
@@ -1173,6 +1217,10 @@ this dependence.
   fixed enumeration orders.  In particular, no knowledge of a domino
   solution is needed to construct the prototiles.  The infinite solution
   is used only to prove completeness.
+  The semantic equivalence is
+  \leanref{Compiler/Completeness.lean}{Compiler.finite_system_iff_wang};
+  the effective finite family is verified by
+  \leanref{Compiler/EffectiveSystem.lean}{Compiler.Effective.family_tiling_iff}.
 # A Single Prototile in Three Dimensions @=sec:reduction
 
 ## Stacking the Prototiles
@@ -1203,6 +1251,8 @@ We use the prime-cyclic version in \cite[Section~6]{OpenAI2026}.
   Choose a fresh odd prime large enough that this is less than one,
   and search the finite set of colorings.  A successful coloring
   exists; its color classes are nonempty and realize zero as well.
+  This is
+  \leanref{Proofs/FullDifferencePartition.lean}{Stacking.exists_fresh_prime_fullDifference_partition}.
 
 : lemma @=lem:stack
   Let $F_1,\ldots,F_s$ be prototiles in an abelian group
@@ -1232,6 +1282,8 @@ We use the prime-cyclic version in \cite[Section~6]{OpenAI2026}.
   would give two color-$1$ contributions at $a+f$ for any $f\in F_1$.
   Consequently $A=\pr(B)$ has exactly one representation of every
   $g$ with each $F_\nu$, as required.
+  The equivalence is
+  \leanref{Proofs/Stacking.lean}{Stacking.exists_tiles_stack_iff}.
 
 : corollary @=cor:quotient
   From a domino system one can compute a positive integer $m$ and a
@@ -1243,6 +1295,11 @@ We use the prime-cyclic version in \cite[Section~6]{OpenAI2026}.
   coprime to $|V|$.  The group $V\times\Cyc\ell$ is cyclic of order
   $m=\ell|V|$.  Thus stacking enlarges the modulus while keeping the
   finite coordinate cyclic.  All steps are effective.
+  The semantic construction is
+  \leanref{Compiler/Consolidation.lean}{Compiler.exists_cyclic_tile};
+  \leandecl{Compiler.cyclicCompiler_computable} and
+  \leanref{Compiler/Main.lean}{Compiler.cyclicCompiler_correct}
+  verify the effective version.
 
 ## Removing the Finite Coordinate
 
@@ -1466,10 +1523,12 @@ $(-214,-1,200)+T$ are disjoint, yet the latter covers
 $ne_3=(0,0,201)$ via the point $(214,1,1)\in T$ in a detached bump,
 despite not being translated by $ne_3$.
 @fig:mss-local-gap shows this placement and magnifies the covering bump.
-Our Lean theorem \texttt{MSS.unintended\_neighbor} verifies this
+The Lean theorem
+\leanref{MSS/LocalForcingCheck.lean}{MSS.unintended_neighbor} verifies this
 counterexample to the local claim, which concerns a partial placement.
 The following proof of @lem:rigid uses further coverage constraints;
-its Lean formalization culminates in \path{MSS/GridAssembly.lean}.
+its Lean formalization culminates in
+\leanref{MSS/GridAssembly.lean}{MSS.rigidity}.
 
 : proof[Proof of @lem:rigid]
   Suppose first that the copies form a mixed tiling, and put
@@ -1582,14 +1641,24 @@ its Lean formalization culminates in \path{MSS/GridAssembly.lean}.
   These moves replace pairwise disjoint frame regions, so coverage
   remains exact and yields the required mixed tiling.
 
-  The row and separation arguments are formalized in
-  \path{MSS/FirstBump.lean}, \path{MSS/RayPacking.lean}, and
-  \path{MSS/FirstPeriod.lean}; projected coverage and whole-frame
-  matching in \path{MSS/TransverseCoverage.lean},
-  \path{MSS/CommonForcing.lean}, and \path{MSS/FrameMatching.lean};
-  grid alignment, type periods, and the converse in
-  \path{MSS/GridCenters.lean}, \path{MSS/ColorPeriods.lean}, and
-  \path{MSS/GridAssembly.lean}.
+  \begingroup\raggedright
+  The row and separation arguments are
+  \leanref{MSS/FirstBump.lean}{MSS.mixed_first_forward},
+  \leanref{MSS/RayPacking.lean}{MSS.mixed_centers_near}, and
+  \leanref{MSS/FirstPeriod.lean}{MSS.mixed_first_period}.
+
+  Projected coverage and whole-frame matching are
+  \leanref{MSS/TransverseCoverage.lean}{MSS.mixed_transverse_cover},
+  \leanref{MSS/FrameMatching.lean}{MSS.translated_frame_subset_holes}, and
+  \leanref{MSS/CommonForcing.lean}{MSS.mixed_common_forward}.
+
+  Grid alignment and type periods are
+  \leanref{MSS/GridCenters.lean}{MSS.mixed_grid_centers} and
+  \leanref{MSS/ColorPeriods.lean}{MSS.mixed_color_periods}.
+  Finally, \leandecl{MSS.mixed_rigidity_sufficient} in
+  \leanfile{MSS/GridAssembly.lean} proves the converse and
+  \leandecl{MSS.rigidity} combines both directions.
+  \par\endgroup
 
 ### Assembly and the Tiling Correspondence
 
@@ -1661,6 +1730,9 @@ its Lean formalization culminates in \path{MSS/GridAssembly.lean}.
   $U$ term with the remaining point still in $B$, a contradiction.
   This proves both directions without assuming periods of the
   original tiling.
+  The assembled-tile equivalence is
+  \leanref{Compiler/LatticeCompleteness.lean}{Compiler.LatticeGeometry.assembled_iff_quotient},
+  using the proved \leandecl{MSS.rigidity}.
 
 ## Making the Prototile Connected @=sec:connected
 
@@ -1737,6 +1809,10 @@ import.  It concerns arbitrary tilings, so it suffices for an existence
 reduction.  The contact property explains how separated points of the
 original prototile become joined: their replacements have interlocking
 pieces in overlapping boxes, while their lattice points remain disjoint.
+The Lean counterparts are
+\leanref{Proofs/KimShellConnectivity.lean}{Kim.shell_connected},
+\leanref{Proofs/KimShellGeometry.lean}{Kim.shell_geometry}, and
+\leanref{Proofs/KimRigidity.lean}{Kim.cosetRigidity}.
 
 : proposition[Connectedness reduction, Kim] @=prop:connected
   From any finite nonempty $E\subset\Z^3$ one can compute a finite
@@ -1778,6 +1854,9 @@ pieces in overlapping boxes, while their lattice points remain disjoint.
   $$
   This proves the tiling equivalence, the $k=1$ case of
   \cite[Theorem~2.5]{Kim}.
+  The conversion is verified by \leandecl{Compiler.connectedTile_connected}
+  and \leanref{Compiler/ConnectedCompiler.lean}{Compiler.connectedTile_correct},
+  using \leandecl{Kim.cosetRigidity}.
 
 : proof[Proof of @thm:main]
   Construct the domino relations of the input Wang tiles, apply
@@ -1798,6 +1877,11 @@ pieces in overlapping boxes, while their lattice points remain disjoint.
   of $\{0,1\}^{\Z^3}$ yields an assignment satisfying every equation,
   and its support $\{a:b_a=1\}$ tiles $\Z^3$.
   Thus translational monotiling is in co-RE, completing the proof.
+  The finite-obstruction search is
+  \leanref{Proofs/FiniteSearch.lean}{tiles_coRE}; the connected conclusion
+  follows from
+  \leanref{Proofs/Complexity.lean}{connected_complete_of_reduction}
+  applied to \leandecl{Compiler.connectedWangReduction}.
 
 ### An Explicit Connected Example
 
@@ -1864,6 +1948,10 @@ output of the full Wang-to-polycube reduction.
   the membership argument.  It halts if no tiling exists.
   The periodicity theorem ensures that exactly one search eventually
   halts, so this is a decision algorithm.
+  Planar periodicity is
+  \leanref{Proofs/PlanarPeriodicity.lean}{planarPeriodicity_proved};
+  the two searches are combined in
+  \leanref{Proofs/PeriodicCertificates.lean}{planar_decidable}.
 
 The one-dimensional case reduces to this planar problem by replacing
 $F\subset\Z$ by $F\times\{0\}\subset\Z^2$.
@@ -1871,6 +1959,8 @@ For every fixed $d>3$, the three-dimensional hardness result extends
 by replacing $F$ with $F\times\{0\}^{d-3}$ and taking slices.
 Thus three is precisely the least lattice dimension with undecidable
 translational monotiling, even with a connected input prototile.
+The dimension statement is
+\leanref{Statements.lean}{dimension_optimality}.
 
 ## Arbitrary Real Translations of Unit-Cube Unions
 
@@ -1909,6 +1999,7 @@ needed here has the direct sampling proof below.
   $a\mapsto b(a)$ is injective, because equal rounded vectors would
   make two nonempty sampled copies coincide.  Consequently
   $\{b(a):a\in A\}\oplus F=\Z^d$.
+  This is \leanref{Proofs/Euclidean.lean}{realTiles_iff_tiles}.
 
 : corollary @=cor:euclidean
   Given a finite nonempty $F\subset\Z^3$, the problem of deciding
@@ -1923,6 +2014,8 @@ needed here has the direct sampling proof below.
   Apply @lem:rounding to @thm:main,prop:planar.
   The lattice paths in $F$ give chains of cubes sharing faces, so
   both the union and its interior are connected.
+  Connected Euclidean completeness is stated as
+  \leanref{Abstract.lean}{Abstract.real_tiling_coRE_complete}.
 
 The planar Euclidean decidability conclusion is also known directly
 from \cite[Corollary~1.1]{RationalPolygons}.
