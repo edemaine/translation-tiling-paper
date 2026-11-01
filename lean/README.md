@@ -53,6 +53,88 @@ The full `lake build` passes, including the examples and axiom audit.
 Generic auxiliary lemmas use explicit theorem parameters; the public results
 have no unproved mathematical input. No unfinished proof is accepted.
 
+## Cube Bound by Wang Tile Count
+
+[Compiler/SimpleSizeBound.lean](TranslationTiling/Compiler/SimpleSizeBound.lean)
+proves the simplified corollary: for `n` distinct Wang tiles, an equivalent
+nonempty, face-connected polycube has at most
+
+```text
+2^(2^(10^40 * (n+1)^2))
+```
+
+distinct unit cubes. `Size.explicitCubeBound_le_simple` proves that this
+dominates the detailed arithmetic bound, and
+`Size.exists_connected_tile_simple_bound` includes connectedness, nonemptiness,
+and both tilability directions. The proof uses bounded admissible construction
+choices, leaving the original compiler unchanged. These results are included
+in the axiom audit.
+
+For `n = 1`, `Size.explicitCubeBound_one_le` sharpens the construction bound to
+`2^(2^(10^29))` cubes. `Size.exists_connected_tile_one_bound` gives the connected,
+nonempty, tilability-equivalent polycube whenever `T.toFinset.card = 1` (so
+duplicate input entries are harmless). This specializes the arithmetic budgets
+and retains the actual channel count; it does not bypass the construction by
+deciding the one-tile Wang problem separately.
+
+<details>
+<summary>Detailed arithmetic bound used in the proof</summary>
+
+[Compiler/ClosedFormBound.lean](TranslationTiling/Compiler/ClosedFormBound.lean)
+proves `Size.exists_connected_tile_closed_bound`: for `n` distinct Wang tiles,
+there is a nonempty, face-connected polycube with the same tileability and at
+most `closedCubeBound n` distinct cubes. All constants in the bound are explicit.
+Set `N = 2213984809`, `C = N + 2`, and define:
+
+```text
+U = 4^(2C+1) * (N²+438)
+L = 46620n+1
+Q = 4^(CL+1) * (U²+2U+438)
+b = Q^L+U+N+2
+c(x) = x²+2x;  J = c(c(c(c(b))))
+H = b*(b^5*(J+1)+1)
+V = b^(4C+2);  W = (2H+1)²*V
+M = 2V*(8*(2^W)^5+V+3)
+S = 2000*(2H+M+1)+3
+closedCubeBound n = S³*(3S³+6)³
+```
+
+The bound is double exponential in `n` and is proved primitive recursive.
+The proof uses Bertrand's postulate for bounded prime choices, bounds all
+equation tiles inside one finite support, bounds their number by its powerset,
+and chooses a bounded stacking prime. The final geometric steps have polynomial
+cost in the resulting dimensions. It uses bounded admissible choices instead
+of the original compiler's least-encoded-certificate search; it does not claim
+that `cubeBound n` below satisfies this formula. The corollary and its supporting
+lemmas are included in the axiom audit.
+
+</details>
+
+[Compiler/SizeBound.lean](TranslationTiling/Compiler/SizeBound.lean) proves a
+computable bound depending only on the number of **distinct** input Wang tiles.
+`Size.boundedCompile_spec` states that `boundedCompile T` is nonempty,
+face connected, tileable exactly when `T` is, and has at most
+`cubeBound T.toFinset.card` distinct unit cubes. Both the compiler and the bound
+are proved computable and included in the axiom audit.
+
+This is a finite-enumeration bound, not a closed-form exponential estimate.
+First [ColorNormalization.lean](TranslationTiling/Compiler/ColorNormalization.lean)
+renames the at most `4n` colors without changing tileability. Define `C(n)` to be
+all length-`n` tile lists with colors below `4n`, and set
+`cubeBound n = max { (connectedCompile U).length : U ∈ C(n) }` (with default zero).
+The proof establishes `|C(n)| = (4n)^(4n)` and uniform computability of this finite
+maximum. No tileability test is used. The original compiler is unchanged;
+`boundedCompile` first removes duplicate tiles and normalizes their colors.
+This normalization matters because the original compiler's prime choices depend
+on the numeric color labels.
+
+[GeometricSizeBound.lean](TranslationTiling/Compiler/GeometricSizeBound.lean)
+also proves the separate arithmetic bound
+`cubeCount (connectedTile E) ≤ cubeCount E * (3 * cubeSize E ^ 3 + 6) ^ 3`,
+where `cubeSize E = 2 * coordinateBound E + 3`. It first bounds the assembly by
+the input cube count times Kim's exact shell volume. These results do not
+certify the earlier informal numerical estimates or the proposed rotation gadget.
+
 ## Definitions and proved inputs
 
 `Tile d` is a list of points of `Fin d → ℤ`, with the canonical primitive-recursive

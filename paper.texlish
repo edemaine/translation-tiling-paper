@@ -395,6 +395,11 @@ as summarized in @fig:reduction:
    This construction scales up the prototile, giving space to connect the
    lattice points by thin corridors, with bumps and dents to force alignment.
 
+The construction is rather large: one upper bound is that
+simulating $n$ distinct Wang tiles
+takes at most $2^{2^{10^{40}(n+1)^2}}$ unit cubes.
+For $n=1$, we can improve the upper bound to $2^{2^{10^{29}}}$.
+
 # Formal Verification in Lean @=sec:lean
 
 The proof of @thm:undecidability is long and technical.
