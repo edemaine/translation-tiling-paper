@@ -1930,6 +1930,53 @@ output of the full Wang-to-polycube reduction.
     are small at this scale.}
   \label{fig:connected}
 
+## Quantitative Size Bounds
+
+Even the one-tile upper bound for this construction is enormous.
+The following bounds count distinct unit cubes in the final connected
+polycube, including the quotient-to-lattice and connectedness steps.
+
+: corollary @=cor:size-bound
+  Given a finite set $\calT$ of $n$ distinct Wang tiles, one can construct
+  a finite nonempty face-connected $F\subset\Z^3$ such that
+  $\calT$ tiles the plane if and only if $F$ tiles $\Z^3$ by translations,
+  with
+  $$
+    |F|\leq 2^{2^{10^{40}(n+1)^2}}.
+  $$
+  For $n=1$, the same construction admits the sharper bound
+  $$
+    |F|\leq 2^{2^{10^{29}}}.
+  $$
+
+The Lean statements are
+\leanref{Compiler/SimpleSizeBound.lean}{Compiler.Size.exists_connected_tile_simple_bound}
+and \leandecl{Compiler.Size.exists_connected_tile_one_bound} in the same file.
+These are existence bounds using bounded admissible parameter choices in
+the reduction. They do not bound the original compiler's search for a
+certificate with the least numerical encoding, and they are not lower
+bounds on the size needed to simulate Wang tiles.
+The one-tile estimate specializes the construction without first deciding
+whether that Wang tile tiles the plane.
+
+The quantitative proof first replaces the input colors by their ranks
+among the colors that occur, so large numerical color names have no cost.
+It bounds the encoding primes and the finite cyclic group orders,
+then places every tile in the simultaneous tiling system inside one
+finite ambient set. If that set has $W$ points, there are at most $2^W$
+distinct test tiles, because each is a subset of it.
+This bounds the number of equations to be stacked, and bounded choices
+of the stacking prime then bound the final cyclic modulus.
+The last two geometric steps have polynomial volume cost in that modulus
+and the horizontal coordinate bound.
+These estimates are combined in
+\leanref{Compiler/ClosedFormBound.lean}{Compiler.Size.exists_connected_tile_explicit_bound}.
+Finally,
+\leandecl{Compiler.Size.explicitCubeBound_le_simple} and
+\leandecl{Compiler.Size.explicitCubeBound_one_le} in
+\leanfile{Compiler/SimpleSizeBound.lean}
+prove the displayed numerical inequalities.
+
 ## Why the Dimension Is Optimal
 
 : proposition @=prop:planar

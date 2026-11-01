@@ -19,6 +19,9 @@ import TranslationTiling.Compiler.EffectiveGraphCompiler
 import TranslationTiling.Compiler.EffectiveActivationOffsets
 import TranslationTiling.Compiler.EffectiveStacking
 import TranslationTiling.Compiler.EffectiveInvarianceTiles
+import TranslationTiling.Compiler.GeometricSizeBound
+import TranslationTiling.Compiler.ClosedFormBound
+import TranslationTiling.Compiler.SimpleSizeBound
 import Lean.Util.CollectAxioms
 
 /-! Reject unfinished proofs, native evaluation axioms, and undeclared mathematical
@@ -28,6 +31,36 @@ All mathematical inputs to the public results are proved. -/
 open Lean Elab Command in
 run_cmd do
   for name in [``TranslationTiling.membership,
+      ``TranslationTiling.Compiler.Size.normalize_tilesPlane,
+      ``TranslationTiling.Compiler.Size.normalize_primrec,
+      ``TranslationTiling.Compiler.Size.inputs_length,
+      ``TranslationTiling.Compiler.Size.cubeBound_computable,
+      ``TranslationTiling.Compiler.Size.boundedCompile_computable,
+      ``TranslationTiling.Compiler.Size.boundedCompile_spec,
+      ``TranslationTiling.Compiler.Size.connectedAssembly_cubeCount_le,
+      ``TranslationTiling.Compiler.Size.connectedTile_cubeCount_le,
+      ``TranslationTiling.Compiler.Size.primeAbove_succ_le,
+      ``TranslationTiling.Compiler.Size.primeSequence_le,
+      ``TranslationTiling.Compiler.Size.exists_bounded_useful,
+      ``TranslationTiling.Compiler.Size.channelCount_eq,
+      ``TranslationTiling.Compiler.Size.exists_bounded_parameters,
+      ``TranslationTiling.Compiler.Size.testTile_horizontal_bound,
+      ``TranslationTiling.Compiler.Size.exists_parameterBudget,
+      ``TranslationTiling.Compiler.Size.testTiles_card_le,
+      ``TranslationTiling.Compiler.Size.partition_at_prime,
+      ``TranslationTiling.Compiler.Size.exists_bounded_cyclic_tile,
+      ``TranslationTiling.Compiler.Size.exists_bounded_connected_tile,
+      ``TranslationTiling.Compiler.Size.closedCubeBound_primrec,
+      ``TranslationTiling.Compiler.Size.explicitCubeBound_primrec,
+      ``TranslationTiling.Compiler.Size.closedCubeBound_eq_explicit,
+      ``TranslationTiling.Compiler.Size.exists_connected_tile_closed_bound,
+      ``TranslationTiling.Compiler.Size.exists_connected_tile_explicit_bound,
+      ``TranslationTiling.Compiler.Size.arithmeticCubeBound_le_simple,
+      ``TranslationTiling.Compiler.Size.arithmeticCubeBound_le_of_budget,
+      ``TranslationTiling.Compiler.Size.explicitCubeBound_le_simple,
+      ``TranslationTiling.Compiler.Size.exists_connected_tile_simple_bound,
+      ``TranslationTiling.Compiler.Size.explicitCubeBound_one_le,
+      ``TranslationTiling.Compiler.Size.exists_connected_tile_one_bound,
       ``TranslationTiling.Abstract.tiling_coRE_complete,
       ``TranslationTiling.Abstract.tiling_undecidable,
       ``TranslationTiling.Abstract.real_tiling_coRE_complete,
