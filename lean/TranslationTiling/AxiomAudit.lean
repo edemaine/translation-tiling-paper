@@ -136,6 +136,8 @@ run_cmd do
       ``TranslationTiling.FiniteCompiler.factorial_le_kernelTile_card,
       ``TranslationTiling.Abstract.tiling_coRE_complete,
       ``TranslationTiling.Abstract.tiling_undecidable,
+      ``TranslationTiling.Abstract.tiling_simulates_wang,
+      ``TranslationTiling.Abstract.real_tiling_simulates_wang,
       ``TranslationTiling.Abstract.real_tiling_coRE_complete,
       ``TranslationTiling.Abstract.real_tiling_undecidable,
       ``TranslationTiling.planar_periodicity,

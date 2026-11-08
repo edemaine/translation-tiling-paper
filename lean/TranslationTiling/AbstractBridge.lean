@@ -1,4 +1,5 @@
 import TranslationTiling.Statements
+import TranslationTiling.Compiler.CleanQuasipolynomialBound
 
 /-!
 # Bridge to `Abstract.lean`
@@ -146,6 +147,50 @@ theorem undecidable_of_coRE_complete {α : Type} [Primcodable α] {p : α → Pr
 
 theorem connected_undecidable : ¬ ComputablePred fun P => AbsConnected P ∧ AbsTiles P :=
   undecidable_of_coRE_complete connected_coRE_complete
+
+private theorem simulation_bound_mono {n m : ℕ} (h : n ≤ m) :
+    ((n : ℝ) + 4) ^ (10 ^ 61 * Real.logb 2 (Real.logb 2 ((n : ℝ) + 4))) ≤
+      ((m : ℝ) + 4) ^ (10 ^ 61 * Real.logb 2 (Real.logb 2 ((m : ℝ) + 4))) := by
+  have hbase : (n : ℝ) + 4 ≤ (m : ℝ) + 4 := by exact_mod_cast Nat.add_le_add_right h 4
+  have hinner : 1 ≤ Real.logb 2 ((n : ℝ) + 4) := by
+    calc
+      1 = Real.logb 2 2 := (Real.logb_self_eq_one (by norm_num)).symm
+      _ ≤ _ := Real.logb_le_logb_of_le (by norm_num) (by norm_num)
+        (by have hn : (0 : ℝ) ≤ n := Nat.cast_nonneg n; linarith)
+  have hlog := Real.logb_le_logb_of_le (by norm_num : (1 : ℝ) < 2)
+    (by positivity : 0 < (n : ℝ) + 4) hbase
+  have hloglog := Real.logb_le_logb_of_le (by norm_num : (1 : ℝ) < 2)
+    (by linarith : 0 < Real.logb 2 ((n : ℝ) + 4)) hlog
+  have hnonneg := Real.logb_nonneg (by norm_num : (1 : ℝ) < 2) hinner
+  exact (Real.rpow_le_rpow (by positivity) hbase (mul_nonneg (by positivity) hnonneg)).trans
+    (Real.rpow_le_rpow_of_exponent_le
+      (by have hm : (0 : ℝ) ≤ m := Nat.cast_nonneg m; linarith)
+      (mul_le_mul_of_nonneg_left hloglog (by positivity)))
+
+/-- Remove duplicate cubes and bound the simulation by the input list length. -/
+theorem tiling_simulates_wang (T : LeanWang.TileSet) :
+    ∃ P : List (Fin 3 → ℤ), P ≠ [] ∧ AbsConnected P ∧
+      (LeanWang.TilesPlane T ↔ AbsTiles P) ∧
+      (P.length : ℝ) ≤ ((T.length : ℝ) + 4) ^
+        (10 ^ 61 * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4))) := by
+  obtain ⟨P, hP, hconn, hiff, hbound⟩ :=
+    Compiler.Size.exists_connected_tile_clean_quasipolynomial_bound T
+  refine ⟨P.dedup, (List.dedup_eq_nil P).not.mpr hP, ?_, ?_, ?_⟩
+  · simpa only [AbsConnected, List.mem_dedup] using (faceConnected_iff P).mp hconn
+  · simpa only [AbsTiles, List.mem_dedup] using hiff.trans (tiles_iff P)
+  · simpa only [Compiler.Size.cubeCount, List.card_toFinset] using
+      hbound.trans (simulation_bound_mono T.toFinset_card_le)
+
+/-- The discrete witness also works for arbitrary real translations. -/
+theorem real_tiling_simulates_wang (T : LeanWang.TileSet) :
+    ∃ P : List (Fin 3 → ℤ), P ≠ [] ∧ AbsConnected P ∧
+      (LeanWang.TilesPlane T ↔ AbsRealTiles P) ∧
+      (P.length : ℝ) ≤ ((T.length : ℝ) + 4) ^
+        (10 ^ 61 * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4))) := by
+  obtain ⟨P, hP, hconn, hiff, hbound⟩ := tiling_simulates_wang T
+  exact ⟨P, hP, hconn,
+    hiff.trans ((tiles_iff P).symm.trans
+      ((realTiles_iff_tiles P).symm.trans (realTiles_iff P))), hbound⟩
 
 theorem connected_real_undecidable : ¬ ComputablePred fun P => AbsConnected P ∧ AbsRealTiles P :=
   undecidable_of_coRE_complete connected_real_coRE_complete

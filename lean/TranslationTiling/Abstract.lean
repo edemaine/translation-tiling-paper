@@ -1,6 +1,7 @@
 import Mathlib.Computability.Halting
 import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 import LeanWang.CoRE
+import LeanWang.Basic
 import TranslationTiling.AbstractBridge
 
 /-!
@@ -12,7 +13,9 @@ that every point of `ℤ³` lies in exactly one translate `t + P` with `t ∈ T`
 
 We show that deciding whether a *connected* prototile tiles is co-r.e.-complete,
 both for `ℤ³` and for the solid body in `ℝ³` (union of unit cubes, arbitrary real
-translations). The proofs invoke `TranslationTiling.AbstractBridge`, which connects
+translations). We also bound the number of cubes needed to simulate Wang tiles,
+using the definitions in Lean-Wang. The proofs invoke
+`TranslationTiling.AbstractBridge`, which connects
 the statements to the rest of the project.
 -/
 
@@ -51,6 +54,16 @@ tiles space. (Mathlib notions only.) -/
 theorem tiling_undecidable : ¬ ComputablePred fun P => Connected P ∧ Tiles P :=
   AbstractBridge.connected_undecidable
 
+/-- A collection of `n` Wang tiles has an equivalent nonempty connected polycube
+with at most `(n + 4) ^ (10 ^ 61 * lg (lg (n + 4)))` unit cubes, where `lg` is
+the base-two logarithm. List lengths count the input tiles and output cubes. -/
+theorem tiling_simulates_wang : ∀ T : LeanWang.TileSet,
+    ∃ P : Prototile, P ≠ [] ∧ Connected P ∧
+      (LeanWang.TilesPlane T ↔ Tiles P) ∧
+      (P.length : ℝ) ≤ ((T.length : ℝ) + 4) ^
+        (10 ^ 61 * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4))) :=
+  AbstractBridge.tiling_simulates_wang
+
 /-! ### Tiling `ℝ³` -/
 
 /-- A point of `ℝ³`. -/
@@ -75,5 +88,13 @@ theorem real_tiling_coRE_complete : LeanWang.CoREComplete fun P => Connected P �
 real translations. (Mathlib notions only.) -/
 theorem real_tiling_undecidable : ¬ ComputablePred fun P => Connected P ∧ RealTiles P :=
   AbstractBridge.connected_real_undecidable
+
+/-- The same cube bound holds for simulation by arbitrary real translations. -/
+theorem real_tiling_simulates_wang : ∀ T : LeanWang.TileSet,
+    ∃ P : Prototile, P ≠ [] ∧ Connected P ∧
+      (LeanWang.TilesPlane T ↔ RealTiles P) ∧
+      (P.length : ℝ) ≤ ((T.length : ℝ) + 4) ^
+        (10 ^ 61 * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4))) :=
+  AbstractBridge.real_tiling_simulates_wang
 
 end TranslationTiling.Abstract

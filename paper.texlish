@@ -56,7 +56,8 @@
   keywordstyle=\bfseries\color{figblue}, keywordstyle=[2]\color{figgreen},
   literate={ℤ}{{$\mathbb{Z}$}}1 {ℝ}{{$\mathbb{R}$}}1 {×}{{$\times$}}1 {→}{{$\to$}}1
     {∀}{{$\forall$}}1 {∃}{{$\exists$}}1 {∈}{{$\in$}}1
-    {∧}{{$\wedge$}}1 {≤}{{$\le$}}1 {¬}{{$\neg$}}1 {∂}{{$\partial$}}1 {∑}{{$\sum$}}1 {ᵐ}{{$^{\mathrm m}$}}1}
+    {∧}{{$\wedge$}}1 {≤}{{$\le$}}1 {≠}{{$\ne$}}1 {↔}{{$\leftrightarrow$}}1
+    {¬}{{$\neg$}}1 {∂}{{$\partial$}}1 {∑}{{$\sum$}}1 {ᵐ}{{$^{\mathrm m}$}}1}
 \tcbuselibrary{skins}
 \newtcolorbox{leanbox}{colback=black!3,colframe=black!45,boxrule=0.5pt,arc=2pt,
   left=6pt,right=6pt,top=3pt,bottom=3pt,enhanced,
@@ -467,6 +468,15 @@ In both statements, the proof is a single call to a theorem in
 \phantomsection\label{sec:lean-z3}
 \leansnippet{tiling_coRE_complete,tiling_undecidable}
 
+A collection of $n$ Wang tiles can be simulated by a nonempty connected
+polycube $P$ using at most $(n+4)^{10^{61}\lg\lg(n+4)}$ unit cubes:
+the Wang tiles tile the plane if and only if $P$ tiles $\Z^3$ by translations.
+The Wang tile definitions come from `lean-wang`.
+List lengths count the input tiles and output cubes,
+and `Real.logb 2` denotes the base-two logarithm $\lg$.
+
+\leansnippet{tiling_simulates_wang}
+
 ## Tiling \texorpdfstring{$\R^3$}{R³}
 
 %As for $\Z^3$, points of $\R^3$ are functions from the three coordinate indices
@@ -488,6 +498,11 @@ polycube is co-RE-complete (and hence undecidable).
 \leansnippet{real_tiling_coRE_complete,real_tiling_undecidable}
 
 Together, these four Lean theorems establish @thm:undecidability.
+
+The same polycube and cube bound also simulate Wang tiling with arbitrary
+real translations:
+
+\leansnippet{real_tiling_simulates_wang}
 
 # Our Approach to the Proof @=sec:approach
 
