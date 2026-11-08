@@ -1,4 +1,4 @@
-::version >= 0.2.0
+::version >= 0.3.0
 ::styles
   @ = \cref
 
@@ -266,13 +266,13 @@ given known algorithms for 2D [[Bhattacharya,GTStructure]].
     to face adjacency of the constituent unit cubes.
     See @sec:lean-connected.
   [^lean-complete]:
-    \leanlogo{} theorem \texttt{tiling\_coRE\_complete}. See @sec:lean-z3.
+    \leanlogo{} theorem `tiling_coRE_complete`. See @sec:lean-z3.
   [^lean-undecidable]:
-    \leanlogo{} theorem \texttt{tiling\_undecidable}. See @sec:lean-z3.
+    \leanlogo{} theorem `tiling_undecidable`. See @sec:lean-z3.
   [^lean-real]:
-    \leanlogo{} theorem \texttt{real\_tiling\_coRE\_complete}. See @sec:lean-r3.
+    \leanlogo{} theorem `real_tiling_coRE_complete`. See @sec:lean-r3.
   [^lean-real-undecidable]:
-    \leanlogo{} theorem \texttt{real\_tiling\_undecidable}. See @sec:lean-r3.
+    \leanlogo{} theorem `real_tiling_undecidable`. See @sec:lean-r3.
 
 ***Co-RE*** is the complexity class of decision problems whose "no" instances
 can be recognized in finite time by an algorithm (Turing machine).
@@ -410,17 +410,17 @@ The complete Lean proof is available in [the repository](https://github.com/edem
 The key point is that a reader does not need to read the proof,
 or even most of the definitions, to trust the result:
 it suffices to check that the handful of definitions and theorem statements
-in a single file, \texttt{[Abstract.lean](https://github.com/edemaine/translation-tiling-paper/blob/main/lean/TranslationTiling/Abstract.lean)}, accurately express the claim.
+in a single file, [`Abstract.lean`](https://github.com/edemaine/translation-tiling-paper/blob/main/lean/TranslationTiling/Abstract.lean), accurately express the claim.
 The Lean proof assistant then verifies the proofs of these statements,
 and that they rely on only Lean's three standard axioms
 (`propext`, `Classical.choice`, `Quot.sound`).
 
-In the rest of this section, we explain the statements from \texttt{[Abstract.lean](https://github.com/edemaine/translation-tiling-paper/blob/main/lean/TranslationTiling/Abstract.lean)}.
-(The source file \texttt{[lean/TranslationTiling/Abstract.lean](https://github.com/edemaine/translation-tiling-paper/blob/main/lean/TranslationTiling/Abstract.lean)}
+In the rest of this section, we explain the statements from [`Abstract.lean`](https://github.com/edemaine/translation-tiling-paper/blob/main/lean/TranslationTiling/Abstract.lean).
+(The source file [`lean/TranslationTiling/Abstract.lean`](https://github.com/edemaine/translation-tiling-paper/blob/main/lean/TranslationTiling/Abstract.lean)
 remains the authoritative version.)
 It imports only Mathlib and the co-RE definitions of `lean-wang`
 (`CoREPred` and `CoREComplete`, defined in the same way as in the introduction),
-together with a short file \texttt{[AbstractBridge.lean](https://github.com/edemaine/translation-tiling-paper/blob/main/lean/TranslationTiling/AbstractBridge.lean)} whose job is to connect
+together with a short file [`AbstractBridge.lean`](https://github.com/edemaine/translation-tiling-paper/blob/main/lean/TranslationTiling/AbstractBridge.lean) whose job is to connect
 these statements to the definitions used in the rest of the formalization
 (but which need not be checked by a human).
 
@@ -463,7 +463,7 @@ it by a computable many-one reduction.
 Consequently (and using only Mathlib's notion of computable predicate)
 no algorithm decides it.
 In both statements, the proof is a single call to a theorem in
-\texttt{[AbstractBridge.lean](https://github.com/edemaine/translation-tiling-paper/blob/main/lean/TranslationTiling/AbstractBridge.lean)}.
+[`AbstractBridge.lean`](https://github.com/edemaine/translation-tiling-paper/blob/main/lean/TranslationTiling/AbstractBridge.lean).
 
 \phantomsection\label{sec:lean-z3}
 \leansnippet{tiling_coRE_complete,tiling_undecidable}
@@ -519,8 +519,8 @@ human consumption, gives the full details of the construction and its proofs.
 It and the complete Lean code are available in
 [the repository](https://github.com/edemaine/translation-tiling-paper)
 [[TilingRepo]]
-(files \texttt{[slop.texlish](https://github.com/edemaine/translation-tiling-paper/blob/main/slop.texlish)}
-and \texttt{[lean/](https://github.com/edemaine/translation-tiling-paper/tree/main/lean)}, respectively).
+(files [`slop.texlish`](https://github.com/edemaine/translation-tiling-paper/blob/main/slop.texlish)
+and [`lean/`](https://github.com/edemaine/translation-tiling-paper/tree/main/lean), respectively).
 We intend to expand this paper with further human-readable explanations
 of the proof.
 

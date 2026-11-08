@@ -37,7 +37,7 @@ dimensions is decidable.
 - [figures/generate_connected.py](figures/generate_connected.py): exact connectedness-example renderer.
 - [figures/](figures/): checked-in PDF figures needed to build the paper.
 
-Build with [Texlish](https://texlish.org/),
+Build with [Texlish](https://texlish.org/) 0.3.0 or later,
 LaTeX (including TikZ, subcaption, and tcolorbox), BibTeX, latexmk,
 Python 3, and Make installed:
 

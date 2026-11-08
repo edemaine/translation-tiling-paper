@@ -1,4 +1,4 @@
-::version >= 0.2.0
+::version >= 0.3.0
 ::styles
   @ = \cref
 
@@ -310,11 +310,11 @@ solution, is the substantive theorem we import.
 
 : theorem[Decorated Sudoku, Greenfeld--Tao] @=thm:GT
   The word rule just defined has the following properties.
-  : enumerate[label=\textup{(\roman*)}]
-    \item If an array satisfies \eqref{eq:line-rule} and both $W_p$ and $W_q$
+  ::list [label=\textup{(\roman*)}]
+  1. If an array satisfies \eqref{eq:line-rule} and both $W_p$ and $W_q$
     are nonconstant on every column, then the domino system has a solution
     on $\N^2$.
-    \item If $\tau\colon\N^2\to\calT$ is a domino solution, choose any
+  2. If $\tau\colon\N^2\to\calT$ is a domino solution, choose any
     $t_*\in\calT$ and define the array
     : equation \label{eq:canonical-sudoku}
        W(n,m)=
@@ -426,17 +426,17 @@ the much larger lattice prototile produced by the full reduction.
       \centering
       \small
       \renewcommand{\arraystretch}{1.12}
-      \begin{tabular}{rcc}
-            $m$ & $(\nu_3(m),\nu_5(m))$ & $W_{\calT}(n,m)$\\\midrule
-            1  & $(0,0)$ & $A$\\
-            3  & $(1,0)$ & $B$\\
-            5  & $(0,1)$ & $B$\\
-            9  & $(2,0)$ & $A$\\
-            15 & $(1,1)$ & $A$\\
-            25 & $(0,2)$ & $A$\\
-            45 & $(2,1)$ & $B$\\
-            75 & $(1,2)$ & $B$
-          \end{tabular}
+      ::table tabular{rcc}
+      $m$ | $(\nu_3(m),\nu_5(m))$ | $W_{\calT}(n,m)$
+      \midrule
+      1  | $(0,0)$ | $A$
+      3  | $(1,0)$ | $B$
+      5  | $(0,1)$ | $B$
+      9  | $(2,0)$ | $A$
+      15 | $(1,1)$ | $A$
+      25 | $(0,2)$ | $A$
+      45 | $(2,1)$ | $B$
+      75 | $(1,2)$ | $B$
     \end{minipage}%
   }
   \caption{A two-tile example of the canonical decoration
@@ -1094,12 +1094,12 @@ are possible.  Let $S_0=S\setminus(S_1\cup S_2)$.
 Since $D=(pq)^4\equiv1\pmod6$, the number $D-7$ is divisible by $6$.
 Equip these regions with the following set-theoretic label spaces:
 $$
- \begin{array}{c|c|c}
- \text{region}&\text{label space}&\text{number of copies}\\\hline
- S_1&\Cyc3&1\\
- S_2&\Cyc2&2\\
- S_0&(\Cyc2)\times(\Cyc3)&(D-7)/6.
- \end{array}
+ ::table array{c|c|c}
+ \text{region} | \text{label space} | \text{number of copies}
+ \hline
+ S_1 | \Cyc3 | 1
+ S_2 | \Cyc2 | 2
+ S_0 | (\Cyc2)\times(\Cyc3) | (D-7)/6.
 $$
 The labels on $S_1$ belong to seed $\eta_2$, those on $S_2$ to seed
 $\eta_1$, and those on $S_0$ to both seeds.  Wherever the label for
@@ -2071,7 +2071,7 @@ $(a,a',c(t)_b)$. A word over the new channels is allowed exactly when
 it is the encoding of some word in $\calW$. This enforces agreement
 of the copied arithmetic digits, valid tile codes, and the original
 line rule. Define the new seed restriction by
-$\widehat B_t=\{(a,a',e)\in\Gamma\colon a=a'=t\}$.
+$\widehat B_t=\{(a,a',e)\in\Gamma: a=a'=t\}$.
 Use the original graph, dependence, and activation equations for these
 channels, and the sparse exclusion equations for the new forbidden
 words and seed-label pairs.
@@ -2165,7 +2165,7 @@ The bit-channel variant is formalized end to end in
 \leanfile{Compiler/CleanQuasipolynomialBound.lean} by
 \leandecl{Compiler.Size.exists_connected_tile_clean_quasipolynomial_bound}.
 The generalized graph, dependence, sparse cycle, and activation equations
-are in \texttt{FiniteCompiler/}; their common-solution and soundness
+are in `FiniteCompiler/`; their common-solution and soundness
 proofs allow repeated column slopes. The bit-channel equivalence is
 \leanref{FiniteCompiler/BitSystem.lean}{FiniteCompiler.BitSystem.finite_system_iff_wang}.
 \leanfile{FiniteCompiler/GeometryBound.lean} combines the parameter,
