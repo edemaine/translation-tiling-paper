@@ -2071,7 +2071,7 @@ $(a,a',c(t)_b)$. A word over the new channels is allowed exactly when
 it is the encoding of some word in $\calW$. This enforces agreement
 of the copied arithmetic digits, valid tile codes, and the original
 line rule. Define the new seed restriction by
-$\widehat B_t=\{(a,a',e)\in\Gamma:a=a'=t\}$.
+$\widehat B_t=\{(a,a',e)\in\Gamma\colon a=a'=t\}$.
 Use the original graph, dependence, and activation equations for these
 channels, and the sparse exclusion equations for the new forbidden
 words and seed-label pairs.
