@@ -44,6 +44,22 @@ rankings and index encodings have been replaced with explicit formulas; the
 integer descent, connected assembly, and computability bridges are developed
 locally.
 
+`Compiler/SparseCycleTests.lean` specializes the collision proof from
+`Compiler/CycleTests.lean` to maps supported at a single useful-output value,
+and adds the restricted-family equivalence and size estimates. It retains
+the upstream attribution and license notice.
+
+The corresponding modules in `TranslationTiling/FiniteCompiler/` generalize
+these compiler ports to finite line-rule systems with variable channel count,
+alphabet, slopes, allowed words, and seed predicates. They retain the pinned
+upstream notices. The ordinary cycle uses the variable channel count, the
+exclusion families use sparse maps, and the activation/common-solution proofs
+allow repeated slopes. `Symbols.lean`, `Soundness.lean`, `Parameters.lean`,
+`BitSystem.lean`, `SupportBounds.lean`, `CountBounds.lean`, `PolynomialBudget.lean`,
+`ExplicitDegrees.lean`, `StackBound.lean`, and `GeometryBound.lean` supply the generalized interfaces,
+bit-channel bridge, and quantitative bounds locally. The original compiler
+interface and its proofs are retained.
+
 The ports change namespaces and imports for Lean 4.31.0, replace the upstream
 finite tiling predicate with `TranslationTiling.Stacking.Covers`, and add bridges
 to this project's set-based exact-coverage definition. All local copied/adapted

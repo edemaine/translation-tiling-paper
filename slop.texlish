@@ -1937,7 +1937,7 @@ The following bounds count distinct unit cubes in the final connected
 polycube, including the quotient-to-lattice and connectedness steps.
 
 : corollary @=cor:size-bound
-  Given a finite set $\calT$ of $n$ distinct Wang tiles,
+  Given a finite set $\calT$ of $n$ Wang tiles,
   one can construct a finite nonempty
   face-connected $F\subset\Z^3$ with
   $$
@@ -2020,6 +2020,164 @@ whether the Wang tile tiles the plane.
 The earlier general numerical bound $2^{2^{10^{40}(n+1)^2}}$ remains proved
 in \leanfile{Compiler/SimpleSizeBound.lean}. It uses a powerset estimate for
 the equation count and weaker prime bounds.
+
+### A Bit-Channel Variant
+
+The linear dependence on $n$ in the exponent comes from assigning a
+separate prime to each possible label in a channel. Splitting the Wang
+label into bits changes the number of channels instead. A second change
+is essential: use only the single-support maps already present in the
+collision proof of @lem:cycle.
+
+: lemma[Sparse cycle tests] @=lem:sparse-cycle
+  In @lem:cycle, it suffices to test maps of the form
+  $$
+    d_i(e)=\begin{cases}u_i,&e=\epsilon_i,\\0,&e\ne\epsilon_i,\end{cases}
+    \qquad \epsilon_i\in P_{\operatorname{prev}(i)},\quad u_i\in U_{i,j(i)}.
+  $$
+  The number of tests for a cycle of length $t$ is at most
+  $$
+    \prod_{i\in C}|P_{\operatorname{prev}(i)}|\,|U_{i,j(i)}|.
+  $$
+
+: proof
+  If one selected label is inactive, the same inverse argument works
+  for every map, hence for this restricted family. If all selected
+  labels are active, use the witnesses $v_i,v_i'$ from @lem:cycle and set
+  $$
+    \epsilon_i=g_{\operatorname{prev}(i),x}(v_{\operatorname{prev}(i)})
+       -g_{\operatorname{prev}(i),x}(v'_{\operatorname{prev}(i)}),
+    \qquad u_i=v_i-v_i'.
+  $$
+  Each $\epsilon_i$ is nonzero. Thus $d_i(0)=0$ and
+  $d_i(\epsilon_i)=u_i$, which gives exactly the same collision.
+  The equivalence and count are checked in
+  \leanfile{Compiler/SparseCycleTests.lean} by
+  \leandecl{Compiler.sparse_cycle_exclusion_iff} and
+  \leandecl{Compiler.sparseCycleTiles_card_le}.
+
+Put $A=(p-1)(q-1)$ and
+$\ell=\lfloor\log_2(n+2)\rfloor+1\geq1$.
+Choose an injection $c:\calT\to\{0,1\}^{\ell}$. Replace each ordinary
+channel $i\in I$ by channels $(i,b)$, $b\in\{1,\ldots,\ell\}$, all
+having the same line map $L_i$. The two seed channels stay unchanged.
+The new ordinary alphabet is the fixed set
+$$
+  \Gamma=(\F_p\setminus\{0\})\times(\F_q\setminus\{0\})\times\{0,1\},
+  \qquad |\Gamma|=2A.
+$$
+Encode $(a,a',t)\in\Sigma$ at channel $(i,b)$ by
+$(a,a',c(t)_b)$. A word over the new channels is allowed exactly when
+it is the encoding of some word in $\calW$. This enforces agreement
+of the copied arithmetic digits, valid tile codes, and the original
+line rule. Define the new seed restriction by
+$\widehat B_t=\{(a,a',e)\in\Gamma:a=a'=t\}$.
+Use the original graph, dependence, and activation equations for these
+channels, and the sparse exclusion equations for the new forbidden
+words and seed-label pairs.
+
+Write $\lg=\log_2$ for the real logarithm to base~$2$.
+
+: proposition[Bit-channel bound] @=prop:bit-channel-bound
+  A set of $n$ Wang tiles can be simulated by a nonempty
+  face-connected polycube with at most
+  $$
+    (n+4)^{10^{61}\lg\lg(n+4)}=n^{O(\log\log n)}
+  $$
+  unit cubes.
+  For $n=1$, we also have the explicit bound $2^{4\cdot10^{60}}$ unit cubes.
+
+: proof
+  First check correctness of the expanded channel system. Activation
+  gives a nonempty active set in every ordinary bit channel. Choose
+  one active symbol $V(i,b,m)$ at the common vertical section $(0,m)$.
+  At every horizontal point $x$, the tuple
+  $(V(i,b,L_i(x)))_{i,b}$ is an allowed encoded word, by the sparse
+  word exclusions. In particular, at $(0,m)$ the bits for each $i$
+  decode uniquely to a symbol $W(i,m)\in\Sigma$. At a general $x$,
+  injectivity of the code shows that decoding its $i$th bit tuple gives
+  this same $W(i,L_i(x))$. Hence $W$ satisfies the original line rule.
+  This coherence step is checked by
+  \leanref{Compiler/BitChannels.lean}{Compiler.BitChannels.array_of_encoded_line_rule}.
+
+  Each seed activates somewhere. Its pair exclusions place every
+  chosen bit symbol in $\widehat B_t$ there, so both arithmetic digits
+  of every decoded column symbol equal $t$. The original two-prime
+  soundness argument therefore still applies. Conversely, encode the
+  canonical Sudoku array bit by bit. Each bit channel has a singleton
+  active set, using its own block functions and the same slope $L_i$.
+  The ordinary activation inverse uses only that channel and its slope;
+  it requires no distinctness of slopes between channels. The two-seed
+  construction and its common auxiliary output remain valid. The
+  encoded line and seed restrictions hold, so @lem:sparse-cycle proves
+  all exclusion equations on this same graph. This proves both
+  tilability directions, including the case $n=0$, when there are no
+  allowed encoded words.
+
+  Now write $C=N\ell+2$ for the total number of channels. The constants
+  $N$, $A$, $M$, and $D$ are independent of $n$. There are $O(C)$ useful
+  prime tags. Choosing their ranks above the fixed seed threshold and
+  using $p_k\leq(8(k+1))^2$ gives a bound $U=C^{O(1)}$ for all useful
+  primes. The digit-prime threshold is $O(U^2)$; there are again only
+  $O(C)$ digit-prime tags because $|\Gamma|=2A$ is fixed. Their primes
+  thus have a bound $Q=C^{O(1)}$. Each channel has at most $2A$ labels,
+  so $r_i\leq Q^{2A}=C^{O(1)}$ and $|P_i|\leq U^2=C^{O(1)}$.
+  Consequently the cyclic factor has order
+  $$
+    |V|=D\prod_i r_i^2a_ib_i=C^{O(C)}.
+  $$
+
+  There are at most $(2A)^{N\ell}$ forbidden bit words. Each needs at
+  most $(U^2Q)^C=C^{O(C)}$ sparse cycle tests, since
+  $|U_{i,j}|=r_{ij}\leq Q$. There are $O(C)$ seed-label exclusions,
+  $O(C^2)$ dependence equations, and $C$ activation equations. The
+  total number of equations is therefore $s=C^{O(C)}$. Enumerating
+  all maps would instead introduce the growing exponent $|P_i|$;
+  the sparse restriction is what avoids that loss.
+
+  The activation CRT moduli, batch indices, and their separated lifts
+  are polynomial in the individual channel budgets. The slopes are
+  still bounded by the fixed $N$, so the horizontal support bound is
+  $H=C^{O(1)}$. Choose the stacking prime $q$ between
+  $8s^5+|V|+3$ and twice that number. It is coprime to $|V|$, and the
+  stacked cyclic modulus $q|V|$ is $C^{O(C)}$. The quotient-to-lattice
+  and connectedness steps have fixed polynomial volume cost in $H$
+  and $q|V|$. The final cube count is therefore $C^{O(C)}$.
+  Since $C=N\ell+2$, this gives the quasipolynomial dependence. The logarithmic
+  conversion is checked in \leanfile{Compiler/BitChannelSize.lean} by
+  \leandecl{Compiler.Size.bit_channel_cap_le_iterated_log}.
+
+  For the numerical coefficient, the fixed bit alphabet has size at most
+  $10^5$. For $C\geq2$, the useful-prime cap is at most $C^{10^{22}}$,
+  the digit-prime cap at most $C^{10^{24}}$, and the common parameter
+  budget at most $C^{10^{32}}$. Stacking and geometry have degree at most
+  $10^6$ in the common cap $b^{12C}$, giving
+  $|F|\leq C^{(12\cdot10^{32}\cdot10^6)C}$.
+  The logarithmic conversion has coefficient
+  $(N+4)(12\cdot10^{32}\cdot10^6)(N+2)\leq10^{60}$.
+  These estimates are checked in \leanfile{FiniteCompiler/ExplicitDegrees.lean}.
+  Monotonicity of logarithms and $n+4\geq4$ absorb the shifts and
+  rounding within the coefficient $10^{61}$. Passing to ordinary real
+  logarithms gives the displayed bound, as checked in
+  \leanfile{Compiler/CleanQuasipolynomialBound.lean}.
+
+The bit-channel variant is formalized end to end in
+\leanfile{Compiler/CleanQuasipolynomialBound.lean} by
+\leandecl{Compiler.Size.exists_connected_tile_clean_quasipolynomial_bound}.
+The generalized graph, dependence, sparse cycle, and activation equations
+are in \texttt{FiniteCompiler/}; their common-solution and soundness
+proofs allow repeated column slopes. The bit-channel equivalence is
+\leanref{FiniteCompiler/BitSystem.lean}{FiniteCompiler.BitSystem.finite_system_iff_wang}.
+\leanfile{FiniteCompiler/GeometryBound.lean} combines the parameter,
+equation-count, stacking, and geometric bounds. The public theorem
+includes nonemptiness, face connectedness, both tilability directions,
+and the numerical coefficient uniformly for every finite Wang tile set, including
+the empty set. Duplicate input entries have no cost. The explicit
+bounds in @cor:size-bound remain available.
+\leandecl{Compiler.Size.exists_connected_tile_one_quasipolynomial_bound}
+specializes the numerical bound to $n=1$.
+\leandecl{Compiler.Size.exists_connected_tile_quasipolynomial_explicit_power_bound}
+retains the sharper power estimate with integer logarithms.
 
 ## Why the Dimension Is Optimal
 

@@ -395,9 +395,9 @@ as summarized in @fig:reduction:
    This construction scales up the prototile, giving space to connect the
    lattice points by thin corridors, with bumps and dents to force alignment.
 
-The construction is rather large: simulating $n$ distinct Wang tiles
-takes at most $(n+2)^{10^{101}(n+1)}=2^{O(n\log n)}$ unit cubes.
-For $n=1$, we have an explicit bound of at most $2^{10^{100}}$ unit cubes.
+The construction is quasipolynomial, simulating $n$ Wang tiles
+using at most $(n+4)^{10^{61}\lg\lg(n+4)}=n^{O(\log\log n)}$ unit cubes.
+For $n=1$, we have an explicit bound of at most $2^{4\cdot10^{60}}$ unit cubes.
 
 # Formal Verification in Lean @=sec:lean
 

@@ -25,6 +25,11 @@ import TranslationTiling.Compiler.SimpleSizeBound
 import TranslationTiling.Compiler.SingleExponentialBound
 import TranslationTiling.Compiler.ExplicitOneBound
 import TranslationTiling.Compiler.ExplicitGeneralBound
+import TranslationTiling.Compiler.SparseCycleTests
+import TranslationTiling.Compiler.BitChannels
+import TranslationTiling.Compiler.BitChannelSize
+import TranslationTiling.Compiler.QuasipolynomialBound
+import TranslationTiling.Compiler.CleanQuasipolynomialBound
 import Lean.Util.CollectAxioms
 
 /-! Reject unfinished proofs, native evaluation axioms, and undeclared mathematical
@@ -88,6 +93,42 @@ run_cmd do
       ``TranslationTiling.Compiler.Size.exists_small_parameterBudget,
       ``TranslationTiling.Compiler.Size.exists_connected_tile_explicit_exp_log_bound,
       ``TranslationTiling.Compiler.Size.exists_connected_tile_explicit_power_bound,
+      ``TranslationTiling.Compiler.sparseCycleMap_collision_of_all_active,
+      ``TranslationTiling.Compiler.forall_sparseCycleMap_bijective_iff,
+      ``TranslationTiling.Compiler.sparseCycleIndex_card,
+      ``TranslationTiling.Compiler.sparseCycleIndex_card_le,
+      ``TranslationTiling.Compiler.sparseCycleTiles_subset_cycleTiles,
+      ``TranslationTiling.Compiler.nonempty_of_mem_sparseCycleTiles,
+      ``TranslationTiling.Compiler.sparse_cycle_exclusion_iff,
+      ``TranslationTiling.Compiler.sparseCycleTiles_card_le,
+      ``TranslationTiling.Compiler.BitChannels.exists_bit_code,
+      ``TranslationTiling.Compiler.BitChannels.exists_log_bit_code,
+      ``TranslationTiling.Compiler.BitChannels.splitCode_injective,
+      ``TranslationTiling.Compiler.BitChannels.array_of_encoded_line_rule,
+      ``TranslationTiling.Compiler.Size.linear_channel_cap_le_exp_log,
+      ``TranslationTiling.Compiler.Size.bit_channel_cap_le_iterated_log,
+      ``TranslationTiling.FiniteCompiler.array_of_solves,
+      ``TranslationTiling.FiniteCompiler.CommonModel.common_solution,
+      ``TranslationTiling.FiniteCompiler.BitSystem.finite_system_iff_wang,
+      ``TranslationTiling.FiniteCompiler.exists_bounded_parameters,
+      ``TranslationTiling.FiniteCompiler.Size.testTiles_card_le_commonCap,
+      ``TranslationTiling.FiniteCompiler.Size.exists_cyclic_tile_of_budget,
+      ``TranslationTiling.FiniteCompiler.Size.exists_connected_tile_channel_bound,
+      ``TranslationTiling.Compiler.Size.tileIn_card,
+      ``TranslationTiling.Compiler.Size.exists_connected_tile_quasipolynomial_bound,
+      ``TranslationTiling.FiniteCompiler.Size.bit_alphabet_le,
+      ``TranslationTiling.FiniteCompiler.Size.usefulPrimeCap_explicit_degree,
+      ``TranslationTiling.FiniteCompiler.Size.digitPrimeCap_explicit_degree,
+      ``TranslationTiling.FiniteCompiler.Size.bit_parameterBase_explicit_degree,
+      ``TranslationTiling.FiniteCompiler.Size.geometryPolynomial_explicit_degree,
+      ``TranslationTiling.FiniteCompiler.Size.exists_connected_tile_channel_bound_of_degrees,
+      ``TranslationTiling.Compiler.Size.linear_channel_cap_le_exp_log_explicit,
+      ``TranslationTiling.Compiler.Size.exists_connected_tile_quasipolynomial_explicit_bound,
+      ``TranslationTiling.Compiler.Size.exists_connected_tile_quasipolynomial_explicit_power_bound,
+      ``TranslationTiling.Compiler.Size.exists_connected_tile_one_quasipolynomial_bound,
+      ``TranslationTiling.Compiler.Size.shifted_power_le_clean,
+      ``TranslationTiling.Compiler.Size.clean_power_le_real_loglog,
+      ``TranslationTiling.Compiler.Size.exists_connected_tile_clean_quasipolynomial_bound,
       ``TranslationTiling.Abstract.tiling_coRE_complete,
       ``TranslationTiling.Abstract.tiling_undecidable,
       ``TranslationTiling.Abstract.real_tiling_coRE_complete,

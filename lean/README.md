@@ -55,6 +55,37 @@ have no unproved mathematical input. No unfinished proof is accepted.
 
 ## Cube Bound by Wang Tile Count
 
+[Compiler/CleanQuasipolynomialBound.lean](TranslationTiling/Compiler/CleanQuasipolynomialBound.lean)
+gives the bound `(n+4)^(10^61*log₂(log₂(n+4))) = n^O(log log n)` with ordinary
+real logarithms and no rounding operations. The theorem
+`Size.exists_connected_tile_clean_quasipolynomial_bound` includes
+nonemptiness, face connectedness, and both tilability directions, including
+empty input. Its proof absorbs the shifted integer logarithms in the sharper
+estimate below, then uses monotonicity of real logarithms and powers.
+
+[Compiler/QuasipolynomialBound.lean](TranslationTiling/Compiler/QuasipolynomialBound.lean)
+proves the full `n^O(log log n)` bound with the numerical coefficient `10^60`.
+`Size.exists_connected_tile_quasipolynomial_explicit_bound` gives a nonempty,
+face-connected polycube equivalent to any finite Wang tile set, with at most
+
+```text
+2^(10^60*(Nat.log 2 (n+2)+1)*(Nat.log 2 (Nat.log 2 (n+2)+2)+1))
+```
+
+distinct unit cubes. Here `n` counts distinct tiles; the theorem also covers
+empty input. Its proof includes both tilability directions, parameter and
+equation bounds, cyclic stacking, quotient-to-lattice conversion, and
+connectedness. The complete dependency closure is included in the axiom audit.
+`Size.exists_connected_tile_quasipolynomial_explicit_power_bound` gives
+`(n+2)^(2*10^60*(Nat.log 2 (Nat.log 2 (n+2)+2)+1))` cubes.
+For `n = 1`, `Size.exists_connected_tile_one_quasipolynomial_bound` gives
+at most `2^(4*10^60)` cubes. The explicit degrees are proved in
+[FiniteCompiler/ExplicitDegrees.lean](TranslationTiling/FiniteCompiler/ExplicitDegrees.lean):
+the parameter budget has degree at most `10^32` in the channel count,
+and stacking plus geometry has degree at most `10^6` in the common cap.
+
+### Explicit numerical bounds
+
 [Compiler/SingleExponentialBound.lean](TranslationTiling/Compiler/SingleExponentialBound.lean)
 proves a singly exponential size bound: there is a fixed natural constant `K`
 such that `n` distinct Wang tiles have an equivalent nonempty, face-connected
@@ -89,9 +120,8 @@ parameter budget. These are size bounds for bounded admissible choices, not
 bounds on the original compiler's least-encoded-certificate search. The new
 statements and their supporting lemmas are included in the axiom audit.
 
-For `n = 1`,
 [Compiler/ExplicitOneBound.lean](TranslationTiling/Compiler/ExplicitOneBound.lean)
-proves the explicit bound `2^(10^100)` cubes, including connectedness,
+proves the earlier one-tile bound `2^(10^100)` cubes, including connectedness,
 nonemptiness, and both tilability directions
 (`Size.exists_connected_tile_one_explicit_bound`).
 [Compiler/SmallOneParameters.lean](TranslationTiling/Compiler/SmallOneParameters.lean)
@@ -99,6 +129,35 @@ bounds the useful primes by `10^40` and digit primes by `10^164`.
 The resulting parameter budget is `2^(10^8)` and the equation count is at most
 `2^(10^98)`. This specializes the full reduction without deciding the
 one-tile Wang problem separately, and ignores duplicate input entries.
+
+### Bit-channel proof structure
+
+The construction uses `O(log n)` channels
+with fixed alphabets and cycle maps supported at a single useful-output value.
+Its supporting lemmas are checked and included in the axiom audit:
+
+- [Compiler/SparseCycleTests.lean](TranslationTiling/Compiler/SparseCycleTests.lean)
+  proves that these maps give the same activity exclusion as arbitrary maps,
+  using at most `∏ j, card(P_prev(j))*card(U_j)` tests. It also proves that
+  the restricted tiles are nonempty members of the original cycle family.
+- [Compiler/BitChannels.lean](TranslationTiling/Compiler/BitChannels.lean)
+  constructs finite bit codes and proves that an encoded line-rule array
+  decodes coherently along the original column line maps. Copied arithmetic
+  digits and distinct bit channels may share a line map.
+- [Compiler/BitChannelSize.lean](TranslationTiling/Compiler/BitChannelSize.lean)
+  converts `(N*l+2)^(d*(N*l+2))` to a bound with binary exponent
+  `K*l*(Nat.log 2 (l+1)+1)`, then substitutes logarithmic bit length.
+
+[FiniteCompiler/](TranslationTiling/FiniteCompiler) generalizes the finite
+line-rule backend to variable channel counts, slopes, alphabets, allowed words,
+and seed predicates. It retains the original compiler's interface in
+`Compiler/`. The generalized activation and common-solution proofs allow
+repeated slopes. [BitSystem.lean](TranslationTiling/FiniteCompiler/BitSystem.lean)
+encodes the Wang labels in bit channels and proves the full finite-system
+equivalence, including the two seed conditions. [GeometryBound.lean](TranslationTiling/FiniteCompiler/GeometryBound.lean)
+proves a uniform `C^(d*C)` cube bound for fixed alphabet and slope bounds.
+Substituting `C = Sudoku.Width*l+2` and logarithmic bit length gives the public
+quasipolynomial bound above.
 
 ### Earlier numerical bounds
 
