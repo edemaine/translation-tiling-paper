@@ -2179,6 +2179,41 @@ specializes the numerical bound to $n=1$.
 \leandecl{Compiler.Size.exists_connected_tile_quasipolynomial_explicit_power_bound}
 retains the sharper power estimate with integer logarithms.
 
+### The Remaining Cost of Cyclicity
+
+The quasipolynomial cost is intrinsic to the current prime assignment.
+Let $C$ be the number of channels and $H_0$ the graph-kernel prototile.
+Its useful-output space embeds in $H_0$: set all other coordinates to
+zero. Consequently,
+$$
+  |H_0|\geq\prod_i a_i b_i\geq(2C+1)!.
+$$
+For the second inequality, sort the $2C$ distinct useful primes; the
+$k$th entry is at least $k+1$. These inequalities are checked in
+\leanfile{FiniteCompiler/SizeObstruction.lean} by
+\leandecl{FiniteCompiler.factorial_le_kernelTile_card}.
+Since $C=\Theta(\lg n)$ in the bit-channel variant, even this intermediate
+prototile has $n^{\Omega(\log\log n)}$ elements. Thus polynomial size
+requires changing the encoding. This is a limitation of the present
+construction, with no corresponding lower bound for arbitrary reductions.
+
+A possible change is to reuse a fixed prime table across ordinary bit
+channels. At the level of the size estimates, let every such channel
+have fixed moduli $a,b,r$, and keep the two seed channels fixed. With
+$m=N\ell$ ordinary channels the finite factor would have order
+$$
+  |V|=D(r^2ab)^m\prod_{t=1}^2 r_{\eta_t}^2a_{\eta_t}b_{\eta_t}
+      =n^{O(1)}.
+$$
+The sparse-test count would also be $n^{O(1)}$: both the alphabet and
+every factor in the sparse-test bound would be constant. However, this
+finite factor is noncyclic; its quotient $(\Cyc a)^m$ already needs
+$m$ generators when $a$ is prime. The present quotient-to-lattice step,
+which uses one finite cyclic coordinate and two infinite coordinates,
+therefore does not apply. A polynomial conversion of this shared-prime
+system into a cyclic system remains an open step; the displayed estimates
+do not assert a polynomial three-dimensional construction.
+
 ## Why the Dimension Is Optimal
 
 : proposition @=prop:planar

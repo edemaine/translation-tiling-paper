@@ -30,6 +30,7 @@ import TranslationTiling.Compiler.BitChannels
 import TranslationTiling.Compiler.BitChannelSize
 import TranslationTiling.Compiler.QuasipolynomialBound
 import TranslationTiling.Compiler.CleanQuasipolynomialBound
+import TranslationTiling.FiniteCompiler.SizeObstruction
 import Lean.Util.CollectAxioms
 
 /-! Reject unfinished proofs, native evaluation axioms, and undeclared mathematical
@@ -129,6 +130,10 @@ run_cmd do
       ``TranslationTiling.Compiler.Size.shifted_power_le_clean,
       ``TranslationTiling.Compiler.Size.clean_power_le_real_loglog,
       ``TranslationTiling.Compiler.Size.exists_connected_tile_clean_quasipolynomial_bound,
+      ``TranslationTiling.FiniteCompiler.factorial_succ_card_le_prod_of_injective,
+      ``TranslationTiling.FiniteCompiler.factorial_usefulPrimeProduct_le,
+      ``TranslationTiling.FiniteCompiler.useful_card_le_kernelTile_card,
+      ``TranslationTiling.FiniteCompiler.factorial_le_kernelTile_card,
       ``TranslationTiling.Abstract.tiling_coRE_complete,
       ``TranslationTiling.Abstract.tiling_undecidable,
       ``TranslationTiling.Abstract.real_tiling_coRE_complete,
