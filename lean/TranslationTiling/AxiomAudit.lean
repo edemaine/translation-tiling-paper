@@ -22,6 +22,9 @@ import TranslationTiling.Compiler.EffectiveInvarianceTiles
 import TranslationTiling.Compiler.GeometricSizeBound
 import TranslationTiling.Compiler.ClosedFormBound
 import TranslationTiling.Compiler.SimpleSizeBound
+import TranslationTiling.Compiler.SingleExponentialBound
+import TranslationTiling.Compiler.ExplicitOneBound
+import TranslationTiling.Compiler.ExplicitGeneralBound
 import Lean.Util.CollectAxioms
 
 /-! Reject unfinished proofs, native evaluation axioms, and undeclared mathematical
@@ -61,6 +64,30 @@ run_cmd do
       ``TranslationTiling.Compiler.Size.exists_connected_tile_simple_bound,
       ``TranslationTiling.Compiler.Size.explicitCubeBound_one_le,
       ``TranslationTiling.Compiler.Size.exists_connected_tile_one_bound,
+      ``TranslationTiling.Compiler.Size.exists_parameters_of_prime_family,
+      ``TranslationTiling.Compiler.Size.le_primeCounting_square,
+      ``TranslationTiling.Compiler.Size.nth_prime_le_square,
+      ``TranslationTiling.Compiler.Size.exists_polynomial_parameters,
+      ``TranslationTiling.Compiler.Size.cycleTiles_card_le,
+      ``TranslationTiling.Compiler.Size.testTiles_card_le_direct,
+      ``TranslationTiling.Compiler.Size.exists_cyclic_tile_of_card_le,
+      ``TranslationTiling.Compiler.Size.exists_single_parameterBudget,
+      ``TranslationTiling.Compiler.Size.exists_connected_tile_single_bound,
+      ``TranslationTiling.Compiler.Size.singleCubeBound_le_power,
+      ``TranslationTiling.Compiler.Size.exists_connected_tile_power_bound,
+      ``TranslationTiling.Compiler.Size.singleCubeBound_le_exp_log,
+      ``TranslationTiling.Compiler.Size.exists_connected_tile_exp_log_bound,
+      ``TranslationTiling.Compiler.Size.exists_parameters_of_bounded_families,
+      ``TranslationTiling.Compiler.Size.exists_small_useful,
+      ``TranslationTiling.Compiler.Size.exists_small_one_parameters,
+      ``TranslationTiling.Compiler.Size.exists_one_parameterBudget,
+      ``TranslationTiling.Compiler.Size.stack_geometry_exp,
+      ``TranslationTiling.Compiler.Size.exists_connected_tile_of_exp_budget,
+      ``TranslationTiling.Compiler.Size.exists_connected_tile_one_explicit_bound,
+      ``TranslationTiling.Compiler.Size.exists_small_parameters,
+      ``TranslationTiling.Compiler.Size.exists_small_parameterBudget,
+      ``TranslationTiling.Compiler.Size.exists_connected_tile_explicit_exp_log_bound,
+      ``TranslationTiling.Compiler.Size.exists_connected_tile_explicit_power_bound,
       ``TranslationTiling.Abstract.tiling_coRE_complete,
       ``TranslationTiling.Abstract.tiling_undecidable,
       ``TranslationTiling.Abstract.real_tiling_coRE_complete,

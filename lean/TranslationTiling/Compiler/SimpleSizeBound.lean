@@ -38,7 +38,7 @@ private theorem pairCap_exp {x e : ℕ} (h : x ≤ 2 ^ e) : pairCap x ≤ 2 ^ (2
   unfold pairCap
   nlinarith
 
-private theorem horizontal_exp {b k : ℕ} (hk : 1 ≤ k) (hb : b ≤ 2 ^ k) :
+theorem horizontal_exp {b k : ℕ} (hk : 1 ≤ k) (hb : b ≤ 2 ^ k) :
     horizontalCap b ≤ 2 ^ (100 * k) := by
   have hJ : indexCap b ≤ 2 ^ (16 * k + 30) := by
     have h := pairCap_exp (pairCap_exp (pairCap_exp (pairCap_exp hb)))

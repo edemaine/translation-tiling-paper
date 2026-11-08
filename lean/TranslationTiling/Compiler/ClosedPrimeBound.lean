@@ -42,25 +42,26 @@ theorem label_card_le (T : LeanWang.TileSet) (i : Channel T) :
     exact h.trans (Nat.le_succ _)
   | inr t => simp [Label, labelsBound]
 
-/-- There are admissible encoding parameters whose digit primes satisfy the
-explicit bound, including a numerical bound on the useful-coordinate primes. -/
-theorem exists_bounded_parameters (T : LeanWang.TileSet) :
+/-- Digit-prime threshold for any useful-coordinate bound. -/
+def primeThreshold (U : ℕ) : ℕ := U ^ 2 + 2 * U + Sudoku.p + Sudoku.q + 3
+
+/-- Build parameters with independent bounds on the useful and digit primes. -/
+theorem exists_parameters_of_bounded_families (T : LeanWang.TileSet) (U Q : ℕ)
+    (u : UsefulTag → ℕ) (huinj : Function.Injective u)
+    (hu : ∀ i, (u i).Prime ∧ u i ≤ U ∧ u i ≠ Sudoku.p ∧ u i ≠ Sudoku.q)
+    (hseed : ∀ t : Fin 2, u (.inl (.inr t)) = t.val + 2)
+    (hseedlarge : ∀ t : Fin 2, residueModulus ^ 2 < u (.inr (.inr t)))
+    (g : (Σ i : Channel T, Label T i) → ℕ)
+    (hgprime : ∀ j, (g j).Prime) (hggt : ∀ j, primeThreshold U < g j)
+    (hginj : Function.Injective g) (hbound : ∀ j, g j ≤ Q) :
     ∃ E : EncodingParameters T,
-      (∀ i, E.a i ≤ usefulCap ∧ E.b i ≤ usefulCap) ∧
-      ∀ i j, E.digitPrime i j ≤ digitPrimeBound T.length := by
-  obtain ⟨u, huinj, hu, hseed, hseedlarge⟩ := exists_bounded_useful
+      (∀ i, E.a i ≤ U ∧ E.b i ≤ U) ∧
+      ∀ i j, E.digitPrime i j ≤ Q := by
   let Tags := Σ i : Channel T, Label T i
-  let ix : Tags ≃ Fin (Fintype.card Tags) := Fintype.equivFin Tags
-  let g (j : Tags) := EncodingPrimeSelection.primeSequence digitStart (ix j).val
-  have hgprime (j : Tags) : (g j).Prime := EncodingPrimeSelection.primeSequence_prime _ _
-  have hggt (j : Tags) : digitStart < g j := EncodingPrimeSelection.primeSequence_gt _ _
-  have hginj : Function.Injective g := by
-    intro i j hij
-    exact ix.injective (Fin.ext ((EncodingPrimeSelection.primeSequence_strictMono _).injective hij))
   have hsep (t : UsefulTag) (j : Tags) : u t ≠ g j := by
     have ht := (hu t).2.1
     have hj := hggt j
-    unfold digitStart at hj
+    unfold primeThreshold at hj
     omega
   let primes : PrimeTag T → ℕ := Sum.elim u g ∘
     (Equiv.sumAssoc (Channel T) (Channel T) Tags).symm
@@ -83,7 +84,7 @@ theorem exists_bounded_parameters (T : LeanWang.TileSet) :
       · exact (hu (.inr i)).2.2.2
     · change g j ≠ v
       have h := hggt j
-      unfold digitStart at h
+      unfold primeThreshold at h
       rcases hv with rfl | rfl <;> omega
   have hrepr (i : Channel T) (j : Label T i) : ∃ A B : ℕ,
       0 < A ∧ 0 < B ∧ g ⟨i, j⟩ =
@@ -98,7 +99,7 @@ theorem exists_bounded_parameters (T : LeanWang.TileSet) :
     have hbB := (hu (.inr i)).2.1
     have hm := Nat.mul_le_mul haB hbB
     have h := hggt ⟨i, j⟩
-    unfold digitStart at h
+    unfold primeThreshold at h
     simp only [pow_two] at h
     exact EncodingPrimeSelection.exists_positive_combination hcop ha.one_lt hb.one_lt (by omega)
   choose A B hA hB hrepr using hrepr
@@ -120,19 +121,47 @@ theorem exists_bounded_parameters (T : LeanWang.TileSet) :
     digitProduct := fun i => ∏ j : Label T i, g ⟨i, j⟩
     digitProduct_eq := fun _ => rfl }
   refine ⟨E, fun i => ⟨(hu (.inl i)).2.1, (hu (.inr i)).2.1⟩, ?_⟩
-  intro i j
-  have hcard : Fintype.card Tags ≤ channelCount * labelsBound T.length := by
-    rw [Fintype.card_sigma]
-    calc
-      _ ≤ ∑ _i : Channel T, labelsBound T.length :=
-        Finset.sum_le_sum (fun i _ => label_card_le T i)
-      _ = channelCount * labelsBound T.length := by simp [channelCount]
-  have hrank : (ix ⟨i, j⟩).val + 1 ≤ channelCount * labelsBound T.length + 1 := by
-    have := (ix ⟨i, j⟩).isLt
-    omega
-  change g ⟨i, j⟩ ≤ _
-  exact (primeSequence_le digitStart _).trans
-    (Nat.mul_le_mul_right _ (Nat.pow_le_pow_right (by decide) hrank))
+  exact fun i j => hbound ⟨i, j⟩
+
+/-- Build bounded parameters from any sufficiently large injective prime family. -/
+theorem exists_parameters_of_prime_family (T : LeanWang.TileSet) (Q : ℕ)
+    (g : (Σ i : Channel T, Label T i) → ℕ)
+    (hgprime : ∀ j, (g j).Prime) (hggt : ∀ j, digitStart < g j)
+    (hginj : Function.Injective g) (hbound : ∀ j, g j ≤ Q) :
+    ∃ E : EncodingParameters T,
+      (∀ i, E.a i ≤ usefulCap ∧ E.b i ≤ usefulCap) ∧
+      ∀ i j, E.digitPrime i j ≤ Q := by
+  obtain ⟨u, huinj, hu, hseed, hseedlarge⟩ := exists_bounded_useful
+  exact exists_parameters_of_bounded_families T usefulCap Q u huinj hu hseed hseedlarge
+    g hgprime hggt hginj hbound
+
+/-- There are admissible encoding parameters whose digit primes satisfy the
+explicit bound, including a numerical bound on the useful-coordinate primes. -/
+theorem exists_bounded_parameters (T : LeanWang.TileSet) :
+    ∃ E : EncodingParameters T,
+      (∀ i, E.a i ≤ usefulCap ∧ E.b i ≤ usefulCap) ∧
+      ∀ i j, E.digitPrime i j ≤ digitPrimeBound T.length := by
+  let Tags := Σ i : Channel T, Label T i
+  let ix : Tags ≃ Fin (Fintype.card Tags) := Fintype.equivFin Tags
+  let g (j : Tags) := EncodingPrimeSelection.primeSequence digitStart (ix j).val
+  apply exists_parameters_of_prime_family T (digitPrimeBound T.length) g
+    (fun _ => EncodingPrimeSelection.primeSequence_prime _ _)
+    (fun _ => EncodingPrimeSelection.primeSequence_gt _ _)
+  · intro i j hij
+    exact ix.injective (Fin.ext ((EncodingPrimeSelection.primeSequence_strictMono _).injective hij))
+  · rintro ⟨i, j⟩
+    have hcard : Fintype.card Tags ≤ channelCount * labelsBound T.length := by
+      rw [Fintype.card_sigma]
+      calc
+        _ ≤ ∑ _i : Channel T, labelsBound T.length :=
+          Finset.sum_le_sum (fun i _ => label_card_le T i)
+        _ = channelCount * labelsBound T.length := by simp [channelCount]
+    have hrank : (ix ⟨i, j⟩).val + 1 ≤ channelCount * labelsBound T.length + 1 := by
+      have := (ix ⟨i, j⟩).isLt
+      omega
+    change g ⟨i, j⟩ ≤ _
+    exact (primeSequence_le digitStart _).trans
+      (Nat.mul_le_mul_right _ (Nat.pow_le_pow_right (by decide) hrank))
 
 end
 end TranslationTiling.Compiler.Size

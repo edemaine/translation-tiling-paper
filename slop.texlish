@@ -1937,45 +1937,89 @@ The following bounds count distinct unit cubes in the final connected
 polycube, including the quotient-to-lattice and connectedness steps.
 
 : corollary @=cor:size-bound
-  Given a finite set $\calT$ of $n$ distinct Wang tiles, one can construct
-  a finite nonempty face-connected $F\subset\Z^3$ such that
-  $\calT$ tiles the plane if and only if $F$ tiles $\Z^3$ by translations,
-  with
+  Given a finite set $\calT$ of $n$ distinct Wang tiles,
+  one can construct a finite nonempty
+  face-connected $F\subset\Z^3$ with
   $$
-    |F|\leq 2^{2^{10^{40}(n+1)^2}}.
+    |F|\leq (n+2)^{10^{101}(n+1)}=2^{O(n\log n)},
   $$
-  For $n=1$, the same construction admits the sharper bound
+  such that $\calT$ tiles the plane if and only if $F$ tiles $\Z^3$
+  by translations.
+  For $n=1$, there is such an $F$ with the explicit bound
   $$
-    |F|\leq 2^{2^{10^{29}}}.
+    |F|\leq 2^{10^{100}}.
   $$
 
-The Lean statements are
-\leanref{Compiler/SimpleSizeBound.lean}{Compiler.Size.exists_connected_tile_simple_bound}
-and \leandecl{Compiler.Size.exists_connected_tile_one_bound} in the same file.
-These are existence bounds using bounded admissible parameter choices in
-the reduction. They do not bound the original compiler's search for a
-certificate with the least numerical encoding, and they are not lower
-bounds on the size needed to simulate Wang tiles.
-The one-tile estimate specializes the construction without first deciding
-whether that Wang tile tiles the plane.
+The explicit constant is proved in \leanfile{Compiler/ExplicitGeneralBound.lean}
+by \leandecl{Compiler.Size.exists_connected_tile_explicit_power_bound}.
+\leandecl{Compiler.Size.exists_connected_tile_explicit_exp_log_bound} gives
+the sharper binary-exponential bound
+$$
+  2^{10^{100}(n+1)(\lfloor\log_2(n+2)\rfloor+1)}.
+$$
+These constants are independent of the Wang tile set. The theorem uses
+bounded admissible parameter choices in the existing reduction. It does
+not bound the original compiler's search for a certificate with the
+least numerical encoding, or assert a lower bound on simulation size.
 
-The quantitative proof first replaces the input colors by their ranks
-among the colors that occur, so large numerical color names have no cost.
-It bounds the encoding primes and the finite cyclic group orders,
-then places every tile in the simultaneous tiling system inside one
-finite ambient set. If that set has $W$ points, there are at most $2^W$
-distinct test tiles, because each is a subset of it.
-This bounds the number of equations to be stacked, and bounded choices
-of the stacking prime then bound the final cyclic modulus.
-The last two geometric steps have polynomial volume cost in that modulus
-and the horizontal coordinate bound.
-These estimates are combined in
-\leanref{Compiler/ClosedFormBound.lean}{Compiler.Size.exists_connected_tile_explicit_bound}.
-Finally,
-\leandecl{Compiler.Size.explicitCubeBound_le_simple} and
-\leandecl{Compiler.Size.explicitCubeBound_one_le} in
-\leanfile{Compiler/SimpleSizeBound.lean}
-prove the displayed numerical inequalities.
+: proof
+  Write $N=|I|$, $C=N+2$, and $A=(p-1)(q-1)$; these are fixed constants.
+  The ordinary label sets have cardinality $An$ and the seed label sets
+  have cardinality one. Choose the useful primes $a_i,b_i$ independently
+  of the input, bounded by a fixed constant $U$.
+
+  Assign digit primes by their ranks in the finite set of channel-label
+  pairs, so numerical color names have no cost.
+  Chebyshev's elementary prime-counting bound gives the coarse estimate
+  $p_k\leq (8(k+1))^2$ for the zero-indexed $k$th prime. Consequently,
+  all digit primes can be bounded by a fixed polynomial $Q(n)$, while
+  remaining distinct and above the fixed threshold needed for the
+  block decompositions. This is proved in
+  \leanref{Compiler/PolynomialPrimes.lean}{Compiler.Size.exists_polynomial_parameters}.
+  Thus $r_i\leq Q(n)^{An+1}$.
+  There is a common budget $b=(n+2)^{O(n)}$ bounding every $r_i,a_i,b_i$,
+  the channel count, and the label counts. The horizontal coordinate
+  bound and $|V|$ are fixed polynomials in $b$.
+
+  To count equations, retain the fixed useful-output sizes
+  $|P_i|\leq U^2$. For any selected tuple of labels, each cycle-test
+  map $d_i:P_{\operatorname{prev}(i)}\to U_{i,j(i)}$ has at most
+  $b^{U^2}$ choices, because $|U_{i,j(i)}|\leq r_i\leq b$.
+  A cycle has at most $C$ channels, so at most $b^{CU^2}$ tests are
+  needed for that tuple. There are at most $(An)^N$ ordinary words
+  and $2NAn$ seed exclusions; graph, dependence, and activation tests
+  add only a fixed number of equations. Hence the total number of
+  equations is a fixed polynomial in $b$, as proved in
+  \leanref{Compiler/DirectTestCount.lean}{Compiler.Size.testTiles_card_le_direct}.
+  Counting all subsets of an ambient support would lose this bound.
+
+  The stacking prime can be chosen polynomially bounded in the number
+  of equations and $|V|$, so the final cyclic modulus is also polynomial
+  in $b$. The quotient-to-lattice and connectedness steps have polynomial
+  volume cost in that modulus and the horizontal coordinate bound.
+  Therefore $|F|\leq b^{O(1)}=(n+2)^{O(n)}$.
+  \leandecl{Compiler.Size.exists_connected_tile_single_bound} combines
+  these estimates with nonemptiness, face connectedness, and both
+  tilability directions; \leandecl{Compiler.Size.singleCubeBound_le_power}
+  supplies one constant $K$ uniformly for every $n$, including zero.
+
+For the explicit constant, take $U=10^{40}$ and digit primes at most
+$10^{164}(n+2)^2$. Then $b=(n+2)^{10^8(n+1)}$ is a common parameter budget.
+Writing $L=\lfloor\log_2(n+2)\rfloor+1$, the equation count, horizontal
+coordinate bound, and $|V|$ are each at most $2^{10^{98}(n+1)L}$.
+Stacking and geometry give $|F|\leq2^{10^{100}(n+1)L}$.
+Finally, $2^L\leq(n+2)^2$ gives $K=10^{101}$ in the power bound.
+
+The one-tile bound is proved in \leanfile{Compiler/ExplicitOneBound.lean}
+by \leandecl{Compiler.Size.exists_connected_tile_one_explicit_bound}.
+The useful primes are at most $10^{40}$ and the digit primes at most $10^{164}$,
+giving a parameter budget $b=2^{10^8}$. The direct equation count is at most
+$2^{10^{98}}$; stacking and the geometric steps give at most $2^{10^{100}}$
+cubes. This specializes the full construction without first deciding
+whether the Wang tile tiles the plane.
+The earlier general numerical bound $2^{2^{10^{40}(n+1)^2}}$ remains proved
+in \leanfile{Compiler/SimpleSizeBound.lean}. It uses a powerset estimate for
+the equation count and weaker prime bounds.
 
 ## Why the Dimension Is Optimal
 

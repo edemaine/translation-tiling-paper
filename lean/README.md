@@ -55,8 +55,55 @@ have no unproved mathematical input. No unfinished proof is accepted.
 
 ## Cube Bound by Wang Tile Count
 
+[Compiler/SingleExponentialBound.lean](TranslationTiling/Compiler/SingleExponentialBound.lean)
+proves a singly exponential size bound: there is a fixed natural constant `K`
+such that `n` distinct Wang tiles have an equivalent nonempty, face-connected
+polycube with at most
+
+```text
+(n+2)^(K*(n+1)) = 2^O(n log n)
+```
+
+distinct unit cubes. `Size.exists_connected_tile_power_bound` gives the complete
+geometric conclusion; `Size.singleCubeBound_le_power` bounds its arithmetic
+formula `singleCubeBound`. `Size.exists_connected_tile_exp_log_bound` uses the explicit exponent
+`K*(n+1)*(Nat.log 2 (n+2)+1)`. The constant is uniform, including for empty
+input, and duplicate input entries are ignored.
+
+[Compiler/ExplicitGeneralBound.lean](TranslationTiling/Compiler/ExplicitGeneralBound.lean)
+makes the constant explicit: `K = 10^101` suffices in the power bound
+(`Size.exists_connected_tile_explicit_power_bound`), and `10^100` suffices as
+the coefficient in the binary exponent
+(`Size.exists_connected_tile_explicit_exp_log_bound`). It uses useful primes
+at most `10^40`, digit primes at most `10^164*(n+2)^2`, and parameter budget
+`(n+2)^(10^8*(n+1))`.
+
+[Compiler/PolynomialPrimes.lean](TranslationTiling/Compiler/PolynomialPrimes.lean)
+uses Mathlib's elementary Chebyshev estimate to prove the coarse quadratic
+bound `Nat.nth Nat.Prime k ≤ (8*(k+1))^2`, then supplies admissible encoding
+parameters with polynomially bounded digit primes.
+[Compiler/DirectTestCount.lean](TranslationTiling/Compiler/DirectTestCount.lean)
+counts the actual cycle-test maps, retaining the fixed useful-output domain
+sizes. Stacking and the geometric steps have polynomial cost in the resulting
+parameter budget. These are size bounds for bounded admissible choices, not
+bounds on the original compiler's least-encoded-certificate search. The new
+statements and their supporting lemmas are included in the axiom audit.
+
+For `n = 1`,
+[Compiler/ExplicitOneBound.lean](TranslationTiling/Compiler/ExplicitOneBound.lean)
+proves the explicit bound `2^(10^100)` cubes, including connectedness,
+nonemptiness, and both tilability directions
+(`Size.exists_connected_tile_one_explicit_bound`).
+[Compiler/SmallOneParameters.lean](TranslationTiling/Compiler/SmallOneParameters.lean)
+bounds the useful primes by `10^40` and digit primes by `10^164`.
+The resulting parameter budget is `2^(10^8)` and the equation count is at most
+`2^(10^98)`. This specializes the full reduction without deciding the
+one-tile Wang problem separately, and ignores duplicate input entries.
+
+### Earlier numerical bounds
+
 [Compiler/SimpleSizeBound.lean](TranslationTiling/Compiler/SimpleSizeBound.lean)
-proves the simplified corollary: for `n` distinct Wang tiles, an equivalent
+proves an earlier fully numerical corollary: for `n` distinct Wang tiles, an equivalent
 nonempty, face-connected polycube has at most
 
 ```text
@@ -70,12 +117,8 @@ and both tilability directions. The proof uses bounded admissible construction
 choices, leaving the original compiler unchanged. These results are included
 in the axiom audit.
 
-For `n = 1`, `Size.explicitCubeBound_one_le` sharpens the construction bound to
-`2^(2^(10^29))` cubes. `Size.exists_connected_tile_one_bound` gives the connected,
-nonempty, tilability-equivalent polycube whenever `T.toFinset.card = 1` (so
-duplicate input entries are harmless). This specializes the arithmetic budgets
-and retains the actual channel count; it does not bypass the construction by
-deciding the one-tile Wang problem separately.
+The earlier one-tile bound `2^(2^(10^29))` remains available as
+`Size.exists_connected_tile_one_bound` in the same file.
 
 <details>
 <summary>Detailed arithmetic bound used in the proof</summary>

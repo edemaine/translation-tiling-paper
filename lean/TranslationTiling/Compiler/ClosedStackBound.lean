@@ -38,19 +38,24 @@ theorem partition_at_prime (s q : ℕ) (hs : 0 < s) (hq : q.Prime)
 def stackCap (b : ℕ) : ℕ := 2 * (8 * (2 ^ supportVolume b) ^ 5 + finiteCap b + 3)
 def modulusCap (b : ℕ) : ℕ := finiteCap b * stackCap b
 
+/-- Polynomial dependence on an independent bound for the number of equations. -/
+def boundedModulusCap (b s : ℕ) : ℕ :=
+  finiteCap b * (2 * (8 * s ^ 5 + finiteCap b + 3))
+
 /-- Consolidation with an explicit upper bound on the stacking prime, rather
 than an unbounded search through encoded certificates. -/
-theorem exists_bounded_cyclic_tile {T : LeanWang.TileSet} {E : EncodingParameters T}
-    {b : ℕ} (hb : ParameterBudget E b) :
-    ∃ m : ℕ, 0 < m ∧ m ≤ modulusCap b ∧
+theorem exists_cyclic_tile_of_card_le {T : LeanWang.TileSet} {E : EncodingParameters T}
+    {b : ℕ} (hb : ParameterBudget E b) (sCap : ℕ)
+    (hcount : (testTiles E).card ≤ sCap) :
+    ∃ m : ℕ, 0 < m ∧ m ≤ boundedModulusCap b sCap ∧
       ∃ F : Finset (Plane × ZMod m), F.Nonempty ∧
         (LeanWang.TilesPlane T ↔ ∃ A, Tiles F A) ∧
         ∀ f ∈ F, f.1.1.natAbs ≤ horizontalCap b ∧ f.1.2.natAbs ≤ horizontalCap b := by
   let s := Fintype.card (TestIndex E)
   have hs : 0 < s := Fintype.card_pos
-  have hsbound : s ≤ 2 ^ supportVolume b := by
-    simpa only [s, TestIndex, Fintype.card_coe] using testTiles_card_le hb
-  let threshold := 8 * (2 ^ supportVolume b) ^ 5 + finiteCap b + 3
+  have hsbound : s ≤ sCap := by
+    simpa only [s, TestIndex, Fintype.card_coe] using hcount
+  let threshold := 8 * sCap ^ 5 + finiteCap b + 3
   obtain ⟨q, hq, hqlarge, hqbound⟩ := Nat.bertrand threshold (by dsimp [threshold]; omega)
   have hlarge : E.cyclicOrder < q := by
     have h := cyclicOrder_le hb
@@ -80,7 +85,7 @@ theorem exists_bounded_cyclic_tile {T : LeanWang.TileSet} {E : EncodingParameter
         ((AddEquiv.prodCongr (finiteFactorEquiv E) (AddEquiv.refl (ZMod q))).trans
           (ZMod.chineseRemainder hcop).toAddEquiv.symm))
   refine ⟨E.cyclicOrder * q, Nat.mul_pos E.cyclicOrder_pos hq.pos,
-    Nat.mul_le_mul (cyclicOrder_le hb) hqbound,
+    (by simpa only [boundedModulusCap] using Nat.mul_le_mul (cyclicOrder_le hb) hqbound),
     (Stacking.stack Fs Es).image ec, hnonempty.image ec, ?_, ?_⟩
   · have hsys : (∃ A : Set (Ambient E), Solves E A) ↔
         ∃ A : Set (Ambient E), ∀ i, Stacking.Covers (Fs i) A := by
@@ -97,6 +102,15 @@ theorem exists_bounded_cyclic_tile {T : LeanWang.TileSet} {E : EncodingParameter
     obtain ⟨g, hg, rfl⟩ := Finset.mem_image.mp hf
     obtain ⟨i, hi, _⟩ := Stacking.mem_stack.mp hg
     exact testTile_horizontal_bound hb (ei.symm i).property hi
+
+/-- The earlier powerset-based estimate remains available as a corollary. -/
+theorem exists_bounded_cyclic_tile {T : LeanWang.TileSet} {E : EncodingParameters T}
+    {b : ℕ} (hb : ParameterBudget E b) :
+    ∃ m : ℕ, 0 < m ∧ m ≤ modulusCap b ∧
+      ∃ F : Finset (Plane × ZMod m), F.Nonempty ∧
+        (LeanWang.TilesPlane T ↔ ∃ A, Tiles F A) ∧
+        ∀ f ∈ F, f.1.1.natAbs ≤ horizontalCap b ∧ f.1.2.natAbs ≤ horizontalCap b := by
+  exact exists_cyclic_tile_of_card_le hb _ (testTiles_card_le hb)
 
 end
 end TranslationTiling.Compiler.Size
