@@ -2216,15 +2216,16 @@ do not assert a polynomial three-dimensional construction.
 
 ## Why the Dimension Is Optimal
 
-: proposition @=prop:planar
+: proposition[Bhattacharya {\cite[Corollary~1.2]{Bhattacharya}}, Greenfeld--Tao {\cite[Corollary~1.6]{GTStructure}}] @=prop:planar
   Given a finite nonempty $F\subset\Z^2$, it is decidable whether
   $F$ tiles $\Z^2$ by translations.
 
 : proof
-  Bhattacharya proved that every such prototile admitting a tiling also
-  admits a tiling invariant under a finite-index subgroup of $\Z^2$
-  [[Bhattacharya]].  Every finite-index subgroup contains $m\Z^2$
-  for some positive integer $m$.
+  Bhattacharya \cite[Theorem~1.1]{Bhattacharya} proved that every such prototile
+  admitting a tiling also admits a tiling invariant under a finite-index
+  subgroup of $\Z^2$, extending Beauquier and Nivat's earlier result
+  for simply connected polyominoes [[BN91]].  Every finite-index subgroup
+  contains $m\Z^2$ for some positive integer $m$.
   Run two searches in parallel.  The first enumerates $m$ and all
   Boolean assignments on $(\Cyc m)^2$, checking the periodic versions
   of \eqref{eq:boolean-tiling}.  It halts if a periodic tiling exists.
@@ -2232,6 +2233,8 @@ do not assert a polynomial three-dimensional construction.
   the membership argument.  It halts if no tiling exists.
   The periodicity theorem ensures that exactly one search eventually
   halts, so this is a decision algorithm.
+  Greenfeld and Tao \cite[Corollary~1.6]{GTStructure} later gave a
+  quantitative version with an explicit bound on the running time.
   Planar periodicity is
   \leanref{Proofs/PlanarPeriodicity.lean}{planarPeriodicity_proved};
   the two searches are combined in

@@ -172,7 +172,7 @@ In 3D, the first undecidability result used 6 prototiles
 and the current record is 2 [[Kim]];
 we improve to the minimum possible number of 3D prototiles, 1.
 3D is also the minimum dimension for undecidability with 1 prototile,
-given known algorithms for 2D [[Bhattacharya,GTStructure]].
+given known algorithms for 2D [[BN91,Bhattacharya,GTStructure]].
 %even if we allow disconnected polyominoes.
 
 : table[tbp]
@@ -189,7 +189,7 @@ given known algorithms for 2D [[Bhattacharya,GTStructure]].
     Prototiles & 1D & 2D & 3D & $d$D ($d\geq4$) \\
     \midrule
     \rowcolor{bggreen}\cellcolor{white}%
-    1 & R ($\downarrow$) & R [[Bhattacharya,GTStructure]] & \cellcolor{bgblue}co-RE-c (Thm.~\ref{thm:undecidability})$^{*}$ & \cellcolor{bgblue}co-RE-c ($\leftarrow$)$^{*}$ \\
+    1 & R ($\downarrow$) & R [[BN91,Bhattacharya,GTStructure]] & \cellcolor{bgblue}co-RE-c (Thm.~\ref{thm:undecidability})$^{*}$ & \cellcolor{bgblue}co-RE-c ($\leftarrow$)$^{*}$ \\
     \rowcolor{bgred}\cellcolor{white}%
     2 & \cellcolor{bggreen}R ($\downarrow$) & \cellcolor{bgyellow}OPEN & co-RE-c [[Kim]] ($\uparrow$)$^{*}$ & co-RE-c ($\uparrow$)$^{*}$ \\
     \rowcolor{bgred}\cellcolor{white}%
