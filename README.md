@@ -35,6 +35,8 @@ dimensions is decidable.
 - [paper.bib](paper.bib): bibliography with version-specific source links.
 - [verification/check_activation.py](verification/check_activation.py): finite algebra checks.
 - [figures/generate_connected.py](figures/generate_connected.py): exact connectedness-example renderer.
+- [figures/generate_translation_tiling.py](figures/generate_translation_tiling.py): separate polycube and tiling-patch SVGs.
+- [figures/generate_translation_tiling_experiments.py](figures/generate_translation_tiling_experiments.py): optional wide-to-packed spacing studies with 65, 153, or 243 tiles, with a local comparison page in `figures/translation-tiling-experiments/`.
 - [figures/](figures/): checked-in PDF figures needed to build the paper.
 
 Build with [Texlish](https://texlish.org/) 0.3.0 or later,
@@ -68,9 +70,10 @@ the soundness theorem requires primes greater than 200. The connectedness
 figure shows the final construction step on a small disconnected input,
 rather than the output of the full reduction.
 
-The three figure PDFs in `figures/` are checked in. `make figures` regenerates
-these assets; include any updated PDFs when committing changes to the renderer.
-The renderer uses only the Python standard library and
+The five figure PDFs in `figures/` are checked in. `make figures` regenerates
+these assets (using Inkscape to export the two tiling SVG panels to PDF);
+include any updated PDFs when committing changes to the renderers.
+The connectedness renderer uses only the Python standard library and
 checks the cube counts, distinct residues, connectedness, and contact
 between the two replacement pieces before writing vector PDFs.
 

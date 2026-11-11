@@ -35,7 +35,6 @@
   tabularx
   graphicx
   subcaption
-  flafter
   placeins
   xcolor: table
   tikz
@@ -149,8 +148,24 @@
 Given $k$ finite subsets of $\Z^d$ (***prototiles***),
 can (infinitely many) copies of those subsets be *translated*
 to cover all of $\Z^d$ without overlaps?
+(Refer to @fig:tiling-decision.)
 For which values of $k$ and $d$ is this problem decidable?
 In this paper, we prove undecidability for $k=1$ and $d=3$.
+
+: figure[tbp]
+  \centering
+  : tikzpicture[>=Latex]
+    \node[inner sep=0pt,outer sep=0pt] (prototile)
+      {\includegraphics[height=3.3cm]{figures/translation-tiling-prototile.pdf}};
+    \node[inner sep=0pt,outer sep=0pt,right=2.1cm of prototile] (tiling)
+      {\includegraphics[height=5.2cm]{figures/translation-tiling-patch.pdf}};
+    \draw[->,semithick]
+      ([xshift=3mm]prototile.east) -- node[above] {$?$} ([xshift=-3mm]tiling.west);
+  \caption:
+    The tiling-by-translation decision problem:
+    given $k$ shapes, can translated copies tile $d$D space?
+    Here, $k=1$ and $d=3$, the version solved in this paper.
+  \label{fig:tiling-decision}
 
 The decidability question has a long history, summarized in @tab:related.
 The first result is Golomb's implementation [[Golomb]]
@@ -175,7 +190,7 @@ we improve to the minimum possible number of 3D prototiles, 1.
 given known algorithms for 2D [[BN91,Bhattacharya,GTStructure]].
 %even if we allow disconnected polyominoes.
 
-: table[tbp]
+: table[tp]
   \centering
   \small
   \renewcommand{\arraystretch}{1.3}

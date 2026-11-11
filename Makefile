@@ -1,7 +1,9 @@
 .PHONY: all figures website
 PYTHON ?= python3
 PANDOC ?= pandoc
-FIGURE_PDFS = figures/kim-input.pdf figures/kim-shell.pdf figures/kim-connected.pdf
+INKSCAPE ?= inkscape
+FIGURE_PDFS = figures/kim-input.pdf figures/kim-shell.pdf figures/kim-connected.pdf \
+              figures/translation-tiling-prototile.pdf figures/translation-tiling-patch.pdf
 
 all: paper.pdf slop.pdf
 
@@ -12,6 +14,9 @@ website: paper.pdf slop.pdf website/index.md website/style.css
 
 figures:
 	$(PYTHON) figures/generate_connected.py
+	$(PYTHON) figures/generate_translation_tiling.py
+	$(INKSCAPE) figures/translation-tiling-prototile.svg -o figures/translation-tiling-prototile.pdf
+	$(INKSCAPE) figures/translation-tiling-patch.svg -o figures/translation-tiling-patch.pdf
 
 paper.tex slop.tex: %.tex: %.texlish
 	texlish $<

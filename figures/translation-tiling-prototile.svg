@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="203.068" height="217.000" viewBox="0 0 203.068 217.000" role="img" aria-labelledby="translation-tiling-prototile-title translation-tiling-prototile-desc">
+<!-- Regenerate from the repository root:
+     python figures/generate_translation_tiling.py
+     No command-line flags are required; figure parameters are defined in the script.
+     Export this panel for LaTeX:
+     inkscape figures/translation-tiling-prototile.svg -o figures/translation-tiling-prototile.pdf
+-->
+<title id="translation-tiling-prototile-title">A seven-cube cross</title>
+<desc id="translation-tiling-prototile-desc">A central cube and its six face-neighbors.</desc>
+<defs>
+<mask id="translation-tiling-prototile-visible-0" maskUnits="userSpaceOnUse" x="-4" y="-4" width="8" height="8"><rect x="-4" y="-4" width="8" height="8" fill="white"/>
+<polygon points="-0.159064,-0.777505 0.688984,-0.512545 1.218903,-0.936569 0.370855,-1.201529" fill="black"/>
+<polygon points="0.159064,1.643530 0.688984,1.219506 0.688984,0.353480 0.159064,0.777505" fill="black"/>
+<polygon points="-1.537032,-0.618440 -0.688984,-0.353480 -0.159064,-0.777505 -1.007113,-1.042464" fill="black"/>
+<polygon points="-0.688984,1.378570 0.159064,1.643530 0.159064,0.777505 -0.688984,0.512545" fill="black"/>
+<polygon points="-1.537032,0.247585 -0.688984,0.512545 -0.688984,-0.353480 -1.537032,-0.618440" fill="black"/>
+<polygon points="1.007113,1.042464 1.537032,0.618440 1.537032,-0.247585 1.007113,0.176439" fill="black"/>
+<polygon points="0.159064,-0.088521 1.007113,0.176439 1.537032,-0.247585 0.688984,-0.512545" fill="black"/>
+<polygon points="0.159064,-0.088521 0.688984,-0.512545 0.688984,-1.378570 0.159064,-0.954546" fill="black"/>
+<polygon points="-0.688984,-1.219506 0.159064,-0.954546 0.688984,-1.378570 -0.159064,-1.643530" fill="black"/>
+<polygon points="0.159064,0.777505 1.007113,1.042464 1.007113,0.176439 0.159064,-0.088521" fill="black"/>
+<polygon points="-0.688984,-0.353480 0.159064,-0.088521 0.159064,-0.954546 -0.688984,-1.219506" fill="black"/>
+<polygon points="-0.370855,1.201529 0.159064,0.777505 0.159064,-0.088521 -0.370855,0.335503" fill="black"/>
+<polygon points="-1.218903,0.070544 -0.370855,0.335503 0.159064,-0.088521 -0.688984,-0.353480" fill="black"/>
+<polygon points="-1.218903,0.936569 -0.370855,1.201529 -0.370855,0.335503 -1.218903,0.070544" fill="black"/>
+</mask>
+<mask id="translation-tiling-prototile-visible-1" maskUnits="userSpaceOnUse" x="-4" y="-4" width="8" height="8"><rect x="-4" y="-4" width="8" height="8" fill="white"/>
+<polygon points="0.159064,1.643530 0.688984,1.219506 0.688984,0.353480 0.159064,0.777505" fill="black"/>
+<polygon points="-1.537032,-0.618440 -0.688984,-0.353480 -0.159064,-0.777505 -1.007113,-1.042464" fill="black"/>
+<polygon points="-0.688984,1.378570 0.159064,1.643530 0.159064,0.777505 -0.688984,0.512545" fill="black"/>
+<polygon points="-1.537032,0.247585 -0.688984,0.512545 -0.688984,-0.353480 -1.537032,-0.618440" fill="black"/>
+<polygon points="1.007113,1.042464 1.537032,0.618440 1.537032,-0.247585 1.007113,0.176439" fill="black"/>
+<polygon points="0.159064,-0.088521 1.007113,0.176439 1.537032,-0.247585 0.688984,-0.512545" fill="black"/>
+<polygon points="0.159064,-0.088521 0.688984,-0.512545 0.688984,-1.378570 0.159064,-0.954546" fill="black"/>
+<polygon points="-0.688984,-1.219506 0.159064,-0.954546 0.688984,-1.378570 -0.159064,-1.643530" fill="black"/>
+<polygon points="0.159064,0.777505 1.007113,1.042464 1.007113,0.176439 0.159064,-0.088521" fill="black"/>
+<polygon points="-0.688984,-0.353480 0.159064,-0.088521 0.159064,-0.954546 -0.688984,-1.219506" fill="black"/>
+<polygon points="-0.370855,1.201529 0.159064,0.777505 0.159064,-0.088521 -0.370855,0.335503" fill="black"/>
+<polygon points="-1.218903,0.070544 -0.370855,0.335503 0.159064,-0.088521 -0.688984,-0.353480" fill="black"/>
+<polygon points="-1.218903,0.936569 -0.370855,1.201529 -0.370855,0.335503 -1.218903,0.070544" fill="black"/>
+</mask>
+<mask id="translation-tiling-prototile-visible-2" maskUnits="userSpaceOnUse" x="-4" y="-4" width="8" height="8"><rect x="-4" y="-4" width="8" height="8" fill="white"/>
+<polygon points="-1.537032,-0.618440 -0.688984,-0.353480 -0.159064,-0.777505 -1.007113,-1.042464" fill="black"/>
+<polygon points="-0.688984,1.378570 0.159064,1.643530 0.159064,0.777505 -0.688984,0.512545" fill="black"/>
+<polygon points="-1.537032,0.247585 -0.688984,0.512545 -0.688984,-0.353480 -1.537032,-0.618440" fill="black"/>
+<polygon points="1.007113,1.042464 1.537032,0.618440 1.537032,-0.247585 1.007113,0.176439" fill="black"/>
+<polygon points="0.159064,-0.088521 1.007113,0.176439 1.537032,-0.247585 0.688984,-0.512545" fill="black"/>
+<polygon points="0.159064,-0.088521 0.688984,-0.512545 0.688984,-1.378570 0.159064,-0.954546" fill="black"/>
+<polygon points="-0.688984,-1.219506 0.159064,-0.954546 0.688984,-1.378570 -0.159064,-1.643530" fill="black"/>
+<polygon points="0.159064,0.777505 1.007113,1.042464 1.007113,0.176439 0.159064,-0.088521" fill="black"/>
+<polygon points="-0.688984,-0.353480 0.159064,-0.088521 0.159064,-0.954546 -0.688984,-1.219506" fill="black"/>
+<polygon points="-0.370855,1.201529 0.159064,0.777505 0.159064,-0.088521 -0.370855,0.335503" fill="black"/>
+<polygon points="-1.218903,0.070544 -0.370855,0.335503 0.159064,-0.088521 -0.688984,-0.353480" fill="black"/>
+<polygon points="-1.218903,0.936569 -0.370855,1.201529 -0.370855,0.335503 -1.218903,0.070544" fill="black"/>
+</mask>
+<mask id="translation-tiling-prototile-visible-3" maskUnits="userSpaceOnUse" x="-4" y="-4" width="8" height="8"><rect x="-4" y="-4" width="8" height="8" fill="white"/>
+<polygon points="-0.688984,1.378570 0.159064,1.643530 0.159064,0.777505 -0.688984,0.512545" fill="black"/>
+<polygon points="-1.537032,0.247585 -0.688984,0.512545 -0.688984,-0.353480 -1.537032,-0.618440" fill="black"/>
+<polygon points="1.007113,1.042464 1.537032,0.618440 1.537032,-0.247585 1.007113,0.176439" fill="black"/>
+<polygon points="0.159064,-0.088521 1.007113,0.176439 1.537032,-0.247585 0.688984,-0.512545" fill="black"/>
+<polygon points="0.159064,-0.088521 0.688984,-0.512545 0.688984,-1.378570 0.159064,-0.954546" fill="black"/>
+<polygon points="-0.688984,-1.219506 0.159064,-0.954546 0.688984,-1.378570 -0.159064,-1.643530" fill="black"/>
+<polygon points="0.159064,0.777505 1.007113,1.042464 1.007113,0.176439 0.159064,-0.088521" fill="black"/>
+<polygon points="-0.688984,-0.353480 0.159064,-0.088521 0.159064,-0.954546 -0.688984,-1.219506" fill="black"/>
+<polygon points="-0.370855,1.201529 0.159064,0.777505 0.159064,-0.088521 -0.370855,0.335503" fill="black"/>
+<polygon points="-1.218903,0.070544 -0.370855,0.335503 0.159064,-0.088521 -0.688984,-0.353480" fill="black"/>
+<polygon points="-1.218903,0.936569 -0.370855,1.201529 -0.370855,0.335503 -1.218903,0.070544" fill="black"/>
+</mask>
+<mask id="translation-tiling-prototile-visible-4" maskUnits="userSpaceOnUse" x="-4" y="-4" width="8" height="8"><rect x="-4" y="-4" width="8" height="8" fill="white"/>
+<polygon points="-1.537032,0.247585 -0.688984,0.512545 -0.688984,-0.353480 -1.537032,-0.618440" fill="black"/>
+<polygon points="1.007113,1.042464 1.537032,0.618440 1.537032,-0.247585 1.007113,0.176439" fill="black"/>
+<polygon points="0.159064,-0.088521 1.007113,0.176439 1.537032,-0.247585 0.688984,-0.512545" fill="black"/>
+<polygon points="0.159064,-0.088521 0.688984,-0.512545 0.688984,-1.378570 0.159064,-0.954546" fill="black"/>
+<polygon points="-0.688984,-1.219506 0.159064,-0.954546 0.688984,-1.378570 -0.159064,-1.643530" fill="black"/>
+<polygon points="0.159064,0.777505 1.007113,1.042464 1.007113,0.176439 0.159064,-0.088521" fill="black"/>
+<polygon points="-0.688984,-0.353480 0.159064,-0.088521 0.159064,-0.954546 -0.688984,-1.219506" fill="black"/>
+<polygon points="-0.370855,1.201529 0.159064,0.777505 0.159064,-0.088521 -0.370855,0.335503" fill="black"/>
+<polygon points="-1.218903,0.070544 -0.370855,0.335503 0.159064,-0.088521 -0.688984,-0.353480" fill="black"/>
+<polygon points="-1.218903,0.936569 -0.370855,1.201529 -0.370855,0.335503 -1.218903,0.070544" fill="black"/>
+</mask>
+<mask id="translation-tiling-prototile-visible-5" maskUnits="userSpaceOnUse" x="-4" y="-4" width="8" height="8"><rect x="-4" y="-4" width="8" height="8" fill="white"/>
+<polygon points="1.007113,1.042464 1.537032,0.618440 1.537032,-0.247585 1.007113,0.176439" fill="black"/>
+<polygon points="0.159064,-0.088521 1.007113,0.176439 1.537032,-0.247585 0.688984,-0.512545" fill="black"/>
+<polygon points="0.159064,-0.088521 0.688984,-0.512545 0.688984,-1.378570 0.159064,-0.954546" fill="black"/>
+<polygon points="-0.688984,-1.219506 0.159064,-0.954546 0.688984,-1.378570 -0.159064,-1.643530" fill="black"/>
+<polygon points="0.159064,0.777505 1.007113,1.042464 1.007113,0.176439 0.159064,-0.088521" fill="black"/>
+<polygon points="-0.688984,-0.353480 0.159064,-0.088521 0.159064,-0.954546 -0.688984,-1.219506" fill="black"/>
+<polygon points="-0.370855,1.201529 0.159064,0.777505 0.159064,-0.088521 -0.370855,0.335503" fill="black"/>
+<polygon points="-1.218903,0.070544 -0.370855,0.335503 0.159064,-0.088521 -0.688984,-0.353480" fill="black"/>
+<polygon points="-1.218903,0.936569 -0.370855,1.201529 -0.370855,0.335503 -1.218903,0.070544" fill="black"/>
+</mask>
+<mask id="translation-tiling-prototile-visible-6" maskUnits="userSpaceOnUse" x="-4" y="-4" width="8" height="8"><rect x="-4" y="-4" width="8" height="8" fill="white"/>
+<polygon points="0.159064,-0.088521 1.007113,0.176439 1.537032,-0.247585 0.688984,-0.512545" fill="black"/>
+<polygon points="0.159064,-0.088521 0.688984,-0.512545 0.688984,-1.378570 0.159064,-0.954546" fill="black"/>
+<polygon points="-0.688984,-1.219506 0.159064,-0.954546 0.688984,-1.378570 -0.159064,-1.643530" fill="black"/>
+<polygon points="0.159064,0.777505 1.007113,1.042464 1.007113,0.176439 0.159064,-0.088521" fill="black"/>
+<polygon points="-0.688984,-0.353480 0.159064,-0.088521 0.159064,-0.954546 -0.688984,-1.219506" fill="black"/>
+<polygon points="-0.370855,1.201529 0.159064,0.777505 0.159064,-0.088521 -0.370855,0.335503" fill="black"/>
+<polygon points="-1.218903,0.070544 -0.370855,0.335503 0.159064,-0.088521 -0.688984,-0.353480" fill="black"/>
+<polygon points="-1.218903,0.936569 -0.370855,1.201529 -0.370855,0.335503 -1.218903,0.070544" fill="black"/>
+</mask>
+<mask id="translation-tiling-prototile-visible-7" maskUnits="userSpaceOnUse" x="-4" y="-4" width="8" height="8"><rect x="-4" y="-4" width="8" height="8" fill="white"/>
+<polygon points="0.159064,-0.088521 0.688984,-0.512545 0.688984,-1.378570 0.159064,-0.954546" fill="black"/>
+<polygon points="-0.688984,-1.219506 0.159064,-0.954546 0.688984,-1.378570 -0.159064,-1.643530" fill="black"/>
+<polygon points="0.159064,0.777505 1.007113,1.042464 1.007113,0.176439 0.159064,-0.088521" fill="black"/>
+<polygon points="-0.688984,-0.353480 0.159064,-0.088521 0.159064,-0.954546 -0.688984,-1.219506" fill="black"/>
+<polygon points="-0.370855,1.201529 0.159064,0.777505 0.159064,-0.088521 -0.370855,0.335503" fill="black"/>
+<polygon points="-1.218903,0.070544 -0.370855,0.335503 0.159064,-0.088521 -0.688984,-0.353480" fill="black"/>
+<polygon points="-1.218903,0.936569 -0.370855,1.201529 -0.370855,0.335503 -1.218903,0.070544" fill="black"/>
+</mask>
+<mask id="translation-tiling-prototile-visible-8" maskUnits="userSpaceOnUse" x="-4" y="-4" width="8" height="8"><rect x="-4" y="-4" width="8" height="8" fill="white"/>
+<polygon points="-0.688984,-1.219506 0.159064,-0.954546 0.688984,-1.378570 -0.159064,-1.643530" fill="black"/>
+<polygon points="0.159064,0.777505 1.007113,1.042464 1.007113,0.176439 0.159064,-0.088521" fill="black"/>
+<polygon points="-0.688984,-0.353480 0.159064,-0.088521 0.159064,-0.954546 -0.688984,-1.219506" fill="black"/>
+<polygon points="-0.370855,1.201529 0.159064,0.777505 0.159064,-0.088521 -0.370855,0.335503" fill="black"/>
+<polygon points="-1.218903,0.070544 -0.370855,0.335503 0.159064,-0.088521 -0.688984,-0.353480" fill="black"/>
+<polygon points="-1.218903,0.936569 -0.370855,1.201529 -0.370855,0.335503 -1.218903,0.070544" fill="black"/>
+</mask>
+<mask id="translation-tiling-prototile-visible-9" maskUnits="userSpaceOnUse" x="-4" y="-4" width="8" height="8"><rect x="-4" y="-4" width="8" height="8" fill="white"/>
+<polygon points="0.159064,0.777505 1.007113,1.042464 1.007113,0.176439 0.159064,-0.088521" fill="black"/>
+<polygon points="-0.688984,-0.353480 0.159064,-0.088521 0.159064,-0.954546 -0.688984,-1.219506" fill="black"/>
+<polygon points="-0.370855,1.201529 0.159064,0.777505 0.159064,-0.088521 -0.370855,0.335503" fill="black"/>
+<polygon points="-1.218903,0.070544 -0.370855,0.335503 0.159064,-0.088521 -0.688984,-0.353480" fill="black"/>
+<polygon points="-1.218903,0.936569 -0.370855,1.201529 -0.370855,0.335503 -1.218903,0.070544" fill="black"/>
+</mask>
+<mask id="translation-tiling-prototile-visible-10" maskUnits="userSpaceOnUse" x="-4" y="-4" width="8" height="8"><rect x="-4" y="-4" width="8" height="8" fill="white"/>
+<polygon points="-0.688984,-0.353480 0.159064,-0.088521 0.159064,-0.954546 -0.688984,-1.219506" fill="black"/>
+<polygon points="-0.370855,1.201529 0.159064,0.777505 0.159064,-0.088521 -0.370855,0.335503" fill="black"/>
+<polygon points="-1.218903,0.070544 -0.370855,0.335503 0.159064,-0.088521 -0.688984,-0.353480" fill="black"/>
+<polygon points="-1.218903,0.936569 -0.370855,1.201529 -0.370855,0.335503 -1.218903,0.070544" fill="black"/>
+</mask>
+<mask id="translation-tiling-prototile-visible-11" maskUnits="userSpaceOnUse" x="-4" y="-4" width="8" height="8"><rect x="-4" y="-4" width="8" height="8" fill="white"/>
+<polygon points="-0.370855,1.201529 0.159064,0.777505 0.159064,-0.088521 -0.370855,0.335503" fill="black"/>
+<polygon points="-1.218903,0.070544 -0.370855,0.335503 0.159064,-0.088521 -0.688984,-0.353480" fill="black"/>
+<polygon points="-1.218903,0.936569 -0.370855,1.201529 -0.370855,0.335503 -1.218903,0.070544" fill="black"/>
+</mask>
+<mask id="translation-tiling-prototile-visible-12" maskUnits="userSpaceOnUse" x="-4" y="-4" width="8" height="8"><rect x="-4" y="-4" width="8" height="8" fill="white"/>
+<polygon points="-1.218903,0.070544 -0.370855,0.335503 0.159064,-0.088521 -0.688984,-0.353480" fill="black"/>
+<polygon points="-1.218903,0.936569 -0.370855,1.201529 -0.370855,0.335503 -1.218903,0.070544" fill="black"/>
+</mask>
+<mask id="translation-tiling-prototile-visible-13" maskUnits="userSpaceOnUse" x="-4" y="-4" width="8" height="8"><rect x="-4" y="-4" width="8" height="8" fill="white"/>
+<polygon points="-1.218903,0.936569 -0.370855,1.201529 -0.370855,0.335503 -1.218903,0.070544" fill="black"/>
+</mask>
+<mask id="translation-tiling-prototile-visible-14" maskUnits="userSpaceOnUse" x="-4" y="-4" width="8" height="8"><rect x="-4" y="-4" width="8" height="8" fill="white"/>
+</mask>
+</defs>
+<g id="translation-tiling-prototile" stroke-linejoin="round" stroke-width="0.01223">
+<g transform="translate(101.534 108.500) scale(65.407996)"><polygon points="0.688984,0.353480 1.218903,-0.070544 1.218903,-0.936569 0.688984,-0.512545" fill="#216687" fill-opacity="0.980" stroke="#164359" stroke-opacity="1.000" mask="url(#translation-tiling-prototile-visible-0)" data-center="0,0,0"/></g>
+<g transform="translate(101.534 108.500) scale(65.407996)"><polygon points="-0.159064,-0.777505 0.688984,-0.512545 1.218903,-0.936569 0.370855,-1.201529" fill="#297fa9" fill-opacity="0.980" stroke="#1b5470" stroke-opacity="1.000" mask="url(#translation-tiling-prototile-visible-1)" data-center="0,0,0"/></g>
+<g transform="translate(101.534 108.500) scale(65.407996)"><polygon points="0.159064,1.643530 0.688984,1.219506 0.688984,0.353480 0.159064,0.777505" fill="#216687" fill-opacity="0.980" stroke="#164359" stroke-opacity="1.000" mask="url(#translation-tiling-prototile-visible-2)" data-center="0,0,0"/></g>
+<g transform="translate(101.534 108.500) scale(65.407996)"><polygon points="-1.537032,-0.618440 -0.688984,-0.353480 -0.159064,-0.777505 -1.007113,-1.042464" fill="#297fa9" fill-opacity="0.980" stroke="#1b5470" stroke-opacity="1.000" mask="url(#translation-tiling-prototile-visible-3)" data-center="0,0,0"/></g>
+<g transform="translate(101.534 108.500) scale(65.407996)"><polygon points="-0.688984,1.378570 0.159064,1.643530 0.159064,0.777505 -0.688984,0.512545" fill="#1b5571" fill-opacity="0.980" stroke="#12384b" stroke-opacity="1.000" mask="url(#translation-tiling-prototile-visible-4)" data-center="0,0,0"/></g>
+<g transform="translate(101.534 108.500) scale(65.407996)"><polygon points="-1.537032,0.247585 -0.688984,0.512545 -0.688984,-0.353480 -1.537032,-0.618440" fill="#1b5571" fill-opacity="0.980" stroke="#12384b" stroke-opacity="1.000" mask="url(#translation-tiling-prototile-visible-5)" data-center="0,0,0"/></g>
+<g transform="translate(101.534 108.500) scale(65.407996)"><polygon points="1.007113,1.042464 1.537032,0.618440 1.537032,-0.247585 1.007113,0.176439" fill="#216687" fill-opacity="0.980" stroke="#164359" stroke-opacity="1.000" mask="url(#translation-tiling-prototile-visible-6)" data-center="0,0,0"/></g>
+<g transform="translate(101.534 108.500) scale(65.407996)"><polygon points="0.159064,-0.088521 1.007113,0.176439 1.537032,-0.247585 0.688984,-0.512545" fill="#297fa9" fill-opacity="0.980" stroke="#1b5470" stroke-opacity="1.000" mask="url(#translation-tiling-prototile-visible-7)" data-center="0,0,0"/></g>
+<g transform="translate(101.534 108.500) scale(65.407996)"><polygon points="0.159064,-0.088521 0.688984,-0.512545 0.688984,-1.378570 0.159064,-0.954546" fill="#216687" fill-opacity="0.980" stroke="#164359" stroke-opacity="1.000" mask="url(#translation-tiling-prototile-visible-8)" data-center="0,0,0"/></g>
+<g transform="translate(101.534 108.500) scale(65.407996)"><polygon points="-0.688984,-1.219506 0.159064,-0.954546 0.688984,-1.378570 -0.159064,-1.643530" fill="#297fa9" fill-opacity="0.980" stroke="#1b5470" stroke-opacity="1.000" mask="url(#translation-tiling-prototile-visible-9)" data-center="0,0,0"/></g>
+<g transform="translate(101.534 108.500) scale(65.407996)"><polygon points="0.159064,0.777505 1.007113,1.042464 1.007113,0.176439 0.159064,-0.088521" fill="#1b5571" fill-opacity="0.980" stroke="#12384b" stroke-opacity="1.000" mask="url(#translation-tiling-prototile-visible-10)" data-center="0,0,0"/></g>
+<g transform="translate(101.534 108.500) scale(65.407996)"><polygon points="-0.688984,-0.353480 0.159064,-0.088521 0.159064,-0.954546 -0.688984,-1.219506" fill="#1b5571" fill-opacity="0.980" stroke="#12384b" stroke-opacity="1.000" mask="url(#translation-tiling-prototile-visible-11)" data-center="0,0,0"/></g>
+<g transform="translate(101.534 108.500) scale(65.407996)"><polygon points="-0.370855,1.201529 0.159064,0.777505 0.159064,-0.088521 -0.370855,0.335503" fill="#216687" fill-opacity="0.980" stroke="#164359" stroke-opacity="1.000" mask="url(#translation-tiling-prototile-visible-12)" data-center="0,0,0"/></g>
+<g transform="translate(101.534 108.500) scale(65.407996)"><polygon points="-1.218903,0.070544 -0.370855,0.335503 0.159064,-0.088521 -0.688984,-0.353480" fill="#297fa9" fill-opacity="0.980" stroke="#1b5470" stroke-opacity="1.000" mask="url(#translation-tiling-prototile-visible-13)" data-center="0,0,0"/></g>
+<g transform="translate(101.534 108.500) scale(65.407996)"><polygon points="-1.218903,0.936569 -0.370855,1.201529 -0.370855,0.335503 -1.218903,0.070544" fill="#1b5571" fill-opacity="0.980" stroke="#12384b" stroke-opacity="1.000" mask="url(#translation-tiling-prototile-visible-14)" data-center="0,0,0"/></g>
+</g>
+</svg>
