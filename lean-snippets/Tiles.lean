@@ -1,2 +1,2 @@
-def Tiles (P : Prototile) : Prop :=
-  ∃ T : Set Point, ∀ x : Point, ∃! t : Point, t ∈ T ∧ x - t ∈ P
+def Tiles {d : ℕ} (P : Prototile d) : Prop :=
+  ∃ T : Set (Point d), ∀ x : Point d, ∃! t ∈ T, x - t ∈ P

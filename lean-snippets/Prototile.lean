@@ -1,1 +1,1 @@
-abbrev Prototile := List Point
+abbrev Prototile (d : ℕ) := List (Point d)

@@ -1,0 +1,3 @@
+theorem real_tiling_coRE_hard (d : ℕ) (hd : 3 ≤ d)
+  (motions : Set (Motion d)) (hm : translations ⊆ motions) :
+  LeanWang.CoREHard fun P : Prototile d => Connected P ∧ RealTiles P motions := ...

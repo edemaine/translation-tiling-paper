@@ -1,1 +1,1 @@
-abbrev Point := Fin 3 → ℤ
+abbrev Point (d : ℕ) := Fin d → ℤ

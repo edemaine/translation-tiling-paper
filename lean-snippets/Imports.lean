@@ -1,5 +1,9 @@
 import Mathlib.Computability.Halting
 import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
+import Mathlib.Analysis.Normed.Affine.Isometry
+import Mathlib.Analysis.InnerProductSpace.PiL2
+import Mathlib.Geometry.Euclidean.Projection
+import Mathlib.LinearAlgebra.Determinant
 import LeanWang.CoRE
 import LeanWang.Basic
 import TranslationTiling.AbstractBridge

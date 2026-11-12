@@ -1,6 +1,6 @@
 # Lean formalization
 
-The complete computable Wang-to-tile reduction and co-r.e.-completeness in
+The complete computable Wang-to-tile reduction and co-RE-completeness in
 dimension three are proved unconditionally. Its output is a nonempty,
 face-connected tile, tileable exactly when the input Wang tiles tile the plane.
 
@@ -9,15 +9,30 @@ human-readable definitions and main theorem statements used in the paper.
 Its prototiles are lists of points `Fin 3 → ℤ`; connectivity is defined by paths
 of adjacent points, lattice tiling by unique covering translates, and real tiling
 by almost-everywhere unique coverage by translates of the solid body. The
-statements give co-r.e.-completeness for connected prototiles in both `ℤ³`
-and `ℝ³`, and undecidability in both.
+statements give co-RE-completeness for connected prototiles in both `ℤ³`
+and `ℝ³`, and undecidability in both. They also give co-RE-completeness and
+undecidability for arbitrary Euclidean motions, with or without reflections,
+and total computable Wang reductions for translations and for Euclidean
+motions. For the same rotation-resistant output, lattice translations, real
+translations, and Euclidean motions are equivalent, with or without reflections.
+Each reduction theorem includes the quasipolynomial cube bound for the same
+total computable function, with a factor of 64,000 for rotations.
+`RealTiles P motions` takes an explicit set of allowed Euclidean motions.
+The named choices are `allMotions`, `translations`, `translationsAndRotations`,
+and `translationsAndReflections`. Hardness, undecidability, and
+the rigid reduction equivalence hold for any motion set containing all translations.
+All real-space statements use Mathlib's `EuclideanSpace`; motions use its
+`AffineIsometryEquiv`. The comments explain the motion and set-image notation.
 
 [AbstractBridge.lean](TranslationTiling/AbstractBridge.lean) proves these
 statements from the rest of the development, which uses the same model
 `Fin 3 → ℤ` of `ℤ³`. It proves equivalence of the connectivity and lattice/real
-tiling predicates with the project's definitions, and derives co-r.e.-completeness
+tiling predicates with the project's definitions, and derives co-RE-completeness
 and undecidability. The definitions and theorem statements in `Abstract.lean`
 make the claims inspectable; Lean checks the bridge and the underlying proofs.
+The motion bridge also reconciles the abstract's cubes `p + [0,1]³` with the
+rotation construction's centered cubes. Build this interface with
+`lake build TranslationTiling.Abstract` from this directory.
 
 Read [Statements.lean](TranslationTiling/Statements.lean) for the broader public
 interface, including the compiler and dimension-optimality results.
@@ -28,6 +43,38 @@ including `reduction`, `connected_completeness`, `real_completeness`, and
 inputs appear as proved theorems: `sudoku_soundness`, `mss_rigidity`,
 `kim_coset_rigidity`, and `planar_periodicity`. There is no assumed compiler
 certificate or outstanding `Claims` namespace.
+
+## Rotation-Resistant Replacement
+
+The six-key construction is formalized in
+[Rotations/Main.lean](TranslationTiling/Rotations/Main.lean) for grid rotations
+and [Rotations/Euclidean/Main.lean](TranslationTiling/Rotations/Euclidean/Main.lean)
+for arbitrary Euclidean rotations and translations. Both give a computable
+Wang reduction, a face-connected output, co-RE-hardness, and undecidability.
+The Euclidean results cover all proper rotations and also the larger class
+allowing reflections. [EuclideanMembership/EffectiveSystem.lean](TranslationTiling/EuclideanMembership/EffectiveSystem.lean)
+proves co-RE membership for all four motion choices, including arbitrary
+mirror-plane reflections without rotations. It encodes tilings as a computable
+compact system of closed polynomial constraints and semidecides failure using
+finite rational grids with explicit error bounds. Combined with hardness,
+this proves co-RE-completeness for every fixed dimension at least three.
+
+The fixed gadget has 64,000 voxels. Replacing each voxel of an input tile by
+one scaled, translated copy preserves tilability and face-connectivity, with
+exactly a factor of 64,000 in the number of distinct voxels.
+[Rotations/Volume.lean](TranslationTiling/Rotations/Volume.lean) proves these
+cardinalities. The arbitrary-angle proof uses square-neck width to force a
+signed coordinate permutation, a chamber separation argument, and contact
+with the chamber's end wall to force the remaining translation phase.
+[Rotations/Euclidean/GlobalRigidity.lean](TranslationTiling/Rotations/Euclidean/GlobalRigidity.lean)
+proves that every tiling has one common Euclidean frame and origins on its
+40ℤ³ grid. The tiling model permits arbitrary orthogonal linear isometries,
+real offsets, and shared boundaries through almost-everywhere unique coverage;
+face-to-face contacts and a common initial grid are not assumed.
+
+The geometric proof and reduction are described in the grid-rotation and
+arbitrary-Euclidean-rotation sections of [slop.texlish](../slop.texlish).
+All these main results are included in the axiom audit.
 
 ## Build
 
@@ -301,8 +348,8 @@ proved by the pinned Wang dependency, using its independent Kari–Hooper certif
 | --- | --- |
 | Exact coverage, duplicate/order invariance, additive transport | `Proofs/Basic.lean` |
 | Compactness and finite obstruction characterization | `Proofs/Compactness.lean` |
-| Primitive-recursive finite satisfiability test; co-r.e. membership in every fixed dimension | `Proofs/FiniteSearch.lean` |
-| Primitive-recursive finite cut test, computable face-connectivity, and connected co-r.e. membership in every fixed dimension | `Proofs/FiniteConnectivity.lean` |
+| Primitive-recursive finite satisfiability test; co-RE membership in every fixed dimension | `Proofs/FiniteSearch.lean` |
+| Primitive-recursive finite cut test, computable face-connectivity, and connected co-RE membership in every fixed dimension | `Proofs/FiniteConnectivity.lean` |
 | Total computable witness search, computable prime search, and decidability from positive certificates | `Proofs/ComputableSearch.lean`, `Proofs/Decidability.lean` |
 | Quadrant/plane Wang equivalence; extraction of Wang tilings from an activated label system and Sudoku soundness | `Proofs/Wang.lean`, `Proofs/SudokuSoundness.lean` |
 | Last-nonzero-digit arithmetic, two-prime CRT, canonical Sudoku solutions, and unconditional Sudoku–Wang equivalence | `Proofs/Arithmetic.lean`, `Proofs/Canonical.lean`, `Proofs/WordResidues.lean`, `Proofs/CanonicalLineRule.lean` |
@@ -367,6 +414,15 @@ cyclic stacking, MSS lattice assembly, and Kim shell conversion. It constructs
 `wangReduction` and `connectedWangReduction`, proving effectivity, nonemptiness,
 arbitrary-tiling soundness and completeness, and face-connectivity. The algorithm
 does not depend on proofs of the mathematical inputs.
+
+The optimized compiler is in `FiniteCompiler/Effective/Compiler.lean`.
+It computes the bit-channel input and bounded prime parameters, enumerates the
+sparse cycle tests, removes duplicate canonical tile descriptions, and searches
+for a full-difference partition with the polynomial modulus bound.
+`FiniteCompiler/Effective/Correctness.lean` proves answer preservation;
+`FiniteCompiler/Effective/SizeBound.lean` proves the closed quasipolynomial bound
+for this same computable function. The public reduction theorems combine these
+properties, including the six-key replacement for arbitrary Euclidean motions.
 
 The `Computable` proofs establish total recursion on the canonical encodings.
 Some definitions use `noncomputable` to express fixed finite tables or searched

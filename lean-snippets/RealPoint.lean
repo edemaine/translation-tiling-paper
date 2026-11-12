@@ -1,1 +1,1 @@
-abbrev RealPoint := Fin 3 → ℝ
+abbrev RealPoint (d : ℕ) := EuclideanSpace ℝ (Fin d)

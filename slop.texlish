@@ -2249,7 +2249,7 @@ translational monotiling, even with a connected input prototile.
 The dimension statement is
 \leanref{Statements.lean}{dimension_optimality}.
 
-## Arbitrary Real Translations of Unit-Cube Unions
+## Arbitrary Real Translations of Unit-Cube Unions @=sec:euclidean
 
 We now prove the Euclidean formulation using the tiling convention
 from @sec:definitions.  For $v\in\R^d$, write
@@ -2311,6 +2311,507 @@ from \cite[Corollary~1.1]{RationalPolygons}.
   The sampling argument produces a new tiling with integer translations.
   It does not assert that the original set of real translations was integral,
   and no preservation of its period group is used.
+
+# Allowing Grid Rotations @=sec:grid-rotations
+
+A ***grid isometry*** is a signed permutation of the three coordinates,
+followed by an integer translation. Of the $3!2^3=48$ signed permutations,
+the 24 with determinant $1$ are the ***proper grid rotations***; the others
+reverse orientation. In this section, a voxel is a unit cube centered at
+an integer lattice point, and connectivity means face connectivity.
+We construct a fixed replacement that forces every copy in a tiling to
+have one common orientation and one common grid, even when all 48 signed
+permutations are allowed.
+
+## The Six-Key Prototile
+
+Let $Q=\{0,\ldots,39\}^3$. Index its faces by
+$-x,+x,-y,+y,-z,+z$. For face $i$, let $n_i$ be its inward unit normal,
+and let $u_i,v_i$ be the other two positive coordinate unit vectors,
+in coordinate order. The ***gate*** $g_i$ has normal coordinate $0$ on
+a negative face and $39$ on a positive face; both tangential coordinates
+are $12$ on a negative face and $13$ on a positive face. Choose dimensions
+$$
+\begin{array}{c|rrr}
+ i&d_i&a_i&b_i\\\hline
+ -x&3&8&15\\
+ +x&3&10&12\\
+ -y&4&6&15\\
+ +y&4&9&10\\
+ -z&5&6&12\\
+ +z&5&8&9
+\end{array}
+$$
+and remove the ***recess***
+$$
+ D_i=\{g_i+kn_i:0\leq k\leq4\}
+ \;\cup\;
+ \{g_i+(5+k)n_i+u u_i+v v_i:
+       0\leq k<d_i,\ 0\leq u<a_i,\ 0\leq v<b_i\}.
+$$
+Thus $D_i$ is a five-voxel neck followed by a rectangular box.
+Every box has $360$ voxels, so $|D_i|=365$.
+Write $K_i=D_i\setminus\{g_i\}$ for the ***chamber***, with $364$ voxels.
+The body and the replacement prototile are
+$$
+ B=Q\setminus\bigcup_iD_i,\qquad
+ T=B\;\cup\;\bigcup_i(40n_i+D_i).
+$$
+The translated recesses are the six protruding ***keys***.
+Each meets the body through its translated gate, by a single edge to
+$40n_i+g_i-n_i\in B$. The different tangential positions of opposite gates
+ensure that this attachment voxel remains in the body.
+
+The recesses are mutually separated, as are the protruding keys.
+Moving each recess by a vector in $40\Z^3$ preserves every residue class,
+so $T$ is a fundamental domain for $40\Z^3$ and $|T|=40^3=64{,}000$.
+The definitions are in \leanfile{Rotations/Geometry.lean}; the fundamental
+domain and exact cardinality are proved in
+\leanfile{Rotations/FundamentalDomain.lean} and
+\leanfile{Rotations/Volume.lean}.
+
+## Recognizing a Whole Key
+
+: lemma @=lem:key-recognition
+  The body $B$ remains connected after deleting any one voxel.
+  If a connected component of $T\setminus\{v\}$ has $364$ voxels,
+  then $v=40n_i+g_i$ for some $i$, and that component is $40n_i+K_i$.
+  Moreover, if $t+RK_i=K_j$ for a signed coordinate permutation $R$,
+  then $i=j$, $R$ is the identity, and $t=0$.
+
+: proof
+  The six coordinate planes $x_j=10,29$, restricted to $Q$, avoid all
+  recesses. Their union stays connected after one voxel deletion:
+  each square plane stays connected, and intersecting planes share
+  a full line of voxels. Every body voxel outside these planes has two
+  paths to them with no common vertex except their starting point.
+  If a coordinate lies strictly between $10$ and $29$, a whole clear
+  coordinate segment through the voxel joins two of the planes.
+  In a layer near just one face, the removed cross-section is one
+  rectangle or one point; a retained point therefore has a clear
+  tangential row or column. If all three coordinates are outside the
+  central range, use two coordinate rays toward the nearest planes.
+  At least one route survives any prescribed deletion. These path
+  arguments are formalized in \leanfile{Rotations/BodyPaths.lean},
+  \leanfile{Rotations/PlanePaths.lean}, and
+  \leanfile{Rotations/BodyConnectivity.lean}.
+
+  A component of size $364$ cannot meet the surviving body, which has
+  at least $61{,}809$ voxels. It is therefore contained in one protruding
+  key. If the deleted voxel is outside that key, connectivity forces
+  the component to contain all $365$ key voxels. If the deleted voxel
+  belongs to the key but is not its gate, the gate remains attached
+  to the body, leaving at most $363$ voxels in a detached component.
+  The only remaining possibility is deletion of the gate, exposing
+  the corresponding chamber. The general counting argument is
+  \leanref{Rotations/KeyRecognition.lean}{Rotations.KeyedBody.recognize},
+  specialized to the explicit gadget in
+  \leanref{Rotations/Gadget.lean}{Rotations.SixKeys.recognize_component}.
+
+  To recognize the chamber shape, consider all eight-voxel
+  $2\times2\times2$ blocks contained in it. Their union is exactly
+  its rectangular box: no neck voxel belongs to such a block.
+  The six boxes have different unordered dimension triples. Each box
+  has three distinct side lengths, which fix the axes, and the neck's
+  direction and corner attachment fix their signs.
+  Thus the chamber determines its label and complete orientation.
+  Lean verifies this conclusion using the translation-invariant sums
+  $$
+    (\mu_k(K))_j=\sum_{x\in K}
+       \left(|K|x_j-\sum_{y\in K}y_j\right)^k,\qquad k=2,3.
+  $$
+  Their coordinates permute under a signed coordinate permutation;
+  odd powers also acquire its coordinate signs. The computed values
+  distinguish the six chambers and all their orientations.
+  This is \leanref{Rotations/KeyRigidity.lean}{Rotations.SixKeys.chamber_rigid},
+  using the kernel-checked calculations in
+  \leanfile{Rotations/KeyMoments.lean}.
+
+## Forcing the Whole Grid
+
+: theorem @=thm:rotation-rigidity
+  Every tiling of $\Z^3$ by grid-isometric copies of $T$ has one
+  common orientation and one common coset of the corresponding
+  $40\Z^3$ grid.
+
+: proof
+  Normalize one placed copy to be $T$. Every face-neighbor of $K_i$
+  outside $K_i$ belongs to this copy, except for $g_i$.
+  Any other copy meeting $K_i$ must leave it, because it is connected
+  and has $64{,}000>364$ voxels. Its path out must pass through $g_i$.
+  Exactly one copy covers $g_i$, so one copy fills all of $K_i$.
+  Deleting $g_i$ from that copy makes $K_i$ a whole connected component.
+  This single-entrance argument is
+  \leanref{Rotations/Chambers.lean}{Rotations.chamber_component}.
+
+  By @lem:key-recognition, this component is a protruding key of the
+  same label and in the same orientation. Its translation is consequently
+  $-40n_i$. All six neighboring grid copies are forced.
+  Iteration forces every $40z+T$, $z\in\Z^3$. These copies already
+  partition space, so every copy in the original tiling is one of them.
+  No periodicity assumption on the original tiling is needed.
+  The local and global results are
+  \leanref{Rotations/LocalForcing.lean}{Rotations.SixKeys.chamber_forces_neighbor}
+  and \leanref{Rotations/GlobalRigidity.lean}{Rotations.SixKeys.rigidity}.
+
+## The Rotation-Allowed Reduction
+
+For a finite nonempty $E\subset\Z^3$, define
+$$
+  P(E)=\bigcup_{e\in E}(40e+T).
+$$
+The union is disjoint, and $|P(E)|=64{,}000|E|$.
+If $E$ is connected, so is $P(E)$: $T$ is connected, and neighboring
+grid copies meet along faces at the intact cube edges.
+
+: theorem @=thm:grid-rotation-hardness
+  Deciding whether one finite face-connected polycube tiles $\Z^3$
+  using integer translations and proper grid rotations is co-RE-hard,
+  and hence undecidable. The same conclusion holds when all signed
+  coordinate permutations, including reflections, are allowed.
+
+: proof
+  A translational tiling by $E$ expands to a translational tiling by
+  $P(E)$. Conversely, decompose any grid-isometric tiling by $P(E)$
+  into its constituent copies of $T$. By @thm:rotation-rigidity these
+  copies share one orientation and one grid. Undo that orientation
+  and identify their grid centers with $\Z^3$. Their grouping into
+  parent copies of $P(E)$ gives a translational tiling by $E$.
+  Thus
+  $$
+    E\text{ tiles by translations}
+    \quad\Longleftrightarrow\quad
+    P(E)\text{ tiles with proper grid rotations}.
+  $$
+  The reverse direction even allows all 48 signed coordinate
+  permutations; the forward direction uses only the identity.
+  Apply this replacement to the connected output of @thm:main.
+  The map is computable: replace each input voxel by the same fixed
+  list of $64{,}000$ voxels, scaled and translated as above.
+  The tiling equivalence and connectedness are
+  \leanref{Rotations/Assembly.lean}{Rotations.SixKeys.assembly_allowed_iff}
+  and \leanref{Rotations/ConnectedAssembly.lean}{Rotations.SixKeys.assembly_connected}.
+  The computable reduction, co-RE-hardness, and undecidability are
+  \leanref{Rotations/Main.lean}{Rotations.SixKeys.rotationCompile_correct},
+  \leandecl{Rotations.SixKeys.proper_rotation_coRE_hard}, and
+  \leandecl{Rotations.SixKeys.proper_rotation_undecidable} in the same file.
+
+# Allowing Arbitrary Euclidean Rotations @=sec:euclidean-rotations
+
+The same six-key replacement also handles arbitrary angles and arbitrary
+real translations. For a finite lattice set $S$, write
+$$
+  \Omega(S)=\bigcup_{p\in S}\bigl(p+[-\tfrac12,\tfrac12]^3\bigr).
+$$
+A ***Euclidean motion*** is a map $x\mapsto t+Rx$, where $t\in\R^3$
+and $R$ is an orthogonal matrix, meaning $R^{\mathsf T}R=I$.
+It is ***proper*** when $\det R=1$; otherwise it reverses orientation.
+As in @sec:euclidean, tiling means coverage with multiplicity one almost
+everywhere, so shared boundary points are permitted. All interiors and
+boundaries in this section are taken in $\R^3$.
+
+## Aligning a Cube Inside a Neck
+
+: lemma @=lem:euclidean-neck
+  If an orthogonally rotated unit cube fits inside a coordinate-aligned square prism
+  with cross-section $1\times1$, its orientation is a signed coordinate
+  permutation. Its center lies on the prism's central axis.
+
+: proof
+  For a matrix row $r$, the cube's width in that coordinate is
+  $\|r\|_1=\sum_j|r_j|$, while orthogonality gives
+  $\|r\|_2=(\sum_jr_j^2)^{1/2}=1$.
+  The two transverse widths are at most $1$. Equality between these
+  two norms forces at most one nonzero entry in each transverse row,
+  because
+  $$
+    \left(\sum_j|r_j|\right)^2-\sum_jr_j^2
+       =2\sum_{j<k}|r_jr_k|.
+  $$
+  Each transverse row therefore has one entry equal to $1$ or $-1$.
+  Their orthogonality puts these entries in different columns, and
+  forces the remaining row onto the remaining coordinate axis.
+  The transverse widths are exactly $1$, so fitting them inside the
+  prism also fixes the two transverse center coordinates.
+  The matrix argument and cube geometry are proved in
+  \leanfile{Rotations/Euclidean/MatrixAlignment.lean} and
+  \leanref{Rotations/Euclidean/CubeAlignment.lean}{Rotations.Euclidean.cube_alignment}.
+
+For a key on face $i$, use local coordinates
+$(k,u,v)$ through the map $g_i+kn_i+u u_i+v v_i$.
+Its neck voxels have centers $(0,0,0),\ldots,(4,0,0)$.
+The neck's solid cross-section is $[-\tfrac12,\tfrac12]^2$.
+In the neighborhood
+$$
+  -\tfrac12<k<\tfrac92,\qquad |u|,|v|<\tfrac52,
+$$
+every point outside this closed cross-section lies in the interior
+of the host body $\Omega(B)$. This includes points on seams between
+body voxels: all lattice voxels incident to such a point are present.
+These wall and seam claims are
+\leanref{Rotations/Euclidean/NeckWalls.lean}{Rotations.Euclidean.neck_wall}
+and \leanref{Rotations/Euclidean/VoxelStars.lean}{Rotations.Euclidean.star_interior}.
+
+## Filling a Chamber Without a Grid Assumption
+
+: lemma @=lem:euclidean-key-forcing
+  In any Euclidean tiling by $\Omega(T)$ containing the identity copy,
+  the copy $-40n_i+\Omega(T)$ is present for every face $i$.
+  This conclusion allows arbitrary orthogonal orientations and real
+  translations for every other copy.
+
+: proof
+  Distinct tiles have disjoint interiors. Each has a nonempty open
+  interior, so the family of copies is countable. Consequently the
+  union of all placed voxel boundaries has measure zero. We may choose
+  a point $p$ in the open middle neck
+  $$
+    \tfrac74<k<\tfrac94,\qquad |u|,|v|<\tfrac12
+  $$
+  that lies in the interior of a voxel of its covering tile, say $A$.
+  The host does not cover this point. Every point of that voxel is
+  within distance $\sqrt3<2$ of $p$, so the whole voxel lies in the
+  neighborhood where the neck walls apply. Its closed cube cannot
+  meet the host's interior. It therefore fits inside the neck prism.
+  By @lem:euclidean-neck, $A$ has a signed grid orientation relative
+  to the host, and this voxel's transverse center coordinates are zero.
+  In particular, both transverse translation coordinates of $A$ are
+  integers. This is
+  \leanref{Rotations/Euclidean/NeckCopy.lean}{Rotations.Euclidean.neck_copy_alignment}.
+
+  Put $h=k(p)$ and let
+  $$
+    U=\operatorname{int}\Omega(K_i)\cap\{k>h\}
+  $$
+  be the chamber on the far side of the cut through $p$.
+  Its boundary lies in the host solid together with the interior of
+  the blocking voxel of $A$. Indeed, the original chamber has only
+  its gate as an entrance; that gate is below the cut. The cut's open
+  square lies inside the blocking voxel, and the square's edges lie
+  in the host solid.
+  The passage from a lattice chamber boundary to its solid boundary
+  is \leanref{Rotations/Euclidean/VoxelStars.lean}{Rotations.Euclidean.frontier_single_entrance};
+  the cut is handled in \leanfile{Rotations/Euclidean/CappedChambers.lean}.
+
+  Consider another tile with an interior voxel point in $U$.
+  That point can be joined to every voxel center through the tile's
+  interior, following its face-adjacency paths. Such a path cannot
+  cross $\partial U$, because another tile's interior avoids both
+  the closed host solid and the interior of $A$.
+  Hence all its voxel centers would lie in $U$.
+  This is impossible: $T$ contains the centers $(0,0,0)$ and
+  $(39,0,0)$, at distance $39$, whereas the chamber is contained in
+  a box with all three side lengths at most $15$, of diameter at
+  most $\sqrt{675}<39$.
+  Thus only $A$ can fill $U$ almost everywhere. Since $U$ is open
+  and $A$ is closed, $U\subset A$ and $\overline U\subset A$.
+  The general separation argument is
+  \leanref{Rotations/Euclidean/Monopoly.lean}{Rotations.Euclidean.chamber_monopoly}.
+
+  The far face point $(d_i+\tfrac92,0,0)$ belongs to $\overline U$,
+  and hence to a voxel of $A$.
+  Its transverse center coordinates are integers within $\tfrac12$
+  of zero, so both are zero. Its axial center $c$ satisfies
+  $d_i+4\leq c\leq d_i+5$.
+  The host contains the wall voxel centered at $(d_i+5,0,0)$.
+  If $c>d_i+4$, these two voxels overlap in their interiors.
+  Therefore $c=d_i+4$, and the axial translation coordinate of $A$
+  is also integral. This pins all three translation coordinates;
+  see \leanref{Rotations/Euclidean/CapForcing.lean}{Rotations.Euclidean.phase_of_end_contact}.
+
+  We can now use lattice connectivity. The tile $A$ contains every
+  chamber voxel with $k\geq3$, because their centers lie in $U$.
+  Its original blocking voxel has center $(2,0,0)$, since that
+  center is integral and its interior contains $p$.
+  The only remaining chamber voxel is $(1,0,0)$.
+  Every lattice path from the chamber suffix $k\geq2$ to the
+  outside, avoiding the host, passes through this voxel.
+  The tile is connected and too large to stay in the suffix,
+  so it contains $(1,0,0)$ as well. Thus $A$ fills all of $K_i$.
+  Deleting $g_i$ makes this a whole cut component of $A$.
+  Apply @lem:key-recognition to obtain the exact neighbor
+  $A=-40n_i+\Omega(T)$.
+  The complete local theorem is
+  \leanref{Rotations/Euclidean/LocalForcing.lean}{Rotations.Euclidean.euclidean_chamber_forces_neighbor}.
+
+The measure-theoretic details do not require face-to-face contacts,
+local finiteness as an extra assumption, or an initial common grid.
+Countability, avoidance of voxel boundaries, and disjointness of
+one tile's interior from another tile's closed solid are proved in
+\leanfile{Rotations/Euclidean/Covers.lean}.
+
+## Euclidean Rigidity and Hardness
+
+: theorem @=thm:euclidean-rotation-rigidity
+  Every Euclidean tiling by $\Omega(T)$ has a common Euclidean frame:
+  for some motion $r$, its placed copies are exactly
+  $$
+    \bigl\{r(40z+\Omega(T)):z\in\Z^3\bigr\}.
+  $$
+  Thus all copies have the same complete orientation, even when
+  reflections are allowed.
+
+: proof
+  Normalize any one placed copy to be the identity.
+  Repeatedly apply @lem:euclidean-key-forcing along lattice paths
+  to force every $40z+\Omega(T)$. These closed solids cover all of
+  $\R^3$, since $T$ is a fundamental domain for $40\Z^3$.
+  No additional copy is possible: an interior point of that copy
+  lies in one of the forced closed solids, contradicting interior
+  disjointness unless it is that same placed copy.
+  Undo the normalization.
+  This is \leanref{Rotations/Euclidean/GlobalRigidity.lean}{Rotations.Euclidean.rigidity}.
+
+: theorem @=thm:euclidean-rotation-hardness
+  For every finite nonempty $E\subset\Z^3$,
+  $$
+    E\text{ tiles }\Z^3\text{ by translations}
+    \quad\Longleftrightarrow\quad
+    \Omega(P(E))\text{ tiles }\R^3\text{ by proper Euclidean motions}.
+  $$
+  The equivalence also holds when all Euclidean motions are allowed.
+  Consequently tilability of one face-connected polycube by arbitrary
+  proper Euclidean motions is co-RE-hard and undecidable; the same
+  holds when reflections are allowed.
+
+: proof
+  The forward direction uses only translations.
+  For the reverse direction, split each placed copy of $\Omega(P(E))$
+  into its constituent copies of $\Omega(T)$.
+  They form an almost-everywhere tiling, because their constituent
+  voxel sets are disjoint and the only overlaps introduced by
+  thickening are boundaries. Apply @thm:euclidean-rotation-rigidity.
+  After undoing its common frame, every parent copy is translated
+  by a vector in $40\Z^3$.
+  Sampling integer voxel centers gives an exact lattice tiling by
+  $P(E)$; collapsing the $40\Z^3$ grid gives a translational tiling
+  by $E$, as in @thm:grid-rotation-hardness.
+  Connectedness, computability, and the exact size multiplier
+  $64{,}000$ are unchanged.
+  The equivalence is
+  \leanref{Rotations/Euclidean/Assembly.lean}{Rotations.Euclidean.assembly_allowed_iff}.
+  The reduction and both hardness results are in
+  \leanfile{Rotations/Euclidean/Main.lean}, including
+  \leandecl{Rotations.Euclidean.arbitrary_proper_rotation_coRE_hard}
+  and \leandecl{Rotations.Euclidean.arbitrary_orthogonal_coRE_hard}.
+
+## Public Reduction and Size Statements
+
+The public abstract uses one Euclidean point type for both translations and
+motions. Its `Motion` type is Mathlib's affine isometry equivalence, and
+`f '' Solid P` is the image of the solid body under the motion.
+\leanref{Abstract.lean}{Abstract.tiling_reduction} and
+\leanref{Abstract.lean}{Abstract.real_tiling_reduction} state total computable
+Wang reductions for translations. The corresponding statement for any set of Euclidean
+motions containing all translations is
+\leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
+
+Each reduction theorem includes its cube bound for the same computable
+function. In dimension three, these bounds are $(n+4)^{10^{61}\lg\lg(n+4)}$ for translations and
+$64{,}000(n+4)^{10^{61}\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
+\leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
+\[
+  \begin{aligned}
+    \calT\text{ tiles the plane}
+    &\iff P\text{ tiles }\Z^3\text{ by translations}\\
+    &\iff P\text{ tiles }\R^3\text{ by translations}\\
+    &\iff P\text{ tiles }\R^3\text{ by Euclidean motions},
+  \end{aligned}
+\]
+where the last condition may use any set of Euclidean motions containing all translations.
+The six-key correctness theorem already permits any prescribed set of allowed
+orientations containing the identity. Restricting this set to the identity
+gives the translation-only equivalence; the lattice/real translation theorem
+then connects the two translation predicates. Thus no new construction or
+additional cubes are needed.
+
+The optimized numerical compiler is formalized in
+\leanfile{FiniteCompiler/Effective/Compiler.lean}.
+It computes a bit code from each tile's list index, searches finite arithmetic
+certificates for the bounded prime parameters, and enumerates the sparse cycle
+maps supported at one useful-coordinate value. A common finite coordinate box
+canonically orders the test tiles, allowing duplicate descriptions to be removed
+before stacking. This makes the list length equal the number of distinct
+mathematical test tiles. The full-difference partition search includes the
+polynomial modulus bound used in the volume proof.
+
+\leanfile{FiniteCompiler/Effective/Correctness.lean} proves the numerical
+compiler's tiling equivalence, and
+\leanfile{FiniteCompiler/Effective/SizeBound.lean} proves its cube bound.
+In particular, \leandecl{FiniteCompiler.Effective.optimizedCompile_computable}
+and \leandecl{FiniteCompiler.Effective.optimizedCompile_real_bound} concern
+the same function. The six-key replacement is a primitive-recursive map and
+multiplies its output length by exactly $64{,}000$, so the public Euclidean
+reduction combines computability, correctness, and size as well.
+
+# Co-RE Membership for Euclidean Motions
+
+Fix $d\ge1$ and a finite nonempty $P\subset\Z^d$, and let
+$S=\bigcup_{p\in P}(p+[-1/2,1/2]^d)$.
+Choose $p_0\in P$; its image under a placed copy is that copy's
+***anchor***. Each copy contains the open radius-$1/2$ ball about its
+anchor. Thus anchors in a packing are at least distance $1$ apart.
+Partition space into half-open coordinate boxes of side $1/(2(d+1))$.
+Each box contains at most one anchor because its diameter is less than $1$.
+These boxes give countably many ***slots*** indexed by $z\in\Z^d$.
+
+A slot has a presence variable $e_z\in\{0,1\}$ and, when occupied,
+an anchor $a_z=(2z+u_z)/(4(d+1))$ with $u_z\in[-1,1]^d$
+and an orthogonal matrix $R_z$. Its placement is
+$x\mapsto a_z+R_z(x-p_0)$; all matrix entries lie in $[-1,1]$.
+The allowed linear parts have closed polynomial descriptions:
+$R=I$ for translations, $R^\mathsf{T}R=I$ and $\det R=1$ for proper
+motions, and $R^\mathsf{T}R=I$ for all Euclidean motions.
+For reflections without rotations, use $R=I$ or $R=I-2vv^\mathsf{T}$
+with $\sum_i v_i^2=1$. The unit normal $v\in[-1,1]^d$ permits every
+mirror hyperplane. Impose these conditions only on occupied slots.
+
+For every $y\in\mathbb{Q}^d$, require coverage by a closed voxel of an occupied
+slot. Only finitely many slots can contribute: their anchors lie within
+a computable diameter bound of $S$ from $y$. For every pair of distinct
+occupied slots and every pair of their voxels, also forbid a rational
+point from lying in both open voxels. Inverse placement gives the tests
+$$
+  \left|\bigl(p_0+R_z^\mathsf{T}(y-a_z)\bigr)_i-p_i\right|\le\tfrac12
+$$
+for closed membership and strict inequalities for open membership.
+The negation of simultaneous open membership is a finite disjunction
+of weak polynomial inequalities. All requirements are therefore
+computably enumerable finite closed polynomial formulas in variables
+from $[-1,1]$. Lean uses integer coefficients and additional bounded
+variables constrained to equal reciprocals of positive integers.
+
+These constraints characterize tilings. An actual tiling supplies its
+slot data. Conversely, open overlaps would contain rational points,
+contradicting packing. The anchors are thus separated, so only finitely
+many copies meet any bounded set. Their union is closed and contains
+the dense set $\mathbb{Q}^d$, hence equals $\R^d$. The countably many transformed
+voxel boundaries have measure zero, giving almost-everywhere unique
+coverage. Closed slot boxes can share boundary points; packing still
+forces occupied anchors to be separated.
+
+At stage $k$, take the first $k+1$ constraints and relax each atomic
+inequality $f\le0$ to $f\le1/(k+1)$. Only finitely many variables occur.
+For $f=\sum_m c_m m$, the computable Lipschitz bound
+$\sum_m |c_m|\deg(m)$ on the unit box, in the maximum norm, gives a
+rational grid fine enough that rounding preserves every exact solution
+with this tolerance. Enumerate the finite grid and halt if no point
+passes. Clear denominators to perform the tests with integers.
+If every stage passes, compactness of $[-1,1]^\N$ and the vanishing
+tolerances give an exact solution to every constraint. The procedure
+therefore halts exactly when no tiling exists.
+
+The proof files are:
+
+* \leanfile{EuclideanMembership/EffectiveCompactness.lean}: effective compactness.
+* \leanfile{EuclideanMembership/SourceModel.lean}: the geometric equivalence.
+* \leanfile{EuclideanMembership/EffectiveSystem.lean}: co-RE membership.
+
+The last file proves membership
+for all four choices of the rotation and reflection flags, both with
+and without requiring connectedness. Combined with hardness, all four
+connected tiling problems are co-RE-complete for every fixed $d\ge3$.
 
 \bibliographystyle: alpha-key
 \bibliography: paper

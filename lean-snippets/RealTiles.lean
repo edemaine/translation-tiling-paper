@@ -1,2 +1,3 @@
-def RealTiles (P : Prototile) : Prop :=
-  ∃ T : Set RealPoint, ∀ᵐ x ∂MeasureTheory.volume, ∃! t : RealPoint, t ∈ T ∧ x - t ∈ Solid P
+def RealTiles {d : ℕ} (P : Prototile d) (motions : Set (Motion d)) : Prop :=
+  ∃ T ⊆ motions, ∀ᵐ x ∂MeasureTheory.volume,
+    ∃! f ∈ T, x ∈ f '' Solid P

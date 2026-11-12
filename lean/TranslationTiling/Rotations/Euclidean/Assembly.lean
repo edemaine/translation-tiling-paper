@@ -1,0 +1,75 @@
+import TranslationTiling.Rotations.Euclidean.Expansion
+
+namespace TranslationTiling.Rotations.Euclidean
+
+noncomputable section
+open Set SixKeys
+
+def AllowedEuclideanTiles (allowed : Set Rotation) (F : Finset Point) : Prop :=
+  ∃ C : Set RigidMotion, (∀ m ∈ C,m.rotation ∈ allowed) ∧
+    AECover (fun m : C => Euclidean.Placed F m.val)
+
+@[simp] theorem gridRotation_ident : gridRotation Orientation.ident=LinearIsometryEquiv.refl ℝ EPoint := by
+  ext x i
+  simp [Orientation.ident,Orientation.sign]
+
+theorem assembly_forward_allowed (allowed : Set Rotation)
+    (hid : LinearIsometryEquiv.refl ℝ EPoint ∈ allowed)
+    (E : Finset Point) (hE : FiniteTiles E) : AllowedEuclideanTiles allowed (assembly E) := by
+  obtain ⟨C,hC,cover⟩ := SixKeys.assembly_forward_allowed {Orientation.ident} (by simp) E hE
+  let M : C → RigidMotion := fun m => embedMotion m.val
+  have hc := ae_cover_of_grid_cover (assembly E) (fun m : C => m.val) cover
+  refine ⟨range M,?_,ae_cover_range M hc⟩
+  rintro m ⟨a,rfl⟩
+  have ha : a.val.orientation=Orientation.ident := by simpa using hC a.val a.property
+  simpa only [M,embedMotion,ha,gridRotation_ident] using hid
+
+theorem assembly_backward {ι : Type*} (E : Finset Point) (hE : E.Nonempty)
+    (M : ι → RigidMotion) (cover : AECover (fun j => Euclidean.Placed (assembly E) (M j))) :
+    FiniteTiles E := by
+  have expanded := euclidean_expand_cover E hE M cover
+  obtain ⟨r,rigid⟩ := rigidity (fun p : ι × ↥E => submotion (M p.1) p.2.val) expanded
+  obtain ⟨e0,he0⟩ := hE
+  choose z hz using fun j => rigid (j,⟨e0,he0⟩)
+  let a : ι → Point := fun j => z j-e0
+  have parent (j : ι) (y : EPoint) : (M j).apply y=r.apply (castPoint (grid (a j))+y) := by
+    have hh := congrArg (fun m : RigidMotion => m.apply (y-castPoint (grid e0))) (hz j)
+    simp only [submotion_apply,RigidMotion.comp_apply,gridTranslation,embed_translation_apply] at hh
+    have heL : castPoint (grid e0)+(y-castPoint (grid e0))=y := by abel
+    have heR : castPoint (grid (z j))+(y-castPoint (grid e0))=castPoint (grid (a j))+y := by
+      have he : grid (z j)=grid (a j)+grid e0 := by
+        simp [a,grid,smul_sub]
+      rw [he,castPoint_add]
+      abel
+    rwa [heL,heR] at hh
+  let N := fun j => r.inverse.comp (M j)
+  have hn (j : ι) : N j=embedMotion (gridTranslation (a j)) := by
+    apply RigidMotion.ext_apply
+    intro x
+    simp only [N,RigidMotion.comp_apply,parent,RigidMotion.inverse_apply,gridTranslation,embed_translation_apply]
+  have hc := RigidMotion.normalize_cover M cover r
+  change AECover (fun j => Euclidean.Placed (assembly E) (N j)) at hc
+  simp only [hn] at hc
+  exact SixKeys.assembly_backward E ⟨e0,he0⟩ (fun j => gridTranslation (a j))
+    (grid_cover_of_ae_cover (assembly E) (fun j => gridTranslation (a j)) hc)
+
+/-- The same 64,000-voxel replacement works for arbitrary orthogonal motions. -/
+theorem assembly_tiles_iff (E : Finset Point) (hE : E.Nonempty) :
+    FiniteTiles E ↔ EuclideanTiles (assembly E) := by
+  constructor
+  · intro h
+    obtain ⟨C,_,hc⟩ := assembly_forward_allowed Set.univ (Set.mem_univ _) E h
+    exact ⟨C,hc⟩
+  · rintro ⟨C,hc⟩
+    exact assembly_backward E hE (fun m : C => m.val) hc
+
+theorem assembly_allowed_iff (E : Finset Point) (hE : E.Nonempty)
+    (allowed : Set Rotation) (hid : LinearIsometryEquiv.refl ℝ EPoint ∈ allowed) :
+    FiniteTiles E ↔ AllowedEuclideanTiles allowed (assembly E) := by
+  constructor
+  · exact assembly_forward_allowed allowed hid E
+  · rintro ⟨C,_,hc⟩
+    exact assembly_backward E hE (fun m : C => m.val) hc
+
+end
+end TranslationTiling.Rotations.Euclidean

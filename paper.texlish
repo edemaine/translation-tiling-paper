@@ -35,7 +35,6 @@
   tabularx
   graphicx
   subcaption
-  placeins
   xcolor: table
   tikz
   listings
@@ -48,14 +47,16 @@
 \usetikzlibrary{arrows.meta,positioning,calc}
 \lstdefinelanguage{lean}{
   morekeywords={import,abbrev,def,theorem,fun,by},
-  morekeywords=[2]{Prop,Type,Set,List,Fin,Nat},
+  morekeywords=[2]{Prop,Type,Set,List,Fin,Nat,Bool},
   sensitive=true, morecomment=[l]{--}, morestring=[b]"}
 \lstdefinestyle{lean}{language=lean, basicstyle=\ttfamily\small, columns=fullflexible,
   keepspaces=true, showstringspaces=false, extendedchars=false,
+  breaklines=true, breakatwhitespace=true,
   keywordstyle=\bfseries\color{figblue}, keywordstyle=[2]\color{figgreen},
-  literate={ℤ}{{$\mathbb{Z}$}}1 {ℝ}{{$\mathbb{R}$}}1 {×}{{$\times$}}1 {→}{{$\to$}}1
+  literate={ℕ}{{$\mathbb{N}$}}1 {ℤ}{{$\mathbb{Z}$}}1 {ℝ}{{$\mathbb{R}$}}1 {×}{{$\times$}}1 {→}{{$\to$}}1
     {∀}{{$\forall$}}1 {∃}{{$\exists$}}1 {∈}{{$\in$}}1
-    {∧}{{$\wedge$}}1 {≤}{{$\le$}}1 {≠}{{$\ne$}}1 {↔}{{$\leftrightarrow$}}1
+    {⊆}{{$\subseteq$}}1 {∧}{{$\wedge$}}1 {∨}{{$\vee$}}1 {≤}{{$\le$}}1 {≠}{{$\ne$}}1 {↔}{{$\leftrightarrow$}}1
+    {≃ᵃⁱ}{{$\simeq^{\mathrm{ai}}$}}3
     {¬}{{$\neg$}}1 {∂}{{$\partial$}}1 {∑}{{$\sum$}}1 {ᵐ}{{$^{\mathrm m}$}}1}
 \tcbuselibrary{skins}
 \newtcolorbox{leanbox}{colback=black!3,colframe=black!45,boxrule=0.5pt,arc=2pt,
@@ -131,6 +132,7 @@
   We prove co-RE-completeness, and thus undecidability, of the following
   problem: given a single (connected) polycube,
   decide whether it tiles 3D Euclidean space by translations.
+  The same result holds if we also allow rotations and/or reflections.
   We reduce from Wang tiling using the decorated two-prime Sudoku construction of Greenfeld and Tao and a cyclic encoding adapted from OpenAI's 3D aperiodic tile, and apply a reduction of Kim to make the prototile connected (via faces).
   Dimension three is optimal: translational monotiling is known to be
   decidable in $\Z^2$ and for a single (possibly disconnected) polyomino in $\R^2$.
@@ -164,7 +166,7 @@ In this paper, we prove undecidability for $k=1$ and $d=3$.
   \caption:
     The tiling-by-translation decision problem:
     given $k$ shapes, can translated copies tile $d$D space?
-    Here, $k=1$ and $d=3$, the version solved in this paper.
+    Here, $k=1$ and $d=3$, the main version solved in this paper.
   \label{fig:tiling-decision}
 
 The decidability question has a long history, summarized in @tab:related.
@@ -230,24 +232,6 @@ given known algorithms for 2D [[BN91,Bhattacharya,GTStructure]].
     \bottomrule
   \end{tabularx}
 
-  % \medskip
-  % \begin{tabularx}{\textwidth}{c*{4}{>{\centering\arraybackslash}X}}
-  %   \toprule
-  %   \multicolumn{5}{c}{\textbf{Rotations and translations}} \\
-  %   \midrule
-  %   Prototiles & 1D & 2D & 3D & $d$D ($d\geq4$) \\
-  %   \midrule
-  %   \rowcolor{bgyellow}\cellcolor{white}%
-  %   1 & \cellcolor{bggreen}R ($\downarrow$) & OPEN & OPEN & OPEN \\
-  %   \rowcolor{bgred}\cellcolor{white}%
-  %   2 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c [[Trominoes]] & co-RE-c [[Trominoes]] & co-RE-c ($\leftarrow$) \\
-  %   \rowcolor{bgred}\cellcolor{white}%
-  %   3 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c ($\uparrow$) & co-RE-c ($\uparrow$) & co-RE-c ($\uparrow$) \\
-  %   \rowcolor{bgred}\cellcolor{white}%
-  %   $n$ & \cellcolor{bggreen}R [[GTUndecidable]] & co-RE-c [[Berger,Golomb]] ($\uparrow$) & co-RE-c ($\uparrow$) & co-RE-c ($\uparrow$) \\
-  %   \bottomrule
-  % \end{tabularx}
-
   \caption: Complexity of tiling the whole integer lattice by translations with
     possibly disconnected polycubes, organized as in \cite[Table~3]{Trominoes}.
     Rows bound the number of prototiles; $n$ means an arbitrary finite
@@ -261,7 +245,6 @@ given known algorithms for 2D [[BN91,Bhattacharya,GTStructure]].
     (Unmarked results allow disconnected tiles.)
     Arrows point to adjacent entries that imply the stated result,
     including the connectedness restriction when marked.
-    % The lower panel allows grid-preserving rotations.
     %The 2D three-tile construction uses one disconnected tile [[Trominoes]];
     %the four-tile result also allows disconnected tiles [[YZFour]].
     %The seven-tile bound was strengthened to orthogonally convex
@@ -269,16 +252,20 @@ given known algorithms for 2D [[BN91,Bhattacharya,GTStructure]].
   @=tab:related
 
 : theorem @=thm:undecidability
-  Tiling $\Z^3$ by translations of a single finite connected[^connected]
-  subset of $\Z^3$ is co-RE-complete,[^lean-complete] and hence undecidable.[^lean-undecidable]
-  Replacing each lattice point by a unit cube,
-  tiling $\R^3$ by translations of a single finite connected[^connected]
-  polycube in $\R^3$ is co-RE-complete,[^lean-real] and hence undecidable.[^lean-real-undecidable]
+  For every fixed $d\geq3$, tiling $\Z^d$ by translations of a single finite
+  connected[^connected] subset of $\Z^d$ is co-RE-complete,[^lean-complete]
+  and hence undecidable.[^lean-undecidable]
+  %
+  Tiling $\R^d$ with a single finite connected[^connected] polycube,
+  using any set of Euclidean motions containing all translations,
+  is co-RE-hard,[^lean-rigid] and hence undecidable.[^lean-real-undecidable]
+  With translations and optionally rotations and/or reflections,
+  the problem is co-RE-complete.[^lean-real]
   [^connected]:
-    Connectivity of a set in $\Z^3$ is defined according
-    to lattice adjacency in $\Z^3$.
-    Connectivity of a polycube in $\R^3$ is thus defined according
-    to face adjacency of the constituent unit cubes.
+    Connectivity of a set in $\Z^d$ is defined according
+    to lattice adjacency in $\Z^d$.
+    Connectivity of a polycube in $\R^d$ is thus defined according
+    to facet adjacency of the constituent unit cubes.
     See @sec:lean-connected.
   [^lean-complete]:
     \leanlogo{} theorem `tiling_coRE_complete`. See @sec:lean-z3.
@@ -287,7 +274,9 @@ given known algorithms for 2D [[BN91,Bhattacharya,GTStructure]].
   [^lean-real]:
     \leanlogo{} theorem `real_tiling_coRE_complete`. See @sec:lean-r3.
   [^lean-real-undecidable]:
-    \leanlogo{} theorem `real_tiling_undecidable`. See @sec:lean-r3.
+    \leanlogo{} theorem `real_tiling_undecidable`. See @sec:lean-rigid.
+  [^lean-rigid]:
+    \leanlogo{} theorem `real_tiling_coRE_hard`. See @sec:lean-rigid.
 
 ***Co-RE*** is the complexity class of decision problems whose "no" instances
 can be recognized in finite time by an algorithm (Turing machine).
@@ -297,6 +286,49 @@ and ***co-RE-complete*** if it is also in co-RE.
 It is known that some co-RE-complete problems
 (such as "does a given algorithm run forever?")\ are undecidable,
 so co-RE-completeness implies undecidability.
+
+Our results also improve the state-of-the-art for tiling with translations
+and rotations (and optionally reflections), as summarized in @tab:rotations.
+Previously, the best undecidability result for 3D required two prototiles
+[[Trominoes]].
+The 2D case with one prototile remains open.
+
+: table[tp]
+  \centering
+  \small
+  \renewcommand{\arraystretch}{1.3}
+  \begin{tabularx}{\textwidth}{c
+    >{\hsize=0.75\hsize\linewidth=\hsize\centering\arraybackslash}X
+    >{\hsize=1.25\hsize\linewidth=\hsize\centering\arraybackslash}X
+    *{2}{>{\centering\arraybackslash}X}}
+    \toprule
+    Prototiles & 1D & 2D & 3D & $d$D ($d\geq4$) \\
+    \midrule
+    \rowcolor{bggreen}\cellcolor{white}%
+    1 & R ($\downarrow$) & \cellcolor{bgyellow}OPEN & \cellcolor{bgblue}co-RE-c (Thm.~\ref{thm:undecidability})$^*$ & \cellcolor{bgblue}co-RE-c (Thm.~\ref{thm:undecidability})$^*$ \\
+    \rowcolor{bgred}\cellcolor{white}%
+    2 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c [[Trominoes]] & co-RE-c [[Trominoes]] ($\uparrow$)$^*$ & co-RE-c ($\uparrow$)$^*$ \\
+    \rowcolor{bgred}\cellcolor{white}%
+    3 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c [[Stade,KimPlane]]$^*$ & co-RE-c ($\uparrow$)$^*$ & co-RE-c ($\uparrow$)$^*$ \\
+    \rowcolor{bgred}\cellcolor{white}%
+    4 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c ($\uparrow$)$^*$ & co-RE-c ($\uparrow$)$^*$ & co-RE-c ($\uparrow$)$^*$ \\
+    \rowcolor{bgred}\cellcolor{white}%
+    5 & \cellcolor{bggreen}R ($\downarrow$) & co-RE-c [[Ollinger]] ($\uparrow$)$^*$ & co-RE-c ($\uparrow$)$^*$ & co-RE-c ($\uparrow$)$^*$ \\
+    \rowcolor{bgred}\cellcolor{white}%
+    $n$ & \cellcolor{bggreen}R [[GTTwoTiles]] & co-RE-c [[Berger,Golomb]] ($\uparrow$)$^*$ & co-RE-c ($\uparrow$)$^*$ & co-RE-c ($\uparrow$)$^*$ \\
+    \bottomrule
+  \end{tabularx}
+  \caption: Complexity of tiling Euclidean space by translations and rotations,
+    with or without reflections, organized as in \cite[Table~2]{Trominoes}.
+    Notation follows @tab:related.
+    %Blue marks our new results.
+    %The last column applies to every fixed $d\geq4$
+    %via our dimension-$d$ key construction (\leanlogo{} theorem
+    %[`dimension_hardness`](https://github.com/edemaine/translation-tiling-paper/blob/main/lean/TranslationTiling/Rotations/General/Real/Hardness.lean)).
+    %Rows bound the number of prototiles; $n$ means an arbitrary finite set.
+    %Stars mark results for connected prototiles; blue marks our results.
+    %Arrows point to adjacent implying entries; citations also record earlier bounds.
+  @=tab:rotations
 
 # Proof Overview @=sec:overview
 
@@ -310,7 +342,7 @@ touching edges have the same color.
 Deciding whether a given finite set of Wang tiles admits such a tiling
 is co-RE-complete [[Berger]].
 
-Thus our main task is to construct a computable map from a
+Thus our main task for $\Z^3$ is to construct a computable map from a
 finite Wang tile set $\calT$
 to a finite connected set $F_{\calT}\subset\Z^3$ such that
 $\calT$ tiles $\Z^2$ if and only if
@@ -341,7 +373,7 @@ as summarized in @fig:reduction:
     \draw[reductionarrow] (stacked) -- node[arrowlabel,above] {4} (lattice);
     \draw[reductionarrow] (lattice) -- node[arrowlabel,above] {5} (connected);
   \end{tikzpicture}
-  \caption{The five reductions in our construction.
+  \caption{The five reductions in our construction for tiling $\Z^3$ by translations.
     Arrow numbers match the steps in the text; every reduction preserves
     existence of a solution in both directions.}
   \label{fig:reduction}
@@ -396,6 +428,7 @@ as summarized in @fig:reduction:
      the claimed placement. Our Lean formalization gives a counterexample
      to this local claim and proves that their reduction is nonetheless
      correct in our setting.
+   \ 
    Our target space $\Z^2 \times (\Z/m\Z)$ is such a ***quotient***:
    it identifies each point $(x,y,z)$ with $(x,y,z+m)$.
    Their construction uses matching bumps and dents
@@ -411,9 +444,26 @@ as summarized in @fig:reduction:
    This construction scales up the prototile, giving space to connect the
    lattice points by thin corridors, with bumps and dents to force alignment.
 
-The construction is quasipolynomial, simulating $n$ Wang tiles
-using at most $(n+4)^{10^{61}\lg\lg(n+4)}=n^{O(\log\log n)}$ unit cubes.
-For $n=1$, we have an explicit bound of at most $2^{4\cdot10^{60}}$ unit cubes.
+For $d\geq3$, appending $d-3$ zero coordinates to each lattice point
+preserves tilability, by slicing $\Z^d$ into parallel copies of $\Z^3$.
+Replacing each lattice point $p$ by the unit cube $p+[0,1]^d$ then gives a polycube
+in $\R^d$ with the same translational tilability; the reverse implication rounds
+real translations to a generically shifted lattice.
+To preserve tilability under arbitrary Euclidean motions,
+we replace each unit cube by a constant-size polycube
+with distinct matching keys and recesses on its opposite facets,
+which force a common orientation and lattice in every Euclidean tiling.
+Co-RE membership, also for finitely many prototiles,
+follows by encoding tilings as a computable compact system of
+closed polynomial constraints and using finite-precision tests
+to recognize infeasibility.
+
+For $n$ Wang tiles, the translation-only reduction uses at most
+$B(n)=(n+4)^{10^{61}\lg\lg(n+4)}=n^{O(\log\log n)}$ lattice points / unit cubes
+in every fixed dimension $d\geq3$.
+For $n=1$, we can improve the upper bound to $2^{4\cdot10^{60}}$.
+Allowing rotations and/or reflections gives bounds of $64{,}000B(n)$ in 3D
+and $2^{10(d+1)^2}B(n)$ in $d$D.
 
 # Formal Verification in Lean @=sec:lean
 
@@ -433,8 +483,11 @@ and that they rely on only Lean's three standard axioms
 In the rest of this section, we explain the statements from [`Abstract.lean`](https://github.com/edemaine/translation-tiling-paper/blob/main/lean/TranslationTiling/Abstract.lean).
 (The source file [`lean/TranslationTiling/Abstract.lean`](https://github.com/edemaine/translation-tiling-paper/blob/main/lean/TranslationTiling/Abstract.lean)
 remains the authoritative version.)
-It imports only Mathlib and the co-RE definitions of `lean-wang`
-(`CoREPred` and `CoREComplete`, defined in the same way as in the introduction),
+It uses Mathlib's definitions of computability, Euclidean space, affine isometries,
+and Lebesgue measure
+and `lean-wang`'s definitions of co-RE
+(`CoREPred`, `CoREHard`, and `CoREComplete`, defined as in the introduction)
+and Wang tiling (`TileSet` and `TilesPlane`),
 together with a short file [`AbstractBridge.lean`](https://github.com/edemaine/translation-tiling-paper/blob/main/lean/TranslationTiling/AbstractBridge.lean) whose job is to connect
 these statements to the definitions used in the rest of the formalization
 (but which need not be checked by a human).
@@ -443,7 +496,7 @@ these statements to the definitions used in the rest of the formalization
 
 ## Prototiles
 
-A ***prototile*** is a finite list $P$ of points in $\Z^3$.
+Fix a dimension $d\geq3$. A ***prototile*** is a finite list $P$ of points in $\Z^d$.
 It is a list (not a set) so that it can be given as input to an algorithm;
 repetitions are immaterial.
 
@@ -451,7 +504,7 @@ repetitions are immaterial.
 
 ## Connectivity
 
-Two points $a,b\in\Z^3$ are ***adjacent*** if $\|a-b\|_1=1$.
+Two points $a,b\in\Z^d$ are ***adjacent*** if $\|a-b\|_1=1$.
 A prototile $P$ is ***connected*** if any two points in $P$
 are joined by a path of adjacent points inside $P$, i.e.,
 they are related by the reflexive transitive closure of
@@ -460,22 +513,22 @@ the relation "both points are in $P$ and adjacent".
 \phantomsection\label{sec:lean-connected}
 \leansnippet{Adjacent,Connected}
 
-## Tiling \texorpdfstring{$\Z^3$}{Z³}
+## Tiling \texorpdfstring{$\Z^d$}{Zd}
 
-$P$ ***tiles*** $\Z^3$ if there exists a set $T\subseteq\Z^3$ of translations
-such that every $x\in\Z^3$ lies in exactly one translate $t+P$ with $t\in T$,
+$P$ ***tiles*** $\Z^d$ if there exists a set $T\subseteq\Z^d$ of translations
+such that every $x\in\Z^d$ lies in exactly one translate $t+P$ with $t\in T$,
 i.e., there is exactly one $t\in T$ with $x-t\in P$.
 (No periodicity or finiteness assumption is placed on $T$.)
 
 \leansnippet{Tiles}
 
-## Main Theorem for \texorpdfstring{$\Z^3$}{Z³}
+## Main Theorem for \texorpdfstring{$\Z^d$}{Zd}
 
-Deciding whether a connected prototile tiles $\Z^3$ is co-RE-complete
+Deciding whether a connected prototile tiles $\Z^d$ is co-RE-complete
 (`LeanWang.CoREComplete`, from `lean-wang`):
 the non-tilers are recursively enumerable, and every co-RE problem reduces to
 it by a computable many-one reduction.
-Consequently (and using only Mathlib's notion of computable predicate)
+Consequently (and using only Mathlib's computable predicate)
 no algorithm decides it.
 In both statements, the proof is a single call to a theorem in
 [`AbstractBridge.lean`](https://github.com/edemaine/translation-tiling-paper/blob/main/lean/TranslationTiling/AbstractBridge.lean).
@@ -483,41 +536,91 @@ In both statements, the proof is a single call to a theorem in
 \phantomsection\label{sec:lean-z3}
 \leansnippet{tiling_coRE_complete,tiling_undecidable}
 
-A collection of $n$ Wang tiles can be simulated by a nonempty connected
-polycube $P$ using at most $(n+4)^{10^{61}\lg\lg(n+4)}$ unit cubes:
-the Wang tiles tile the plane if and only if $P$ tiles $\Z^3$ by translations.
-The Wang tile definitions come from `lean-wang`.
+A computable reduction converts a list of $n$ Wang tiles into an
+equivalent nonempty connected prototile $P\subset\Z^d$ using
+at most $B(n) = (n+4)^{10^{61}\lg\lg(n+4)}$ unit cubes:
+the Wang tiles tile the plane if and only if $P$ tiles $\Z^d$ by translations.
+Here `LeanWang.TileSet` is a list of Wang tiles, and `LeanWang.TilesPlane`
+asserts that they tile the whole plane.
 List lengths count the input tiles and output cubes,
-and `Real.logb 2` denotes the base-two logarithm $\lg$.
+and `Real.logb 2` denotes the base-2 logarithm $\lg$.
 
-\leansnippet{tiling_simulates_wang}
+\leansnippet{tiling_reduction}
 
-## Tiling \texorpdfstring{$\R^3$}{R³}
+## Tiling \texorpdfstring{$\R^d$}{Rd}
 
-%As for $\Z^3$, points of $\R^3$ are functions from the three coordinate indices
-%(`Fin 3`) to $\R$.
-The ***solid body*** of $P$ is the union of the closed unit cubes $p+[0,1]^3$ for $p\in P$.
-The prototile $P$ ***tiles $\R^3$*** if there exists a set $T\subseteq\R^3$ of
-(arbitrary real) translations such that, for Lebesgue-almost every $x\in\R^3$,
-there is exactly one $t\in T$ with $x-t$ in the solid body of $P$.
+We represent a ***point*** `x` of $\R^d$ using Mathlib's `EuclideanSpace`,
+which provides the usual Euclidean norm.
+A coordinate is written `x i` for `i : Fin d`,
+just like our `Point` definition for $\Z^d$.
+The ***solid body*** of $P$ is the union of the closed unit cubes $p+[0,1]^d$ for $p\in P$.
+
+\leansnippet{RealPoint,Solid}
+
+A ***Euclidean motion*** is an affine bijection preserving distances.
+Mathlib's `AffineIsometryEquiv` represents such a motion. In the notation below,
+$\simeq$ denotes a bijection, the superscripts mean affine and isometric,
+and $[\R]$ specifies real scalars.
+
+\leansnippet{Motion}
+
+We define four sets of motions: all Euclidean motions; translations alone;
+translations and rotations; and translations and at most one arbitrary hyperplane reflection.
+A motion is a translation exactly when its linear part is the identity,
+and is a translation composed with a rotation exactly when its linear part has determinant $1$.
+In Lean, `f.linear` extracts the linear part, `1` denotes the identity,
+and `.det` computes the determinant.
+Mathlib's `AffineSubspace.perpBisector p q` is the set of points equidistant
+from `p` and `q`, a hyperplane when they are distinct.
+The function `EuclideanGeometry.reflection` reflects in this affine subspace.
+The product applies the reflection first, then the translation.
+When `p = q`, the bisector is the whole space and its reflection is the identity,
+so translations alone are included too.
+
+\leansnippet{allMotions,translations,translationsAndRotations,translationsAndReflections}
+
+The predicate `RealTiles P motions` requires a set of permitted motions whose
+placed copies cover Lebesgue-almost every point exactly once.
+The notation `f '' S` means the image $\{f(x):x\in S\}$.
 ("Almost every" so that cubes may share boundaries.)
 
-\leansnippet{RealPoint,Solid,RealTiles}
+\leansnippet{RealTiles}
 
-## Main Theorem for \texorpdfstring{$\R^3$}{R³}
+## Main Theorem for \texorpdfstring{$\R^d$}{Rd}
 
-Tiling $\R^3$ by translations of the solid body of a single finite connected
-polycube is co-RE-complete (and hence undecidable).
+Deciding whether a connected polycube tiles $\R^d$ is co-RE-hard
+(`LeanWang.CoREHard`, from `lean-wang`) and undecidable
+for any set of Euclidean motions containing all translations.
+
+\phantomsection\label{sec:lean-rigid}
+\leansnippet{real_tiling_coRE_hard,real_tiling_undecidable}
+
+For each of the four motion sets defined above, tiling $\R^d$
+with a single finite connected polycube is co-RE-complete.
 
 \phantomsection\label{sec:lean-r3}
-\leansnippet{real_tiling_coRE_complete,real_tiling_undecidable}
+\leansnippet{real_tiling_coRE_complete}
 
-Together, these four Lean theorems establish @thm:undecidability.
+Together, these Lean theorems establish @thm:undecidability.
 
-The same polycube and cube bound also simulate Wang tiling with arbitrary
-real translations:
+The same computable reduction and cube bound from $\Z^d$ apply.
+The following are equivalent: the input Wang tiles tile the plane;
+the output prototile tiles $\Z^d$ by lattice translations; and
+its solid body tiles $\R^d$ by arbitrary real translations.
 
-\leansnippet{real_tiling_simulates_wang}
+\leansnippet{real_tiling_reduction}
+
+A computable reduction produces a nonempty connected polycube that tiles
+$\Z^d$ by lattice translations if and only if the input Wang tiles tile the plane.
+For any set of Euclidean motions containing all translations, this is also
+equivalent to its solid body tiling $\R^d$ using those motions.
+Its cube bound is $2^{10(d+1)^2}B(n)$.
+
+\leansnippet{rigid_tiling_reduction}
+
+In 3D, the bound improves to $64{,}000B(n)$:
+
+\leansnippet{rigid_tiling_reduction_three}
 
 # Our Approach to the Proof @=sec:approach
 
@@ -548,6 +651,10 @@ We used the following LLM models:
 GPT 6.1 Sol, GPT 6 Astra,
 Claude Sonnet 5.5, Claude Opus 5.5, and Claude Fable 5.1.
 
-\FloatBarrier
+\AddToHook:
+  - cmd/thebibliography/after
+  - \setlength\itemsep: 0pt
+    \setlength\parskip: 0pt
+
 \bibliographystyle: alpha-key
 \bibliography: paper

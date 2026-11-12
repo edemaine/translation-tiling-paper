@@ -11,11 +11,11 @@ src = root / "lean/TranslationTiling/Abstract.lean"
 out = root / "lean-snippets"
 out.mkdir(exist_ok=True)
 
-text = src.read_text()
+text = src.read_text(encoding="utf-8")
 imports = re.match(r"(?:import [^\n]+\n)+", text)
 if imports is None:
     sys.exit("cannot find the opening import block")
-(out / "Imports.lean").write_text(imports.group())
+(out / "Imports.lean").write_text(imports.group(), encoding="utf-8", newline="\n")
 body = text.split("namespace TranslationTiling.Abstract", 1)[1]
 body = body.rsplit("end TranslationTiling.Abstract", 1)[0]
 body = re.sub(r"/-!.*?-/", "", body, flags=re.S)   # section comments
@@ -30,8 +30,20 @@ for block in re.split(r"\n\s*\n", body):
         sys.exit(f"cannot name block:\n{block}")
     if block.startswith("theorem"):  # show the statement only, not the proof
         stmt = block.split(":=", 1)[0].rstrip()
-        head, rest = stmt.split(" : ", 1)  # break after the name to avoid overflow
+        # Break at the result type, after any parenthesized/implicit parameters.
+        # A colon in `(motions : Set (Motion d))` belongs to a parameter instead.
+        depth = 0
+        for i, char in enumerate(stmt):
+            if char in "([{":
+                depth += 1
+            elif char in ")]}":
+                depth -= 1
+            elif char == ":" and depth == 0:
+                head, rest = stmt[:i].rstrip(), stmt[i + 1:].lstrip()
+                break
+        else:
+            sys.exit(f"cannot find theorem result type:\n{stmt}")
         block = f"{head} :\n  {rest} := ..."
-    (out / f"{m.group(1)}.lean").write_text(block + "\n")
+    (out / f"{m.group(1)}.lean").write_text(block + "\n", encoding="utf-8", newline="\n")
     names.append(m.group(1))
 print(" ".join(names))

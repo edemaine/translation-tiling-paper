@@ -36,7 +36,6 @@ dimensions is decidable.
 - [verification/check_activation.py](verification/check_activation.py): finite algebra checks.
 - [figures/generate_connected.py](figures/generate_connected.py): exact connectedness-example renderer.
 - [figures/generate_translation_tiling.py](figures/generate_translation_tiling.py): separate polycube and tiling-patch SVGs.
-- [figures/generate_translation_tiling_experiments.py](figures/generate_translation_tiling_experiments.py): optional wide-to-packed spacing studies with 65, 153, or 243 tiles, with a local comparison page in `figures/translation-tiling-experiments/`.
 - [figures/](figures/): checked-in PDF figures needed to build the paper.
 
 Build with [Texlish](https://texlish.org/) 0.3.0 or later,
