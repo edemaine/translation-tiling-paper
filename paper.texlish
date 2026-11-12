@@ -1,4 +1,4 @@
-::version >= 0.3.0
+::version >= 0.3.2
 ::styles
   @ = \cref
 
@@ -28,6 +28,7 @@
   mathtools
   newtxmath: libertine
   zi4: scaled=0.96
+  upquote
   mathrsfs
   microtype
   enumitem

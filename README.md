@@ -38,7 +38,7 @@ dimensions is decidable.
 - [figures/generate_translation_tiling.py](figures/generate_translation_tiling.py): separate polycube and tiling-patch SVGs.
 - [figures/](figures/): checked-in PDF figures needed to build the paper.
 
-Build with [Texlish](https://texlish.org/) 0.3.0 or later,
+Build with [Texlish](https://texlish.org/) 0.3.2 or later,
 LaTeX (including TikZ, subcaption, and tcolorbox), BibTeX, latexmk,
 Python 3, and Make installed:
 
