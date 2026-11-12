@@ -154,7 +154,7 @@ to cover all of $\Z^d$ without overlaps?
 For which values of $k$ and $d$ is this problem decidable?
 In this paper, we prove undecidability for $k=1$ and $d=3$.
 
-: figure[tbp]
+: figure[htbp]
   \centering
   : tikzpicture[>=Latex]
     \node[inner sep=0pt,outer sep=0pt] (prototile)
@@ -350,7 +350,7 @@ $F_{\calT}$ tiles $\Z^3$ by translations.
 To achieve this, we combine five constructions,
 as summarized in @fig:reduction:
 
-: figure[tbp]
+: figure[bp]
   \centering
   \begin{tikzpicture}[
     font=\small, >=Latex,
