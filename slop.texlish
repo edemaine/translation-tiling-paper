@@ -3,7 +3,8 @@
   @ = \cref
 
 %\title: Undecidability of Polycube Monotiling by Translation in 3D
-\title: Tiling 3D by Translates of a Single Polycube is Undecidable
+%\title: Tiling 3D by Translates of a Single Polycube is Undecidable
+\title: Tiling 3D Space by (Translates of) a Single Polycube is Undecidable
 \author:
   Erik D. Demaine[^MIT-CSAIL]
   \and

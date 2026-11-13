@@ -1,5 +1,5 @@
 ---
-title: Tiling 3D by Translates of a Single Polycube is Undecidable
+title: Tiling 3D Space by (Translates of) a Single Polycube is Undecidable
 author: >-
   [Erik D. Demaine](https://erikdemaine.org/) ·
   [Stefan Langerman](https://algo.ulb.be/sl/)

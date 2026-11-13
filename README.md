@@ -1,4 +1,4 @@
-# Tiling 3D by Translates of a Single Polycube is Undecidable
+# Tiling 3D Space by (Translates of) a Single Polycube is Undecidable
 
 [Website](https://edemaine.github.io/translation-tiling-paper/) ·
 [Paper (PDF)](https://edemaine.github.io/translation-tiling-paper/paper.pdf) ·
