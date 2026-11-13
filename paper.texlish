@@ -303,6 +303,8 @@ The 2D case with one prototile remains open.
     >{\hsize=1.25\hsize\linewidth=\hsize\centering\arraybackslash}X
     *{2}{>{\centering\arraybackslash}X}}
     \toprule
+    \multicolumn{5}{c}{\textbf{Translations + rotations (+ reflections)}} \\
+    \midrule
     Prototiles & 1D & 2D & 3D & $d$D ($d\geq4$) \\
     \midrule
     \rowcolor{bggreen}\cellcolor{white}%
