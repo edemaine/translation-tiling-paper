@@ -5,10 +5,11 @@
 [Technical overview (PDF)](https://edemaine.github.io/translation-tiling-paper/slop.pdf)
 
 Given a single polycube, can copies of it tile three-dimensional space using
-only translations? We prove that this problem is undecidable, even when the
-polycube is connected through faces. More precisely, the problem is co-RE
-complete. Dimension three is optimal: the corresponding problem in two
-dimensions is decidable.
+only translations? We prove that this problem is undecidable, even for
+polycubes connected through facets, including when rotations and/or reflections
+are allowed. More precisely, these problems are co-RE-complete.
+Dimension three is optimal for translation only:
+the corresponding problem in two dimensions is decidable.
 
 ## Overview
 
