@@ -34,6 +34,21 @@ theorem geometryPolynomial_powerBound : PowerBound geometryPolynomial := by
     ((((PowerBound.const 2).mul hH).add hM).add (PowerBound.const 1)))).add (PowerBound.const 3)
   exact (hS.pow 3).mul ((((PowerBound.const 3).mul (hS.pow 3)).add (PowerBound.const 6)).pow 3)
 
+/-- Keep the horizontal budget separate from the much larger stacking budget. -/
+theorem exists_connected_tile_of_budget_exact {T : System} {E : EncodingParameters T} {b : ℕ}
+    (hb : ParameterBudget E b) (hC : channelCount T ≤ b) (hL : T.alphabet + 1 ≤ b)
+    (W : LeanWang.TileSet)
+    (hcorrect : LeanWang.TilesPlane W ↔ ∃ A : Set (Ambient E), Solves E A) :
+    ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
+      (LeanWang.TilesPlane W ↔ TranslationTiling.Tiles P) ∧
+      cubeCount P ≤ Compiler.Size.geometryCap (horizontalCap b)
+        (stackPolynomial (commonCap b (channelCount T))) := by
+  obtain ⟨m, hm, hcap, F, hF, hiff, hcoord⟩ :=
+    exists_cyclic_tile_of_budget hb hC hL hcorrect
+  obtain ⟨P, hP, hconn, hiffP, hcubes⟩ :=
+    Compiler.Size.exists_bounded_connected_tile hm hcap F hF hiff hcoord
+  exact ⟨P, hP, hconn, hiffP, hcubes⟩
+
 theorem exists_connected_tile_of_budget {T : System} {E : EncodingParameters T} {b : ℕ}
     (hb : ParameterBudget E b) (hC : channelCount T ≤ b) (hL : T.alphabet + 1 ≤ b)
     (W : LeanWang.TileSet)
@@ -41,11 +56,9 @@ theorem exists_connected_tile_of_budget {T : System} {E : EncodingParameters T} 
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane W ↔ TranslationTiling.Tiles P) ∧
       cubeCount P ≤ geometryPolynomial (commonCap b (channelCount T)) := by
-  obtain ⟨m, hm, hcap, F, hF, hiff, hcoord⟩ :=
-    exists_cyclic_tile_of_budget hb hC hL hcorrect
-  obtain ⟨P, hP, hconn, hiffP, hcubes⟩ :=
-    Compiler.Size.exists_bounded_connected_tile hm hcap F hF hiff hcoord
-  refine ⟨P, hP, hconn, hiffP, hcubes.trans ?_⟩
+  obtain ⟨P, hP, hconn, hiff, hcubes⟩ :=
+    exists_connected_tile_of_budget_exact hb hC hL W hcorrect
+  refine ⟨P, hP, hconn, hiff, hcubes.trans ?_⟩
   apply geometryCap_mono
   · exact horizontalCap_mono (le_commonCap (by unfold channelCount; omega))
   · exact le_rfl

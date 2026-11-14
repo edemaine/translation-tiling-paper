@@ -73,12 +73,12 @@ theorem tiling_undecidable (d : ℕ) (hd : 3 ≤ d) :
 /-- **Theorem.** For each fixed `d ≥ 3`, a computable reduction maps Wang tiling
 to translational tiling by a nonempty connected polycube with the stated cube
 bound.  List lengths count the input tiles and output cubes; `Real.logb 2` is
-the base-two logarithm. Thus the bound is `(n + 4)^(10^61 * lg lg (n + 4))`. -/
+the base-two logarithm. Thus the bound is `(n + 4)^(10^21 * lg lg (n + 4))`. -/
 theorem tiling_reduction (d : ℕ) (hd : 3 ≤ d) :
   ∃ f : LeanWang.TileSet → Prototile d, Computable f ∧
     ∀ T, f T ≠ [] ∧ Connected (f T) ∧ (LeanWang.TilesPlane T ↔ Tiles (f T)) ∧
       ((f T).length : ℝ) ≤ ((T.length : ℝ) + 4) ^
-        (10 ^ 61 * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4))) :=
+        (10 ^ 21 * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4))) :=
   AbstractBridge.tiling_reduction d hd
 
 /-! ### Tiling `ℝ^d` by Euclidean motions -/
@@ -161,20 +161,20 @@ theorem real_tiling_coRE_complete (d : ℕ) (hd : 3 ≤ d)
 cube bound as the ℤ^d case (tiling_reduction) works for arbitrary real
 translations of the output polycube. The same output tiles `ℤ^d` exactly when
 the solid tiles `ℝ^d` by translations. For `n` input Wang tiles, the cube bound
-is `(n + 4)^(10^61 * lg lg (n + 4))`. -/
+is `(n + 4)^(10^21 * lg lg (n + 4))`. -/
 theorem real_tiling_reduction (d : ℕ) (hd : 3 ≤ d) :
   ∃ f : LeanWang.TileSet → Prototile d, Computable f ∧
     ∀ T, f T ≠ [] ∧ Connected (f T) ∧
       (LeanWang.TilesPlane T ↔ Tiles (f T)) ∧
       (Tiles (f T) ↔ RealTiles (f T) translations) ∧
       ((f T).length : ℝ) ≤ ((T.length : ℝ) + 4) ^
-        (10 ^ 61 * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4))) :=
+        (10 ^ 21 * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4))) :=
   AbstractBridge.set_real_tiling_reduction d hd
 
 /-- **Theorem.** For each fixed `d ≥ 3`, a computable reduction from Wang tiling
 produces a nonempty connected polycube with equivalent tilability under lattice
 translations and any set of Euclidean motions containing all translations.
-Its cube bound is `2^(10 * (d + 1)^2) * (n + 4)^(10^61 * lg lg (n + 4))`. -/
+Its cube bound is `2^(10 * (d + 1)^2) * (n + 4)^(10^21 * lg lg (n + 4))`. -/
 theorem rigid_tiling_reduction (d : ℕ) (hd : 3 ≤ d) :
   ∃ f : LeanWang.TileSet → Prototile d, Computable f ∧
     ∀ T, f T ≠ [] ∧ Connected (f T) ∧
@@ -182,11 +182,11 @@ theorem rigid_tiling_reduction (d : ℕ) (hd : 3 ≤ d) :
       (∀ motions : Set (Motion d), translations ⊆ motions →
         (Tiles (f T) ↔ RealTiles (f T) motions)) ∧
       ((f T).length : ℝ) ≤ (2 : ℝ) ^ (10 * (d + 1) ^ 2) * (((T.length : ℝ) + 4) ^
-        (10 ^ 61 * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4)))) :=
+        (10 ^ 21 * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4)))) :=
   AbstractBridge.set_motion_tiling_reduction d hd
 
 /-- **Corollary.** In 3D, the same equivalences hold with the sharper
-cube bound `64000 * (n + 4)^(10^61 * lg lg (n + 4))`. -/
+cube bound `64000 * (n + 4)^(10^21 * lg lg (n + 4))`. -/
 theorem rigid_tiling_reduction_three :
   ∃ f : LeanWang.TileSet → Prototile 3, Computable f ∧
     ∀ T, f T ≠ [] ∧ Connected (f T) ∧
@@ -194,7 +194,7 @@ theorem rigid_tiling_reduction_three :
       (∀ motions : Set (Motion 3), translations ⊆ motions →
         (Tiles (f T) ↔ RealTiles (f T) motions)) ∧
       ((f T).length : ℝ) ≤ 64000 * (((T.length : ℝ) + 4) ^
-        (10 ^ 61 * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4)))) :=
+        (10 ^ 21 * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4)))) :=
   AbstractBridge.set_motion_tiling_reduction_three
 
 end TranslationTiling.Abstract

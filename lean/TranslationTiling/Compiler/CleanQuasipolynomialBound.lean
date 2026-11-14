@@ -58,14 +58,14 @@ theorem exists_connected_tile_clean_quasipolynomial_bound (T : LeanWang.TileSet)
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
       (cubeCount P : ℝ) ≤ ((T.toFinset.card : ℝ) + 4) ^
-        ((10 : ℝ) ^ 61 * Real.logb 2 (Real.logb 2 ((T.toFinset.card : ℝ) + 4))) := by
+        ((10 : ℝ) ^ 21 * Real.logb 2 (Real.logb 2 ((T.toFinset.card : ℝ) + 4))) := by
   obtain ⟨P, hP, hconn, hiff, hcubes⟩ := exists_connected_tile_quasipolynomial_explicit_power_bound T
-  have hnat := hcubes.trans (shifted_power_le_clean (10 ^ 60) T.toFinset.card)
+  have hnat := hcubes.trans (shifted_power_le_clean (10 ^ 20) T.toFinset.card)
   have hcast : (cubeCount P : ℝ) ≤
-      (((T.toFinset.card + 4) ^ (10 * 10 ^ 60 * Nat.log 2 (Nat.log 2 (T.toFinset.card + 4))) : ℕ) : ℝ) :=
+      (((T.toFinset.card + 4) ^ (10 * 10 ^ 20 * Nat.log 2 (Nat.log 2 (T.toFinset.card + 4))) : ℕ) : ℝ) :=
     by exact_mod_cast hnat
-  have hbound := hcast.trans (clean_power_le_real_loglog (10 ^ 60) T.toFinset.card)
-  have hcoeff : 10 * 10 ^ 60 = 10 ^ 61 := by norm_num
+  have hbound := hcast.trans (clean_power_le_real_loglog (10 ^ 20) T.toFinset.card)
+  have hcoeff : 10 * 10 ^ 20 = 10 ^ 21 := by norm_num
   rw [hcoeff] at hbound
   refine ⟨P, hP, hconn, hiff, ?_⟩
   simpa only [Nat.cast_pow, Nat.cast_ofNat] using hbound

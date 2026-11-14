@@ -2084,10 +2084,10 @@ Write $\lg=\log_2$ for the real logarithm to base~$2$.
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    (n+4)^{10^{61}\lg\lg(n+4)}=n^{O(\log\log n)}
+    (n+4)^{10^{21}\lg\lg(n+4)}=n^{O(\log\log n)}
   $$
   unit cubes.
-  For $n=1$, we also have the explicit bound $2^{4\cdot10^{60}}$ unit cubes.
+  For $n=1$, we also have the explicit bound $2^{4\cdot10^{20}}$ unit cubes.
 
 : proof
   First check correctness of the expanded channel system. Activation
@@ -2150,16 +2150,20 @@ Write $\lg=\log_2$ for the real logarithm to base~$2$.
   \leandecl{Compiler.Size.bit_channel_cap_le_iterated_log}.
 
   For the numerical coefficient, the fixed bit alphabet has size at most
-  $10^5$. For $C\geq2$, the useful-prime cap is at most $C^{10^{22}}$,
-  the digit-prime cap at most $C^{10^{24}}$, and the common parameter
-  budget at most $C^{10^{32}}$. Stacking and geometry have degree at most
-  $10^6$ in the common cap $b^{12C}$, giving
-  $|F|\leq C^{(12\cdot10^{32}\cdot10^6)C}$.
-  The logarithmic conversion has coefficient
-  $(N+4)(12\cdot10^{32}\cdot10^6)(N+2)\leq10^{60}$.
+  $10^5$, and the actual channel count satisfies $C\geq N+2>2^{31}$.
+  The useful-prime cap is at most $256C^4\leq C^5$, the digit-prime cap
+  at most $C^{18}$, and the common parameter budget $b$ at most
+  $C^{2\cdot10^6}$. Put $x=b^{12C}$. Keeping the horizontal support
+  bound separate from the stacking cap gives $H\leq b^{211}\leq x$.
+  The stacked cyclic modulus is at most $x^7$, the lattice bounding
+  side at most $x^8$, and the final cube count at most $x^{100}$.
+  Thus $|F|\leq C^{(12\cdot2\cdot10^6\cdot100)C}$.
   These estimates are checked in \leanfile{FiniteCompiler/ExplicitDegrees.lean}.
+  Since $N+2<2^{32}$, the sharper logarithmic conversion in
+  \leandecl{Compiler.Size.linear_channel_cap_le_exp_log_small} has coefficient
+  $17(12\cdot2\cdot10^6\cdot100)(N+2)\leq10^{20}$.
   Monotonicity of logarithms and $n+4\geq4$ absorb the shifts and
-  rounding within the coefficient $10^{61}$. Passing to ordinary real
+  rounding within the coefficient $10^{21}$. Passing to ordinary real
   logarithms gives the displayed bound, as checked in
   \leanfile{Compiler/CleanQuasipolynomialBound.lean}.
 
@@ -2709,8 +2713,8 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, these bounds are $(n+4)^{10^{61}\lg\lg(n+4)}$ for translations and
-$64{,}000(n+4)^{10^{61}\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+function. In dimension three, these bounds are $(n+4)^{10^{21}\lg\lg(n+4)}$ for translations and
+$64{,}000(n+4)^{10^{21}\lg\lg(n+4)}$ for arbitrary Euclidean motions.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[

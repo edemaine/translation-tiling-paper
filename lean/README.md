@@ -103,7 +103,7 @@ have no unproved mathematical input. No unfinished proof is accepted.
 ## Cube Bound by Wang Tile Count
 
 [Compiler/CleanQuasipolynomialBound.lean](TranslationTiling/Compiler/CleanQuasipolynomialBound.lean)
-gives the bound `(n+4)^(10^61*log₂(log₂(n+4))) = n^O(log log n)` with ordinary
+gives the bound `(n+4)^(10^21*log₂(log₂(n+4))) = n^O(log log n)` with ordinary
 real logarithms and no rounding operations. The theorem
 `Size.exists_connected_tile_clean_quasipolynomial_bound` includes
 nonemptiness, face connectedness, and both tilability directions, including
@@ -111,12 +111,12 @@ empty input. Its proof absorbs the shifted integer logarithms in the sharper
 estimate below, then uses monotonicity of real logarithms and powers.
 
 [Compiler/QuasipolynomialBound.lean](TranslationTiling/Compiler/QuasipolynomialBound.lean)
-proves the full `n^O(log log n)` bound with the numerical coefficient `10^60`.
+proves the full `n^O(log log n)` bound with the numerical coefficient `10^20`.
 `Size.exists_connected_tile_quasipolynomial_explicit_bound` gives a nonempty,
 face-connected polycube equivalent to any finite Wang tile set, with at most
 
 ```text
-2^(10^60*(Nat.log 2 (n+2)+1)*(Nat.log 2 (Nat.log 2 (n+2)+2)+1))
+2^(10^20*(Nat.log 2 (n+2)+1)*(Nat.log 2 (Nat.log 2 (n+2)+2)+1))
 ```
 
 distinct unit cubes. Here `n` counts distinct tiles; the theorem also covers
@@ -124,12 +124,15 @@ empty input. Its proof includes both tilability directions, parameter and
 equation bounds, cyclic stacking, quotient-to-lattice conversion, and
 connectedness. The complete dependency closure is included in the axiom audit.
 `Size.exists_connected_tile_quasipolynomial_explicit_power_bound` gives
-`(n+2)^(2*10^60*(Nat.log 2 (Nat.log 2 (n+2)+2)+1))` cubes.
+`(n+2)^(2*10^20*(Nat.log 2 (Nat.log 2 (n+2)+2)+1))` cubes.
 For `n = 1`, `Size.exists_connected_tile_one_quasipolynomial_bound` gives
-at most `2^(4*10^60)` cubes. The explicit degrees are proved in
+at most `2^(4*10^20)` cubes. The explicit degrees are proved in
 [FiniteCompiler/ExplicitDegrees.lean](TranslationTiling/FiniteCompiler/ExplicitDegrees.lean):
-the parameter budget has degree at most `10^32` in the channel count,
-and stacking plus geometry has degree at most `10^6` in the common cap.
+on the actual range of channel counts `C ≥ Sudoku.Width + 2`, the parameter
+budget is at most `C^2000000`. Keeping the horizontal support bound separate
+from the stacking cap `x = b^(12*C)` bounds the geometric cost by `x^100`.
+The channel-to-logarithm conversion uses the binary length of the fixed Sudoku
+width, giving binary-exponent coefficient at most `10^20`.
 
 ### Explicit numerical bounds
 
