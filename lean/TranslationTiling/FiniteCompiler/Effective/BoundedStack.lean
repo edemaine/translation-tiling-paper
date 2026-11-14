@@ -11,10 +11,10 @@ set_option maxHeartbeats 2000000
 noncomputable section
 
 private theorem exists_bounded_partition (s lower X : ℕ)
-    (hs : s + 1 ≤ X) (hN : lower ≤ X) :
-    ∃ c : PartitionCertificate, PartitionValid s lower c ∧ c.1 ≤ 2 * (8 * X ^ 5 + X + 3) := by
+    (hs : s + 1 ≤ X) :
+    ∃ c : PartitionCertificate, PartitionValid s lower c ∧ c.1 ≤ 2 * (8 * X ^ 5 + lower + 3) := by
   classical
-  let threshold := 8 * X ^ 5 + X + 3
+  let threshold := 8 * X ^ 5 + lower + 3
   obtain ⟨q,hq,hqlarge,hqbound⟩ := Nat.bertrand threshold (by dsimp [threshold]; omega)
   have hlarge : lower < q := by dsimp [threshold] at hqlarge; omega
   have hbig : 8 * (s + 1) ^ 5 + 3 ≤ q := by
@@ -49,8 +49,8 @@ private theorem exists_bounded_partition (s lower X : ℕ)
 /-- The extra bound on the searched certificate preserves the optimized
 stacking modulus estimate. -/
 def BoundedPartitionValid (d : ℕ × ℕ × ℕ) (c : PartitionCertificate) : Prop :=
-  if d.1 + 1 ≤ d.2.2 ∧ d.2.1 ≤ d.2.2 then
-    PartitionValid d.1 d.2.1 c ∧ c.1 ≤ 2 * (8 * d.2.2 ^ 5 + d.2.2 + 3)
+  if d.1 + 1 ≤ d.2.2 then
+    PartitionValid d.1 d.2.1 c ∧ c.1 ≤ 2 * (8 * d.2.2 ^ 5 + d.2.1 + 3)
   else c = (0,[])
 
 instance (d : ℕ × ℕ × ℕ) (c : PartitionCertificate) : Decidable (BoundedPartitionValid d c) := by
@@ -60,27 +60,27 @@ instance (d : ℕ × ℕ × ℕ) (c : PartitionCertificate) : Decidable (Bounded
 theorem boundedPartitionValid_primrec :
     PrimrecPred (fun z : (ℕ × ℕ × ℕ) × PartitionCertificate => BoundedPartitionValid z.1 z.2) := by
   have hr : PrimrecPred (fun z : (ℕ × ℕ × ℕ) × PartitionCertificate =>
-      z.1.1 + 1 ≤ z.1.2.2 ∧ z.1.2.1 ≤ z.1.2.2) := by fun_prop
+      z.1.1 + 1 ≤ z.1.2.2) := by fun_prop
   have hproj : Primrec (fun z : (ℕ × ℕ × ℕ) × PartitionCertificate =>
       ((z.1.1,z.1.2.1),z.2)) := by fun_prop
   have hp : PrimrecPred (fun z : (ℕ × ℕ × ℕ) × PartitionCertificate =>
       PartitionValid z.1.1 z.1.2.1 z.2) := partitionValid_primrec.comp hproj
   have hb : PrimrecPred (fun z : (ℕ × ℕ × ℕ) × PartitionCertificate =>
-      z.2.1 ≤ 2 * (8 * z.1.2.2 ^ 5 + z.1.2.2 + 3)) := by fun_prop
+      z.2.1 ≤ 2 * (8 * z.1.2.2 ^ 5 + z.1.2.1 + 3)) := by fun_prop
   have hd : PrimrecPred (fun z : (ℕ × ℕ × ℕ) × PartitionCertificate => z.2 = (0,[])) := by
     fun_prop
   apply ((hr.and (hp.and hb)).or (hr.not.and hd)).of_eq
   intro z
   unfold BoundedPartitionValid
-  by_cases h : z.1.1 + 1 ≤ z.1.2.2 ∧ z.1.2.1 ≤ z.1.2.2 <;>
+  by_cases h : z.1.1 + 1 ≤ z.1.2.2 <;>
     simp only [h, ↓reduceIte, not_true_eq_false, not_false_eq_true, true_and, false_and,
       false_or, or_false]
 
 private theorem exists_boundedPartitionCode (d : ℕ × ℕ × ℕ) :
     ∃ n, BoundedPartitionValid d (decodePartitionCertificate n) := by
   classical
-  by_cases h : d.1 + 1 ≤ d.2.2 ∧ d.2.1 ≤ d.2.2
-  · obtain ⟨c,hc⟩ := exists_bounded_partition d.1 d.2.1 d.2.2 h.1 h.2
+  by_cases h : d.1 + 1 ≤ d.2.2
+  · obtain ⟨c,hc⟩ := exists_bounded_partition d.1 d.2.1 d.2.2 h
     refine ⟨Encodable.encode c,?_⟩
     simpa only [BoundedPartitionValid, if_pos h, decodePartitionCertificate,
       Encodable.encodek, Option.getD_some] using hc
@@ -162,11 +162,32 @@ theorem stackCodes_correct_valid (N : ℕ) (hN : 0 < N) (Fs : List CyclicTile)
   rw [← he] at hfinal
   exact hfinal
 
+theorem boundedPartition_spec_separate (s N X : ℕ) (hs : s + 1 ≤ X) :
+    PartitionValid s N (boundedPartition (s,N,X)) ∧
+      (boundedPartition (s,N,X)).1 ≤ 2 * (8 * X ^ 5 + N + 3) := by
+  have h := boundedPartition_valid (s,N,X)
+  simpa only [BoundedPartitionValid, if_pos hs] using h
+
 theorem boundedPartition_spec (s N X : ℕ) (hs : s + 1 ≤ X) (hN : N ≤ X) :
     PartitionValid s N (boundedPartition (s,N,X)) ∧
       (boundedPartition (s,N,X)).1 ≤ 2 * (8 * X ^ 5 + X + 3) := by
-  have h := boundedPartition_valid (s,N,X)
-  simpa only [BoundedPartitionValid, if_pos (And.intro hs hN)] using h
+  have h := boundedPartition_spec_separate s N X hs
+  exact ⟨h.1,h.2.trans (by omega)⟩
+
+theorem boundedStack_correct_separate (X N : ℕ) (hN : 0 < N) (Fs : List CyclicTile)
+    (hs : 0 < Fs.length) (hX : Fs.length ≤ X) :
+    (∃ A : Set (Plane × ZMod N), ∀ i : Fin Fs.length,
+      Tiles (cyclicTileSet N (Fs.getD i.val [])) A) ↔
+    ∃ B : Set (Plane × ZMod (boundedStack (X,N,Fs)).1),
+      Tiles (cyclicTileSet (boundedStack (X,N,Fs)).1 (boundedStack (X,N,Fs)).2) B := by
+  exact stackCodes_correct_valid N hN Fs hs _
+    (boundedPartition_spec_separate (Fs.length - 1) N X (by omega)).1
+
+theorem boundedStack_modulus_bound_separate (X N : ℕ) (Fs : List CyclicTile)
+    (hs : 0 < Fs.length) (hX : Fs.length ≤ X) :
+    (boundedStack (X,N,Fs)).1 ≤ N * (2 * (8 * X ^ 5 + N + 3)) := by
+  exact Nat.mul_le_mul_left N
+    (boundedPartition_spec_separate (Fs.length - 1) N X (by omega)).2
 
 theorem boundedStack_correct (X N : ℕ) (hN : 0 < N) (Fs : List CyclicTile)
     (hs : 0 < Fs.length) (hX : Fs.length ≤ X) (hNX : N ≤ X) :

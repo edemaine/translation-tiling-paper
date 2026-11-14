@@ -1,3 +1,4 @@
+import TranslationTiling.FiniteCompiler.TernaryBounds
 import TranslationTiling.FiniteCompiler.Effective.CanonicalCorrect
 import TranslationTiling.FiniteCompiler.Effective.StackSupport
 import TranslationTiling.FiniteCompiler.Effective.BitInputCorrect
@@ -55,7 +56,8 @@ theorem optimizedCyclic_facts (T : System) (p : Payload) (hp : PayloadCorrect T 
     (hpos : ∀ n, 0 ≤ T.slope n) (hS : ∀ n, (T.slope n).natAbs ≤ Sudoku.Width) :
     0 < (optimizedCyclic (parameterData T,p)).1 ∧
     (optimizedCyclic (parameterData T,p)).2 ≠ [] ∧
-    (optimizedCyclic (parameterData T,p)).1 ≤ Size.stackPolynomial (rawCountCap (parameterData T)) ∧
+    (optimizedCyclic (parameterData T,p)).1 ≤ Size.separateModulusCap (parameters T).cyclicOrder
+      (canonicalInputFamily (parameterData T,p)).length ∧
     (∀ f ∈ (optimizedCyclic (parameterData T,p)).2,
       f.1.1.natAbs ≤ rawHorizontal (parameterData T) ∧
       f.1.2.natAbs ≤ rawHorizontal (parameterData T)) ∧
@@ -64,33 +66,29 @@ theorem optimizedCyclic_facts (T : System) (p : Payload) (hp : PayloadCorrect T 
         Tiles (cyclicTileSet (optimizedCyclic (parameterData T,p)).1
           (optimizedCyclic (parameterData T,p)).2) B) := by
   let Fs := canonicalInputFamily (parameterData T,p)
-  let X := rawCountCap (parameterData T)
+  let X := Fs.length
   let N := (parameters T).cyclicOrder
   have hlen : 0 < Fs.length := by
     rw [canonicalInputFamily_length T p hp hpos hS]
     exact Finset.card_pos.mpr (testTiles_nonempty (parameters T))
-  obtain ⟨hb,hC,hL⟩ := parameters_budget T Sudoku.Width hS
-  have hcount : Fs.length ≤ X := by
-    rw [canonicalInputFamily_length T p hp hpos hS]
-    exact Size.testTiles_card_le_commonCap hb hC hL
-  have hNX : N ≤ X := Size.cyclicOrder_le_commonCap hb
   have hN : 0 < N := (parameters T).cyclicOrder_pos
   have hraw : optimizedCyclic (parameterData T,p) = boundedStack (X,N,Fs) := by
     unfold optimizedCyclic
     rw [rawOrder_eq]
   rw [hraw]
-  refine ⟨boundedStack_pos X N hN Fs hlen hcount hNX,?_,
-    boundedStack_modulus_bound X N Fs hlen hcount hNX,?_,?_⟩
+  have hpart := boundedPartition_spec_separate (Fs.length-1) N X (by dsimp [X]; omega)
+  refine ⟨Nat.mul_pos hN hpart.1.1.pos,?_,
+    boundedStack_modulus_bound_separate X N Fs hlen le_rfl,?_,?_⟩
   · dsimp only [boundedStack]
     exact stackCodes_nonempty N (boundedPartition (Fs.length-1,N,X)) Fs hlen
-      (boundedPartition_spec (Fs.length-1) N X (by omega) hNX).1
+      hpart.1
       (canonicalInputFamily_nonempty T p hp hpos hS)
   · dsimp only [boundedStack]
     exact stackCodes_horizontal N (boundedPartition (Fs.length-1,N,X)) Fs _
       (canonicalFamily_horizontal _ _ _)
   · exact (family_solution_iff (parameters T) Fs
       (canonicalInputFamily_correct T p hp hpos hS)).trans
-      (boundedStack_correct X N hN Fs hlen hcount hNX)
+      (boundedStack_correct_separate X N hN Fs hlen le_rfl)
 
 end
 end TranslationTiling.FiniteCompiler.Effective

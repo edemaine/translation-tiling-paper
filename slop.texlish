@@ -2023,11 +2023,12 @@ The earlier general numerical bound $2^{2^{10^{40}(n+1)^2}}$ remains proved
 in \leanfile{Compiler/SimpleSizeBound.lean}. It uses a powerset estimate for
 the equation count and weaker prime bounds.
 
-### A Bit-Channel Variant
+### A Ternary-Channel Variant
 
 The linear dependence on $n$ in the exponent comes from assigning a
-separate prime to each possible label in a channel. Splitting the Wang
-label into bits changes the number of channels instead. A second change
+separate prime to each possible label in a channel. Encoding the Wang
+label and arithmetic decorations over a fixed small alphabet changes the
+number of channels instead. A second change
 is essential: use only the single-support maps already present in the
 collision proof of @lem:cycle.
 
@@ -2058,56 +2059,64 @@ collision proof of @lem:cycle.
   \leandecl{Compiler.sparse_cycle_exclusion_iff} and
   \leandecl{Compiler.sparseCycleTiles_card_le}.
 
-Put $A=(p-1)(q-1)$ and
-$\ell=\lfloor\log_2(n+2)\rfloor+1\geq1$.
-Choose an injection $c:\calT\to\{0,1\}^{\ell}$. Replace each ordinary
-channel $i\in I$ by channels $(i,b)$, $b\in\{1,\ldots,\ell\}$, all
-having the same line map $L_i$. The two seed channels stay unchanged.
-The new ordinary alphabet is the fixed set
-$$
-  \Gamma=(\F_p\setminus\{0\})\times(\F_q\setminus\{0\})\times\{0,1\},
-  \qquad |\Gamma|=2A.
-$$
-Encode $(a,a',t)\in\Sigma$ at channel $(i,b)$ by
-$(a,a',c(t)_b)$. A word over the new channels is allowed exactly when
-it is the encoding of some word in $\calW$. This enforces agreement
-of the copied arithmetic digits, valid tile codes, and the original
-line rule. Define the new seed restriction by
-$\widehat B_t=\{(a,a',e)\in\Gamma: a=a'=t\}$.
-Use the original graph, dependence, and activation equations for these
-channels, and the sparse exclusion equations for the new forbidden
-words and seed-label pairs.
-
 Write $\lg=\log_2$ for the real logarithm to base~$2$.
+Put $A=(p-1)(q-1)<pq<2^{16}$, and let $\ell\geq2$ be the binary length
+of $n+2$. Choose an injection
+$c:\Sigma\to\{0,1\}^{\ell+16}$. In the computable construction, its
+first sixteen bits encode the least nonnegative representatives of the
+arithmetic pair $(a,a')$ by $aq+a'$,
+and its remaining $\ell$ bits encode the Wang tile's input-list index.
 
-: proposition[Bit-channel bound] @=prop:bit-channel-bound
+We convert this binary code to a ternary code
+$\widehat c:\Sigma\to\{0,1,2\}^{\ell+18}$ while retaining both seed
+conditions. Give a symbol class $0$ when $(a,a')=(1,1)$, class $1$
+when $(a,a')=(2,2)$, and class $2$ otherwise. Prefix its code by
+$00$, $11$, or $01$, respectively. In the payload, replace every
+binary $1$ by $2$, and every binary $0$ by $1$ in class $1$ and by
+$0$ otherwise. The payload still determines the binary code, so
+$\widehat c$ is injective. Moreover, every position belongs to
+$\widehat B_1=\{0,2\}$ exactly for symbols with $(a,a')=(1,1)$, and
+every position belongs to $\widehat B_2=\{1,2\}$ exactly for symbols
+with $(a,a')=(2,2)$.
+
+Replace each ordinary channel $i\in I$ by channels $(i,b)$,
+$b\in\{1,\ldots,\ell+18\}$, all having the same line map $L_i$.
+The two seed channels stay unchanged. The new ordinary alphabet is
+$\Gamma=\{0,1,2\}$. A word over the new channels is allowed exactly
+when it encodes some word in $\calW$. Use the original graph,
+dependence, and activation equations for these channels, and the
+sparse exclusion equations for the new forbidden words and seed-label
+pairs. The prefix and seed properties are checked in
+\leanfile{FiniteCompiler/TernarySystem.lean}.
+
+: proposition[Ternary-channel bound] @=prop:bit-channel-bound
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    (n+4)^{10^{21}\lg\lg(n+4)}=n^{O(\log\log n)}
+    (n+4)^{10^{16}\lg\lg(n+4)}=n^{O(\log\log n)}
   $$
   unit cubes.
-  For $n=1$, we also have the explicit bound $2^{4\cdot10^{20}}$ unit cubes.
+  For $n=1$, we also have the explicit bound $2^{6\cdot10^{15}}$ unit cubes.
 
 : proof
   First check correctness of the expanded channel system. Activation
-  gives a nonempty active set in every ordinary bit channel. Choose
+  gives a nonempty active set in every ordinary ternary channel. Choose
   one active symbol $V(i,b,m)$ at the common vertical section $(0,m)$.
   At every horizontal point $x$, the tuple
   $(V(i,b,L_i(x)))_{i,b}$ is an allowed encoded word, by the sparse
-  word exclusions. In particular, at $(0,m)$ the bits for each $i$
+  word exclusions. In particular, at $(0,m)$ the digits for each $i$
   decode uniquely to a symbol $W(i,m)\in\Sigma$. At a general $x$,
-  injectivity of the code shows that decoding its $i$th bit tuple gives
+  injectivity of the code shows that decoding its $i$th digit tuple gives
   this same $W(i,L_i(x))$. Hence $W$ satisfies the original line rule.
   This coherence step is checked by
   \leanref{Compiler/BitChannels.lean}{Compiler.BitChannels.array_of_encoded_line_rule}.
 
   Each seed activates somewhere. Its pair exclusions place every
-  chosen bit symbol in $\widehat B_t$ there, so both arithmetic digits
-  of every decoded column symbol equal $t$. The original two-prime
-  soundness argument therefore still applies. Conversely, encode the
-  canonical Sudoku array bit by bit. Each bit channel has a singleton
-  active set, using its own block functions and the same slope $L_i$.
+  chosen ternary symbol in $\widehat B_t$ there. The prefix therefore
+  forces both arithmetic digits of every decoded column symbol to equal $t$.
+  The original two-prime soundness argument applies. Conversely, encode
+  the canonical Sudoku array with $\widehat c$. Each ternary channel has
+  a singleton active set, using its own block functions and the same slope $L_i$.
   The ordinary activation inverse uses only that channel and its slope;
   it requires no distinctness of slopes between channels. The two-seed
   construction and its common auxiliary output remain valid. The
@@ -2116,20 +2125,20 @@ Write $\lg=\log_2$ for the real logarithm to base~$2$.
   tilability directions, including the case $n=0$, when there are no
   allowed encoded words.
 
-  Now write $C=N\ell+2$ for the total number of channels. The constants
+  Now write $C=N(\ell+18)+2$ for the total number of channels. The constants
   $N$, $A$, $M$, and $D$ are independent of $n$. There are $O(C)$ useful
   prime tags. Choosing their ranks above the fixed seed threshold and
   using $p_k\leq(8(k+1))^2$ gives a bound $U=C^{O(1)}$ for all useful
   primes. The digit-prime threshold is $O(U^2)$; there are again only
-  $O(C)$ digit-prime tags because $|\Gamma|=2A$ is fixed. Their primes
-  thus have a bound $Q=C^{O(1)}$. Each channel has at most $2A$ labels,
-  so $r_i\leq Q^{2A}=C^{O(1)}$ and $|P_i|\leq U^2=C^{O(1)}$.
+  $O(C)$ digit-prime tags because $|\Gamma|=3$. Their primes
+  thus have a bound $Q=C^{O(1)}$. Each channel has at most three labels,
+  so $r_i\leq Q^3=C^{O(1)}$ and $|P_i|\leq U^2=C^{O(1)}$.
   Consequently the cyclic factor has order
   $$
     |V|=D\prod_i r_i^2a_ib_i=C^{O(C)}.
   $$
 
-  There are at most $(2A)^{N\ell}$ forbidden bit words. Each needs at
+  There are at most $3^{N(\ell+18)}$ forbidden ternary words. Each needs at
   most $(U^2Q)^C=C^{O(C)}$ sparse cycle tests, since
   $|U_{i,j}|=r_{ij}\leq Q$. There are $O(C)$ seed-label exclusions,
   $O(C^2)$ dependence equations, and $C$ activation equations. The
@@ -2145,36 +2154,42 @@ Write $\lg=\log_2$ for the real logarithm to base~$2$.
   stacked cyclic modulus $q|V|$ is $C^{O(C)}$. The quotient-to-lattice
   and connectedness steps have fixed polynomial volume cost in $H$
   and $q|V|$. The final cube count is therefore $C^{O(C)}$.
-  Since $C=N\ell+2$, this gives the quasipolynomial dependence. The logarithmic
-  conversion is checked in \leanfile{Compiler/BitChannelSize.lean} by
-  \leandecl{Compiler.Size.bit_channel_cap_le_iterated_log}.
+  Since $C=N(\ell+18)+2$, this gives the quasipolynomial dependence.
 
-  For the numerical coefficient, the fixed bit alphabet has size at most
-  $10^5$, and the actual channel count satisfies $C\geq N+2>2^{31}$.
-  The useful-prime cap is at most $256C^4\leq C^5$, the digit-prime cap
-  at most $C^{18}$, and the common parameter budget $b$ at most
-  $C^{2\cdot10^6}$. Put $x=b^{12C}$. Keeping the horizontal support
-  bound separate from the stacking cap gives $H\leq b^{211}\leq x$.
-  The stacked cyclic modulus is at most $x^7$, the lattice bounding
-  side at most $x^8$, and the final cube count at most $x^{100}$.
-  Thus $|F|\leq C^{(12\cdot2\cdot10^6\cdot100)C}$.
-  These estimates are checked in \leanfile{FiniteCompiler/ExplicitDegrees.lean}.
-  Since $N+2<2^{32}$, the sharper logarithmic conversion in
-  \leandecl{Compiler.Size.linear_channel_cap_le_exp_log_small} has coefficient
-  $17(12\cdot2\cdot10^6\cdot100)(N+2)\leq10^{20}$.
-  Monotonicity of logarithms and $n+4\geq4$ absorb the shifts and
-  rounding within the coefficient $10^{21}$. Passing to ordinary real
+  For the numerical coefficient, the actual channel count satisfies
+  $C\geq N+2>2^{31}$. The useful-prime cap is at most
+  $256C^4\leq C^5$, the digit-prime cap at most $C^{18}$, and the common
+  parameter budget $b$ at most $C^{73}$. Each digit product satisfies
+  $r_i\leq C^{54}$, so $|V|\leq C^{119C}$. Counting the single digit
+  subgroup in each sparse test gives at most $C^{28C}$ tests per
+  cycle and at most $s\leq C^{30C}$ equations in total. Keeping the
+  equation count and cyclic order separate in the stacking threshold
+  bounds the stacking prime by $C^{151C}$, hence the stacked modulus
+  by $R=C^{270C}$. The horizontal bound satisfies
+  $H\leq b^{211}\leq C^{15403}\leq R$. The lattice bounding side is
+  at most $8003R$, and the geometric volume cap is at most
+  $729(8003R)^{12}\leq R^{13}$. Thus $|F|\leq C^{3510C}$.
+  These estimates are checked in \leanfile{FiniteCompiler/TernaryBounds.lean}
+  and assembled in \leanfile{FiniteCompiler/TernaryConstruction.lean}.
+
+  Since $\ell\geq2$, we have $C\leq10N\ell+2$, and
+  $10N+2<2^{35}$. The logarithmic conversion in
+  \leandecl{Compiler.Size.linear_channel_cap_le_exp_log_medium} has
+  binary-exponent coefficient
+  $19\cdot3510(10N+2)\leq15\cdot10^{14}$.
+  Absorbing the shifts and rounding costs a factor of six, giving
+  $6\cdot15\cdot10^{14}\leq10^{16}$. Passing to ordinary real
   logarithms gives the displayed bound, as checked in
   \leanfile{Compiler/CleanQuasipolynomialBound.lean}.
 
-The bit-channel variant is formalized end to end in
+The ternary-channel variant is formalized end to end in
 \leanfile{Compiler/CleanQuasipolynomialBound.lean} by
 \leandecl{Compiler.Size.exists_connected_tile_clean_quasipolynomial_bound}.
 The generalized graph, dependence, sparse cycle, and activation equations
 are in `FiniteCompiler/`; their common-solution and soundness
-proofs allow repeated column slopes. The bit-channel equivalence is
-\leanref{FiniteCompiler/BitSystem.lean}{FiniteCompiler.BitSystem.finite_system_iff_wang}.
-\leanfile{FiniteCompiler/GeometryBound.lean} combines the parameter,
+proofs allow repeated column slopes. The ternary-channel equivalence is
+\leanref{FiniteCompiler/TernarySystem.lean}{FiniteCompiler.TernarySystem.finite_system_iff_wang}.
+\leanfile{FiniteCompiler/TernaryConstruction.lean} combines the parameter,
 equation-count, stacking, and geometric bounds. The public theorem
 includes nonemptiness, face connectedness, both tilability directions,
 and the numerical coefficient uniformly for every finite Wang tile set, including
@@ -2198,12 +2213,12 @@ For the second inequality, sort the $2C$ distinct useful primes; the
 $k$th entry is at least $k+1$. These inequalities are checked in
 \leanfile{FiniteCompiler/SizeObstruction.lean} by
 \leandecl{FiniteCompiler.factorial_le_kernelTile_card}.
-Since $C=\Theta(\lg n)$ in the bit-channel variant, even this intermediate
+Since $C=\Theta(\lg n)$ in the ternary-channel variant, even this intermediate
 prototile has $n^{\Omega(\log\log n)}$ elements. Thus polynomial size
 requires changing the encoding. This is a limitation of the present
 construction, with no corresponding lower bound for arbitrary reductions.
 
-A possible change is to reuse a fixed prime table across ordinary bit
+A possible change is to reuse a fixed prime table across ordinary ternary
 channels. At the level of the size estimates, let every such channel
 have fixed moduli $a,b,r$, and keep the two seed channels fixed. With
 $m=N\ell$ ordinary channels the finite factor would have order
@@ -2713,8 +2728,8 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, these bounds are $(n+4)^{10^{21}\lg\lg(n+4)}$ for translations and
-$64{,}000(n+4)^{10^{21}\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+function. In dimension three, these bounds are $(n+4)^{10^{16}\lg\lg(n+4)}$ for translations and
+$64{,}000(n+4)^{10^{16}\lg\lg(n+4)}$ for arbitrary Euclidean motions.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[
@@ -2734,7 +2749,8 @@ additional cubes are needed.
 
 The optimized numerical compiler is formalized in
 \leanfile{FiniteCompiler/Effective/Compiler.lean}.
-It computes a bit code from each tile's list index, searches finite arithmetic
+It combines a binary arithmetic code with each tile's list index, converts
+the result to the seed-preserving ternary code, searches finite arithmetic
 certificates for the bounded prime parameters, and enumerates the sparse cycle
 maps supported at one useful-coordinate value. A common finite coordinate box
 canonically orders the test tiles, allowing duplicate descriptions to be removed

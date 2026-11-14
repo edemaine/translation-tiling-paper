@@ -1,4 +1,4 @@
-import TranslationTiling.FiniteCompiler.Effective.WordLists
+import TranslationTiling.FiniteCompiler.Effective.TernaryInput
 import TranslationTiling.FiniteCompiler.Effective.NumericalParameters
 import TranslationTiling.FiniteCompiler.Effective.SparsePrimitives
 import TranslationTiling.FiniteCompiler.Effective.Canonical
@@ -195,11 +195,11 @@ theorem canonicalInputFamily_computable : Computable canonicalInputFamily := by
   exact hc.of_eq (fun d => rfl)
 
 def optimizedCyclic (d : InputData) : CyclicTileData :=
-  boundedStack (rawCountCap d.1,rawOrder d.1,canonicalInputFamily d)
+  boundedStack ((canonicalInputFamily d).length,rawOrder d.1,canonicalInputFamily d)
 
 theorem optimizedCyclic_computable : Computable optimizedCyclic := by
-  have h1 : Computable (fun d : InputData => rawCountCap d.1) :=
-    rawCountCap_primrec.to_comp.comp Computable.fst
+  have h1 : Computable (fun d : InputData => (canonicalInputFamily d).length) :=
+    Primrec.list_length.to_comp.comp canonicalInputFamily_computable
   have h2 : Computable (fun d : InputData => rawOrder d.1) :=
     rawOrder_primrec.to_comp.comp Computable.fst
   exact boundedStack_computable.comp (h1.pair (h2.pair canonicalInputFamily_computable))
@@ -213,14 +213,14 @@ theorem optimizedTile_computable : Computable optimizedTile :=
 
 /-- The algorithmic input for the optimized Wang compiler. -/
 def wangInput (T : LeanWang.TileSet) : InputData :=
-  (parameterData (bitSystem T),bitPayload T)
+  (parameterData (ternarySystem T),ternaryPayload T)
 
 theorem wangInput_computable : Computable wangInput := by
-  have hw : Primrec (fun T : LeanWang.TileSet => Sudoku.Width * bitWidth T) :=
-    natMul (Primrec.const _) bitWidth_primrec
-  have hshape := hw.to_comp.pair (Computable.const BitSystem.alphabet)
+  have hw : Primrec (fun T : LeanWang.TileSet => Sudoku.Width * ternaryWidth T) :=
+    natMul (Primrec.const _) ternaryWidth_primrec
+  have hshape := hw.to_comp.pair (Computable.const 3)
   have hc := parameterCertificate_computable.comp hshape
-  exact (hw.to_comp.pair ((Computable.const _).pair hc)).pair bitPayload_primrec.to_comp
+  exact (hw.to_comp.pair ((Computable.const _).pair hc)).pair ternaryPayload_primrec.to_comp
 
 def optimizedCompile (T : LeanWang.TileSet) : Tile 3 := optimizedTile (wangInput T)
 

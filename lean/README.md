@@ -103,36 +103,47 @@ have no unproved mathematical input. No unfinished proof is accepted.
 ## Cube Bound by Wang Tile Count
 
 [Compiler/CleanQuasipolynomialBound.lean](TranslationTiling/Compiler/CleanQuasipolynomialBound.lean)
-gives the bound `(n+4)^(10^21*log₂(log₂(n+4))) = n^O(log log n)` with ordinary
+gives the bound `(n+4)^(10^16*log₂(log₂(n+4))) = n^O(log log n)` with ordinary
 real logarithms and no rounding operations. The theorem
 `Size.exists_connected_tile_clean_quasipolynomial_bound` includes
 nonemptiness, face connectedness, and both tilability directions, including
-empty input. Its proof absorbs the shifted integer logarithms in the sharper
-estimate below, then uses monotonicity of real logarithms and powers.
+empty input.
+
+[TernarySystem.lean](TranslationTiling/FiniteCompiler/TernarySystem.lean)
+encodes both arithmetic decorations and Wang labels over three symbols.
+Prefixes `00`, `11`, and `01` preserve the two seed classes; binary payload
+ones become `2`, while zeros become `1` in the second seed class and `0`
+otherwise. Each original column uses the binary length of `n+2`, plus eighteen
+positions. All positions share that column's original slope.
+[Effective/TernaryInput.lean](TranslationTiling/FiniteCompiler/Effective/TernaryInput.lean)
+implements the code using sixteen arithmetic bits and the input tile's list index,
+and proves its primitive recursiveness and agreement with the finite system.
 
 [Compiler/QuasipolynomialBound.lean](TranslationTiling/Compiler/QuasipolynomialBound.lean)
-proves the full `n^O(log log n)` bound with the numerical coefficient `10^20`.
-`Size.exists_connected_tile_quasipolynomial_explicit_bound` gives a nonempty,
-face-connected polycube equivalent to any finite Wang tile set, with at most
+proves the sharper binary-exponent estimate
 
 ```text
-2^(10^20*(Nat.log 2 (n+2)+1)*(Nat.log 2 (Nat.log 2 (n+2)+2)+1))
+2^((15*10^14)*(Nat.log 2 (n+2)+1)*(Nat.log 2 (Nat.log 2 (n+2)+2)+1))
 ```
 
-distinct unit cubes. Here `n` counts distinct tiles; the theorem also covers
-empty input. Its proof includes both tilability directions, parameter and
-equation bounds, cyclic stacking, quotient-to-lattice conversion, and
-connectedness. The complete dependency closure is included in the axiom audit.
-`Size.exists_connected_tile_quasipolynomial_explicit_power_bound` gives
-`(n+2)^(2*10^20*(Nat.log 2 (Nat.log 2 (n+2)+2)+1))` cubes.
-For `n = 1`, `Size.exists_connected_tile_one_quasipolynomial_bound` gives
-at most `2^(4*10^20)` cubes. The explicit degrees are proved in
-[FiniteCompiler/ExplicitDegrees.lean](TranslationTiling/FiniteCompiler/ExplicitDegrees.lean):
-on the actual range of channel counts `C ≥ Sudoku.Width + 2`, the parameter
-budget is at most `C^2000000`. Keeping the horizontal support bound separate
-from the stacking cap `x = b^(12*C)` bounds the geometric cost by `x^100`.
-The channel-to-logarithm conversion uses the binary length of the fixed Sudoku
-width, giving binary-exponent coefficient at most `10^20`.
+and the power estimate
+`(n+2)^(30*10^14*(Nat.log 2 (Nat.log 2 (n+2)+2)+1))`.
+Here `n` counts distinct tiles; duplicate input entries do not affect these
+existence bounds. For `n = 1`,
+`Size.exists_connected_tile_one_quasipolynomial_bound` gives at most
+`2^(6*10^15)` cubes.
+
+[TernaryBounds.lean](TranslationTiling/FiniteCompiler/TernaryBounds.lean)
+retains separate useful-prime and digit-prime bounds. For `C` channels, it
+bounds the cyclic order by `C^(119*C)` and the equation count by `C^(30*C)`.
+The stacking search uses the actual equation count and cyclic order separately,
+giving stacked modulus at most `C^(270*C)` and final volume at most `C^(3510*C)`.
+[TernaryConstruction.lean](TranslationTiling/FiniteCompiler/TernaryConstruction.lean)
+combines these estimates with both tilability directions. The same bounds hold
+for the total computable compiler in
+[Effective/SizeBound.lean](TranslationTiling/FiniteCompiler/Effective/SizeBound.lean),
+with input list length in place of distinct tile count. The complete dependency
+closure is included in the axiom audit.
 
 ### Explicit numerical bounds
 

@@ -1,4 +1,4 @@
-import TranslationTiling.FiniteCompiler.BitSystem
+import TranslationTiling.FiniteCompiler.TernaryConstruction
 import TranslationTiling.FiniteCompiler.ExplicitDegrees
 import TranslationTiling.Compiler.BitChannelSize
 
@@ -25,48 +25,79 @@ theorem tileIn_card (T : LeanWang.TileSet) [Fintype (LeanWang.TileIn T)] :
     right_inv := fun _ => rfl }
   exact (Fintype.card_congr e).trans (Fintype.card_coe _)
 
-/-- The full bit-channel reduction with a numerical binary-exponent coefficient. -/
+/-- Conversion of the ternary channel count, including its eighteen fixed positions. -/
+theorem ternary_channel_cap_bound (n : ℕ) :
+    (Sudoku.Width * (Nat.log 2 (n + 2) + 1 + 18) + 2) ^
+        (3510 * (Sudoku.Width * (Nat.log 2 (n + 2) + 1 + 18) + 2)) ≤
+      2 ^ ((15 * 10 ^ 14) * (Nat.log 2 (n + 2) + 1) *
+        (Nat.log 2 (Nat.log 2 (n + 2) + 2) + 1)) := by
+  let l := Nat.log 2 (n + 2) + 1
+  have hl : 2 ≤ l := by
+    have := Nat.le_log_of_pow_le (b := 2) (x := 1) (y := n + 2) (by decide) (by norm_num)
+    dsimp [l]
+    omega
+  have hcap : Sudoku.Width * (l + 18) + 2 ≤ (10 * Sudoku.Width) * l + 2 := by nlinarith
+  have hcubes : (Sudoku.Width * (l + 18) + 2) ^ (3510 * (Sudoku.Width * (l + 18) + 2)) ≤
+      ((10 * Sudoku.Width) * l + 2) ^ (3510 * ((10 * Sudoku.Width) * l + 2)) :=
+    (Nat.pow_le_pow_left hcap _).trans
+      (Nat.pow_le_pow_right (by omega) (Nat.mul_le_mul_left _ hcap))
+  have hlog := linear_channel_cap_le_exp_log_medium (10 * Sudoku.Width) 3510 l
+    (by norm_num [Sudoku.Width,Sudoku.p,Sudoku.q]) (by omega)
+  have hcoeff : 19 * 3510 * (10 * Sudoku.Width + 2) ≤ 15 * 10 ^ 14 := by
+    norm_num [Sudoku.Width,Sudoku.p,Sudoku.q]
+  have hexp := Nat.mul_le_mul_right (l * (Nat.log 2 (l + 1) + 1)) hcoeff
+  exact hcubes.trans (hlog.trans (Nat.pow_le_pow_right (by decide)
+    (by simpa only [Nat.mul_assoc,l,Nat.add_assoc] using hexp)))
+
+/-- The full ternary-channel reduction with an explicit binary-exponent coefficient. -/
 theorem exists_connected_tile_quasipolynomial_explicit_bound (T : LeanWang.TileSet) :
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
-      cubeCount P ≤ 2 ^ (10 ^ 20 * (Nat.log 2 (T.toFinset.card + 2) + 1) *
+      cubeCount P ≤ 2 ^ ((15 * 10 ^ 14) * (Nat.log 2 (T.toFinset.card + 2) + 1) *
         (Nat.log 2 (Nat.log 2 (T.toFinset.card + 2) + 2) + 1)) := by
   letI : Fintype (LeanWang.TileIn T) := Fintype.ofFinite _
   let l := Nat.log 2 (T.toFinset.card + 2) + 1
-  have hl : 0 < l := by dsimp [l]; omega
-  have hcard : Fintype.card (LeanWang.TileIn T) ≤ 2 ^ l := by
+  have ht : Fintype.card (LeanWang.TileIn T) ≤ 2 ^ l := by
     rw [tileIn_card]
     exact (by omega : T.toFinset.card ≤ T.toFinset.card + 2).trans
       (Nat.lt_pow_succ_log_self (by decide : 1 < 2) _).le
-  obtain ⟨code, hc⟩ := BitChannels.exists_bit_code (LeanWang.TileIn T) l hcard
-  let S := FiniteCompiler.BitSystem.system code hl
-  have hwidth : Sudoku.Width + 2 ≤ FiniteCompiler.channelCount S := by
-    change Sudoku.Width + 2 ≤ Sudoku.Width * l + 2
+  have hp : Fintype.card (ZMod Sudoku.p)ˣ ≤ Sudoku.p := by
+    simpa only [ZMod.card] using Fintype.card_le_of_injective
+      (fun u : (ZMod Sudoku.p)ˣ => u.val) Units.val_injective
+  have hq : Fintype.card (ZMod Sudoku.q)ˣ ≤ Sudoku.q := by
+    simpa only [ZMod.card] using Fintype.card_le_of_injective
+      (fun u : (ZMod Sudoku.q)ˣ => u.val) Units.val_injective
+  have hcard : Fintype.card (Sudoku.Symbol T) ≤ 2 ^ (l + 16) := by
+    calc
+      _ ≤ Sudoku.p * (Sudoku.q * 2 ^ l) := by
+        have he : Fintype.card (Sudoku.Symbol T) = Fintype.card (ZMod Sudoku.p)ˣ *
+            (Fintype.card (ZMod Sudoku.q)ˣ * Fintype.card (LeanWang.TileIn T)) := by
+          simp only [Fintype.card_eq_nat_card,Sudoku.Symbol,Nat.card_prod]
+        rw [he]
+        exact Nat.mul_le_mul hp (Nat.mul_le_mul hq ht)
+      _ = (Sudoku.p * Sudoku.q) * 2 ^ l := by ring
+      _ ≤ 2 ^ 16 * 2 ^ l := Nat.mul_le_mul_right _ (by norm_num [Sudoku.p,Sudoku.q])
+      _ = _ := by rw [← pow_add]; congr 1; omega
+  obtain ⟨code,hcode⟩ := BitChannels.exists_bit_code (Sudoku.Symbol T) (l + 16) hcard
+  have hwidth : Sudoku.Width + 2 ≤ FiniteCompiler.channelCount (FiniteCompiler.TernarySystem.system code) := by
+    change Sudoku.Width + 2 ≤ Sudoku.Width * (l + 16 + 2) + 2
     nlinarith
-  obtain ⟨E, hb, hC, hL⟩ := FiniteCompiler.Size.exists_parameterBudget S Sudoku.Width
-    (FiniteCompiler.BitSystem.slope_bound code hl)
-  obtain ⟨P, hP, hconn, hiff, hcubes⟩ :=
-    FiniteCompiler.Size.exists_connected_tile_of_budget_exact hb hC hL T
-      (FiniteCompiler.BitSystem.finite_system_iff_wang code hc hl E)
-  have hchannel := hcubes.trans (FiniteCompiler.Size.bit_geometry_channel_bound hwidth)
-  have hlog := linear_channel_cap_le_exp_log_small Sudoku.Width
-    (12 * 2000000 * 100) l (by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]) (by omega)
-  have hcoeff : 17 * (12 * 2000000 * 100) * (Sudoku.Width + 2) ≤
-      10 ^ 20 := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
-  have hexp := Nat.mul_le_mul_right (l * (Nat.log 2 (l + 1) + 1)) hcoeff
-  have hbound := hchannel.trans (hlog.trans (Nat.pow_le_pow_right (by decide)
-    (by simpa only [Nat.mul_assoc] using hexp)))
-  refine ⟨P, hP, hconn, hiff, ?_⟩
-  simpa only [l, Nat.mul_assoc, Nat.add_assoc] using hbound
+  obtain ⟨P,hP,hconn,hiff,hcubes⟩ := FiniteCompiler.Size.exists_connected_tile_ternary_channel_bound
+    (FiniteCompiler.TernarySystem.system code) T rfl hwidth
+    (FiniteCompiler.TernarySystem.slope_bound code)
+    (fun E => FiniteCompiler.TernarySystem.finite_system_iff_wang code hcode E)
+  refine ⟨P,hP,hconn,hiff,hcubes.trans ?_⟩
+  simpa only [FiniteCompiler.channelCount,FiniteCompiler.TernarySystem.system,Nat.add_assoc,l]
+    using ternary_channel_cap_bound T.toFinset.card
 
 /-- The same numerical estimate as a power of the number of tiles plus two. -/
 theorem exists_connected_tile_quasipolynomial_explicit_power_bound (T : LeanWang.TileSet) :
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
       cubeCount P ≤ (T.toFinset.card + 2) ^
-        (2 * 10 ^ 20 * (Nat.log 2 (Nat.log 2 (T.toFinset.card + 2) + 2) + 1)) := by
+        (2 * (15 * 10 ^ 14) * (Nat.log 2 (Nat.log 2 (T.toFinset.card + 2) + 2) + 1)) := by
   obtain ⟨P, hP, hconn, hiff, hcubes⟩ := exists_connected_tile_quasipolynomial_explicit_bound T
-  exact ⟨P, hP, hconn, hiff, hcubes.trans (exp_iterated_log_le_power (10 ^ 20) T.toFinset.card)⟩
+  exact ⟨P, hP, hconn, hiff, hcubes.trans (exp_iterated_log_le_power ((15 * 10 ^ 14)) T.toFinset.card)⟩
 
 /-- The coefficient is uniform in the number of distinct tiles, including zero. -/
 theorem exists_connected_tile_quasipolynomial_bound :
@@ -75,17 +106,17 @@ theorem exists_connected_tile_quasipolynomial_bound :
         (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
         cubeCount P ≤ 2 ^ (K * (Nat.log 2 (T.toFinset.card + 2) + 1) *
           (Nat.log 2 (Nat.log 2 (T.toFinset.card + 2) + 2) + 1)) :=
-  ⟨10 ^ 20, exists_connected_tile_quasipolynomial_explicit_bound⟩
+  ⟨(15 * 10 ^ 14), exists_connected_tile_quasipolynomial_explicit_bound⟩
 
 /-- A numerical one-tile consequence of the full bit-channel construction. -/
 theorem exists_connected_tile_one_quasipolynomial_bound (T : LeanWang.TileSet)
     (hT : T.toFinset.card = 1) :
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
-      cubeCount P ≤ 2 ^ (4 * 10 ^ 20) := by
+      cubeCount P ≤ 2 ^ (6 * 10 ^ 15) := by
   obtain ⟨P, hP, hconn, hiff, hcubes⟩ := exists_connected_tile_quasipolynomial_explicit_bound T
-  have hexp : 10 ^ 20 * (Nat.log 2 (1 + 2) + 1) *
-      (Nat.log 2 (Nat.log 2 (1 + 2) + 2) + 1) = 4 * 10 ^ 20 := by norm_num [Nat.log]
+  have hexp : (15 * 10 ^ 14) * (Nat.log 2 (1 + 2) + 1) *
+      (Nat.log 2 (Nat.log 2 (1 + 2) + 2) + 1) = 6 * 10 ^ 15 := by norm_num [Nat.log]
   rw [hT, hexp] at hcubes
   exact ⟨P, hP, hconn, hiff, hcubes⟩
 
