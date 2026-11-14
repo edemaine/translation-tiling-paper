@@ -59,6 +59,34 @@ theorem linear_channel_cap_le_exp_log_medium (N d l : ℕ)
       Nat.pow_le_pow_right (by decide) (Nat.mul_le_mul_right J (Nat.mul_le_mul_left (19 * d) hC))
     _ = _ := by congr 1; dsimp [J]; ring
 
+/-- Use the binary length of the fixed width, rather than the width itself,
+when converting the channel count to a binary exponential. -/
+theorem linear_channel_cap_le_exp_log_narrow (N d l : ℕ)
+    (hN : N + 2 ≤ 2 ^ 19) (hl : 1 ≤ l) :
+    (N * l + 2) ^ (d * (N * l + 2)) ≤
+      2 ^ (11 * d * (N + 2) * l * (Nat.log 2 (l + 1) + 1)) := by
+  let J := Nat.log 2 (l + 1) + 1
+  have hJ : 2 ≤ J := by
+    have := Nat.le_log_of_pow_le (b := 2) (x := 1) (y := l + 1)
+      (by decide) (by simpa using (by omega : 2 ≤ l + 1))
+    dsimp [J]
+    omega
+  have hlpow : l ≤ 2 ^ J := (by omega : l ≤ l + 1).trans
+    (Nat.lt_pow_succ_log_self (by decide : 1 < 2) _).le
+  have hC : N * l + 2 ≤ (N + 2) * l := by nlinarith
+  have hbase : N * l + 2 ≤ 2 ^ (11 * J) := by
+    calc
+      _ ≤ (N + 2) * l := hC
+      _ ≤ 2 ^ 19 * 2 ^ J := Nat.mul_le_mul hN hlpow
+      _ = 2 ^ (19 + J) := (pow_add _ _ _).symm
+      _ ≤ _ := Nat.pow_le_pow_right (by decide) (by omega)
+  calc
+    _ ≤ (2 ^ (11 * J)) ^ (d * (N * l + 2)) := Nat.pow_le_pow_left hbase _
+    _ = 2 ^ (11 * d * (N * l + 2) * J) := by rw [← pow_mul]; congr 1; ring
+    _ ≤ 2 ^ (11 * d * ((N + 2) * l) * J) :=
+      Nat.pow_le_pow_right (by decide) (Nat.mul_le_mul_right J (Nat.mul_le_mul_left (11 * d) hC))
+    _ = _ := by congr 1; dsimp [J]; ring
+
 /-- The degree and binary-exponent coefficient are explicit. -/
 theorem linear_channel_cap_le_exp_log_explicit (N d l : ℕ) (hl : 1 ≤ l) :
     (N * l + 2) ^ (d * (N * l + 2)) ≤

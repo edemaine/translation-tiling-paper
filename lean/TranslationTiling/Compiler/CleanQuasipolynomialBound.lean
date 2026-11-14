@@ -52,15 +52,42 @@ theorem shifted_power_le_clean_six (k n : ℕ) :
   exact (Nat.pow_le_pow_left (by omega : n + 2 ≤ n + 4) _).trans
     (Nat.pow_le_pow_right (by omega) hexp)
 
-/-- The ternary channel estimate has a clean coefficient of ten to the sixteenth. -/
+/-- Treat the few small inputs directly to sharpen the logarithm conversion. -/
+theorem exp_iterated_log_le_clean_four (k n : ℕ) :
+    2 ^ (k * (Nat.log 2 (n + 2) + 1) * (Nat.log 2 (Nat.log 2 (n + 2) + 2) + 1)) ≤
+      (n + 4) ^ (4 * k * Nat.log 2 (Nat.log 2 (n + 4))) := by
+  by_cases hn : n < 12
+  · have hbase : 2 ^ ((Nat.log 2 (n + 2) + 1) * (Nat.log 2 (Nat.log 2 (n + 2) + 2) + 1)) ≤
+        (n + 4) ^ (4 * Nat.log 2 (Nat.log 2 (n + 4))) := by
+      interval_cases n <;> decide
+    calc
+      _ = (2 ^ ((Nat.log 2 (n + 2) + 1) * (Nat.log 2 (Nat.log 2 (n + 2) + 2) + 1))) ^ k := by
+        rw [← pow_mul]; congr 1; ring
+      _ ≤ ((n + 4) ^ (4 * Nat.log 2 (Nat.log 2 (n + 4)))) ^ k := Nat.pow_le_pow_left hbase _
+      _ = _ := by rw [← pow_mul]; congr 1; ring
+  · have hb : 4 ≤ Nat.log 2 (n + 4) := Nat.le_log_of_pow_le (by decide) (by norm_num; omega)
+    have hc : 2 ≤ Nat.log 2 (Nat.log 2 (n + 4)) :=
+      Nat.le_log_of_pow_le (by decide) (by simpa using hb)
+    have hshift : Nat.log 2 (n + 2) + 2 ≤ Nat.log 2 (n + 4) * 2 := by
+      have h := Nat.log_mono_right (b := 2) (by omega : n + 2 ≤ n + 4)
+      omega
+    have hlog := Nat.log_mono_right (b := 2) hshift
+    rw [Nat.log_mul_base (by decide) (by omega)] at hlog
+    apply (exp_iterated_log_le_power k n).trans
+    apply (Nat.pow_le_pow_left (by omega : n + 2 ≤ n + 4) _).trans
+    apply Nat.pow_le_pow_right (by omega)
+    have hJ : Nat.log 2 (Nat.log 2 (n + 2) + 2) + 1 ≤
+        2 * Nat.log 2 (Nat.log 2 (n + 4)) := by omega
+    nlinarith [Nat.mul_le_mul_left (2 * k) hJ]
+
+/-- The separated parameters give a clean coefficient of ten to the eleventh. -/
 theorem ternary_exp_le_clean (n : ℕ) :
-    2 ^ ((15 * 10 ^ 14) * (Nat.log 2 (n + 2) + 1) *
+    2 ^ ((2 * 10 ^ 10) * (Nat.log 2 (n + 2) + 1) *
       (Nat.log 2 (Nat.log 2 (n + 2) + 2) + 1)) ≤
-      (n + 4) ^ (10 ^ 16 * Nat.log 2 (Nat.log 2 (n + 4))) := by
-  apply ((exp_iterated_log_le_power (15 * 10 ^ 14) n).trans
-    (shifted_power_le_clean_six (15 * 10 ^ 14) n)).trans
+      (n + 4) ^ (10 ^ 11 * Nat.log 2 (Nat.log 2 (n + 4))) := by
+  apply (exp_iterated_log_le_clean_four (2 * 10 ^ 10) n).trans
   apply Nat.pow_le_pow_right (by omega)
-  exact Nat.mul_le_mul_right _ (by norm_num : 6 * (15 * 10 ^ 14) ≤ 10 ^ 16)
+  exact Nat.mul_le_mul_right _ (by norm_num : 4 * (2 * 10 ^ 10) ≤ 10 ^ 11)
 
 /-- Passing to ordinary real logarithms removes all rounding operations. -/
 theorem clean_power_le_real_loglog (k n : ℕ) :
@@ -90,14 +117,14 @@ theorem exists_connected_tile_clean_quasipolynomial_bound (T : LeanWang.TileSet)
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
       (cubeCount P : ℝ) ≤ ((T.toFinset.card : ℝ) + 4) ^
-        ((10 : ℝ) ^ 16 * Real.logb 2 (Real.logb 2 ((T.toFinset.card : ℝ) + 4))) := by
+        ((10 : ℝ) ^ 11 * Real.logb 2 (Real.logb 2 ((T.toFinset.card : ℝ) + 4))) := by
   obtain ⟨P,hP,hconn,hiff,hcubes⟩ := exists_connected_tile_quasipolynomial_explicit_bound T
   have hnat := hcubes.trans (ternary_exp_le_clean T.toFinset.card)
   have hcast : (cubeCount P : ℝ) ≤
-      (((T.toFinset.card + 4) ^ (10 ^ 16 * Nat.log 2 (Nat.log 2 (T.toFinset.card + 4))) : ℕ) : ℝ) :=
+      (((T.toFinset.card + 4) ^ (10 ^ 11 * Nat.log 2 (Nat.log 2 (T.toFinset.card + 4))) : ℕ) : ℝ) :=
     by exact_mod_cast hnat
   refine ⟨P,hP,hconn,hiff,hcast.trans ?_⟩
-  convert clean_power_le_real_loglog (10 ^ 15) T.toFinset.card using 1 <;> norm_num
+  convert clean_power_le_real_loglog (10 ^ 10) T.toFinset.card using 1 <;> norm_num
 
 end
 end TranslationTiling.Compiler.Size

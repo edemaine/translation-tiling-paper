@@ -56,7 +56,7 @@ theorem wordConstraintTiles_card_le (hb : ParameterBudget E b)
     apply (Nat.pow_le_pow_left hs _).trans
     apply Nat.pow_le_pow_right (by have := hb.two; omega)
     simp only [Column, Fintype.card_eq_nat_card, Nat.card_fin]
-    rw [channelCount_eq, residueModulus_eq]
+    simp only [channelCount_eq, residueModulus_eq]
     omega
   unfold wordConstraintTiles
   apply Finset.card_biUnion_le.trans
@@ -77,7 +77,7 @@ theorem seedConstraintTiles_card_le (hb : ParameterBudget E b)
   have hN : Fintype.card (Column T) ≤ b := by
     apply le_trans (b := channelCount) _ hC
     simp only [Column, Fintype.card_eq_nat_card, Nat.card_fin]
-    rw [channelCount_eq, residueModulus_eq]
+    simp only [channelCount_eq, residueModulus_eq]
     omega
   have hs := (label_card_le T (.inl (0 : Sudoku.Column))).trans hL
   change Fintype.card (Symbol T) ≤ b at hs
@@ -103,7 +103,7 @@ theorem dependenceTiles_card_le (hb : ParameterBudget E b) (hC : channelCount �
   have hN : Fintype.card (Column T) ≤ b := by
     apply le_trans (b := channelCount) _ hC
     simp only [Column, Fintype.card_eq_nat_card, Nat.card_fin]
-    rw [channelCount_eq, residueModulus_eq]
+    simp only [channelCount_eq, residueModulus_eq]
     omega
   have hsub (i : Channel T) : Fintype.card {j : Channel T // j ≠ i} ≤ b :=
     (Fintype.card_le_of_injective Subtype.val Subtype.val_injective).trans hC
@@ -140,7 +140,7 @@ theorem testTiles_card_le_direct (hb : ParameterBudget E b)
     rw [Finset.card_univ]
     have hN : Fintype.card (Column T) ≤ channelCount := by
       simp only [Column, Fintype.card_eq_nat_card, Nat.card_fin]
-      rw [channelCount_eq, residueModulus_eq]
+      simp only [channelCount_eq, residueModulus_eq]
       omega
     exact (hN.trans hC).trans (by simpa using hbound 1 (by dsimp [e]; omega))
   have hseeds : (Finset.univ.image (seedActivationTile E)).card ≤ b ^ e := by

@@ -154,7 +154,7 @@ private theorem attachDigits_injective {T : LeanWang.TileSet}
 theorem exists_parameters (T : LeanWang.TileSet) :
     Nonempty (EncodingParameters T) := by
   classical
-  obtain ⟨f, hfinj, hf⟩ := exists_prime_family (FreshUsefulTag T) ((Sudoku.Width ^ 2) + Sudoku.p + Sudoku.q + 3)
+  obtain ⟨f, hfinj, hf⟩ := exists_prime_family (FreshUsefulTag T) ((Sudoku.SeedModulus ^ 2) + Sudoku.p + Sudoku.q + 3)
   let useful : UsefulTag T → ℕ := usefulPrime f
   have huseful_prime : ∀ i, Nat.Prime (useful i) :=
     usefulPrime_prime (fun i => (hf i).1)
@@ -163,12 +163,12 @@ theorem exists_parameters (T : LeanWang.TileSet) :
     intro i
     have := (hf i).2
     omega
-  have huseful_ne (v : ℕ) (hv : v = Sudoku.p ∨ v = Sudoku.q) :
+  have huseful_ne (v : ℕ) (hv : v = 5 ∨ v = Sudoku.p ∨ v = Sudoku.q) :
       ∀ i, useful i ≠ v := by
     intro i
-    have hvlarge : 200 < v := by rcases hv with rfl | rfl <;> decide
+    have hvlarge : 4 < v := by rcases hv with rfl | rfl | rfl <;> decide
     have hvbound : v ≤ Sudoku.p + Sudoku.q := by
-      rcases hv with rfl | rfl <;> omega
+      rcases hv with rfl | rfl | rfl <;> norm_num [Sudoku.p,Sudoku.q]
     rcases i with (i | t) | i
     · change f (.inl i) ≠ v
       have := (hf (.inl i)).2
@@ -214,6 +214,7 @@ theorem exists_parameters (T : LeanWang.TileSet) :
       (fun i j => (hseparate i j).ne)
     prime_ne_p := ?_
     prime_ne_q := ?_
+    prime_ne_five := ?_
     seed_a_eq := ?_
     seed_b_large := ?_
     blockA := A
@@ -231,24 +232,33 @@ theorem exists_parameters (T : LeanWang.TileSet) :
     · exact (hg j).1
   · intro t
     rcases t with i | (i | j)
-    · exact huseful_ne Sudoku.p (Or.inl rfl) (.inl i)
-    · exact huseful_ne Sudoku.p (Or.inl rfl) (.inr i)
+    · exact huseful_ne Sudoku.p (Or.inr (Or.inl rfl)) (.inl i)
+    · exact huseful_ne Sudoku.p (Or.inr (Or.inl rfl)) (.inr i)
     · change g j ≠ Sudoku.p
       have hj := (hg j).2
       dsimp [bound] at hj
       omega
   · intro t
     rcases t with i | (i | j)
-    · exact huseful_ne Sudoku.q (Or.inr rfl) (.inl i)
-    · exact huseful_ne Sudoku.q (Or.inr rfl) (.inr i)
+    · exact huseful_ne Sudoku.q (Or.inr (Or.inr rfl)) (.inl i)
+    · exact huseful_ne Sudoku.q (Or.inr (Or.inr rfl)) (.inr i)
     · change g j ≠ Sudoku.q
       have hj := (hg j).2
       dsimp [bound] at hj
       omega
   · intro t
+    rcases t with i | (i | j)
+    · exact huseful_ne 5 (Or.inl rfl) (.inl i)
+    · exact huseful_ne 5 (Or.inl rfl) (.inr i)
+    · change g j ≠ 5
+      have hj := (hg j).2
+      dsimp [bound] at hj
+      have : 5 ≤ Sudoku.p + Sudoku.q := by decide
+      omega
+  · intro t
     rfl
   · intro t
-    change (Sudoku.Width ^ 2) < f (.inr (.inr t))
+    change (Sudoku.SeedModulus ^ 2) < f (.inr (.inr t))
     have ht := (hf (.inr (.inr t))).2
     omega
   · intro i j

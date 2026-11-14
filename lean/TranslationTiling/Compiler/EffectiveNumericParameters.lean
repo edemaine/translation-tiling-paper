@@ -73,7 +73,7 @@ theorem numericalR_eq (T : LeanWang.TileSet) (i : FixedChannel) :
   rfl
 
 noncomputable def numericalOrder (T : LeanWang.TileSet) : ℕ :=
-  Sudoku.Width ^ 2 * ((Finset.univ : Finset FixedChannel).toList.map fun i =>
+  Sudoku.SeedModulus ^ 2 * ((Finset.univ : Finset FixedChannel).toList.map fun i =>
     numericalR T i ^ 2 * usefulPrime (.inl i) * usefulPrime (.inr i)).prod
 
 theorem numericalOrder_computable : Computable numericalOrder := by
@@ -93,7 +93,7 @@ theorem numericalOrder_computable : Computable numericalOrder := by
     (f := fun _ : LeanWang.TileSet => (Finset.univ : Finset FixedChannel).toList)
     (g := fun T i => numericalR T i ^ 2 * usefulPrime (.inl i) * usefulPrime (.inr i))
     (Computable.const _) hblock
-  have hresult := Primrec.nat_mul.to_comp.comp (Computable.const (Sudoku.Width ^ 2))
+  have hresult := Primrec.nat_mul.to_comp.comp (Computable.const (Sudoku.SeedModulus ^ 2))
     (product_primrec.to_comp.comp hlist)
   exact hresult
 

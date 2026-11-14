@@ -64,8 +64,8 @@ def lineDependenceFamily (d : InputData) : List CyclicTile :=
 
 def seedDependenceFamily (d : ParameterData) : List CyclicTile :=
   (List.range 2).flatMap fun t =>
-    [rawInvariance d (Nat.pair 1 t) ((Sudoku.Width : ℤ),0) [],
-     rawInvariance d (Nat.pair 1 t) (0,(Sudoku.Width : ℤ)) []]
+    [rawInvariance d (Nat.pair 1 t) ((Sudoku.SeedModulus : ℤ),0) [],
+     rawInvariance d (Nat.pair 1 t) (0,(Sudoku.SeedModulus : ℤ)) []]
 
 @[fun_prop] theorem seedDependenceFamily_primrec : Primrec seedDependenceFamily := by
   unfold seedDependenceFamily
@@ -139,7 +139,7 @@ def rawSeedConstraintFamily (d : InputData) : List CyclicTile :=
   fun_prop
 
 def rawEnvironment (d : ParameterData) (i : ℕ) : ActivationEnvironment :=
-  ((rawOrder d,rawOtherModuli d i),(rawR d i,rawA d i,rawB d i,Sudoku.Width ^ 2))
+  ((rawOrder d,rawOtherModuli d i),(rawR d i,rawA d i,rawB d i,Sudoku.SeedModulus ^ 2))
 
 @[fun_prop] theorem rawEnvironment_primrec : Primrec (fun z : ParameterData × ℕ =>
     rawEnvironment z.1 z.2) := by
@@ -156,7 +156,7 @@ def rawOrdinaryFamily (d : InputData) : List CyclicTile :=
 
 def rawSeedFamily (d : ParameterData) : List CyclicTile :=
   (List.range 2).map fun t =>
-    seedCodes (rawEnvironment d (Nat.pair 1 t)) (rawA d (Nat.pair 1 (1 - t))) Sudoku.Width
+    seedCodes (rawEnvironment d (Nat.pair 1 t)) (rawA d (Nat.pair 1 (1 - t))) Sudoku.SeedModulus
 
 @[fun_prop] theorem rawSeedFamily_primrec : Primrec rawSeedFamily := by
   unfold rawSeedFamily

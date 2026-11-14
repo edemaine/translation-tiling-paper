@@ -150,6 +150,16 @@ def parameters (T : LeanWang.TileSet) : EncodingParameters T where
       unfold digitBound at h
       change digitLookup j.1 (labelCode j.1 j.2) ≠ Sudoku.q
       omega
+  prime_ne_five := by
+    intro x
+    rcases x with i | (i | j)
+    · exact baseParameters.prime_ne_five (.inl i)
+    · exact baseParameters.prime_ne_five (.inr (.inl i))
+    · have h := digitLookup_gt j.1 (labelCode j.1 j.2)
+      unfold digitBound at h
+      change digitLookup j.1 (labelCode j.1 j.2) ≠ 5
+      have : 5 ≤ Sudoku.p + Sudoku.q := by decide
+      omega
   seed_a_eq := fun t => baseParameters.seed_a_eq t
   seed_b_large := fun t => baseParameters.seed_b_large t
   blockA := fun i j => (positiveCombination (blockInput i j)).1

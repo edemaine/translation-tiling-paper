@@ -49,6 +49,7 @@ def primeThreshold (U : ℕ) : ℕ := U ^ 2 + 2 * U + Sudoku.p + Sudoku.q + 3
 theorem exists_parameters_of_bounded_families (T : LeanWang.TileSet) (U Q : ℕ)
     (u : UsefulTag → ℕ) (huinj : Function.Injective u)
     (hu : ∀ i, (u i).Prime ∧ u i ≤ U ∧ u i ≠ Sudoku.p ∧ u i ≠ Sudoku.q)
+    (hfive : ∀ i, u i ≠ 5)
     (hseed : ∀ t : Fin 2, u (.inl (.inr t)) = t.val + 2)
     (hseedlarge : ∀ t : Fin 2, residueModulus ^ 2 < u (.inr (.inr t)))
     (g : (Σ i : Channel T, Label T i) → ℕ)
@@ -109,9 +110,19 @@ theorem exists_parameters_of_bounded_families (T : LeanWang.TileSet) (U Q : ℕ)
     prime_injective := hpinj
     prime_ne_p := hpne Sudoku.p (Or.inl rfl)
     prime_ne_q := hpne Sudoku.q (Or.inr rfl)
+    prime_ne_five := by
+      intro j
+      rcases j with i | (i | j)
+      · exact hfive (.inl i)
+      · exact hfive (.inr i)
+      · change g j ≠ 5
+        have h := hggt j
+        unfold primeThreshold at h
+        have : 5 ≤ Sudoku.p + Sudoku.q := by decide
+        omega
     seed_a_eq := hseed
     seed_b_large := fun t => by
-      change Sudoku.Width ^ 2 < u (.inr (.inr t))
+      change Sudoku.SeedModulus ^ 2 < u (.inr (.inr t))
       simpa only [residueModulus_eq] using hseedlarge t
     blockA := A
     blockB := B
@@ -131,8 +142,8 @@ theorem exists_parameters_of_prime_family (T : LeanWang.TileSet) (Q : ℕ)
     ∃ E : EncodingParameters T,
       (∀ i, E.a i ≤ usefulCap ∧ E.b i ≤ usefulCap) ∧
       ∀ i j, E.digitPrime i j ≤ Q := by
-  obtain ⟨u, huinj, hu, hseed, hseedlarge⟩ := exists_bounded_useful
-  exact exists_parameters_of_bounded_families T usefulCap Q u huinj hu hseed hseedlarge
+  obtain ⟨u, huinj, hu, hseed, hseedlarge, hfive⟩ := exists_bounded_useful
+  exact exists_parameters_of_bounded_families T usefulCap Q u huinj hu hfive hseed hseedlarge
     g hgprime hggt hginj hbound
 
 /-- There are admissible encoding parameters whose digit primes satisfy the

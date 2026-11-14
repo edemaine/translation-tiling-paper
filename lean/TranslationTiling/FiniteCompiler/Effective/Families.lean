@@ -85,7 +85,7 @@ theorem seedDependence_correct (T : System) :
       Finset.univ.image (fun d : Fin 2 × Bool => dependenceTile (parameters T) (.inr (.inr d))) := by
   have he (t : Fin 2) (b : Bool) :
       (rawInvariance (parameterData T) (Nat.pair 1 t.val)
-        (if b then (0,(Sudoku.Width : ℤ)) else ((Sudoku.Width : ℤ),0)) []).toFinset.image
+        (if b then (0,(Sudoku.SeedModulus : ℤ)) else ((Sudoku.SeedModulus : ℤ),0)) []).toFinset.image
           (decodeNumericalPoint (parameters T)) = dependenceTile (parameters T) (.inr (.inr (t,b))) := by
     change (rawInvariance (parameterData T) (channelKey (T := T) (.inr t)) _ []).toFinset.image _ = _
     rw [rawInvariance_correct,lowFromKeys_nil]

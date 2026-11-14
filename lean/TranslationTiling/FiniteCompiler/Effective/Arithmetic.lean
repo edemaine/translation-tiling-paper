@@ -22,7 +22,7 @@ def rawR (d : ParameterData) (i : ℕ) : ℕ :=
 
 def rawModuli (d : ParameterData) : List ℕ := (channelKeys d.1).map (rawR d)
 def rawOrder (d : ParameterData) : ℕ :=
-  Sudoku.Width ^ 2 * ((channelKeys d.1).map fun i => rawR d i ^ 2 * rawA d i * rawB d i).prod
+  Sudoku.SeedModulus ^ 2 * ((channelKeys d.1).map fun i => rawR d i ^ 2 * rawA d i * rawB d i).prod
 
 @[fun_prop] theorem rawPrime_primrec : Primrec (fun z : ParameterData × ℕ => rawPrime z.1 z.2) := by
   unfold rawPrime

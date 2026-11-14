@@ -22,14 +22,21 @@ variable {T : LeanWang.TileSet}
 def SeedSet (t : Fin 2) (j : Symbol T) : Prop :=
   j.1.val = (t.val + 1 : ℕ) ∧ j.2.1.val = (t.val + 1 : ℕ)
 
-noncomputable def columnResidueEquiv : Sudoku.Column ≃ ZMod residueModulus :=
-  (finCongr residueModulus_eq.symm).trans (ZMod.finEquiv residueModulus)
+/-- Keep the board cycle separate from the seed reference modulus. -/
+noncomputable def boardModulus : ℕ :=
+  Classical.choose (show ∃ m : ℕ, m = Sudoku.Width from ⟨Sudoku.Width,rfl⟩)
+theorem boardModulus_eq : boardModulus = Sudoku.Width :=
+  Classical.choose_spec (show ∃ m : ℕ, m = Sudoku.Width from ⟨Sudoku.Width,rfl⟩)
+instance boardModulusNeZero : NeZero boardModulus := ⟨by rw [boardModulus_eq]; decide⟩
 
-def ordinaryCycle (T : LeanWang.TileSet) : ZMod residueModulus ↪ Channel T where
+noncomputable def columnResidueEquiv : Sudoku.Column ≃ ZMod boardModulus :=
+  (finCongr boardModulus_eq.symm).trans (ZMod.finEquiv boardModulus)
+
+def ordinaryCycle (T : LeanWang.TileSet) : ZMod boardModulus ↪ Channel T where
   toFun j := .inl (columnResidueEquiv.symm j)
   inj' _ _ h := columnResidueEquiv.symm.injective (Sum.inl.inj h)
 
-def ordinaryCycleLabels (w : Word T) (j : ZMod residueModulus) :
+def ordinaryCycleLabels (w : Word T) (j : ZMod boardModulus) :
     Label T (ordinaryCycle T j) :=
   w (columnResidueEquiv.symm j)
 

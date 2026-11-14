@@ -28,7 +28,7 @@ theorem rawOrdinaryCodes_eq (T : System) (i : Channel T) (k : ℕ) :
 
 theorem rawSeedCodes_eq (T : System) (t : Fin 2) :
     seedCodes (rawEnvironment (parameterData T) (channelKey (T := T) (.inr t)))
-      (rawA (parameterData T) (channelKey (T := T) (.inr (otherSeed t)))) Sudoku.Width =
+      (rawA (parameterData T) (channelKey (T := T) (.inr (otherSeed t)))) Sudoku.SeedModulus =
     seedCodes (nativeActivationEnvironment (parameters T) (.inr t))
       ((parameters T).a (.inr (otherSeed t))) residueModulus := by
   unfold seedCodes seedBatchCodes activationBatchCodes ActivationBatchTest
@@ -45,7 +45,7 @@ theorem rawOrdinaryTile_correct (T : System) (n : Column T) (k : ℕ) (hk : T.sl
 
 theorem rawSeedTile_correct (T : System) (t : Fin 2) :
     (seedCodes (rawEnvironment (parameterData T) (Nat.pair 1 t.val))
-      (rawA (parameterData T) (Nat.pair 1 (1-t.val))) Sudoku.Width).toFinset.image
+      (rawA (parameterData T) (Nat.pair 1 (1-t.val))) Sudoku.SeedModulus).toFinset.image
       (decodeNumericalPoint (parameters T)) = seedActivationTile (parameters T) t := by
   have he : Nat.pair 1 (1-t.val) = channelKey (Sum.inr (otherSeed t) : Channel T) := by
     simp only [channelKey,otherSeed,Fin.val_mk]

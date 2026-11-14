@@ -115,7 +115,7 @@ theorem ordinaryOffset_bound (hb : ParameterBudget E b) (n : Column T)
     have hn := n.isLt
     have hw := hb.width
     rw [residueModulus_eq] at hw
-    exact hn.le.trans hw
+    exact (hn.le.trans (by decide : Sudoku.Width ≤ Sudoku.SeedModulus)).trans hw
   have hscale := payload_le_horizontalCap (by omega : 1 ≤ b)
   constructor
   · exact hfirst.trans hscale
@@ -171,6 +171,7 @@ theorem testTile_horizontal_bound (hb : ParameterBudget E b)
           have hn := n.isLt
           have hw := hb.width
           rw [residueModulus_eq] at hw
+          have hNR : Sudoku.Width ≤ Sudoku.SeedModulus := by decide
           simpa using And.intro (by omega : 1 ≤ horizontalCap b)
             ((by omega : n.val ≤ b).trans hbase)
         | inr d =>

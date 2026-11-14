@@ -37,8 +37,7 @@ theorem primeSequence_le (b k : ℕ) :
 
 def channelCount : ℕ := Fintype.card FixedChannel
 
-theorem channelCount_eq : channelCount = residueModulus + 2 := by
-  rw [residueModulus_eq]
+theorem channelCount_eq : channelCount = Sudoku.Width + 2 := by
   change Fintype.card (Fin Sudoku.Width ⊕ Fin 2) = Sudoku.Width + 2
   simp only [Fintype.card_eq_nat_card, Nat.card_sum, Nat.card_fin]
 
@@ -52,7 +51,7 @@ theorem exists_bounded_useful : ∃ u : UsefulTag → ℕ,
     Function.Injective u ∧
     (∀ i, (u i).Prime ∧ u i ≤ usefulCap ∧ u i ≠ Sudoku.p ∧ u i ≠ Sudoku.q) ∧
     (∀ t : Fin 2, u (.inl (.inr t)) = t.val + 2) ∧
-    ∀ t : Fin 2, residueModulus ^ 2 < u (.inr (.inr t)) := by
+    (∀ t : Fin 2, residueModulus ^ 2 < u (.inr (.inr t))) ∧ (∀ i, u i ≠ 5) := by
   let Fresh := Sudoku.Column ⊕ FixedChannel
   let ix : Fresh ≃ Fin (Fintype.card Fresh) := Fintype.equivFin Fresh
   let f (i : Fresh) := EncodingPrimeSelection.primeSequence usefulStart (ix i).val
@@ -97,7 +96,7 @@ theorem exists_bounded_useful : ∃ u : UsefulTag → ℕ,
       omega
     exact (primeSequence_le usefulStart _).trans
       (Nat.mul_le_mul_right _ (Nat.pow_le_pow_right (by decide) hrank))
-  refine ⟨u, (hseedinj.sumElim hfinj hsep).comp e.injective, ?_, fun _ => rfl, ?_⟩
+  refine ⟨u, (hseedinj.sumElim hfinj hsep).comp e.injective, ?_, fun _ => rfl, ?_, ?_⟩
   · intro i
     dsimp only [u, Function.comp_apply]
     cases h : e i with
@@ -116,6 +115,20 @@ theorem exists_bounded_useful : ∃ u : UsefulTag → ℕ,
       refine ⟨hfprime j, hfbound j, ?_, ?_⟩ <;> unfold usefulStart at hj <;> omega
   · intro t
     exact (by have h := hfgt (.inr (.inr t)); unfold usefulStart at h; exact lt_of_le_of_lt (by omega) h)
+
+  · intro i
+    dsimp only [u,Function.comp_apply]
+    cases h : e i with
+    | inl t =>
+      have ht := t.isLt
+      simp only [Sum.elim_inl]
+      omega
+    | inr j =>
+      have hj := hfgt j
+      simp only [Sum.elim_inr]
+      unfold usefulStart at hj
+      have : 5 ≤ Sudoku.p + Sudoku.q := by decide
+      omega
 
 end
 end TranslationTiling.Compiler.Size

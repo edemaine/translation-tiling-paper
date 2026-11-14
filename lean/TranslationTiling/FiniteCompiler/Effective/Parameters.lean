@@ -50,7 +50,7 @@ def primeKeys (w B : ℕ) : List ℕ :=
 def ParameterValid (d : ℕ × ℕ) (c : ParameterCertificate) : Prop :=
   d.1 = 0 ∨
     ((∀ k ∈ primeKeys d.1 d.2,
-        (c.1.getD k 0).Prime ∧ c.1.getD k 0 ≠ Sudoku.p ∧ c.1.getD k 0 ≠ Sudoku.q) ∧
+        (c.1.getD k 0).Prime ∧ c.1.getD k 0 ≠ Sudoku.p ∧ c.1.getD k 0 ≠ Sudoku.q ∧ c.1.getD k 0 ≠ 5) ∧
     (∀ k ∈ primeKeys d.1 d.2, ∀ l ∈ primeKeys d.1 d.2,
         k = l ∨ c.1.getD k 0 ≠ c.1.getD l 0) ∧
     (∀ i ∈ channelKeys d.1,
@@ -58,7 +58,7 @@ def ParameterValid (d : ℕ × ℕ) (c : ParameterCertificate) : Prop :=
         c.1.getD (Nat.pair 1 i) 0 ≤ usefulPrimeCap (d.1 + 2)) ∧
     (∀ t ∈ List.range 2,
         c.1.getD (Nat.pair 0 (Nat.pair 1 t)) 0 = t + 2 ∧
-        Sudoku.Width ^ 2 < c.1.getD (Nat.pair 1 (Nat.pair 1 t)) 0) ∧
+        Sudoku.SeedModulus ^ 2 < c.1.getD (Nat.pair 1 (Nat.pair 1 t)) 0) ∧
     (∀ j ∈ digitKeys d.1 d.2,
         let k := Nat.pair 2 (Nat.pair j.1 j.2)
         0 < c.2.1.getD k 0 ∧ 0 < c.2.2.getD k 0 ∧

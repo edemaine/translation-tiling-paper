@@ -58,8 +58,13 @@ theorem optimizedCompile_channel_bound (T : LeanWang.TileSet) :
   refine ⟨hne,hconn,hw.trans hiff,hbound.trans ?_⟩
   let S := ternarySystem T
   let C := channelCount S
-  have hC : Sudoku.Width + 2 ≤ C := by
-    change Sudoku.Width + 2 ≤ Sudoku.Width * (bitWidth T + 16 + 2) + 2
+  have hC : 20 * Sudoku.Width + 2 ≤ C := by
+    change 20 * Sudoku.Width + 2 ≤ Sudoku.Width * (bitWidth T + 16 + 2) + 2
+    have hl : 2 ≤ bitWidth T := by
+      have := Nat.le_log_of_pow_le (b := 2) (x := 1) (y := T.length + 2)
+        (by decide) (by norm_num)
+      unfold bitWidth
+      omega
     nlinarith
   have hsmall := Size.smallPrimes_of_caps (parameters S) rfl hC
     (parameters_bounded S).1 (parameters_bounded S).2
@@ -73,7 +78,7 @@ theorem optimizedCompile_channel_bound (T : LeanWang.TileSet) :
     (parameters_budget S Sudoku.Width hslope).1.two
 
 theorem optimizedCompile_exp_bound (T : LeanWang.TileSet) :
-    (optimizedCompile T).length ≤ 2 ^ ((15 * 10 ^ 14) * (Nat.log 2 (T.length+2)+1) *
+    (optimizedCompile T).length ≤ 2 ^ ((2 * 10 ^ 10) * (Nat.log 2 (T.length+2)+1) *
       (Nat.log 2 (Nat.log 2 (T.length+2)+2)+1)) := by
   apply (optimizedCompile_channel_bound T).2.2.2.trans
   simpa only [ternarySystem,TernarySystem.system,channelCount,bitWidth,Nat.add_assoc]
@@ -82,17 +87,17 @@ theorem optimizedCompile_exp_bound (T : LeanWang.TileSet) :
 /-- A single computable function preserves tilability and has the closed bound. -/
 theorem optimizedCompile_bound (T : LeanWang.TileSet) :
     (optimizedCompile T).length ≤ (T.length+4) ^
-      (10 ^ 16 * Nat.log 2 (Nat.log 2 (T.length+4))) :=
+      (10 ^ 11 * Nat.log 2 (Nat.log 2 (T.length+4))) :=
   (optimizedCompile_exp_bound T).trans (Compiler.Size.ternary_exp_le_clean T.length)
 
 theorem optimizedCompile_real_bound (T : LeanWang.TileSet) :
     ((optimizedCompile T).length : ℝ) ≤ ((T.length : ℝ)+4) ^
-      ((10 : ℝ)^16 * Real.logb 2 (Real.logb 2 ((T.length : ℝ)+4))) := by
+      ((10 : ℝ)^11 * Real.logb 2 (Real.logb 2 ((T.length : ℝ)+4))) := by
   have hc : ((optimizedCompile T).length : ℝ) ≤
-      (((T.length+4) ^ (10 ^ 16 * Nat.log 2 (Nat.log 2 (T.length+4))) : ℕ) : ℝ) := by
+      (((T.length+4) ^ (10 ^ 11 * Nat.log 2 (Nat.log 2 (T.length+4))) : ℕ) : ℝ) := by
     exact_mod_cast optimizedCompile_bound T
   apply hc.trans
-  convert Compiler.Size.clean_power_le_real_loglog (10 ^ 15) T.length using 1 <;> norm_num
+  convert Compiler.Size.clean_power_le_real_loglog (10 ^ 10) T.length using 1 <;> norm_num
 
 end
 end TranslationTiling.FiniteCompiler.Effective

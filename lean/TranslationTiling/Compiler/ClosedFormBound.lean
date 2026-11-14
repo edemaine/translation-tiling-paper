@@ -13,7 +13,7 @@ the construction. There is no input-dependent finite maximum or search in it.
 It uses bounded admissible prime and stacking choices; it is not a bound on
 the original compiler's least-encoded-certificate search.
 
-Writing `N = residueModulus`, `C = N + 2`, `A = arithmeticAlphabet`,
+Writing `N = residueModulus`, `C = Sudoku.Width + 2`, `A = arithmeticAlphabet`,
 `U = 4^(2C+1)*(N²+p+q+4)`, and `B = U² + 2U + p + q + 3`, the formula is:
 
 * `L = A*n + 1`, `Q = 4^(C*L + 1) * (B + 1)`;
@@ -57,7 +57,7 @@ noncomputable def arithmeticCubeBound (N C A n : ℕ) : ℕ :=
 
 /-- The bound with all constants specified by numerals. -/
 noncomputable def explicitCubeBound (n : ℕ) : ℕ :=
-  arithmeticCubeBound 2213984809 2213984811 46620 n
+  arithmeticCubeBound 235265 49731 46620 n
 
 theorem closedCubeBound_eq_arithmetic (n : ℕ) :
     closedCubeBound n = arithmeticCubeBound residueModulus channelCount arithmeticAlphabet n := by
@@ -75,15 +75,15 @@ theorem closedCubeBound_eq_arithmetic (n : ℕ) :
   simp only [hB, hU]
 
 theorem closedCubeBound_eq_explicit (n : ℕ) : closedCubeBound n = explicitCubeBound n := by
-  have hN : residueModulus = 2213984809 := by
+  have hN : residueModulus = 235265 := by
     rw [residueModulus_eq]
     norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
-  have hC : channelCount = 2213984811 := by rw [channelCount_eq, hN]
+  have hC : channelCount = 49731 := by norm_num [channelCount_eq, Sudoku.Width, Sudoku.q]
   have hA : arithmeticAlphabet = 46620 := by norm_num [arithmeticAlphabet, Sudoku.p, Sudoku.q]
   calc
     closedCubeBound n = arithmeticCubeBound residueModulus channelCount arithmeticAlphabet n :=
       closedCubeBound_eq_arithmetic n
-    _ = arithmeticCubeBound 2213984809 2213984811 46620 n := by rw [hN, hC, hA]
+    _ = arithmeticCubeBound 235265 49731 46620 n := by rw [hN, hC, hA]
     _ = explicitCubeBound n := rfl
 
 @[local fun_prop] theorem natPowerRule {α : Type*} [Primcodable α] {f g : α → ℕ}

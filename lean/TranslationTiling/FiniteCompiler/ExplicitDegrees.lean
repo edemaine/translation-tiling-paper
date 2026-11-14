@@ -75,15 +75,16 @@ theorem geometryPolynomial_explicit_degree : PowerBoundAt (10 ^ 6) geometryPolyn
     ((((PowerBoundAt.const 3).mul (hS.pow 3)).add (PowerBoundAt.const 6)).pow 3)
   exact h.mono (by norm_num)
 
-/-! The bit compiler only uses channel counts larger than the fixed Sudoku
-width. Estimating on that range avoids absorbing fixed constants at base two. -/
+/-! Retained estimates for large channel counts. `TernaryBounds` gives sharper
+estimates on the smaller range used by the current ternary compiler. -/
 
-theorem usefulPrimeCap_le_of_width {C : ℕ} (hC : Sudoku.Width + 2 ≤ C) :
+theorem usefulPrimeCap_le_of_width {C : ℕ} (hC : 2 ^ 31 ≤ C) :
     usefulPrimeCap C ≤ 256 * C ^ 4 := by
-  have hN : residueModulus ≤ C := by simpa only [residueModulus_eq] using (by omega : Sudoku.Width ≤ C)
-  have hbig : 1000 ≤ C := by
-    have : 1000 ≤ Sudoku.Width := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
+  have hN : residueModulus ≤ C := by
+    have : Sudoku.SeedModulus ≤ 2 ^ 31 := by norm_num [Sudoku.SeedModulus,Sudoku.p,Sudoku.q]
+    rw [residueModulus_eq]
     omega
+  have hbig : 1000 ≤ C := by norm_num at hC; omega
   have hs : usefulStart + 2 * C + 1 ≤ 2 * C ^ 2 := by
     have hN2 := Nat.pow_le_pow_left hN 2
     have hmul := Nat.mul_le_mul_left C hbig
@@ -95,10 +96,8 @@ theorem usefulPrimeCap_le_of_width {C : ℕ} (hC : Sudoku.Width + 2 ≤ C) :
     _ = _ := by ring
 
 theorem digitPrimeCap_le_of_width {B C : ℕ} (hB : B ≤ 10 ^ 5)
-    (hC : Sudoku.Width + 2 ≤ C) : digitPrimeCap B C ≤ C ^ 18 := by
-  have hbig : 2 ^ 31 ≤ C := by
-    have : 2 ^ 31 ≤ Sudoku.Width := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
-    omega
+    (hC : 2 ^ 31 ≤ C) : digitPrimeCap B C ≤ C ^ 18 := by
+  have hbig : 2 ^ 31 ≤ C := hC
   have hC2 : 2 ≤ C := by omega
   have hB' : B + 1 ≤ C := by norm_num at hB hbig; omega
   have hU := usefulPrimeCap_le_of_width hC
@@ -118,7 +117,7 @@ theorem digitPrimeCap_le_of_width {B C : ℕ} (hB : B ≤ 10 ^ 5)
     _ = _ := by ring
 
 /-- A modest degree suffices on the actual range of bit-channel counts. -/
-theorem bit_parameterBase_le_of_width {C : ℕ} (hC : Sudoku.Width + 2 ≤ C) :
+theorem bit_parameterBase_le_of_width {C : ℕ} (hC : 2 ^ 31 ≤ C) :
     parameterBase BitSystem.alphabet Sudoku.Width C ≤ C ^ 2000000 := by
   have hbig : 256 ≤ C := by
     have : 256 ≤ Sudoku.Width := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
@@ -131,17 +130,17 @@ theorem bit_parameterBase_le_of_width {C : ℕ} (hC : Sudoku.Width + 2 ≤ C) :
       _ ≤ 256 * C ^ 4 := usefulPrimeCap_le_of_width hC
       _ ≤ C * C ^ 4 := Nat.mul_le_mul_right _ hbig
       _ = _ := by ring
-  have hR : digitPrimeCap BitSystem.alphabet C ^ (BitSystem.alphabet + 1) ≤ C ^ 1800018 := by
+  have hDigits : digitPrimeCap BitSystem.alphabet C ^ (BitSystem.alphabet + 1) ≤ C ^ 1800018 := by
     calc
       _ ≤ (C ^ 18) ^ (BitSystem.alphabet + 1) := Nat.pow_le_pow_left hQ _
       _ = C ^ (18 * (BitSystem.alphabet + 1)) := (pow_mul _ _ _).symm
       _ ≤ _ := Nat.pow_le_pow_right (by omega) (by norm_num at hB; omega)
   have hpow {k : ℕ} (hk : k ≤ 1800018) : C ^ k ≤ C ^ 1800018 :=
     Nat.pow_le_pow_right hC1 hk
-  have hN : Sudoku.Width ≤ C := by omega
+  have hN : Sudoku.Width ≤ C := by norm_num [Sudoku.Width,Sudoku.q] at *; omega
+  have hSeed : Sudoku.SeedModulus ≤ C := by norm_num [Sudoku.SeedModulus,Sudoku.p,Sudoku.q] at *; omega
   have hB' : BitSystem.alphabet + 1 ≤ C := by
-    have : 100001 ≤ Sudoku.Width := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
-    norm_num at hB
+    norm_num at hB hC
     omega
   have hsum : parameterBase BitSystem.alphabet Sudoku.Width C ≤ 7 * C ^ 1800018 := by
     have h1 := hpow (k := 1) (by omega)
@@ -154,7 +153,7 @@ theorem bit_parameterBase_le_of_width {C : ℕ} (hC : Sudoku.Width + 2 ≤ C) :
       _ ≤ C ^ 1800018 + C ^ 1800018 + C ^ 1800018 + C ^ 1800018 +
           C ^ 1800018 + C ^ 1800018 + C ^ 1800018 :=
         Nat.add_le_add (Nat.add_le_add (Nat.add_le_add (Nat.add_le_add
-          (Nat.add_le_add (Nat.add_le_add hR (hU.trans h5)) (hN.trans h1)) h1)
+          (Nat.add_le_add (Nat.add_le_add hDigits (hU.trans h5)) (hSeed.trans h1)) h1)
           (hB'.trans h1)) (hN.trans h1)) h2
       _ = _ := by generalize C ^ 1800018 = z; ring
   calc
@@ -215,7 +214,7 @@ theorem geometryCap_commonCap_le {b C : ℕ} (hb : 2 ≤ b) (hC : 18 ≤ C) :
     _ ≤ x ^ 100 := Nat.pow_le_pow_right hx1 (by omega)
 
 /-- The numerical channel estimate shared by the existence and effective proofs. -/
-theorem bit_geometry_channel_bound {C : ℕ} (hC : Sudoku.Width + 2 ≤ C) :
+theorem bit_geometry_channel_bound {C : ℕ} (hC : 2 ^ 31 ≤ C) :
     Compiler.Size.geometryCap (horizontalCap (parameterBase BitSystem.alphabet Sudoku.Width C))
         (stackPolynomial (commonCap (parameterBase BitSystem.alphabet Sudoku.Width C) C)) ≤
       C ^ ((12 * 2000000 * 100) * C) := by

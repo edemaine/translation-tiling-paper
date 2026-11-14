@@ -29,7 +29,7 @@ theorem exists_useful_parameters (T : System) : ∃ u : UsefulTag T → ℕ,
     (∀ i, (u i).Prime ∧ u i ≤ usefulPrimeCap (channelCount T) ∧
       u i ≠ Sudoku.p ∧ u i ≠ Sudoku.q) ∧
     (∀ t : Fin 2, u (.inl (.inr t)) = t.val + 2) ∧
-    ∀ t : Fin 2, residueModulus ^ 2 < u (.inr (.inr t)) := by
+    (∀ t : Fin 2, residueModulus ^ 2 < u (.inr (.inr t))) ∧ (∀ i, u i ≠ 5) := by
   let Fresh := Column T ⊕ Channel T
   let ix : Fresh ≃ Fin (Fintype.card Fresh) := Fintype.equivFin Fresh
   let f (i : Fresh) := Nat.nth Nat.Prime (usefulStart + (ix i).val)
@@ -65,7 +65,7 @@ theorem exists_useful_parameters (T : System) : ∃ u : UsefulTag T → ℕ,
     have hf := hfgt i
     unfold usefulStart at hf
     omega
-  refine ⟨u, (hseedinj.sumElim hfinj hsep).comp e.injective, ?_, fun _ => rfl, ?_⟩
+  refine ⟨u, (hseedinj.sumElim hfinj hsep).comp e.injective, ?_, fun _ => rfl, ?_, ?_⟩
   · intro i
     dsimp only [u, Function.comp_apply]
     cases h : e i with
@@ -93,9 +93,24 @@ theorem exists_useful_parameters (T : System) : ∃ u : UsefulTag T → ℕ,
     unfold usefulStart at h
     omega
 
+  · intro i
+    dsimp only [u,Function.comp_apply]
+    cases h : e i with
+    | inl t =>
+      have ht := t.isLt
+      simp only [Sum.elim_inl]
+      omega
+    | inr j =>
+      have hj := hfgt j
+      simp only [Sum.elim_inr]
+      unfold usefulStart at hj
+      have : 5 ≤ Sudoku.p + Sudoku.q := by decide
+      omega
+
 theorem exists_parameters_of_bounded_families (T : System) (U Q : ℕ)
     (u : UsefulTag T → ℕ) (huinj : Function.Injective u)
     (hu : ∀ i, (u i).Prime ∧ u i ≤ U ∧ u i ≠ Sudoku.p ∧ u i ≠ Sudoku.q)
+    (hfive : ∀ i, u i ≠ 5)
     (hseed : ∀ t : Fin 2, u (.inl (.inr t)) = t.val + 2)
     (hseedlarge : ∀ t : Fin 2, residueModulus ^ 2 < u (.inr (.inr t)))
     (g : (Σ i : Channel T, Label T i) → ℕ)
@@ -153,9 +168,19 @@ theorem exists_parameters_of_bounded_families (T : System) (U Q : ℕ)
     prime_injective := hpinj
     prime_ne_p := hpne Sudoku.p (Or.inl rfl)
     prime_ne_q := hpne Sudoku.q (Or.inr rfl)
+    prime_ne_five := by
+      intro j
+      rcases j with i | (i | j)
+      · exact hfive (.inl i)
+      · exact hfive (.inr i)
+      · change g j ≠ 5
+        have h := hggt j
+        unfold primeThreshold at h
+        have : 5 ≤ Sudoku.p + Sudoku.q := by decide
+        omega
     seed_a_eq := hseed
     seed_b_large := fun t => by
-      change Sudoku.Width ^ 2 < u (.inr (.inr t))
+      change Sudoku.SeedModulus ^ 2 < u (.inr (.inr t))
       simpa only [residueModulus_eq] using hseedlarge t
     blockA := A
     blockB := B
@@ -172,12 +197,12 @@ theorem exists_bounded_parameters (T : System) :
       (∀ i, E.a i ≤ usefulPrimeCap (channelCount T) ∧
         E.b i ≤ usefulPrimeCap (channelCount T)) ∧
       ∀ i j, E.digitPrime i j ≤ digitPrimeCap T.alphabet (channelCount T) := by
-  obtain ⟨u, huinj, hu, hseed, hseedlarge⟩ := exists_useful_parameters T
+  obtain ⟨u, huinj, hu, hseed, hseedlarge, hfive⟩ := exists_useful_parameters T
   let U := usefulPrimeCap (channelCount T)
   let Tags := Σ i : Channel T, Label T i
   let ix : Tags ≃ Fin (Fintype.card Tags) := Fintype.equivFin Tags
   let g (j : Tags) := Nat.nth Nat.Prime (primeThreshold U + (ix j).val)
-  apply exists_parameters_of_bounded_families T U _ u huinj hu hseed hseedlarge
+  apply exists_parameters_of_bounded_families T U _ u huinj hu hfive hseed hseedlarge
     g (fun _ => Nat.prime_nth_prime _)
   · intro j
     have := Nat.add_two_le_nth_prime (primeThreshold U + (ix j).val)

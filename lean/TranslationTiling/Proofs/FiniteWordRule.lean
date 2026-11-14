@@ -21,24 +21,24 @@ theorem allowedCoefficients_congr {T : LeanWang.TileSet} (w : Column → Symbol 
 
 /-- Nonnegative representatives of the coefficients suffice. -/
 theorem exists_bounded_coefficient (a : ℤ) :
-    ∃ c : Column, SqCongr p a c.val ∧ SqCongr q a c.val := by
-  have hm : (0 : ℤ) < Width := by decide
+    ∃ c : Fin CoefficientModulus, SqCongr p a c.val ∧ SqCongr q a c.val := by
+  have hm : (0 : ℤ) < CoefficientModulus := by decide
   have hnonneg := Int.emod_nonneg a (ne_of_gt hm)
   have hlt := Int.emod_lt_of_pos a hm
-  let c : Column := ⟨(a % Width).toNat, by omega⟩
-  have hc : (c.val : ℤ) = a % Width := Int.toNat_of_nonneg hnonneg
-  have hmod : (Width : ℤ) ∣ a - c.val := by
+  let c : Fin CoefficientModulus := ⟨(a % CoefficientModulus).toNat, by omega⟩
+  have hc : (c.val : ℤ) = a % CoefficientModulus := Int.toNat_of_nonneg hnonneg
+  have hmod : (CoefficientModulus : ℤ) ∣ a - c.val := by
     rw [hc]
-    refine ⟨a / Width, ?_⟩
-    have h := Int.emod_add_ediv_mul a (Width : ℤ)
+    refine ⟨a / CoefficientModulus, ?_⟩
+    have h := Int.emod_add_ediv_mul a (CoefficientModulus : ℤ)
     linarith
   refine ⟨c, ?_, ?_⟩
-  · exact (show (p : ℤ) ^ 2 ∣ (Width : ℤ) from ⟨(q : ℤ) ^ 2, by decide⟩).trans hmod
-  · exact (show (q : ℤ) ^ 2 ∣ (Width : ℤ) from ⟨(p : ℤ) ^ 2, by decide⟩).trans hmod
+  · exact (show (p : ℤ) ^ 2 ∣ (CoefficientModulus : ℤ) from ⟨(q : ℤ) ^ 2, by decide⟩).trans hmod
+  · exact (show (q : ℤ) ^ 2 ∣ (CoefficientModulus : ℤ) from ⟨(p : ℤ) ^ 2, by decide⟩).trans hmod
 
 /-- The unbounded integer-coefficient rule is equivalent to a finite search. -/
 theorem allowed_iff_bounded (T : LeanWang.TileSet) (w : Column → Symbol T) :
-    Allowed T w ↔ ∃ a b : Column, AllowedCoefficients T w a.val b.val := by
+    Allowed T w ↔ ∃ a b : Fin CoefficientModulus, AllowedCoefficients T w a.val b.val := by
   constructor
   · rintro ⟨a, b, hab⟩
     obtain ⟨c, hcP, hcQ⟩ := exists_bounded_coefficient a

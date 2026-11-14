@@ -224,12 +224,13 @@ We use the classical co-RE-completeness of this domino problem [[Berger,GTUndeci
 
 For a prime $r$, write $\F_r=\Z/r\Z$ for its field of residues and
 $\F_r^\times$ for the nonzero residues.
-Fix distinct primes $p,q>200$ once and for all, and set
+Fix the primes $p=211$ and $q=223$ once and for all, and set
 $$
- N=p^2q^2,\qquad I=\{0,\ldots,N-1\},\qquad
+ N=q^2=49{,}729,\qquad I=\{0,\ldots,N-1\},\qquad
  \Sigma=\F_p^\times\times\F_q^\times\times\calT.
 $$
-The width $N$ is fixed independently of the Wang tile set.  The alphabet
+The board width $N$ and coefficient period $p^2q^2$ are fixed independently
+of the Wang tile set. The alphabet
 has $(p-1)(q-1)|\calT|$ symbols and therefore depends on that set.
 The finite-width board with constraints on all integer-slope lines is
 the Sudoku framework of Greenfeld and Tao
@@ -501,10 +502,10 @@ The ***label set*** of channel $i$ is denoted by $J_i$: put $J_n=\Sigma$
 for ordinary channels and $J_{\eta_t}=\{*\}$ for seeds.
 Set
 : equation \label{eq:residues}
-   M=(pq)^2,\qquad S=(\Cyc M)^2,\qquad D=M^2=(pq)^4,
+   M=5pq=235{,}265,\qquad S=(\Cyc M)^2,\qquad D=M^2,
    \qquad s(x)=x\bmod M.
 For each channel $i$ choose primes $a_i,b_i$, all mutually distinct,
-different from $p,q$, with
+different from $5,p,q$, with
 $$
  a_{\eta_1}=2,\qquad a_{\eta_2}=3,\qquad
  b_{\eta_1},b_{\eta_2}>D.
@@ -966,7 +967,7 @@ The activation equation for channel $i$ is $A\oplus F_i^{\rm act}=G$.
    D=b_i\sum_\alpha u(\alpha)+a_i\sum_\xi v(\xi).
   $$
   Because $b_i>D$, the first sum is zero, so $a_i$ divides $D$.
-  But $a_i$ is $2$ or $3$, and $D=(pq)^4$ is divisible by neither.
+  But $a_i$ is $2$ or $3$, and $D=(5pq)^2$ is divisible by neither.
   This proves that each seed must activate somewhere.
   The two conclusions are \leandecl{Compiler.ordinary_active_of_tile} and
   \leanref{Compiler/Activation.lean}{Compiler.seed_active_somewhere_of_tile}.
@@ -1091,9 +1092,9 @@ For $t=1,2$, choose disjoint sets $S_t\subset S$ of respective sizes
 $3$ and $4$, contained in
 : equation \label{eq:seed-regions}
   \{(s_1,s_2)\in S:s_1\equiv0,\ s_2\equiv t\pmod{pq}\}.
-Each eligible residue class has $(pq)^2$ points, so the choices
+Each eligible residue class has $25$ points, so the choices
 are possible.  Let $S_0=S\setminus(S_1\cup S_2)$.
-Since $D=(pq)^4\equiv1\pmod6$, the number $D-7$ is divisible by $6$.
+Since $D=(5pq)^2\equiv1\pmod6$, the number $D-7$ is divisible by $6$.
 Equip these regions with the following set-theoretic label spaces:
 $$
  ::table array{c|c|c}
@@ -2093,10 +2094,10 @@ pairs. The prefix and seed properties are checked in
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    (n+4)^{10^{16}\lg\lg(n+4)}=n^{O(\log\log n)}
+    (n+4)^{10^{11}\lg\lg(n+4)}=n^{O(\log\log n)}
   $$
   unit cubes.
-  For $n=1$, we also have the explicit bound $2^{6\cdot10^{15}}$ unit cubes.
+  For $n=1$, we also have the explicit bound $2^{7\cdot10^{10}}$ unit cubes.
 
 : proof
   First check correctness of the expanded channel system. Activation
@@ -2157,8 +2158,9 @@ pairs. The prefix and seed properties are checked in
   Since $C=N(\ell+18)+2$, this gives the quasipolynomial dependence.
 
   For the numerical coefficient, the actual channel count satisfies
-  $C\geq N+2>2^{31}$. The useful-prime cap is at most
-  $256C^4\leq C^5$, the digit-prime cap at most $C^{18}$, and the common
+  $C\geq20N+2=994{,}582$. The seed modulus $M$ is smaller than $C$,
+  and $8(M^2+p+q+4+2C)\leq C^2$, so the useful-prime cap is at most
+  $C^4\leq C^5$. The digit-prime cap is at most $C^{18}$, and the common
   parameter budget $b$ at most $C^{73}$. Each digit product satisfies
   $r_i\leq C^{54}$, so $|V|\leq C^{119C}$. Counting the single digit
   subgroup in each sparse test gives at most $C^{28C}$ tests per
@@ -2173,14 +2175,18 @@ pairs. The prefix and seed properties are checked in
   and assembled in \leanfile{FiniteCompiler/TernaryConstruction.lean}.
 
   Since $\ell\geq2$, we have $C\leq10N\ell+2$, and
-  $10N+2<2^{35}$. The logarithmic conversion in
-  \leandecl{Compiler.Size.linear_channel_cap_le_exp_log_medium} has
+  $10N+2<2^{19}$. The logarithmic conversion in
+  \leandecl{Compiler.Size.linear_channel_cap_le_exp_log_narrow} has
   binary-exponent coefficient
-  $19\cdot3510(10N+2)\leq15\cdot10^{14}$.
-  Absorbing the shifts and rounding costs a factor of six, giving
-  $6\cdot15\cdot10^{14}\leq10^{16}$. Passing to ordinary real
+  $11\cdot3510(10N+2)\leq2\cdot10^{10}$.
+  Checking the inputs $n<12$ directly lets us absorb the shifts and
+  rounding with a factor of four, giving
+  $4\cdot2\cdot10^{10}\leq10^{11}$. Passing to ordinary real
   logarithms gives the displayed bound, as checked in
   \leanfile{Compiler/CleanQuasipolynomialBound.lean}.
+  For $n=1$, the code has twenty positions per column and
+  $C=994{,}582<2^{20}$, so the direct channel-count bound gives
+  $|F|\leq2^{20\cdot3510\cdot994{,}582}\leq2^{7\cdot10^{10}}$.
 
 The ternary-channel variant is formalized end to end in
 \leanfile{Compiler/CleanQuasipolynomialBound.lean} by
@@ -2728,8 +2734,8 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, these bounds are $(n+4)^{10^{16}\lg\lg(n+4)}$ for translations and
-$64{,}000(n+4)^{10^{16}\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+function. In dimension three, these bounds are $(n+4)^{10^{11}\lg\lg(n+4)}$ for translations and
+$64{,}000(n+4)^{10^{11}\lg\lg(n+4)}$ for arbitrary Euclidean motions.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[

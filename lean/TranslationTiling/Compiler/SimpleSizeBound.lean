@@ -361,8 +361,8 @@ private theorem arithmetic_one_bound (N C A k e : ℕ) (hk : 10 ^ 19 ≤ k)
 /-- Sharper numerical specialization of the construction's arithmetic bound
 for one Wang tile. No test of that tile's tilability is used. -/
 theorem explicitCubeBound_one_le : explicitCubeBound 1 ≤ 2 ^ (2 ^ (10 ^ 29)) :=
-  arithmetic_one_bound 2213984809 2213984811 46620 (10 ^ 19) (10 ^ 29)
-    le_rfl le_rfl le_rfl le_rfl (by norm_num) (by norm_num)
+  arithmetic_one_bound 235265 49731 46620 (10 ^ 19) (10 ^ 29)
+    le_rfl (by norm_num) (by norm_num) le_rfl (by norm_num) (by norm_num)
 
 /-- One distinct input Wang tile has an equivalent connected polycube with
 at most `2^(2^(10^29))` cubes, using the same bounded-choice construction. -/

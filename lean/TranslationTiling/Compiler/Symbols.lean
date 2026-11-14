@@ -13,12 +13,12 @@ abbrev Symbol (T : LeanWang.TileSet) := Sudoku.Symbol T
 abbrev Word (T : LeanWang.TileSet) := Column T → Symbol T
 abbrev WordArray (T : LeanWang.TileSet) := Sudoku.Array T
 abbrev Channel (T : LeanWang.TileSet) := Column T ⊕ Fin 2
--- A symbolic copy of the fixed modulus avoids reducing billion-step casts in
+-- A symbolic copy of the fixed modulus avoids reducing large casts in
 -- the kernel. Its value is proved, and only used to construct tiling witnesses.
 noncomputable def residueModulus : ℕ :=
-  Classical.choose (show ∃ m : ℕ, m = Sudoku.Width from ⟨Sudoku.Width, rfl⟩)
-theorem residueModulus_eq : residueModulus = Sudoku.Width :=
-  Classical.choose_spec (show ∃ m : ℕ, m = Sudoku.Width from ⟨Sudoku.Width, rfl⟩)
+  Classical.choose (show ∃ m : ℕ, m = Sudoku.SeedModulus from ⟨Sudoku.SeedModulus, rfl⟩)
+theorem residueModulus_eq : residueModulus = Sudoku.SeedModulus :=
+  Classical.choose_spec (show ∃ m : ℕ, m = Sudoku.SeedModulus from ⟨Sudoku.SeedModulus, rfl⟩)
 noncomputable abbrev D (_T : LeanWang.TileSet) := residueModulus ^ 2
 abbrev Residues (_T : LeanWang.TileSet) := ZMod residueModulus × ZMod residueModulus
 

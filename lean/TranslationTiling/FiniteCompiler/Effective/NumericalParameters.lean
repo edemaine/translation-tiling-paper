@@ -42,7 +42,7 @@ theorem rawOrder_eq (T : System) : rawOrder (parameterData T) = (parameters T).c
     ext k
     simp only [List.mem_toFinset,mem_channelKeys,Finset.mem_image,Finset.mem_univ,true_and]
   unfold rawOrder
-  change Sudoku.Width ^ 2 * ((channelKeys T.width).map
+  change Sudoku.SeedModulus ^ 2 * ((channelKeys T.width).map
     (fun i => rawR (parameterData T) i ^ 2 * rawA (parameterData T) i * rawB (parameterData T) i)).prod = _
   rw [← List.prod_toFinset _ (channelKeys_nodup T.width),he,
     Finset.prod_image (channelKey_injective T).injOn]

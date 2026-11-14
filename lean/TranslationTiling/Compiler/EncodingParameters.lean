@@ -24,8 +24,9 @@ structure EncodingParameters (T : LeanWang.TileSet) where
   prime_injective : Function.Injective primeAt
   prime_ne_p : ∀ t, primeAt t ≠ Sudoku.p
   prime_ne_q : ∀ t, primeAt t ≠ Sudoku.q
+  prime_ne_five : ∀ t, primeAt t ≠ 5
   seed_a_eq : ∀ t : Fin 2, primeAt (.inl (.inr t)) = t.val + 2
-  seed_b_large : ∀ t : Fin 2, (Sudoku.Width ^ 2) < primeAt (.inr (.inl (.inr t)))
+  seed_b_large : ∀ t : Fin 2, (Sudoku.SeedModulus ^ 2) < primeAt (.inr (.inl (.inr t)))
   blockA : ∀ i : Channel T, Label T i → ℕ
   blockB : ∀ i : Channel T, Label T i → ℕ
   blockA_pos : ∀ i j, 0 < blockA i j
@@ -77,11 +78,13 @@ theorem prime_coprime_q (t : PrimeTag T) : Nat.Coprime (E.primeAt t) Sudoku.q :=
   (Nat.coprime_primes (E.prime_isPrime t) (by decide : Sudoku.q.Prime)).2 (E.prime_ne_q t)
 
 theorem prime_coprime_width (t : PrimeTag T) : Nat.Coprime (E.primeAt t) Sudoku.Width :=
-  ((E.prime_coprime_p t).pow_right 2).mul_right ((E.prime_coprime_q t).pow_right 2)
+  (E.prime_coprime_q t).pow_right 2
 
 theorem prime_coprime_modulus (t : PrimeTag T) : Nat.Coprime (E.primeAt t) residueModulus := by
   rw [residueModulus_eq]
-  exact E.prime_coprime_width t
+  have h5 : Nat.Coprime (E.primeAt t) 5 :=
+    (Nat.coprime_primes (E.prime_isPrime t) (by decide)).2 (E.prime_ne_five t)
+  exact (h5.mul_right (E.prime_coprime_p t)).mul_right (E.prime_coprime_q t)
 
 theorem a_coprime_b (i : Channel T) : Nat.Coprime (E.a i) (E.b i) := by
   apply E.prime_coprime
@@ -140,8 +143,10 @@ theorem r_coprime_width (i : Channel T) : Nat.Coprime (E.r i) Sudoku.Width := by
   exact E.prime_coprime_width _
 
 theorem r_coprime_modulus (i : Channel T) : Nat.Coprime (E.r i) residueModulus := by
-  rw [residueModulus_eq]
-  exact E.r_coprime_width i
+  rw [E.r_eq_prod]
+  apply Nat.coprime_fintype_prod_left_iff.mpr
+  intro j
+  exact E.prime_coprime_modulus _
 
 theorem r_pairwise_coprime : Pairwise (fun i j : Channel T => Nat.Coprime (E.r i) (E.r j)) := by
   intro i j hij

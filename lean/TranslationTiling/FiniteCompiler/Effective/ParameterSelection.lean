@@ -28,7 +28,7 @@ private theorem exists_parameterCertificate (d : ℕ × ℕ) :
     obtain ⟨i,rfl⟩ := (mem_primeKeys T k).mp hk
     dsimp only [Prod.fst]
     rw [hp]
-    exact ⟨E.prime_isPrime i, E.prime_ne_p i, E.prime_ne_q i⟩
+    exact ⟨E.prime_isPrime i, E.prime_ne_p i, E.prime_ne_q i, E.prime_ne_five i⟩
   · intro k hk l hl
     obtain ⟨i,rfl⟩ := (mem_primeKeys T k).mp hk
     obtain ⟨j,rfl⟩ := (mem_primeKeys T l).mp hl
@@ -98,7 +98,8 @@ def parametersOfCertificate (T : System) (c : ParameterCertificate)
     primeAt := fun i => c.1.getD (primeKey i) 0
     prime_isPrime := fun i => (hp _ ((mem_primeKeys T _).mpr ⟨i,rfl⟩)).1
     prime_ne_p := fun i => (hp _ ((mem_primeKeys T _).mpr ⟨i,rfl⟩)).2.1
-    prime_ne_q := fun i => (hp _ ((mem_primeKeys T _).mpr ⟨i,rfl⟩)).2.2
+    prime_ne_q := fun i => (hp _ ((mem_primeKeys T _).mpr ⟨i,rfl⟩)).2.2.1
+    prime_ne_five := fun i => (hp _ ((mem_primeKeys T _).mpr ⟨i,rfl⟩)).2.2.2
     prime_injective := fun i j h => primeKey_injective T
       ((hinj _ ((mem_primeKeys T _).mpr ⟨i,rfl⟩) _
         ((mem_primeKeys T _).mpr ⟨j,rfl⟩)).resolve_right (not_not.mpr h))

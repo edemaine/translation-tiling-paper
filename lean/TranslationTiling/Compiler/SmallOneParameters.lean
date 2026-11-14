@@ -14,7 +14,7 @@ theorem exists_small_useful : ∃ u : UsefulTag → ℕ,
     Function.Injective u ∧
     (∀ i, (u i).Prime ∧ u i ≤ 10 ^ 40 ∧ u i ≠ Sudoku.p ∧ u i ≠ Sudoku.q) ∧
     (∀ t : Fin 2, u (.inl (.inr t)) = t.val + 2) ∧
-    ∀ t : Fin 2, residueModulus ^ 2 < u (.inr (.inr t)) := by
+    (∀ t : Fin 2, residueModulus ^ 2 < u (.inr (.inr t))) ∧ (∀ i, u i ≠ 5) := by
   let Fresh := Sudoku.Column ⊕ FixedChannel
   let ix : Fresh ≃ Fin (Fintype.card Fresh) := Fintype.equivFin Fresh
   let f (i : Fresh) := Nat.nth Nat.Prime (usefulStart + (ix i).val)
@@ -35,7 +35,7 @@ theorem exists_small_useful : ∃ u : UsefulTag → ℕ,
       change Fintype.card (Sudoku.Column ⊕ FixedChannel) ≤ _
       rw [Fintype.card_sum]
       change Fintype.card Sudoku.Column + channelCount ≤ _
-      rw [channelCount_eq, residueModulus_eq]
+      simp only [channelCount_eq, residueModulus_eq]
       simp only [Fintype.card_eq_nat_card, Nat.card_fin]
       omega
     have hrank := (ix i).isLt
@@ -56,7 +56,7 @@ theorem exists_small_useful : ∃ u : UsefulTag → ℕ,
     have hf := hfgt i
     unfold usefulStart at hf
     omega
-  refine ⟨u, (hseedinj.sumElim hfinj hsep).comp e.injective, ?_, fun _ => rfl, ?_⟩
+  refine ⟨u, (hseedinj.sumElim hfinj hsep).comp e.injective, ?_, fun _ => rfl, ?_, ?_⟩
   · intro i
     dsimp only [u, Function.comp_apply]
     cases h : e i with
@@ -79,17 +79,31 @@ theorem exists_small_useful : ∃ u : UsefulTag → ℕ,
     unfold usefulStart at h
     omega
 
+  · intro i
+    dsimp only [u,Function.comp_apply]
+    cases h : e i with
+    | inl t =>
+      have ht := t.isLt
+      simp only [Sum.elim_inl]
+      omega
+    | inr j =>
+      have hj := hfgt j
+      simp only [Sum.elim_inr]
+      unfold usefulStart at hj
+      have : 5 ≤ Sudoku.p + Sudoku.q := by decide
+      omega
+
 /-- Explicit prime budgets for one distinct tile, still using the full reduction. -/
 theorem exists_small_one_parameters (T : LeanWang.TileSet) (hT : T.length = 1) :
     ∃ E : EncodingParameters T,
       (∀ i, E.a i ≤ 10 ^ 40 ∧ E.b i ≤ 10 ^ 40) ∧
       ∀ i j, E.digitPrime i j ≤ 10 ^ 164 := by
-  obtain ⟨u, huinj, hu, hseed, hseedlarge⟩ := exists_small_useful
+  obtain ⟨u, huinj, hu, hseed, hseedlarge, hfive⟩ := exists_small_useful
   let Tags := Σ i : Channel T, Label T i
   let ix : Tags ≃ Fin (Fintype.card Tags) := Fintype.equivFin Tags
   let g (j : Tags) := Nat.nth Nat.Prime (primeThreshold (10 ^ 40) + (ix j).val)
   apply exists_parameters_of_bounded_families T (10 ^ 40) (10 ^ 164)
-    u huinj hu hseed hseedlarge g (fun _ => Nat.prime_nth_prime _)
+    u huinj hu hfive hseed hseedlarge g (fun _ => Nat.prime_nth_prime _)
   · intro j
     have := Nat.add_two_le_nth_prime (primeThreshold (10 ^ 40) + (ix j).val)
     change primeThreshold (10 ^ 40) <

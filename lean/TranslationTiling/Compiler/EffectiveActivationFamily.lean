@@ -28,12 +28,12 @@ theorem otherChannelModuli_computable : Computable (fun z : LeanWang.TileSet × 
 noncomputable def activationEnvironment (T : LeanWang.TileSet) (i : FixedChannel) :
     ActivationEnvironment :=
   ((numericalOrder T, otherChannelModuli T i),
-    (numericalR T i, usefulPrime (.inl i), usefulPrime (.inr i), Sudoku.Width ^ 2))
+    (numericalR T i, usefulPrime (.inl i), usefulPrime (.inr i), Sudoku.SeedModulus ^ 2))
 
 theorem activationEnvironment_computable : Computable (fun z : LeanWang.TileSet × FixedChannel =>
     activationEnvironment z.1 z.2) := by
   have hfixed : Primrec (fun i : FixedChannel =>
-      (usefulPrime (.inl i), usefulPrime (.inr i), Sudoku.Width ^ 2)) :=
+      (usefulPrime (.inl i), usefulPrime (.inr i), Sudoku.SeedModulus ^ 2)) :=
     finiteFunction_primrec _
   exact ((numericalOrder_computable.comp Computable.fst).pair otherChannelModuli_computable).pair
     (numericalR_computable.pair (hfixed.comp Primrec.snd).to_comp)
@@ -66,14 +66,14 @@ theorem ordinaryCompiler_correct (T : LeanWang.TileSet) (n : Sudoku.Column) :
 
 noncomputable def seedCompiler (T : LeanWang.TileSet) (t : Fin 2) :
     List NumericalPoint := seedCodes (activationEnvironment T (.inr t))
-      (usefulPrime (.inl (.inr (otherSeed t)))) Sudoku.Width
+      (usefulPrime (.inl (.inr (otherSeed t)))) Sudoku.SeedModulus
 
 theorem seedCompiler_computable : Computable (fun z : LeanWang.TileSet × Fin 2 =>
     seedCompiler z.1 z.2) := by
   have hp : Primrec (fun z : LeanWang.TileSet × Fin 2 => (z.1, (Sum.inr z.2 : FixedChannel))) := by
     fun_prop
   have he := activationEnvironment_computable.comp hp.to_comp
-  have ht : Primrec (fun t : Fin 2 => (usefulPrime (.inl (.inr (otherSeed t))), Sudoku.Width)) :=
+  have ht : Primrec (fun t : Fin 2 => (usefulPrime (.inl (.inr (otherSeed t))), Sudoku.SeedModulus)) :=
     finiteFunction_primrec _
   have h := seedCodes_primrec.to_comp.comp (he.pair (ht.comp Primrec.snd).to_comp)
   exact h

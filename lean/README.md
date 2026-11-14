@@ -103,7 +103,7 @@ have no unproved mathematical input. No unfinished proof is accepted.
 ## Cube Bound by Wang Tile Count
 
 [Compiler/CleanQuasipolynomialBound.lean](TranslationTiling/Compiler/CleanQuasipolynomialBound.lean)
-gives the bound `(n+4)^(10^16*log₂(log₂(n+4))) = n^O(log log n)` with ordinary
+gives the bound `(n+4)^(10^11*log₂(log₂(n+4))) = n^O(log log n)` with ordinary
 real logarithms and no rounding operations. The theorem
 `Size.exists_connected_tile_clean_quasipolynomial_bound` includes
 nonemptiness, face connectedness, and both tilability directions, including
@@ -114,7 +114,9 @@ encodes both arithmetic decorations and Wang labels over three symbols.
 Prefixes `00`, `11`, and `01` preserve the two seed classes; binary payload
 ones become `2`, while zeros become `1` in the second seed class and `0`
 otherwise. Each original column uses the binary length of `n+2`, plus eighteen
-positions. All positions share that column's original slope.
+positions. All positions share that column's original slope. The board has `q² = 49,729`
+columns; coefficient residues still use `p²q²`, while seed residues use
+`5pq = 235,265`. The other encoding primes avoid `5`, `p`, and `q`.
 [Effective/TernaryInput.lean](TranslationTiling/FiniteCompiler/Effective/TernaryInput.lean)
 implements the code using sixteen arithmetic bits and the input tile's list index,
 and proves its primitive recursiveness and agreement with the finite system.
@@ -123,15 +125,15 @@ and proves its primitive recursiveness and agreement with the finite system.
 proves the sharper binary-exponent estimate
 
 ```text
-2^((15*10^14)*(Nat.log 2 (n+2)+1)*(Nat.log 2 (Nat.log 2 (n+2)+2)+1))
+2^((2*10^10)*(Nat.log 2 (n+2)+1)*(Nat.log 2 (Nat.log 2 (n+2)+2)+1))
 ```
 
 and the power estimate
-`(n+2)^(30*10^14*(Nat.log 2 (Nat.log 2 (n+2)+2)+1))`.
+`(n+2)^(4*10^10*(Nat.log 2 (Nat.log 2 (n+2)+2)+1))`.
 Here `n` counts distinct tiles; duplicate input entries do not affect these
 existence bounds. For `n = 1`,
 `Size.exists_connected_tile_one_quasipolynomial_bound` gives at most
-`2^(6*10^15)` cubes.
+`2^(7*10^10)` cubes.
 
 [TernaryBounds.lean](TranslationTiling/FiniteCompiler/TernaryBounds.lean)
 retains separate useful-prime and digit-prime bounds. For `C` channels, it
@@ -247,7 +249,7 @@ The earlier one-tile bound `2^(2^(10^29))` remains available as
 proves `Size.exists_connected_tile_closed_bound`: for `n` distinct Wang tiles,
 there is a nonempty, face-connected polycube with the same tileability and at
 most `closedCubeBound n` distinct cubes. All constants in the bound are explicit.
-Set `N = 2213984809`, `C = N + 2`, and define:
+Set `N = 235265` (the seed modulus), `C = 49731` (the channel count), and define:
 
 ```text
 U = 4^(2C+1) * (N²+438)

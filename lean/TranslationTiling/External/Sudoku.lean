@@ -9,7 +9,10 @@ namespace TranslationTiling.Sudoku
 
 abbrev p : ℕ := 211
 abbrev q : ℕ := 223
-abbrev Width : ℕ := p ^ 2 * q ^ 2
+/-- Board columns, coefficient period, and seed reference size have separate roles. -/
+abbrev Width : ℕ := q ^ 2
+abbrev CoefficientModulus : ℕ := p ^ 2 * q ^ 2
+abbrev SeedModulus : ℕ := 5 * p * q
 abbrev Column := Fin Width
 abbrev Symbol (T : LeanWang.TileSet) := (ZMod p)ˣ × (ZMod q)ˣ × LeanWang.TileIn T
 abbrev Array (T : LeanWang.TileSet) := Column → ℤ → Symbol T

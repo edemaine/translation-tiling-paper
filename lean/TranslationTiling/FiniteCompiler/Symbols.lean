@@ -19,7 +19,7 @@ abbrev Word (T : System) := Column T → Symbol T
 abbrev WordArray (T : System) := Column T → ℤ → Symbol T
 abbrev Channel (T : System) := Column T ⊕ Fin 2
 noncomputable abbrev residueModulus := Compiler.residueModulus
-theorem residueModulus_eq : residueModulus = Sudoku.Width := Compiler.residueModulus_eq
+theorem residueModulus_eq : residueModulus = Sudoku.SeedModulus := Compiler.residueModulus_eq
 noncomputable abbrev D (_T : System) := residueModulus ^ 2
 abbrev Residues (_T : System) := ZMod residueModulus × ZMod residueModulus
 

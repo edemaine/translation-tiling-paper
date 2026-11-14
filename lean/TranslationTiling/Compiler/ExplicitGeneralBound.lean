@@ -20,12 +20,12 @@ theorem exists_small_parameters (T : LeanWang.TileSet) :
     ∃ E : EncodingParameters T,
       (∀ i, E.a i ≤ 10 ^ 40 ∧ E.b i ≤ 10 ^ 40) ∧
       ∀ i j, E.digitPrime i j ≤ 10 ^ 164 * (T.length + 2) ^ 2 := by
-  obtain ⟨u, huinj, hu, hseed, hseedlarge⟩ := exists_small_useful
+  obtain ⟨u, huinj, hu, hseed, hseedlarge, hfive⟩ := exists_small_useful
   let Tags := Σ i : Channel T, Label T i
   let ix : Tags ≃ Fin (Fintype.card Tags) := Fintype.equivFin Tags
   let g (j : Tags) := Nat.nth Nat.Prime (primeThreshold (10 ^ 40) + (ix j).val)
   apply exists_parameters_of_bounded_families T (10 ^ 40) _
-    u huinj hu hseed hseedlarge g (fun _ => Nat.prime_nth_prime _)
+    u huinj hu hfive hseed hseedlarge g (fun _ => Nat.prime_nth_prime _)
   · intro j
     have := Nat.add_two_le_nth_prime (primeThreshold (10 ^ 40) + (ix j).val)
     change primeThreshold (10 ^ 40) <

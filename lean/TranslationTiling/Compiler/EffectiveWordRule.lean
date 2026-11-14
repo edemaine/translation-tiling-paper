@@ -141,7 +141,7 @@ instance (T : LeanWang.TileSet) (w : RawWord) (a b : ℕ) :
   fun_prop
 
 def WordTest (T : LeanWang.TileSet) (w : RawWord) : Prop :=
-  ∃ a ∈ List.range Sudoku.Width, ∃ b ∈ List.range Sudoku.Width, CoefficientTest T w a b
+  ∃ a ∈ List.range Sudoku.CoefficientModulus, ∃ b ∈ List.range Sudoku.CoefficientModulus, CoefficientTest T w a b
 
 instance (T : LeanWang.TileSet) (w : RawWord) : Decidable (WordTest T w) := by
   unfold WordTest

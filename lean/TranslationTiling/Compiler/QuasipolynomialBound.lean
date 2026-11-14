@@ -29,7 +29,7 @@ theorem tileIn_card (T : LeanWang.TileSet) [Fintype (LeanWang.TileIn T)] :
 theorem ternary_channel_cap_bound (n : ℕ) :
     (Sudoku.Width * (Nat.log 2 (n + 2) + 1 + 18) + 2) ^
         (3510 * (Sudoku.Width * (Nat.log 2 (n + 2) + 1 + 18) + 2)) ≤
-      2 ^ ((15 * 10 ^ 14) * (Nat.log 2 (n + 2) + 1) *
+      2 ^ ((2 * 10 ^ 10) * (Nat.log 2 (n + 2) + 1) *
         (Nat.log 2 (Nat.log 2 (n + 2) + 2) + 1)) := by
   let l := Nat.log 2 (n + 2) + 1
   have hl : 2 ≤ l := by
@@ -41,20 +41,20 @@ theorem ternary_channel_cap_bound (n : ℕ) :
       ((10 * Sudoku.Width) * l + 2) ^ (3510 * ((10 * Sudoku.Width) * l + 2)) :=
     (Nat.pow_le_pow_left hcap _).trans
       (Nat.pow_le_pow_right (by omega) (Nat.mul_le_mul_left _ hcap))
-  have hlog := linear_channel_cap_le_exp_log_medium (10 * Sudoku.Width) 3510 l
+  have hlog := linear_channel_cap_le_exp_log_narrow (10 * Sudoku.Width) 3510 l
     (by norm_num [Sudoku.Width,Sudoku.p,Sudoku.q]) (by omega)
-  have hcoeff : 19 * 3510 * (10 * Sudoku.Width + 2) ≤ 15 * 10 ^ 14 := by
+  have hcoeff : 11 * 3510 * (10 * Sudoku.Width + 2) ≤ 2 * 10 ^ 10 := by
     norm_num [Sudoku.Width,Sudoku.p,Sudoku.q]
   have hexp := Nat.mul_le_mul_right (l * (Nat.log 2 (l + 1) + 1)) hcoeff
   exact hcubes.trans (hlog.trans (Nat.pow_le_pow_right (by decide)
     (by simpa only [Nat.mul_assoc,l,Nat.add_assoc] using hexp)))
 
-/-- The full ternary-channel reduction with an explicit binary-exponent coefficient. -/
-theorem exists_connected_tile_quasipolynomial_explicit_bound (T : LeanWang.TileSet) :
+/-- Retain the channel-count estimate before converting logarithms. -/
+theorem exists_connected_tile_ternary_count_bound (T : LeanWang.TileSet) :
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
-      cubeCount P ≤ 2 ^ ((15 * 10 ^ 14) * (Nat.log 2 (T.toFinset.card + 2) + 1) *
-        (Nat.log 2 (Nat.log 2 (T.toFinset.card + 2) + 2) + 1)) := by
+      cubeCount P ≤ (Sudoku.Width * (Nat.log 2 (T.toFinset.card + 2) + 1 + 18) + 2) ^
+        (3510 * (Sudoku.Width * (Nat.log 2 (T.toFinset.card + 2) + 1 + 18) + 2)) := by
   letI : Fintype (LeanWang.TileIn T) := Fintype.ofFinite _
   let l := Nat.log 2 (T.toFinset.card + 2) + 1
   have ht : Fintype.card (LeanWang.TileIn T) ≤ 2 ^ l := by
@@ -79,25 +79,38 @@ theorem exists_connected_tile_quasipolynomial_explicit_bound (T : LeanWang.TileS
       _ ≤ 2 ^ 16 * 2 ^ l := Nat.mul_le_mul_right _ (by norm_num [Sudoku.p,Sudoku.q])
       _ = _ := by rw [← pow_add]; congr 1; omega
   obtain ⟨code,hcode⟩ := BitChannels.exists_bit_code (Sudoku.Symbol T) (l + 16) hcard
-  have hwidth : Sudoku.Width + 2 ≤ FiniteCompiler.channelCount (FiniteCompiler.TernarySystem.system code) := by
-    change Sudoku.Width + 2 ≤ Sudoku.Width * (l + 16 + 2) + 2
+  have hwidth : 20 * Sudoku.Width + 2 ≤ FiniteCompiler.channelCount (FiniteCompiler.TernarySystem.system code) := by
+    change 20 * Sudoku.Width + 2 ≤ Sudoku.Width * (l + 16 + 2) + 2
+    have hl : 2 ≤ l := by
+      have := Nat.le_log_of_pow_le (b := 2) (x := 1) (y := T.toFinset.card + 2)
+        (by decide) (by norm_num)
+      dsimp [l]
+      omega
     nlinarith
   obtain ⟨P,hP,hconn,hiff,hcubes⟩ := FiniteCompiler.Size.exists_connected_tile_ternary_channel_bound
     (FiniteCompiler.TernarySystem.system code) T rfl hwidth
     (FiniteCompiler.TernarySystem.slope_bound code)
     (fun E => FiniteCompiler.TernarySystem.finite_system_iff_wang code hcode E)
-  refine ⟨P,hP,hconn,hiff,hcubes.trans ?_⟩
-  simpa only [FiniteCompiler.channelCount,FiniteCompiler.TernarySystem.system,Nat.add_assoc,l]
-    using ternary_channel_cap_bound T.toFinset.card
+  refine ⟨P,hP,hconn,hiff,?_⟩
+  simpa only [FiniteCompiler.channelCount,FiniteCompiler.TernarySystem.system,Nat.add_assoc,l] using hcubes
+
+/-- The full ternary-channel reduction with an explicit binary-exponent coefficient. -/
+theorem exists_connected_tile_quasipolynomial_explicit_bound (T : LeanWang.TileSet) :
+    ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
+      (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
+      cubeCount P ≤ 2 ^ ((2 * 10 ^ 10) * (Nat.log 2 (T.toFinset.card + 2) + 1) *
+        (Nat.log 2 (Nat.log 2 (T.toFinset.card + 2) + 2) + 1)) := by
+  obtain ⟨P,hP,hconn,hiff,hcubes⟩ := exists_connected_tile_ternary_count_bound T
+  exact ⟨P,hP,hconn,hiff,hcubes.trans (ternary_channel_cap_bound T.toFinset.card)⟩
 
 /-- The same numerical estimate as a power of the number of tiles plus two. -/
 theorem exists_connected_tile_quasipolynomial_explicit_power_bound (T : LeanWang.TileSet) :
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
       cubeCount P ≤ (T.toFinset.card + 2) ^
-        (2 * (15 * 10 ^ 14) * (Nat.log 2 (Nat.log 2 (T.toFinset.card + 2) + 2) + 1)) := by
+        (2 * (2 * 10 ^ 10) * (Nat.log 2 (Nat.log 2 (T.toFinset.card + 2) + 2) + 1)) := by
   obtain ⟨P, hP, hconn, hiff, hcubes⟩ := exists_connected_tile_quasipolynomial_explicit_bound T
-  exact ⟨P, hP, hconn, hiff, hcubes.trans (exp_iterated_log_le_power ((15 * 10 ^ 14)) T.toFinset.card)⟩
+  exact ⟨P, hP, hconn, hiff, hcubes.trans (exp_iterated_log_le_power ((2 * 10 ^ 10)) T.toFinset.card)⟩
 
 /-- The coefficient is uniform in the number of distinct tiles, including zero. -/
 theorem exists_connected_tile_quasipolynomial_bound :
@@ -106,19 +119,28 @@ theorem exists_connected_tile_quasipolynomial_bound :
         (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
         cubeCount P ≤ 2 ^ (K * (Nat.log 2 (T.toFinset.card + 2) + 1) *
           (Nat.log 2 (Nat.log 2 (T.toFinset.card + 2) + 2) + 1)) :=
-  ⟨(15 * 10 ^ 14), exists_connected_tile_quasipolynomial_explicit_bound⟩
+  ⟨(2 * 10 ^ 10), exists_connected_tile_quasipolynomial_explicit_bound⟩
 
-/-- A numerical one-tile consequence of the full bit-channel construction. -/
+private theorem channel_power_le_binary (C k : ℕ) (hbase : C ≤ 2 ^ 20)
+    (hexp : 20 * (3510 * C) ≤ k) : C ^ (3510 * C) ≤ 2 ^ k := by
+  calc
+    _ ≤ (2 ^ 20) ^ (3510 * C) := Nat.pow_le_pow_left hbase _
+    _ = 2 ^ (20 * (3510 * C)) := (pow_mul _ _ _).symm
+    _ ≤ _ := Nat.pow_le_pow_right (by decide) hexp
+
+/-- Evaluate the channel-count bound directly for a single tile. -/
 theorem exists_connected_tile_one_quasipolynomial_bound (T : LeanWang.TileSet)
     (hT : T.toFinset.card = 1) :
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
-      cubeCount P ≤ 2 ^ (6 * 10 ^ 15) := by
-  obtain ⟨P, hP, hconn, hiff, hcubes⟩ := exists_connected_tile_quasipolynomial_explicit_bound T
-  have hexp : (15 * 10 ^ 14) * (Nat.log 2 (1 + 2) + 1) *
-      (Nat.log 2 (Nat.log 2 (1 + 2) + 2) + 1) = 6 * 10 ^ 15 := by norm_num [Nat.log]
-  rw [hT, hexp] at hcubes
-  exact ⟨P, hP, hconn, hiff, hcubes⟩
+      cubeCount P ≤ 2 ^ (7 * 10 ^ 10) := by
+  obtain ⟨P,hP,hconn,hiff,hcubes⟩ := exists_connected_tile_ternary_count_bound T
+  have hlog : Nat.log 2 (1 + 2) = 1 := by decide
+  have hb := channel_power_le_binary
+    (Sudoku.Width * (Nat.log 2 (T.toFinset.card + 2) + 1 + 18) + 2) (7 * 10 ^ 10)
+    (by norm_num [hT,hlog,Sudoku.Width,Sudoku.q])
+    (by norm_num [hT,hlog,Sudoku.Width,Sudoku.q])
+  exact ⟨P,hP,hconn,hiff,hcubes.trans hb⟩
 
 end
 end TranslationTiling.Compiler.Size
