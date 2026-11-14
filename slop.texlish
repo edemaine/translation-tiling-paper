@@ -2061,45 +2061,49 @@ collision proof of @lem:cycle.
   \leandecl{Compiler.sparseCycleTiles_card_le}.
 
 Write $\lg=\log_2$ for the real logarithm to base~$2$.
-Put $A=(p-1)(q-1)<pq<2^{16}$, and let $\ell\geq2$ be the binary length
-of $n+2$. Choose an injection
-$c:\Sigma\to\{0,1\}^{\ell+16}$. In the computable construction, its
-first sixteen bits encode the least nonnegative representatives of the
-arithmetic pair $(a,a')$ by $aq+a'$,
-and its remaining $\ell$ bits encode the Wang tile's input-list index.
-
-We convert this binary code to a ternary code
-$\widehat c:\Sigma\to\{0,1,2\}^{\ell+18}$ while retaining both seed
-conditions. Give a symbol class $0$ when $(a,a')=(1,1)$, class $1$
-when $(a,a')=(2,2)$, and class $2$ otherwise. Prefix its code by
-$00$, $11$, or $01$, respectively. In the payload, replace every
-binary $1$ by $2$, and every binary $0$ by $1$ in class $1$ and by
-$0$ otherwise. The payload still determines the binary code, so
-$\widehat c$ is injective. Moreover, every position belongs to
-$\widehat B_1=\{0,2\}$ exactly for symbols with $(a,a')=(1,1)$, and
-every position belongs to $\widehat B_2=\{1,2\}$ exactly for symbols
-with $(a,a')=(2,2)$.
+For $n\geq1$, let $k$ be the larger of the binary length of $n$ and the
+ternary length of $pqn$. Give a symbol class $0$ when its arithmetic pair
+$(a,a')=(1,1)$, class $1$ when $(a,a')=(2,2)$, and class $2$ otherwise.
+Prefix its code by $00$, $11$, or $01$, respectively, followed by $k$
+payload positions. In class $0$, encode the Wang tile's index in binary,
+using $0,2$ for its two digits; in class $1$, use $1,2$ instead. In
+class $2$, encode $(aq+a')n+j<pqn$ in ternary, where $j<n$ is the Wang
+tile's index. Pad each payload with its zero digit to length $k$.
+The prefix and payload determine the symbol, so the resulting code
+$\widehat c:\Sigma\to\{0,1,2\}^{k+2}$ is injective. Moreover, every
+position belongs to $\widehat B_1=\{0,2\}$ exactly for symbols with
+$(a,a')=(1,1)$, and every position belongs to $\widehat B_2=\{1,2\}$
+exactly for symbols with $(a,a')=(2,2)$.
 
 Replace each ordinary channel $i\in I$ by channels $(i,b)$,
-$b\in\{1,\ldots,\ell+18\}$, all having the same line map $L_i$.
+$b\in\{1,\ldots,k+2\}$, all having the same line map $L_i$.
 The two seed channels stay unchanged. The new ordinary alphabet is
 $\Gamma=\{0,1,2\}$. A word over the new channels is allowed exactly
 when it encodes some word in $\calW$. Use the original graph,
 dependence, and activation equations for these channels, and the
 sparse exclusion equations for the new forbidden words and seed-label
-pairs. The prefix and seed properties are checked in
-\leanfile{FiniteCompiler/TernarySystem.lean}.
+pairs. The code and its seed predicates are checked in
+\leanfile{FiniteCompiler/Effective/MixedCode.lean}; the computable payload
+and its agreement with this code are checked in
+\leanfile{FiniteCompiler/Effective/MixedInput.lean}.
 
 : proposition[Ternary-channel bound] @=prop:bit-channel-bound
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    (n+4)^{10^{11}\lg\lg(n+4)}=n^{O(\log\log n)}
+    (n+4)^{10^{10}\lg\lg(n+4)}=n^{O(\log\log n)}
   $$
   unit cubes.
-  For $n=1$, we also have the explicit bound $2^{7\cdot10^{10}}$ unit cubes.
+  For $n=1$, we also have the explicit bound $2^{22\cdot10^9}$ unit cubes.
 
 : proof
+  For $n=0$, consolidate the two contradictory equations with prototiles
+  $\{0\}$ and $\{0,(1,0)\}$ in $\Z^2$. The stacking prime can be at most
+  $520$, and the lattice bounding side is less than $2^{20}$. The original
+  geometric cap then gives a nonempty connected nontile with at most
+  $2^{250}$ cubes. This fixed output is checked in
+  \leanfile{Compiler/EmptyInputBound.lean}. Henceforth assume $n\geq1$.
+
   First check correctness of the expanded channel system. Activation
   gives a nonempty active set in every ordinary ternary channel. Choose
   one active symbol $V(i,b,m)$ at the common vertical section $(0,m)$.
@@ -2123,11 +2127,10 @@ pairs. The prefix and seed properties are checked in
   construction and its common auxiliary output remain valid. The
   encoded line and seed restrictions hold, so @lem:sparse-cycle proves
   all exclusion equations on this same graph. This proves both
-  tilability directions, including the case $n=0$, when there are no
-  allowed encoded words.
+  tilability directions.
 
-  Now write $C=N(\ell+18)+2$ for the total number of channels. The constants
-  $N$, $A$, $M$, and $D$ are independent of $n$. There are $O(C)$ useful
+  Now write $C=N(k+2)+2$ for the total number of channels. The constants
+  $N$, $M$, and $D$ are independent of $n$. There are $O(C)$ useful
   prime tags. Choosing their ranks above the fixed seed threshold and
   using $p_k\leq(8(k+1))^2$ gives a bound $U=C^{O(1)}$ for all useful
   primes. The digit-prime threshold is $O(U^2)$; there are again only
@@ -2139,7 +2142,7 @@ pairs. The prefix and seed properties are checked in
     |V|=D\prod_i r_i^2a_ib_i=C^{O(C)}.
   $$
 
-  There are at most $3^{N(\ell+18)}$ forbidden ternary words. Each needs at
+  There are at most $3^{N(k+2)}$ forbidden ternary words. Each needs at
   most $(U^2Q)^C=C^{O(C)}$ sparse cycle tests, since
   $|U_{i,j}|=r_{ij}\leq Q$. There are $O(C)$ seed-label exclusions,
   $O(C^2)$ dependence equations, and $C$ activation equations. The
@@ -2155,56 +2158,66 @@ pairs. The prefix and seed properties are checked in
   stacked cyclic modulus $q|V|$ is $C^{O(C)}$. The quotient-to-lattice
   and connectedness steps have fixed polynomial volume cost in $H$
   and $q|V|$. The final cube count is therefore $C^{O(C)}$.
-  Since $C=N(\ell+18)+2$, this gives the quasipolynomial dependence.
+  Since $k=O(\lg(n+2))$, this gives the quasipolynomial dependence.
 
   For the numerical coefficient, the actual channel count satisfies
-  $C\geq20N+2=994{,}582$. The seed modulus $M$ is smaller than $C$,
-  and $8(M^2+p+q+4+2C)\leq C^2$, so the useful-prime cap is at most
-  $C^4\leq C^5$. The digit-prime cap is at most $C^{18}$, and the common
-  parameter budget $b$ at most $C^{73}$. Each digit product satisfies
-  $r_i\leq C^{54}$, so $|V|\leq C^{119C}$. Counting the single digit
-  subgroup in each sparse test gives at most $C^{28C}$ tests per
-  cycle and at most $s\leq C^{30C}$ equations in total. Keeping the
-  equation count and cyclic order separate in the stacking threshold
-  bounds the stacking prime by $C^{151C}$, hence the stacked modulus
-  by $R=C^{270C}$. The horizontal bound satisfies
-  $H\leq b^{211}\leq C^{15403}\leq R$. The lattice bounding side is
-  at most $8003R$, and the geometric volume cap is at most
-  $729(8003R)^{12}\leq R^{13}$. Thus $|F|\leq C^{3510C}$.
-  These estimates are checked in \leanfile{FiniteCompiler/TernaryBounds.lean}
-  and assembled in \leanfile{FiniteCompiler/TernaryConstruction.lean}.
+  $C\geq12N+2=596{,}750$. The useful-prime cap is at most $2C^4$,
+  the digit-prime cap at most $C^{17}$, and the common parameter budget
+  $b$ at most $C^{73}$. Thus $r_i\leq C^{51}$ and $|P_i|\leq C^9$, giving
+  $|V|\leq C^{112C}$. A sparse cycle needs at most $C^{26C}$ tests,
+  and there are at most $s\leq C^{28C}$ equations in total. The stacking
+  prime is at most $C^{141C}$, so the stacked modulus is at most
+  $R=C^{253C}$. The horizontal bound is $H\leq b^{211}\leq C^{15403}$.
 
-  Since $\ell\geq2$, we have $C\leq10N\ell+2$, and
-  $10N+2<2^{19}$. The logarithmic conversion in
-  \leandecl{Compiler.Size.linear_channel_cap_le_exp_log_narrow} has
-  binary-exponent coefficient
-  $11\cdot3510(10N+2)\leq2\cdot10^{10}$.
-  Checking the inputs $n<12$ directly lets us absorb the shifts and
-  rounding with a factor of four, giving
-  $4\cdot2\cdot10^{10}\leq10^{11}$. Passing to ordinary real
-  logarithms gives the displayed bound, as checked in
-  \leanfile{Compiler/CleanQuasipolynomialBound.lean}.
-  For $n=1$, the code has twenty positions per column and
-  $C=994{,}582<2^{20}$, so the direct channel-count bound gives
-  $|F|\leq2^{20\cdot3510\cdot994{,}582}\leq2^{7\cdot10^{10}}$.
+  Count the geometric output directly. Each MSS component has at most
+  $2^{24}$ cubes, independently of its displacement, so the unconnected
+  lattice tile has at most $2^{24}(2H+1)^2R$ cubes. Its bounding side
+  $L$ is at most $8003R$. The boundary used by Kim's construction has
+  at most $6L^2$ points, so its scale is at most $18L^2+6\leq24L^2$.
+  Consequently the final volume is at most
+  $$
+    2^{24}(2H+1)^2R(24L^2)^3
+      \leq (9\cdot2^{24}\cdot24^3\cdot8003^6)H^2R^7
+      \leq C^{1772C}.
+  $$
+  The constant in parentheses is less than $2^{120}\leq C^7$;
+  the remaining fixed exponent is absorbed because $30813\leq C$.
+  These estimates are checked in
+  \leanfile{Compiler/SparseGeometryBound.lean} and
+  \leanfile{FiniteCompiler/MixedBounds.lean}.
+
+  Put $t=\lg(n+4)$ and $g=\lg t$. Direct estimates on the binary and
+  ternary lengths give $k+2\leq(11/2)t$, including the small inputs
+  $n=1,2,3$. Also $g\geq6/5$, so
+  $$
+    C\leq at,\qquad a=(11/2)N+1<2^{19},\qquad
+    \lg C\leq19+g\leq17g.
+  $$
+  Thus $1772C\lg C\leq1772\cdot17a\,tg$, and
+  $1772\cdot17a=8{,}239{,}230{,}302\leq10^{10}$ gives the displayed bound.
+  The conversion is checked in \leanfile{Compiler/MixedLogBound.lean}.
+  For $n=1$, the code has twelve positions per column and
+  $C=596{,}750<2^{20}$, giving
+  $|F|\leq2^{20\cdot1772\cdot596{,}750}\leq2^{22\cdot10^9}$.
 
 The ternary-channel variant is formalized end to end in
 \leanfile{Compiler/CleanQuasipolynomialBound.lean} by
 \leandecl{Compiler.Size.exists_connected_tile_clean_quasipolynomial_bound}.
 The generalized graph, dependence, sparse cycle, and activation equations
-are in `FiniteCompiler/`; their common-solution and soundness
-proofs allow repeated column slopes. The ternary-channel equivalence is
-\leanref{FiniteCompiler/TernarySystem.lean}{FiniteCompiler.TernarySystem.finite_system_iff_wang}.
-\leanfile{FiniteCompiler/TernaryConstruction.lean} combines the parameter,
-equation-count, stacking, and geometric bounds. The public theorem
-includes nonemptiness, face connectedness, both tilability directions,
-and the numerical coefficient uniformly for every finite Wang tile set, including
-the empty set. Duplicate input entries have no cost. The explicit
-bounds in @cor:size-bound remain available.
+are in `FiniteCompiler/`; their common-solution and soundness proofs allow
+repeated column slopes. The code-independent equivalence is
+\leanref{FiniteCompiler/TaggedSystem.lean}{FiniteCompiler.TaggedSystem.finite_system_iff_wang}.
+\leanfile{FiniteCompiler/Effective/MixedCompiler.lean} combines the parameter,
+equation-count, stacking, and geometric bounds for one total computable
+reduction. The public theorem includes nonemptiness, face connectedness,
+both tilability directions, and the numerical coefficient uniformly for
+every finite Wang tile set, including the empty set. Duplicate input
+entries have no cost in the existence bound. The explicit bounds in
+@cor:size-bound remain available.
 \leandecl{Compiler.Size.exists_connected_tile_one_quasipolynomial_bound}
-specializes the numerical bound to $n=1$.
-\leandecl{Compiler.Size.exists_connected_tile_quasipolynomial_explicit_power_bound}
-retains the sharper power estimate with integer logarithms.
+specializes the channel-count estimate to $n=1$. The earlier binary-payload
+variant and its integer-logarithm bounds remain formalized in
+\leanfile{Compiler/QuasipolynomialBound.lean}.
 
 ### The Remaining Cost of Cyclicity
 
@@ -2227,7 +2240,7 @@ construction, with no corresponding lower bound for arbitrary reductions.
 A possible change is to reuse a fixed prime table across ordinary ternary
 channels. At the level of the size estimates, let every such channel
 have fixed moduli $a,b,r$, and keep the two seed channels fixed. With
-$m=N\ell$ ordinary channels the finite factor would have order
+$m=N(k+2)$ ordinary channels the finite factor would have order
 $$
   |V|=D(r^2ab)^m\prod_{t=1}^2 r_{\eta_t}^2a_{\eta_t}b_{\eta_t}
       =n^{O(1)}.
@@ -2734,8 +2747,8 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, these bounds are $(n+4)^{10^{11}\lg\lg(n+4)}$ for translations and
-$64{,}000(n+4)^{10^{11}\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+function. In dimension three, these bounds are $(n+4)^{10^{10}\lg\lg(n+4)}$ for translations and
+$64{,}000(n+4)^{10^{10}\lg\lg(n+4)}$ for arbitrary Euclidean motions.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[
@@ -2753,22 +2766,23 @@ gives the translation-only equivalence; the lattice/real translation theorem
 then connects the two translation predicates. Thus no new construction or
 additional cubes are needed.
 
-The optimized numerical compiler is formalized in
-\leanfile{FiniteCompiler/Effective/Compiler.lean}.
-It combines a binary arithmetic code with each tile's list index, converts
-the result to the seed-preserving ternary code, searches finite arithmetic
-certificates for the bounded prime parameters, and enumerates the sparse cycle
-maps supported at one useful-coordinate value. A common finite coordinate box
+The mixed-radix compiler is formalized in
+\leanfile{FiniteCompiler/Effective/MixedCompiler.lean}, using the common
+numerical compiler in \leanfile{FiniteCompiler/Effective/Compiler.lean}.
+It encodes seed classes with binary tile indices and other symbols with
+ternary decorated indices, searches finite arithmetic certificates for the
+bounded prime parameters, and enumerates the sparse cycle maps supported at
+one useful-coordinate value. A common finite coordinate box
 canonically orders the test tiles, allowing duplicate descriptions to be removed
 before stacking. This makes the list length equal the number of distinct
 mathematical test tiles. The full-difference partition search includes the
 polynomial modulus bound used in the volume proof.
 
-\leanfile{FiniteCompiler/Effective/Correctness.lean} proves the numerical
-compiler's tiling equivalence, and
-\leanfile{FiniteCompiler/Effective/SizeBound.lean} proves its cube bound.
-In particular, \leandecl{FiniteCompiler.Effective.optimizedCompile_computable}
-and \leandecl{FiniteCompiler.Effective.optimizedCompile_real_bound} concern
+\leanfile{FiniteCompiler/Effective/Correctness.lean} proves correctness of
+the common numerical compiler; \leanfile{FiniteCompiler/Effective/MixedCompiler.lean}
+combines it with the mixed-radix code and proves the cube bound.
+In particular, \leandecl{FiniteCompiler.Effective.mixedCompile_computable}
+and \leandecl{FiniteCompiler.Effective.mixedCompile_real_bound} concern
 the same function. The six-key replacement is a primitive-recursive map and
 multiplies its output length by exactly $64{,}000$, so the public Euclidean
 reduction combines computability, correctness, and size as well.

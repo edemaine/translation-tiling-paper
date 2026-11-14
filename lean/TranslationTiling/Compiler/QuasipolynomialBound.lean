@@ -1,3 +1,4 @@
+import TranslationTiling.FiniteCompiler.Effective.MixedCompiler
 import TranslationTiling.FiniteCompiler.TernaryConstruction
 import TranslationTiling.FiniteCompiler.ExplicitDegrees
 import TranslationTiling.Compiler.BitChannelSize
@@ -121,25 +122,39 @@ theorem exists_connected_tile_quasipolynomial_bound :
           (Nat.log 2 (Nat.log 2 (T.toFinset.card + 2) + 2) + 1)) :=
   ⟨(2 * 10 ^ 10), exists_connected_tile_quasipolynomial_explicit_bound⟩
 
+/-- The shorter mixed-radix code, before conversion to real logarithms. -/
+theorem exists_connected_tile_mixed_count_bound (T : LeanWang.TileSet) (hn : 0 < T.toFinset.card) :
+    ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
+      (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
+      cubeCount P ≤ (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card + 2) ^
+        (1772 * (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card + 2)) := by
+  have hn' : 0 < T.dedup.length := by simpa only [List.card_toFinset] using hn
+  obtain ⟨hne,hc,ht,hb⟩ := FiniteCompiler.Effective.mixedCompileCore_channel_bound T.dedup hn'
+  have hd : LeanWang.TilesPlane T ↔ LeanWang.TilesPlane T.dedup :=
+    LeanWang.tilesPlane_congr (by intro t; simp)
+  refine ⟨FiniteCompiler.Effective.mixedCompileCore T.dedup,hne,hc,hd.trans ht,?_⟩
+  apply (List.toFinset_card_le _).trans
+  simpa only [List.card_toFinset,FiniteCompiler.channelCount,FiniteCompiler.Effective.mixedSystem,
+    FiniteCompiler.TaggedSystem.system] using hb
+
 private theorem channel_power_le_binary (C k : ℕ) (hbase : C ≤ 2 ^ 20)
-    (hexp : 20 * (3510 * C) ≤ k) : C ^ (3510 * C) ≤ 2 ^ k := by
+    (hexp : 20 * (1772 * C) ≤ k) : C ^ (1772 * C) ≤ 2 ^ k := by
   calc
-    _ ≤ (2 ^ 20) ^ (3510 * C) := Nat.pow_le_pow_left hbase _
-    _ = 2 ^ (20 * (3510 * C)) := (pow_mul _ _ _).symm
+    _ ≤ (2 ^ 20) ^ (1772 * C) := Nat.pow_le_pow_left hbase _
+    _ = 2 ^ (20 * (1772 * C)) := (pow_mul _ _ _).symm
     _ ≤ _ := Nat.pow_le_pow_right (by decide) hexp
 
-/-- Evaluate the channel-count bound directly for a single tile. -/
+/-- Evaluate the shorter code's channel count directly for one Wang tile. -/
 theorem exists_connected_tile_one_quasipolynomial_bound (T : LeanWang.TileSet)
     (hT : T.toFinset.card = 1) :
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
-      cubeCount P ≤ 2 ^ (7 * 10 ^ 10) := by
-  obtain ⟨P,hP,hconn,hiff,hcubes⟩ := exists_connected_tile_ternary_count_bound T
-  have hlog : Nat.log 2 (1 + 2) = 1 := by decide
+      cubeCount P ≤ 2 ^ (22 * 10 ^ 9) := by
+  obtain ⟨P,hP,hconn,hiff,hcubes⟩ := exists_connected_tile_mixed_count_bound T (by omega)
   have hb := channel_power_le_binary
-    (Sudoku.Width * (Nat.log 2 (T.toFinset.card + 2) + 1 + 18) + 2) (7 * 10 ^ 10)
-    (by norm_num [hT,hlog,Sudoku.Width,Sudoku.q])
-    (by norm_num [hT,hlog,Sudoku.Width,Sudoku.q])
+    (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card + 2) (22 * 10 ^ 9)
+    (by norm_num [hT,mixedWidth_one,Sudoku.Width,Sudoku.q])
+    (by norm_num [hT,mixedWidth_one,Sudoku.Width,Sudoku.q])
   exact ⟨P,hP,hconn,hiff,hcubes.trans hb⟩
 
 end

@@ -117,14 +117,16 @@ theorem exists_connected_tile_clean_quasipolynomial_bound (T : LeanWang.TileSet)
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
       (cubeCount P : ℝ) ≤ ((T.toFinset.card : ℝ) + 4) ^
-        ((10 : ℝ) ^ 11 * Real.logb 2 (Real.logb 2 ((T.toFinset.card : ℝ) + 4))) := by
-  obtain ⟨P,hP,hconn,hiff,hcubes⟩ := exists_connected_tile_quasipolynomial_explicit_bound T
-  have hnat := hcubes.trans (ternary_exp_le_clean T.toFinset.card)
-  have hcast : (cubeCount P : ℝ) ≤
-      (((T.toFinset.card + 4) ^ (10 ^ 11 * Nat.log 2 (Nat.log 2 (T.toFinset.card + 4))) : ℕ) : ℝ) :=
-    by exact_mod_cast hnat
-  refine ⟨P,hP,hconn,hiff,hcast.trans ?_⟩
-  convert clean_power_le_real_loglog (10 ^ 10) T.toFinset.card using 1 <;> norm_num
+        ((10 : ℝ) ^ 10 * Real.logb 2 (Real.logb 2 ((T.toFinset.card : ℝ) + 4))) := by
+  obtain ⟨hn,hc,ht,hb⟩ := FiniteCompiler.Effective.mixedCompile_facts T.dedup
+  have hd : LeanWang.TilesPlane T ↔ LeanWang.TilesPlane T.dedup :=
+    LeanWang.tilesPlane_congr (by intro t; simp)
+  refine ⟨FiniteCompiler.Effective.mixedCompile T.dedup,hn,hc,hd.trans ht,?_⟩
+  have hcard : (cubeCount (FiniteCompiler.Effective.mixedCompile T.dedup):ℝ) ≤
+      ((FiniteCompiler.Effective.mixedCompile T.dedup).length:ℝ) := by
+    exact_mod_cast List.toFinset_card_le (FiniteCompiler.Effective.mixedCompile T.dedup)
+  apply hcard.trans
+  simpa only [List.card_toFinset] using hb
 
 end
 end TranslationTiling.Compiler.Size

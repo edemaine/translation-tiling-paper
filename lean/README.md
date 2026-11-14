@@ -103,49 +103,49 @@ have no unproved mathematical input. No unfinished proof is accepted.
 ## Cube Bound by Wang Tile Count
 
 [Compiler/CleanQuasipolynomialBound.lean](TranslationTiling/Compiler/CleanQuasipolynomialBound.lean)
-gives the bound `(n+4)^(10^11*log₂(log₂(n+4))) = n^O(log log n)` with ordinary
-real logarithms and no rounding operations. The theorem
-`Size.exists_connected_tile_clean_quasipolynomial_bound` includes
-nonemptiness, face connectedness, and both tilability directions, including
-empty input.
-
-[TernarySystem.lean](TranslationTiling/FiniteCompiler/TernarySystem.lean)
-encodes both arithmetic decorations and Wang labels over three symbols.
-Prefixes `00`, `11`, and `01` preserve the two seed classes; binary payload
-ones become `2`, while zeros become `1` in the second seed class and `0`
-otherwise. Each original column uses the binary length of `n+2`, plus eighteen
-positions. All positions share that column's original slope. The board has `q² = 49,729`
-columns; coefficient residues still use `p²q²`, while seed residues use
-`5pq = 235,265`. The other encoding primes avoid `5`, `p`, and `q`.
-[Effective/TernaryInput.lean](TranslationTiling/FiniteCompiler/Effective/TernaryInput.lean)
-implements the code using sixteen arithmetic bits and the input tile's list index,
-and proves its primitive recursiveness and agreement with the finite system.
-
+gives `(n+4)^(10^10*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
+logarithms. The theorem `Size.exists_connected_tile_clean_quasipolynomial_bound`
+includes nonemptiness, face connectedness, and both tilability directions.
+Here `n` counts distinct input tiles. The one-tile specialization in
 [Compiler/QuasipolynomialBound.lean](TranslationTiling/Compiler/QuasipolynomialBound.lean)
-proves the sharper binary-exponent estimate
+gives at most `2^(22*10^9)` cubes.
 
-```text
-2^((2*10^10)*(Nat.log 2 (n+2)+1)*(Nat.log 2 (Nat.log 2 (n+2)+2)+1))
-```
+[Effective/MixedCode.lean](TranslationTiling/FiniteCompiler/Effective/MixedCode.lean)
+uses prefixes `00`, `11`, and `01` for the two seed classes and all other
+symbols. Seed-class payloads use a binary tile index; other payloads use
+a ternary decorated index. Their common length is the maximum of the binary
+length of `n` and the ternary length of `pqn`, plus two prefix positions.
+For one Wang tile, twelve positions per column suffice.
+[TaggedSystem.lean](TranslationTiling/FiniteCompiler/TaggedSystem.lean)
+proves the tiling equivalence for any injective code with the exact seed predicates.
+[Effective/MixedInput.lean](TranslationTiling/FiniteCompiler/Effective/MixedInput.lean)
+implements the mixed-radix code and proves primitive recursiveness and correctness.
+All positions share their column's original slope. The board has `q² = 49,729`
+columns; coefficient residues use `p²q²`, and seed residues use `5pq = 235,265`.
 
-and the power estimate
-`(n+2)^(4*10^10*(Nat.log 2 (Nat.log 2 (n+2)+2)+1))`.
-Here `n` counts distinct tiles; duplicate input entries do not affect these
-existence bounds. For `n = 1`,
-`Size.exists_connected_tile_one_quasipolynomial_bound` gives at most
-`2^(7*10^10)` cubes.
+[MixedBounds.lean](TranslationTiling/FiniteCompiler/MixedBounds.lean)
+bounds the cyclic order by `C^(112*C)`, equation count by `C^(28*C)`, and
+stacked modulus by `C^(253*C)` for `C` channels.
+[Compiler/SparseGeometryBound.lean](TranslationTiling/Compiler/SparseGeometryBound.lean)
+counts the cube boundary by `6L²` and each MSS component by `2^24`, independently
+of its displacement. These give final volume at most `C^(1772*C)`.
+[Compiler/MixedLogBound.lean](TranslationTiling/Compiler/MixedLogBound.lean)
+converts this estimate directly to the clean logarithmic bound.
 
-[TernaryBounds.lean](TranslationTiling/FiniteCompiler/TernaryBounds.lean)
-retains separate useful-prime and digit-prime bounds. For `C` channels, it
-bounds the cyclic order by `C^(119*C)` and the equation count by `C^(30*C)`.
-The stacking search uses the actual equation count and cyclic order separately,
-giving stacked modulus at most `C^(270*C)` and final volume at most `C^(3510*C)`.
-[TernaryConstruction.lean](TranslationTiling/FiniteCompiler/TernaryConstruction.lean)
-combines these estimates with both tilability directions. The same bounds hold
-for the total computable compiler in
-[Effective/SizeBound.lean](TranslationTiling/FiniteCompiler/Effective/SizeBound.lean),
-with input list length in place of distinct tile count. The complete dependency
-closure is included in the axiom audit.
+[Effective/MixedCompiler.lean](TranslationTiling/FiniteCompiler/Effective/MixedCompiler.lean)
+proves the same bound for one total computable compiler, with input list length
+in place of distinct tile count. For empty input it uses a fixed connected
+nontile with at most `2^250` cubes, constructed and verified in
+[Compiler/EmptyInputBound.lean](TranslationTiling/Compiler/EmptyInputBound.lean).
+The public abstract and motion wrappers use this compiler. All dependencies
+are included in the axiom audit.
+
+The earlier binary-payload ternary encoding remains in
+[TernarySystem.lean](TranslationTiling/FiniteCompiler/TernarySystem.lean),
+[TernaryBounds.lean](TranslationTiling/FiniteCompiler/TernaryBounds.lean), and
+[TernaryConstruction.lean](TranslationTiling/FiniteCompiler/TernaryConstruction.lean).
+Its bound `C^(3510*C)` and integer-logarithm estimates remain available in
+[Compiler/QuasipolynomialBound.lean](TranslationTiling/Compiler/QuasipolynomialBound.lean).
 
 ### Explicit numerical bounds
 
