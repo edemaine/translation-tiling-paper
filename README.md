@@ -37,6 +37,7 @@ the corresponding problem in two dimensions is decidable.
 - [verification/check_activation.py](verification/check_activation.py): finite algebra checks.
 - [figures/generate_connected.py](figures/generate_connected.py): exact connectedness-example renderer.
 - [figures/generate_translation_tiling.py](figures/generate_translation_tiling.py): separate polycube and tiling-patch SVGs.
+- [anim/](anim/README.md): fixed-view tiling animations, MP4s, browser players, SVGs, and animation-specific generation/export code.
 - [figures/](figures/): checked-in PDF figures needed to build the paper.
 
 Build with [Texlish](https://texlish.org/) 0.3.2 or later,

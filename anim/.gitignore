@@ -1,0 +1,5 @@
+__pycache__/
+*.mp4
+*.html
+*.svg
+media-exports*.json
