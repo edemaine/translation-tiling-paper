@@ -25,7 +25,7 @@ Writing `N = residueModulus`, `C = Sudoku.Width + 2`, `A = arithmeticAlphabet`,
 * `closedCubeBound n = S³*(3S³+6)³`.
 
 In particular, its growth in `n` is double exponential. All constants are
-explicit arithmetic expressions in the fixed primes `p = 211`, `q = 223`.
+explicit arithmetic expressions in the fixed primes `p = 53`, `q = 59`.
 The proof retains
 nonemptiness, face connectedness, and both tilability directions. It applies
 also to the empty input and ignores duplicate input tiles and output cubes.
@@ -42,9 +42,9 @@ def closedCubeBound (n : ℕ) : ℕ :=
 /-- A purely arithmetic formula. Parameters keep Lean from trying to materialize
 the enormous fixed powers while elaborating or compiling the definition. -/
 noncomputable def arithmeticCubeBound (N C A n : ℕ) : ℕ :=
-  let U := 4 ^ (2 * C + 1) * (N ^ 2 + 438)
+  let U := 4 ^ (2 * C + 1) * (N ^ 2 + 116)
   let L := A * n + 1
-  let Q := 4 ^ (C * L + 1) * (U ^ 2 + 2 * U + 438)
+  let Q := 4 ^ (C * L + 1) * (U ^ 2 + 2 * U + 116)
   let b := Q ^ L + U + N + 2
   let c := fun x : ℕ => x * x + 2 * x
   let J := c (c (c (c b)))
@@ -57,16 +57,16 @@ noncomputable def arithmeticCubeBound (N C A n : ℕ) : ℕ :=
 
 /-- The bound with all constants specified by numerals. -/
 noncomputable def explicitCubeBound (n : ℕ) : ℕ :=
-  arithmeticCubeBound 235265 450 46620 n
+  arithmeticCubeBound 15635 122 3016 n
 
 theorem closedCubeBound_eq_arithmetic (n : ℕ) :
     closedCubeBound n = arithmeticCubeBound residueModulus channelCount arithmeticAlphabet n := by
-  have hsum : Sudoku.p + Sudoku.q = 434 := by norm_num [Sudoku.p, Sudoku.q]
-  have hstart : usefulStart + 1 = residueModulus ^ 2 + 438 := by unfold usefulStart; omega
-  have hU : usefulCap = 4 ^ (2 * channelCount + 1) * (residueModulus ^ 2 + 438) := by
+  have hsum : Sudoku.p + Sudoku.q = 112 := by norm_num [Sudoku.p, Sudoku.q]
+  have hstart : usefulStart + 1 = residueModulus ^ 2 + 116 := by unfold usefulStart; omega
+  have hU : usefulCap = 4 ^ (2 * channelCount + 1) * (residueModulus ^ 2 + 116) := by
     unfold usefulCap
     rw [hstart]
-  have hB : digitStart + 1 = usefulCap ^ 2 + 2 * usefulCap + 438 := by
+  have hB : digitStart + 1 = usefulCap ^ 2 + 2 * usefulCap + 116 := by
     unfold digitStart
     omega
   unfold closedCubeBound arithmeticCubeBound geometryCap latticeSide latticeRadius modulusCap stackCap
@@ -75,15 +75,15 @@ theorem closedCubeBound_eq_arithmetic (n : ℕ) :
   simp only [hB, hU]
 
 theorem closedCubeBound_eq_explicit (n : ℕ) : closedCubeBound n = explicitCubeBound n := by
-  have hN : residueModulus = 235265 := by
+  have hN : residueModulus = 15635 := by
     rw [residueModulus_eq]
     norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
-  have hC : channelCount = 450 := by norm_num [channelCount_eq, Sudoku.Width, Sudoku.q]
-  have hA : arithmeticAlphabet = 46620 := by norm_num [arithmeticAlphabet, Sudoku.p, Sudoku.q]
+  have hC : channelCount = 122 := by norm_num [channelCount_eq, Sudoku.Width, Sudoku.q]
+  have hA : arithmeticAlphabet = 3016 := by norm_num [arithmeticAlphabet, Sudoku.p, Sudoku.q]
   calc
     closedCubeBound n = arithmeticCubeBound residueModulus channelCount arithmeticAlphabet n :=
       closedCubeBound_eq_arithmetic n
-    _ = arithmeticCubeBound 235265 450 46620 n := by rw [hN, hC, hA]
+    _ = arithmeticCubeBound 15635 122 3016 n := by rw [hN, hC, hA]
     _ = explicitCubeBound n := rfl
 
 @[local fun_prop] theorem natPowerRule {α : Type*} [Primcodable α] {f g : α → ℕ}

@@ -14,8 +14,8 @@ set_option maxHeartbeats 2000000
 
 variable {T : System} (E : EncodingParameters T)
 
-theorem seedModulus_le_square {C : ℕ} (hC : 5378≤C) : residueModulus≤C^2 := by
-  apply (show residueModulus≤5378^2 by norm_num [residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]).trans
+theorem seedModulus_le_square {C : ℕ} (hC : 1202≤C) : residueModulus≤C^2 := by
+  apply (show residueModulus≤1202^2 by norm_num [residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]).trans
   exact Nat.pow_le_pow_left hC 2
 
 theorem sharp_label_card (hB : T.alphabet = 3) (i : Channel T) :
@@ -31,7 +31,7 @@ theorem sharp_r_le (hB : T.alphabet = 3) (hp : CompactPrimes E) (i : Channel T) 
     _ ≤ _ := Nat.pow_le_pow_right hC (by have := sharp_label_card hB i; omega)
 
 theorem sharp_cyclicOrder_le (hB : T.alphabet = 3) (hp : CompactPrimes E)
-    (hC : 5378≤channelCount T) :
+    (hC : 1202≤channelCount T) :
     E.cyclicOrder ≤ channelCount T ^ (35 * channelCount T) := by
   let C := channelCount T
   have h1 : 1 ≤ C := by unfold C channelCount; omega
@@ -48,7 +48,7 @@ theorem sharp_cyclicOrder_le (hB : T.alphabet = 3) (hp : CompactPrimes E)
     _ ≤ _ := Nat.pow_le_pow_right h1 (by omega)
 
 set_option maxHeartbeats 200000 in
-theorem sharp_cycleTiles_card_le (hp : CompactPrimes E) (hC : 5378≤channelCount T)
+theorem sharp_cycleTiles_card_le (hp : CompactPrimes E) (hC : 1202≤channelCount T)
     {t : ℕ} [NeZero t] (cycle : ZMod t ↪ Channel T) (labels : ∀ j, Label T (cycle j)) :
     (sparseCycleTiles E cycle labels).card ≤ channelCount T ^ (9 * channelCount T) := by
   have ht : t ≤ channelCount T := by
@@ -66,13 +66,13 @@ theorem sharp_cycleTiles_card_le (hp : CompactPrimes E) (hC : 5378≤channelCoun
     _ ≤ _ := Nat.pow_le_pow_right (by unfold channelCount; omega) (by omega)
 
 theorem smallPrimes_budget (hB : T.alphabet = 3) (hp : CompactPrimes E)
-    (hC : 5378≤channelCount T) (hS : ∀ n, (T.slope n).natAbs ≤ Sudoku.Width) :
+    (hC : 1202≤channelCount T) (hS : ∀ n, (T.slope n).natAbs ≤ Sudoku.Width) :
     ParameterBudget E (channelCount T ^ 15) := by
   have h1 : 1 ≤ channelCount T := by unfold channelCount; omega
   have hself : channelCount T ≤ channelCount T ^ 15 := Nat.le_self_pow (by decide) _
   have hN := (seedModulus_le_square hC).trans (Nat.pow_le_pow_right h1 (by decide : 2≤15))
   have hW : Sudoku.Width≤channelCount T^2 := by
-    apply (show Sudoku.Width≤5378^2 by norm_num [Sudoku.Width,Sudoku.q]).trans
+    apply (show Sudoku.Width≤1202^2 by norm_num [Sudoku.Width,Sudoku.q]).trans
     exact Nat.pow_le_pow_left hC 2
   exact ⟨(by omega : 2≤channelCount T).trans hself,hN,
     sharp_r_le E hB hp,fun i => (hp.1 i).1.trans (Nat.pow_le_pow_right h1 (by decide)),
@@ -80,7 +80,7 @@ theorem smallPrimes_budget (hB : T.alphabet = 3) (hp : CompactPrimes E)
     fun n => (hS n).trans (hW.trans (Nat.pow_le_pow_right h1 (by decide)))⟩
 
 theorem sharp_wordConstraintTiles_card_le (hB : T.alphabet = 3) (hp : CompactPrimes E)
-    (hC : 5378≤channelCount T) :
+    (hC : 1202≤channelCount T) :
     (wordConstraintTiles E).card ≤ channelCount T ^ (10 * channelCount T) := by
   let C := channelCount T
   have hwords : Fintype.card (Word T) ≤ C ^ C := by
@@ -99,7 +99,7 @@ theorem sharp_wordConstraintTiles_card_le (hB : T.alphabet = 3) (hp : CompactPri
     _ = _ := by rw [← pow_add]; congr 1; omega
 
 theorem sharp_seedConstraintTiles_card_le (hB : T.alphabet = 3) (hp : CompactPrimes E)
-    (hbig : 6 ≤ channelCount T) (hC : 5378≤channelCount T) :
+    (hbig : 6 ≤ channelCount T) (hC : 1202≤channelCount T) :
     (seedConstraintTiles E).card ≤ channelCount T ^ (10 * channelCount T) := by
   let C := channelCount T
   have hindex : Fintype.card (Fin 2 × Column T × Symbol T) ≤ C ^ 2 := by
@@ -120,11 +120,11 @@ theorem sharp_seedConstraintTiles_card_le (hB : T.alphabet = 3) (hp : CompactPri
     _ ≤ _ := Nat.pow_le_pow_right (by unfold C channelCount; omega) (by dsimp [C]; omega)
 
 theorem sharp_testTiles_card_le (hB : T.alphabet = 3) (hp : CompactPrimes E)
-    (hC : 5378≤channelCount T) (hS : ∀ n, (T.slope n).natAbs ≤ Sudoku.Width) :
+    (hC : 1202≤channelCount T) (hS : ∀ n, (T.slope n).natAbs ≤ Sudoku.Width) :
     (testTiles E).card ≤ channelCount T ^ (11 * channelCount T) := by
   let C := channelCount T
   have hbig : 300 ≤ C := by
-    have : 300 ≤ Sudoku.Width := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
+    have : 15 ≤ Sudoku.Width := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
     omega
   have h1 : 1 ≤ C := by omega
   have hself : C ≤ C ^ 15 := Nat.le_self_pow (by decide) _
@@ -173,7 +173,7 @@ theorem sharp_testTiles_card_le (hB : T.alphabet = 3) (hp : CompactPrimes E)
 
 
 theorem cyclicOrder_primeBound (hB : T.alphabet=3) (hp : CompactPrimes E)
-    (hC : 5378≤channelCount T) :
+    (hC : 1202≤channelCount T) :
     Effective.PrimeBound E.cyclicOrder (channelCount T^5) := by
   intro q hq
   by_cases hprime : q.Prime
@@ -205,7 +205,7 @@ theorem cyclicOrder_primeBound (hB : T.alphabet=3) (hp : CompactPrimes E)
     · exact Or.inl hd
   · exact Or.inl hprime
 
-theorem differenceLog_channel_le {C : ℕ} (hC : 5378 ≤ C) :
+theorem differenceLog_channel_le {C : ℕ} (hC : 1202 ≤ C) :
     Stacking.differenceLog (C^(11*C)) ≤ C^2 := by
   have hcr : (1024:ℝ) ≤ C := by exact_mod_cast (by omega : 1024 ≤ C)
   have hl := Compiler.Size.log_le_div_sixtyfour (by omega : 1024 ≤ C)
@@ -228,9 +228,9 @@ theorem differenceLog_channel_le {C : ℕ} (hC : 5378 ≤ C) :
     nlinarith [mul_le_mul_of_nonneg_left hlg (show (0:ℝ)≤C by positivity)]
   exact_mod_cast hL
 
-theorem freshCap_channel_le {C : ℕ} (hC : 5378 ≤ C) :
+theorem freshCap_channel_le {C : ℕ} (hC : 1202 ≤ C) :
     Effective.freshCap (C^(11*C)) (C^5) ≤ C^(23*C) := by
-  have hc : 5378 ≤ C := by simpa [Sudoku.Width,Sudoku.q] using hC
+  have hc : 1202 ≤ C := by simpa [Sudoku.Width,Sudoku.q] using hC
   have h1 : 1 ≤ C := by omega
   have hL := differenceLog_channel_le hc
   have hLp : 1 ≤ Stacking.differenceLog (C^(11*C)) := by unfold Stacking.differenceLog; omega
@@ -254,16 +254,16 @@ theorem freshCap_channel_le {C : ℕ} (hC : 5378 ≤ C) :
     _ ≤ _ := Nat.pow_le_pow_right h1 (by omega)
 
 
-theorem compact_geometry_bound {C H : ℕ} (hC : 5378≤C) (hH : H≤C^3165) :
-    (9*2^24*972*36*8003^4)*H^4*(C^(58*C))^3≤C^(177*C) := by
+theorem compact_geometry_bound {C H : ℕ} (hC : 1202≤C) (hH : H≤C^3165) :
+    (9*2^24*972*36*8003^4)*H^4*(C^(58*C))^3≤C^(185*C) := by
   have h1 : 1≤C := by omega
-  have hk : 9*2^24*972*36*8003^4≤C^8 := by
-    apply (by norm_num : 9*2^24*972*36*8003^4≤(2^12)^8).trans
+  have hk : 9*2^24*972*36*8003^4≤C^10 := by
+    apply (by norm_num : 9*2^24*972*36*8003^4≤(2^10)^10).trans
     exact Nat.pow_le_pow_left (by norm_num; omega) _
   calc
-    _ ≤ C^8*(C^3165)^4*(C^(58*C))^3 := Nat.mul_le_mul
+    _ ≤ C^10*(C^3165)^4*(C^(58*C))^3 := Nat.mul_le_mul
       (Nat.mul_le_mul hk (Nat.pow_le_pow_left hH 4)) le_rfl
-    _ = C^(174*C+12668) := by simp only [← pow_mul,← pow_add]; congr 1; ring
+    _ = C^(174*C+12670) := by simp only [← pow_mul,← pow_add]; congr 1; ring
     _ ≤ _ := Nat.pow_le_pow_right h1 (by omega)
 
 end

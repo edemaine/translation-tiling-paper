@@ -141,6 +141,38 @@ theorem affine_int_roots_card_le {p : ℕ} (hp : p.Prime) (a b : ZMod p)
     rw [hr, hq] at hnq
     omega
 
+/-- A shifted affine root occurs at most twice among the possible patch origins. -/
+theorem affine_origin_roots_card_le_two {p : ℕ} (hp : p.Prime)
+    (a b : ZMod p) (hab : a ≠ 0 ∨ b ≠ 0) (shift : ℤ) :
+    ((Finset.Ico (0 : ℤ) (wordWidth p - 3 : ℕ)).filter
+      (fun n : ℤ => a * ((n + shift : ℤ) : ZMod p) + b = 0)).card ≤ 2 := by
+  classical
+  let : Fact p.Prime := ⟨hp⟩
+  have hpz : (0 : ℤ) < p := by exact_mod_cast hp.pos
+  have hc : (Finset.Ico (0 : ℤ) (2 : ℤ)).card = 2 := by simp
+  refine le_trans ?_ (le_of_eq hc)
+  apply Finset.card_le_card_of_injOn (fun n : ℤ => n / p)
+  · intro n hn
+    have hn' := Finset.mem_Ico.mp (Finset.mem_filter.mp hn).1
+    apply Finset.mem_Ico.mpr
+    refine ⟨Int.ediv_nonneg hn'.1 hpz.le, ?_⟩
+    apply Int.ediv_lt_of_lt_mul hpz
+    have hp2 := hp.two_le
+    have hnhi : n < (2*p+2-3:ℕ) := hn'.2
+    omega
+  · intro n hn m hm hq
+    have heq := affine_root_unique hab
+      (Finset.mem_filter.mp hn).2 (Finset.mem_filter.mp hm).2
+    have hnm : (n : ZMod p) = (m : ZMod p) := by
+      simp only [Int.cast_add] at heq
+      exact add_right_cancel heq
+    have hr := (ZMod.intCast_eq_intCast_iff' n m p).mp hnm
+    have hnq := Int.emod_add_mul_ediv n (p : ℤ)
+    have hmq := Int.emod_add_mul_ediv m (p : ℤ)
+    change n / (p : ℤ) = m / (p : ℤ) at hq
+    rw [hr, hq] at hnq
+    omega
+
 end ArithmeticRule
 
 end TranslationTiling.Sudoku

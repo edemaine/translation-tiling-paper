@@ -4,7 +4,7 @@ import TranslationTiling.SudokuArithmetic.Decorations
 
 namespace TranslationTiling.Sudoku
 
-theorem sample_not_dvd (r : ℕ) (hlarge : 200 < r) (k : Fin 4) :
+theorem sample_not_dvd (r : ℕ) (hlarge : 48 < r) (k : Fin 4) :
     ¬ (r : ℤ) ∣ (sample k).val := by
   intro hd
   have hk := k.isLt
@@ -33,7 +33,7 @@ theorem digit_mul_unit (r : ℕ) (hp : r.Prime) {M n : ℤ} (hM : M ≠ 0)
     rw [he, lastDigit_mul_prime_pow, lastDigit_eq_of_not_dvd r hp hfn,
       lastDigit_val_of_ne_zero r hp hM, Int.cast_mul]
 
-theorem canonical_scaled_coefficients (r : ℕ) (hp : r.Prime) (hlarge : 200 < r)
+theorem canonical_scaled_coefficients (r : ℕ) (hp : r.Prime) (hlarge : 48 < r)
     (hr : ArithmeticRule.wordWidth r ≤ Width) {V : Column → ℤ → (ZMod r)ˣ} {B : ZMod r} {K : ℕ}
     (hC : CanonicalArithmetic r hp V B K) (M : ℤ) (hM : M ≠ 0)
     (hdepth : padicValInt r M + 1 ≤ K) (a b : ℤ)

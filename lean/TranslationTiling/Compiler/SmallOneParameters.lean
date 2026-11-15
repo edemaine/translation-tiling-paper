@@ -65,9 +65,9 @@ theorem exists_small_useful : ∃ u : UsefulTag → ℕ,
       simp only [Sum.elim_inl]
       refine ⟨?_, by norm_num; omega, ?_, ?_⟩
       · fin_cases t <;> norm_num
-      · have hp : 200 < Sudoku.p := by decide
+      · have hp : 48 < Sudoku.p := by decide
         omega
-      · have hq : 200 < Sudoku.q := by decide
+      · have hq : 48 < Sudoku.q := by decide
         omega
     | inr j =>
       have hj := hfgt j

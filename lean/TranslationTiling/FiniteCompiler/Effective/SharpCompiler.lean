@@ -38,7 +38,7 @@ theorem sharpTile_computable : Computable sharpTile := by
 
 theorem sharpCyclic_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
     (hpos : ∀ n, 0≤T.slope n) (hS : ∀ n, (T.slope n).natAbs≤Sudoku.Width)
-    (hB : T.alphabet=3) (hC : 12*Sudoku.Width+2 ≤ channelCount T) :
+    (hB : T.alphabet=3) (hC : 10*Sudoku.Width+2 ≤ channelCount T) :
     0<(sharpCyclic (parameterData T,p)).1 ∧ (sharpCyclic (parameterData T,p)).2≠[] ∧
     (sharpCyclic (parameterData T,p)).1≤channelCount T^(58*channelCount T) ∧
     (∀ f ∈ (sharpCyclic (parameterData T,p)).2,
@@ -48,7 +48,7 @@ theorem sharpCyclic_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
         Tiles (cyclicTileSet (sharpCyclic (parameterData T,p)).1 (sharpCyclic (parameterData T,p)).2) B) := by
   let C := channelCount T
   let Fs := canonicalInputFamily (parameterData T,p)
-  have hbig : 5378≤C := by simpa [Sudoku.Width,Sudoku.q] using hC
+  have hbig : 1202≤C := by simpa [Sudoku.Width,Sudoku.q] using hC
   have hsmall : CompactPrimes (parameters T) := parameters_bounded_compact T hbig hB
   have hcount : Fs.length≤C^(11*C) := by
     rw [canonicalInputFamily_length T p hp hpos hS]
@@ -79,11 +79,11 @@ theorem sharpCyclic_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
 
 theorem sharpTile_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
     (hpos : ∀ n, 0≤T.slope n) (hS : ∀ n, (T.slope n).natAbs≤Sudoku.Width)
-    (hB : T.alphabet=3) (hC : 12*Sudoku.Width+2 ≤ channelCount T) :
+    (hB : T.alphabet=3) (hC : 10*Sudoku.Width+2 ≤ channelCount T) :
     sharpTile (parameterData T,p)≠[] ∧ FaceConnected (sharpTile (parameterData T,p)) ∧
     ((∃ A : Set (Ambient (parameters T)), Solves (parameters T) A) ↔
       TranslationTiling.Tiles (sharpTile (parameterData T,p))) ∧
-    (sharpTile (parameterData T,p)).length≤channelCount T^(177*channelCount T) := by
+    (sharpTile (parameterData T,p)).length≤channelCount T^(185*channelCount T) := by
   obtain ⟨hm,hne,hM,hxy,hiff⟩ := sharpCyclic_facts T p hp hpos hS hB hC
   dsimp only [sharpTile]
   generalize hd : sharpCyclic (parameterData T,p)=d at hm hne hM hxy hiff ⊢
@@ -97,7 +97,7 @@ theorem sharpTile_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
     FourLayer.connectedTile_connected _ H M hrect,?_,?_⟩
   · exact hiff.trans ((Compiler.integerTile_correct MSS.rigidity d hm hne).trans
       (FourLayer.connectedTile_correct (Compiler.integerTile d) H M).symm)
-  · have hbig : 5378≤C := by simpa [C,Sudoku.Width,Sudoku.q] using hC
+  · have hbig : 1202≤C := by simpa [C,Sudoku.Width,Sudoku.q] using hC
     have heq : rawBudget (parameterData T)=C^15 := by
       unfold rawBudget
       rw [if_pos ⟨hbig,hB⟩]

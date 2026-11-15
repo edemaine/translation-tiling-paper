@@ -74,7 +74,9 @@ theorem exists_one_parameterBudget (T : LeanWang.TileSet) (hT : T.length = 1) :
     norm_num [hT, labelsBound, arithmeticAlphabet, Sudoku.p, Sudoku.q]
   have hr (i : Channel T) : E.r i ≤ 2 ^ (10 ^ 8) := by
     have hc : Fintype.card (Label T i) ≤ 46621 := by
-      simpa only [hT, labelsBound, arithmeticAlphabet, Sudoku.p, Sudoku.q] using label_card_le T i
+      have h := label_card_le T i
+      norm_num [hT, labelsBound, arithmeticAlphabet, Sudoku.p, Sudoku.q] at h
+      omega
     have hprime (j : Label T i) : E.digitPrime i j ≤ 2 ^ 1000 :=
       (hp i j).trans (by norm_num)
     rw [E.r_eq_prod]

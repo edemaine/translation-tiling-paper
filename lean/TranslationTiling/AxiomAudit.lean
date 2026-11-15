@@ -44,7 +44,9 @@ All mathematical inputs to the public results are proved. -/
 
 open Lean Elab Command in
 run_cmd do
-  for name in [``TranslationTiling.FiniteCompiler.exists_compact_parameters,
+  for name in [``TranslationTiling.Sudoku.ArithmeticRule.exists_clean_four_rectangle,
+      ``TranslationTiling.Sudoku.ArithmeticRule.affine_origin_roots_card_le_two,
+      ``TranslationTiling.FiniteCompiler.exists_compact_parameters,
       ``TranslationTiling.FiniteCompiler.exists_bounded_parameters_compact,
       ``TranslationTiling.FiniteCompiler.compact_parameterBudget,
       ``TranslationTiling.FiniteCompiler.CompactSize.sharp_cyclicOrder_le,

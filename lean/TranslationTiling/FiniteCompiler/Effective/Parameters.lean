@@ -48,7 +48,7 @@ def primeKeys (w B : ℕ) : List ℕ :=
 
 /-- All conditions concern finite lists of natural numbers. -/
 def CompactTableValid (d : ℕ×ℕ) (c : ParameterCertificate) : Prop :=
-  ¬(5378≤d.1+2 ∧ d.2=3) ∨
+  ¬(1202≤d.1+2 ∧ d.2=3) ∨
     (∀ i∈channelKeys d.1, c.1.getD (Nat.pair 0 i) 0≤(d.1+2)^4 ∧
       c.1.getD (Nat.pair 1 i) 0≤(d.1+2)^4) ∧
     (∀ j∈digitKeys d.1 d.2, c.1.getD (Nat.pair 2 (Nat.pair j.1 j.2)) 0≤(d.1+2)^5) ∧

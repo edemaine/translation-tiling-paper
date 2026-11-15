@@ -48,7 +48,6 @@ theorem mixed_digitPrimeCap_le {C : ℕ} (hC : 596750 ≤ C) :
 theorem mixed_parameterBase_le {C : ℕ} (hC : 596750 ≤ C) :
     parameterBase 3 Sudoku.Width C ≤ C ^ 73 := by
   have hbig : 256 ≤ C := by
-    have : 256 ≤ Sudoku.Width := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
     omega
   have hC1 : 1 ≤ C := by omega
   have hQ : digitPrimeCap 3 C ≤ C ^ 18 :=
@@ -91,7 +90,6 @@ theorem smallPrimes_of_caps (hB : T.alphabet = 3) (hC : 596750 ≤ channelCount 
     (hu : ∀ i, E.a i ≤ usefulPrimeCap (channelCount T) ∧ E.b i ≤ usefulPrimeCap (channelCount T))
     (hp : ∀ i j, E.digitPrime i j ≤ digitPrimeCap T.alphabet (channelCount T)) : SmallPrimes E := by
   have hbig : 256 ≤ channelCount T := by
-    have : 256 ≤ Sudoku.Width := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
     omega
   exact ⟨fun i => ⟨(hu i).1.trans (mixed_usefulPrimeCap_le hC),
     (hu i).2.trans (mixed_usefulPrimeCap_le hC)⟩,
@@ -222,7 +220,7 @@ theorem mixed_testTiles_card_le (hB : T.alphabet = 3) (hp : SmallPrimes E)
     (testTiles E).card ≤ channelCount T ^ (28 * channelCount T) := by
   let C := channelCount T
   have hbig : 300 ≤ C := by
-    have : 300 ≤ Sudoku.Width := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
+    have : 15 ≤ Sudoku.Width := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
     omega
   have h1 : 1 ≤ C := by omega
   have hself : C ≤ C ^ 73 := Nat.le_self_pow (by decide) _

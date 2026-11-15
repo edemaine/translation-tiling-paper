@@ -3,7 +3,7 @@ Adapted from openai/math, commit adc7f1241b42e322a6451854ab7e4b4c146bf78a.
 Copyright and license: see third_party/openai-math.LICENSE (Apache-2.0).
 -/
 import TranslationTiling.SudokuArithmetic.WordAffineAlgebra
-import TranslationTiling.SudokuArithmetic.WordAffineCount
+import TranslationTiling.SudokuArithmetic.TallRectangle
 import TranslationTiling.SudokuArithmetic.WordAffineGeometry
 import Mathlib.Tactic.Push
 
@@ -118,7 +118,7 @@ private theorem clean_second_difference {p : ℕ} {W : WordArray p}
   push_cast
   linear_combination (chooseLine hW d e).a * hx'
 
-private theorem affine_four_line_closure {p : ℕ} (hp : p.Prime) (hlarge : 200 < p)
+private theorem affine_four_line_closure {p : ℕ} (hp : p.Prime) (hlarge : 48 < p)
     {W : WordArray p} (hW : LineRule p W) (A B C : ZMod p) :
     FourLineClosure (wordWidth p : ℕ)
       (fun n m => A * (n : ZMod p) + B * (m : ZMod p) + C = 0 ∨
@@ -193,27 +193,27 @@ private theorem affine_four_line_closure {p : ℕ} (hp : p.Prime) (hlarge : 200 
       rw [hcoef.1, hcoef.2] at hz ⊢
       exact L.raw_agrees n ⟨hn₀, hn⟩ hz
 
-theorem global_affine_approximation {p : ℕ} (hp : p.Prime) (hlarge : 200 < p)
+theorem global_affine_approximation {p : ℕ} (hp : p.Prime) (hlarge : 48 < p)
     {W : WordArray p} (hW : LineRule p W) :
     ∃ A B C : ZMod p, AffineApproximation W A B C := by
   classical
   let : Fact p.Prime := ⟨hp⟩
   let bad : ℤ → ℤ → ℤ → Prop := fun d e n =>
     (chooseLine hW d e).a * (n : ZMod p) + (chooseLine hW d e).b = 0
-  have hbad : ∀ d e, d = -1 ∨ d = 0 ∨ d = 1 →
-      ((Finset.Ico (0 : ℤ) (wordWidth p : ℕ)).filter (bad d e)).card ≤ 3 := by
-    intro d e _
-    exact affine_int_roots_card_le hp _ _ (chooseLine hW d e).nonzero
+  have hbad : ∀ d e, d = -1 ∨ d = 0 ∨ d = 1 → ∀ i : Fin 4,
+      ((Finset.Ico (0 : ℤ) (wordWidth p-3 : ℕ)).filter
+        (fun x => bad d e (x+i.val))).card ≤ 2 := by
+    intro d e _ i
+    exact affine_origin_roots_card_le_two hp _ _ (chooseLine hW d e).nonzero i.val
   obtain ⟨r, q, hr₀, hr₃, _, _, hclean⟩ :=
-    exists_clean_four_square p hlarge bad
-      (by
-        intro d e hd
-        have hfilter := @Finset.filter_congr_decidable ℤ
-          (Finset.Ico (0 : ℤ) (wordWidth p : ℕ)) (bad d e)
-          (fun n => Classical.propDecidable (bad d e n))
-          (fun n => ZMod.decidableEq p
-            ((chooseLine hW d e).a * (n : ZMod p) + (chooseLine hW d e).b) 0)
-        exact (congrArg (fun s : Finset ℤ => s.card ≤ 3) hfilter).mpr (hbad d e hd))
+    exists_clean_four_rectangle p hlarge bad (by
+      intro d e hd i
+      have hfilter := @Finset.filter_congr_decidable ℤ
+        (Finset.Ico (0 : ℤ) (wordWidth p-3 : ℕ)) (fun x => bad d e (x+i.val))
+        (fun x => Classical.propDecidable (bad d e (x+i.val)))
+        (fun x => ZMod.decidableEq p
+          ((chooseLine hW d e).a * ((x+i.val : ℤ) : ZMod p) + (chooseLine hW d e).b) 0)
+      exact (congrArg (fun s : Finset ℤ => s.card≤2) hfilter).mpr (hbad d e hd i))
   have hcell : ∀ i j : Fin 4, ∀ d : ℤ, (d = -1 ∨ d = 0 ∨ d = 1) →
       rawArray W (r + i.val) (q + j.val) =
         (chooseLine hW d ((q + j.val) - d * (r + i.val))).a *

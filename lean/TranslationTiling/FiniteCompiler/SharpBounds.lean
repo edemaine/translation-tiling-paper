@@ -127,7 +127,7 @@ theorem sharp_testTiles_card_le (hB : T.alphabet = 3) (hp : SmallPrimes E)
     (testTiles E).card ≤ channelCount T ^ (11 * channelCount T) := by
   let C := channelCount T
   have hbig : 300 ≤ C := by
-    have : 300 ≤ Sudoku.Width := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
+    have : 15 ≤ Sudoku.Width := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
     omega
   have h1 : 1 ≤ C := by omega
   have hself : C ≤ C ^ 73 := Nat.le_self_pow (by decide) _

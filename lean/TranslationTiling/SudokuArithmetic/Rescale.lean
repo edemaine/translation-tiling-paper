@@ -7,7 +7,7 @@ set_option maxRecDepth 2000
 namespace TranslationTiling.Sudoku
 
 theorem FullAffineApproximation.nonconstant {r : ℕ} (hp : r.Prime)
-    (hlarge : 200 < r) {V : Column → ℤ → (ZMod r)ˣ} {A B C : ZMod r}
+    (hlarge : 48 < r) {V : Column → ℤ → (ZMod r)ˣ} {A B C : ZMod r}
     (hH : FullAffineApproximation V A B C) (hB : B ≠ 0) :
     ∀ n, ∃ m m', V n m ≠ V n m' := by
   let : Fact r.Prime := ⟨hp⟩
@@ -37,7 +37,7 @@ theorem FullAffineApproximation.nonconstant {r : ℕ} (hp : r.Prime)
     hH.2 n m' (by rw [hm']; exact h2), hm'] at hval
   exact h12 hval
 
-theorem normalized_line_coefficients {r : ℕ} (hp : r.Prime) (hlarge : 200 < r)
+theorem normalized_line_coefficients {r : ℕ} (hp : r.Prime) (hlarge : 48 < r)
     {V : Column → ℤ → (ZMod r)ˣ} {B : ZMod r}
     (hH : FullAffineApproximation V 0 B 0) (hB : B ≠ 0)
     (d e a b : ℤ) (hab : ¬ (r : ℤ) ∣ a ∨ ¬ (r : ℤ) ∣ b)
@@ -83,7 +83,7 @@ theorem normalized_line_coefficients {r : ℕ} (hp : r.Prime) (hlarge : 200 < r)
     (agrees i hi hi') (agrees j hj hj')
 
 /-- The vertical coefficient is unchanged when one prime factor is removed. -/
-theorem rescale_vertical_coefficient {r : ℕ} (hp : r.Prime) (hlarge : 200 < r)
+theorem rescale_vertical_coefficient {r : ℕ} (hp : r.Prime) (hlarge : 48 < r)
     (hr : ArithmeticRule.wordWidth r ≤ Width) {V : Column → ℤ → (ZMod r)ˣ} (hV : ArithmeticLineRule r V)
     {B A₁ B₁ C₁ : ZMod r} (hB : B ≠ 0) (hH : FullAffineApproximation V 0 B 0)
     (hH₁ : FullAffineApproximation (arithmeticReparametrize V r 0 0) A₁ B₁ C₁) :

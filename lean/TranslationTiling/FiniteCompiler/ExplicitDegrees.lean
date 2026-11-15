@@ -119,9 +119,7 @@ theorem digitPrimeCap_le_of_width {B C : ℕ} (hB : B ≤ 10 ^ 5)
 /-- A modest degree suffices on the actual range of bit-channel counts. -/
 theorem bit_parameterBase_le_of_width {C : ℕ} (hC : 2 ^ 31 ≤ C) :
     parameterBase BitSystem.alphabet Sudoku.Width C ≤ C ^ 2000000 := by
-  have hbig : 256 ≤ C := by
-    have : 256 ≤ Sudoku.Width := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
-    omega
+  have hbig : 256 ≤ C := by omega
   have hC1 : 1 ≤ C := by omega
   have hB := bit_alphabet_le
   have hQ := digitPrimeCap_le_of_width hB hC

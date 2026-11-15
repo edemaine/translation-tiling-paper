@@ -129,10 +129,10 @@ theorem parameters_budget (T : System) (S : ℕ) (hS : ∀ n, (T.slope n).natAbs
 theorem parameters_rawBudget (T : System) (hS : ∀ n, (T.slope n).natAbs≤Sudoku.Width) :
     Size.ParameterBudget (parameters T) (rawBudget (parameterData T)) ∧
       channelCount T≤rawBudget (parameterData T) ∧ T.alphabet+1≤rawBudget (parameterData T) := by
-  by_cases h : 5378≤T.width+2 ∧ T.alphabet=3
+  by_cases h : 1202≤T.width+2 ∧ T.alphabet=3
   · simpa [rawBudget,parameterData,h,channelCount] using
       compact_parameterBudget (parameters T) h.1 h.2 (parameters_bounded_compact T h.1 h.2) hS
-  · have h' : ¬ (5376≤T.width ∧ T.alphabet=3) := by omega
+  · have h' : ¬ (1200≤T.width ∧ T.alphabet=3) := by omega
     simpa [rawBudget,parameterData,h,h',channelCount] using parameters_budget T Sudoku.Width hS
 
 end

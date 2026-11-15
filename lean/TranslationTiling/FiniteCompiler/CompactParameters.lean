@@ -9,7 +9,7 @@ set_option maxRecDepth 10000
 set_option maxHeartbeats 2000000
 
 /-- Only the two seed b-primes need the large seed threshold. -/
-theorem exists_compact_useful (T : System) (hC : 5378 ≤ channelCount T) :
+theorem exists_compact_useful (T : System) (hC : 1202 ≤ channelCount T) :
     ∃ u : UsefulTag T → ℕ, Function.Injective u ∧
       (∀ i, (u i).Prime ∧ u i ≤ channelCount T ^ 4 ∧ u i ≠ Sudoku.p ∧ u i ≠ Sudoku.q) ∧
       (∀ i, u i ≠ 5) ∧
@@ -24,12 +24,9 @@ theorem exists_compact_useful (T : System) (hC : 5378 ≤ channelCount T) :
   obtain ⟨b0,hb0,hb0l,hb0u⟩ := Nat.bertrand D (by omega)
   obtain ⟨b1,hb1,hb1l,hb1u⟩ := Nat.bertrand (2*D) (by omega)
   have hbig : 4*D ≤ C^4 := by
-    dsimp [D]
-    rw [residueModulus_eq]
-    norm_num [Sudoku.SeedModulus,Sudoku.p,Sudoku.q]
-    have h := Nat.pow_le_pow_left hC 4
-    norm_num at h
-    exact (by norm_num : 221398480900 ≤ 5378^4).trans h
+    apply (show 4*D≤1202^4 by
+      norm_num [D,residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]).trans
+    exact Nat.pow_le_pow_left hC 4
   let banned : Finset ℕ := {2,3,5,Sudoku.p,Sudoku.q,b0,b1}
   let pool := Nat.primesLE (C^2) \ banned
   have hban : banned.card ≤ 7 := by
@@ -125,18 +122,18 @@ theorem exists_compact_useful (T : System) (hC : 5378 ≤ channelCount T) :
       have hb : (if t=0 then b0 else b1)≤4*D := by split_ifs <;> omega
       have hm : (t.val+2)*(if t=0 then b0 else b1)≤12*D := by nlinarith
       have hfixed : 16*D+3≤C^4 := by
-        apply (show 16*D+3≤5378^4 by norm_num [D,residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]).trans
+        apply (show 16*D+3≤1202^4 by norm_num [D,residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]).trans
         exact Nat.pow_le_pow_left hC 4
       exact ⟨by omega,by nlinarith⟩
 
-/-- Caps suited to the 448-column board; the exceptional seed primes have
+/-- Caps suited to the 120-column board; the exceptional seed primes have
 larger individual caps but retain the same pair-product cap. -/
 def CompactPrimes {T : System} (E : EncodingParameters T) : Prop :=
   (∀ i, E.a i≤channelCount T^4 ∧ E.b i≤channelCount T^4) ∧
   (∀ i j, E.digitPrime i j≤channelCount T^5) ∧
   ∀ i, E.a i*E.b i≤channelCount T^4
 
-theorem exists_compact_parameters (T : System) (hC : 5378≤channelCount T) (hB : T.alphabet=3) :
+theorem exists_compact_parameters (T : System) (hC : 1202≤channelCount T) (hB : T.alphabet=3) :
     ∃ E : EncodingParameters T,
       (∀ i, E.a i≤usefulPrimeCap (channelCount T) ∧ E.b i≤usefulPrimeCap (channelCount T)) ∧
       (∀ i j, E.digitPrime i j≤digitPrimeCap T.alphabet (channelCount T)) ∧ CompactPrimes E := by
@@ -172,7 +169,7 @@ theorem exists_compact_parameters (T : System) (hC : 5378≤channelCount T) (hB 
           _ = _ := by simp [C,channelCount,Nat.mul_comm]
       have hpi := Compiler.Size.primeCounting_fifth_medium (C:=C) (by omega)
       have hcount : L+3*C+1≤3*C^4 := by
-        have hc : 5378≤C := hC
+        have hc : 1202≤C := hC
         dsimp [L]
         norm_num [Sudoku.p,Sudoku.q]
         nlinarith [sq_nonneg (C^2-1:ℤ),show (C^2)^2=C^4 by ring]
@@ -197,7 +194,7 @@ theorem exists_bounded_parameters_compact (T : System) :
         (∀ i, E.a i≤channelCount T^2 ∧ E.b i≤channelCount T^2) ∧
         (∀ i j, E.digitPrime i j≤channelCount T^3) ∧
         ∀ i, (E.a i*E.b i)^3≤channelCount T^8) ∧
-      (5378≤channelCount T ∧ T.alphabet=3 → CompactPrimes E) := by
+      (1202≤channelCount T ∧ T.alphabet=3 → CompactPrimes E) := by
   by_cases hbig : 596750≤channelCount T ∧ T.alphabet=3
   · obtain ⟨E,hu,hd,ht⟩ := exists_bounded_parameters_tight T
     refine ⟨E,hu,hd,ht,fun _ => ?_⟩
@@ -210,7 +207,7 @@ theorem exists_bounded_parameters_compact (T : System) :
     apply (hs.2.2 i).trans
     rw [← pow_mul]
     exact Nat.pow_le_pow_right h1 (by decide)
-  · by_cases hshort : 5378≤channelCount T ∧ T.alphabet=3
+  · by_cases hshort : 1202≤channelCount T ∧ T.alphabet=3
     · obtain ⟨E,hu,hd,hc⟩ := exists_compact_parameters T hshort.1 hshort.2
       exact ⟨E,hu,hd,fun h => (hbig h).elim,fun _ => hc⟩
     · obtain ⟨E,hu,hd,ht⟩ := exists_bounded_parameters_tight T
@@ -225,17 +222,17 @@ theorem compact_r_le {T : System} (E : EncodingParameters T) (hB : T.alphabet=3)
     _ ≤ _ := Nat.pow_le_pow_right (by unfold channelCount; omega)
       (by cases i <;> simp [Label,Symbol,hB])
 
-theorem compact_parameterBudget {T : System} (E : EncodingParameters T) (hC : 5378≤channelCount T)
+theorem compact_parameterBudget {T : System} (E : EncodingParameters T) (hC : 1202≤channelCount T)
     (hB : T.alphabet=3) (hp : CompactPrimes E) (hS : ∀ n, (T.slope n).natAbs≤Sudoku.Width) :
     Size.ParameterBudget E (channelCount T^15) ∧ channelCount T≤channelCount T^15 ∧
       T.alphabet+1≤channelCount T^15 := by
   have h1 : 1≤channelCount T := by omega
   have hc : channelCount T≤channelCount T^15 := Nat.le_self_pow (by decide) _
   have hseed : residueModulus≤channelCount T^2 := by
-    apply (show residueModulus≤5378^2 by norm_num [residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]).trans
+    apply (show residueModulus≤1202^2 by norm_num [residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]).trans
     exact Nat.pow_le_pow_left hC 2
   have hwidth : Sudoku.Width≤channelCount T^2 := by
-    apply (show Sudoku.Width≤5378^2 by norm_num [Sudoku.Width,Sudoku.q]).trans
+    apply (show Sudoku.Width≤1202^2 by norm_num [Sudoku.Width,Sudoku.q]).trans
     exact Nat.pow_le_pow_left hC 2
   refine ⟨⟨(by omega : 2≤channelCount T).trans hc,
     hseed.trans (Nat.pow_le_pow_right h1 (by decide)),compact_r_le E hB hp,

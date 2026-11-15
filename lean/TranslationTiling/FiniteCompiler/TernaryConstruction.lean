@@ -74,8 +74,8 @@ theorem exists_connected_tile_ternary_channel_bound (T : System) (W : LeanWang.T
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane W ↔ TranslationTiling.Tiles P) ∧
       cubeCount P ≤ channelCount T ^ (3510 * channelCount T) := by
-  have hc : 5378≤channelCount T := by
-    have hw : 269≤Sudoku.Width := by norm_num [Sudoku.Width,Sudoku.q]
+  have hc : 1202≤channelCount T := by
+    have hw : 61≤Sudoku.Width := by norm_num [Sudoku.Width,Sudoku.q]
     omega
   obtain ⟨E,_,_,hcompact⟩ := exists_compact_parameters T hc hB
   have hp : SmallPrimes E := ⟨fun i => ⟨(hcompact.1 i).1.trans (Nat.pow_le_pow_right (by omega) (by decide)),

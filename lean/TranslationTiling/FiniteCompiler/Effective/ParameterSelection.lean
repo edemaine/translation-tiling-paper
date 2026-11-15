@@ -81,7 +81,7 @@ private theorem exists_parameterCertificate (d : ℕ × ℕ) :
             rw [hp,hp]
             exact hs.2.2 i
       · exact Or.inl hr
-    · by_cases hr : 5378≤d.1+2 ∧ d.2=3
+    · by_cases hr : 1202≤d.1+2 ∧ d.2=3
       · right
         have hs := hcompact hr
         refine ⟨?_,?_,?_⟩
@@ -187,7 +187,7 @@ theorem parameters_bounded_tight (T : System) (hC : 596750≤channelCount T) (hB
     fun i j => hs.2.1 _ ((mem_digitKeys T _).mpr ⟨⟨i,j⟩,rfl⟩),
     fun i => hs.2.2 _ ((mem_channelKeys T _).mpr ⟨i,rfl⟩)⟩
 
-theorem parameters_bounded_compact (T : System) (hC : 5378≤channelCount T) (hB : T.alphabet=3) :
+theorem parameters_bounded_compact (T : System) (hC : 1202≤channelCount T) (hB : T.alphabet=3) :
     CompactPrimes (parameters T) := by
   have h := (parameterCertificate_valid (T.width,T.alphabet)).resolve_left (Nat.ne_of_gt T.width_pos)
   have hs := h.2.2.2.2.2.2.resolve_left (not_not.mpr ⟨hC,hB⟩)

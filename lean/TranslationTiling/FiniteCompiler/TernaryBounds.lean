@@ -48,7 +48,6 @@ theorem ternary_digitPrimeCap_le {C : ℕ} (hC : 994582 ≤ C) :
 theorem ternary_parameterBase_le {C : ℕ} (hC : 994582 ≤ C) :
     parameterBase 3 Sudoku.Width C ≤ C ^ 73 := by
   have hbig : 256 ≤ C := by
-    have : 256 ≤ Sudoku.Width := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
     omega
   have hC1 : 1 ≤ C := by omega
   have hQ := ternary_digitPrimeCap_le hC
@@ -90,7 +89,6 @@ theorem smallPrimes_of_caps (hB : T.alphabet = 3) (hC : 994582 ≤ channelCount 
     (hu : ∀ i, E.a i ≤ usefulPrimeCap (channelCount T) ∧ E.b i ≤ usefulPrimeCap (channelCount T))
     (hp : ∀ i j, E.digitPrime i j ≤ digitPrimeCap T.alphabet (channelCount T)) : SmallPrimes E := by
   have hbig : 256 ≤ channelCount T := by
-    have : 256 ≤ Sudoku.Width := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
     omega
   have hU : usefulPrimeCap (channelCount T) ≤ channelCount T ^ 5 := by
     calc
@@ -224,7 +222,7 @@ theorem ternary_testTiles_card_le (hB : T.alphabet = 3) (hp : SmallPrimes E)
     (testTiles E).card ≤ channelCount T ^ (30 * channelCount T) := by
   let C := channelCount T
   have hbig : 300 ≤ C := by
-    have : 300 ≤ Sudoku.Width := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
+    have : 15 ≤ Sudoku.Width := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
     omega
   have h1 : 1 ≤ C := by omega
   have hself : C ≤ C ^ 73 := Nat.le_self_pow (by decide) _
@@ -303,7 +301,7 @@ theorem ternary_geometry_bound {C b : ℕ} (hC : 20 * Sudoku.Width + 2 ≤ C) (h
     Compiler.Size.geometryCap (horizontalCap b) (C ^ (270 * C)) ≤ C ^ (3510 * C) := by
   let M := C ^ (270 * C)
   have hbig : 300 ≤ C := by
-    have : 300 ≤ Sudoku.Width := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
+    have : 15 ≤ Sudoku.Width := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
     omega
   have h1 : 1 ≤ C := by omega
   have hM : 2 ^ 166 ≤ M :=
