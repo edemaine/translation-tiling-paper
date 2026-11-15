@@ -60,11 +60,11 @@ theorem mixedSystem_nonnegative (T : LeanWang.TileSet) : ∀ n, 0 ≤ (mixedSyst
 theorem mixedCompileCore_channel_bound (T : LeanWang.TileSet) (hn : 0 < T.length) :
     mixedCompileCore T ≠ [] ∧ FaceConnected (mixedCompileCore T) ∧
     (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles (mixedCompileCore T)) ∧
-    (mixedCompileCore T).length ≤ channelCount (mixedSystem T) ^ (185*channelCount (mixedSystem T)) := by
+    (mixedCompileCore T).length ≤ channelCount (mixedSystem T) ^ (143*channelCount (mixedSystem T)) := by
   have hp := mixedPayload_correct T
   have hslope := TaggedSystem.slope_bound (mixedCode T)
-  have hC : 10*Sudoku.Width+2 ≤ channelCount (mixedSystem T) := by
-    change 10*Sudoku.Width+2 ≤ Sudoku.Width*mixedWidth T.length+2
+  have hC : 8*Sudoku.Width+2 ≤ channelCount (mixedSystem T) := by
+    change 8*Sudoku.Width+2 ≤ Sudoku.Width*mixedWidth T.length+2
     have hl := Compiler.Size.mixedWidth_lower hn
     nlinarith
   obtain ⟨hne,hconn,hiff,hbound⟩ := sharpTile_facts (mixedSystem T) (mixedPayload T) hp
@@ -85,7 +85,7 @@ theorem mixedCompile_facts (T : LeanWang.TileSet) :
     mixedCompile T ≠ [] ∧ FaceConnected (mixedCompile T) ∧
     (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles (mixedCompile T)) ∧
     ((mixedCompile T).length : ℝ) ≤ ((T.length:ℝ)+4) ^
-      (((10:ℝ)^6) * Real.logb 2 (Real.logb 2 ((T.length:ℝ)+4))) := by
+      ((5*(10:ℝ)^5) * Real.logb 2 (Real.logb 2 ((T.length:ℝ)+4))) := by
   by_cases ht : T = []
   · subst T
     simp only [mixedCompile,if_pos rfl,List.length_nil,Nat.cast_zero,zero_add]
@@ -108,13 +108,13 @@ theorem mixedCompile_facts (T : LeanWang.TileSet) :
     simp only [mixedCompile,if_neg ht]
     refine ⟨hne,hconn,hiff,?_⟩
     have hcast : ((mixedCompileCore T).length:ℝ) ≤
-        ((channelCount (mixedSystem T) ^ (185*channelCount (mixedSystem T)):ℕ):ℝ) := by exact_mod_cast hbound
+        ((channelCount (mixedSystem T) ^ (143*channelCount (mixedSystem T)):ℕ):ℝ) := by exact_mod_cast hbound
     apply hcast.trans
     exact Compiler.Size.sharp_channel_cap_real_bound hn
 
 theorem mixedCompile_real_bound (T : LeanWang.TileSet) :
     ((mixedCompile T).length:ℝ) ≤ ((T.length:ℝ)+4) ^
-      (((10:ℝ)^6) * Real.logb 2 (Real.logb 2 ((T.length:ℝ)+4))) := (mixedCompile_facts T).2.2.2
+      ((5*(10:ℝ)^5) * Real.logb 2 (Real.logb 2 ((T.length:ℝ)+4))) := (mixedCompile_facts T).2.2.2
 
 end
 end TranslationTiling.FiniteCompiler.Effective

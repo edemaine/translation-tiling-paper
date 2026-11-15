@@ -80,8 +80,8 @@ theorem optimizedCompile_channel_bound (T : LeanWang.TileSet) :
   have hM := (Size.separateModulusCap_mono hV hcount).trans (Size.ternary_modulus_cap_le hC)
   apply (Size.geometryCap_mono (le_refl _) hM).trans
   exact Size.ternary_geometry_bound hC (show rawBudget (parameterData S)≤C^73 from by
-    change (if 1202≤S.width+2 ∧ S.alphabet=3 then _ else _)≤_
-    rw [if_pos ⟨hc,rfl⟩]
+    change (if 962≤S.width+2 ∧ S.alphabet=3 then _ else _)≤_
+    rw [if_pos ⟨(by change 962≤C; omega),rfl⟩]
     exact Nat.pow_le_pow_right (by omega) (by decide))
     (parameters_rawBudget S hslope).1.two
 

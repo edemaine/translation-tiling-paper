@@ -1,4 +1,4 @@
-import TranslationTiling.FiniteCompiler.CompactParameters
+import TranslationTiling.FiniteCompiler.EconomicalParameters
 import TranslationTiling.FiniteCompiler.Effective.Parameters
 import TranslationTiling.FiniteCompiler.Effective.Tables
 
@@ -16,7 +16,7 @@ private theorem exists_parameterCertificate (d : ℕ × ℕ) :
   by_cases hw : d.1 = 0
   · exact ⟨([],[],[]), Or.inl hw⟩
   let T : System := ⟨d.1, Nat.pos_of_ne_zero hw, d.2, fun _ => 0, ∅, fun _ _ => False⟩
-  obtain ⟨E, hu, hd, hsharp, hcompact⟩ := exists_bounded_parameters_compact T
+  obtain ⟨E, hu, hd, hsharp, hcompact, heconomical⟩ := exists_bounded_parameters_economical T
   obtain ⟨ps, hp⟩ := exists_finite_table (primeKey (T := T)) (primeKey_injective T) E.primeAt 0
   let key (j : Σ i : Channel T, Label T i) := primeKey (.inr (.inr j))
   have hkey : Function.Injective key := by
@@ -81,23 +81,45 @@ private theorem exists_parameterCertificate (d : ℕ × ℕ) :
             rw [hp,hp]
             exact hs.2.2 i
       · exact Or.inl hr
-    · by_cases hr : 1202≤d.1+2 ∧ d.2=3
-      · right
-        have hs := hcompact hr
-        refine ⟨?_,?_,?_⟩
-        · intro k hk
-          obtain ⟨i,rfl⟩ := (mem_channelKeys T k).mp hk
-          change ps.getD (primeKey (.inl i)) 0≤_ ∧ ps.getD (primeKey (.inr (.inl i))) 0≤_
-          rw [hp,hp]; exact hs.1 i
-        · intro k hk
-          obtain ⟨⟨i,j⟩,rfl⟩ := (mem_digitKeys T k).mp hk
-          change ps.getD (primeKey (.inr (.inr ⟨i,j⟩))) 0≤_
-          rw [hp]; exact hs.2.1 i j
-        · intro k hk
-          obtain ⟨i,rfl⟩ := (mem_channelKeys T k).mp hk
-          change ps.getD (primeKey (.inl i)) 0*ps.getD (primeKey (.inr (.inl i))) 0≤_
-          rw [hp,hp]; exact hs.2.2 i
-      · exact Or.inl hr
+    · constructor
+      · by_cases hr : 1202≤d.1+2 ∧ d.2=3
+        · right
+          have hs := hcompact hr
+          refine ⟨?_,?_,?_⟩
+          · intro k hk
+            obtain ⟨i,rfl⟩ := (mem_channelKeys T k).mp hk
+            change ps.getD (primeKey (.inl i)) 0≤_ ∧ ps.getD (primeKey (.inr (.inl i))) 0≤_
+            rw [hp,hp]; exact hs.1 i
+          · intro k hk
+            obtain ⟨⟨i,j⟩,rfl⟩ := (mem_digitKeys T k).mp hk
+            change ps.getD (primeKey (.inr (.inr ⟨i,j⟩))) 0≤_
+            rw [hp]; exact hs.2.1 i j
+          · intro k hk
+            obtain ⟨i,rfl⟩ := (mem_channelKeys T k).mp hk
+            change ps.getD (primeKey (.inl i)) 0*ps.getD (primeKey (.inr (.inl i))) 0≤_
+            rw [hp,hp]; exact hs.2.2 i
+        · exact Or.inl hr
+      · by_cases hr : 962≤d.1+2 ∧ d.2=3
+        · right
+          have hs := heconomical hr
+          refine ⟨?_,?_,?_,?_⟩
+          · intro k hk
+            obtain ⟨i,rfl⟩ := (mem_channelKeys T k).mp hk
+            change ps.getD (primeKey (.inl i)) 0≤_ ∧ ps.getD (primeKey (.inr (.inl i))) 0≤_
+            rw [hp,hp]; exact hs.1 i
+          · intro k hk
+            obtain ⟨⟨i,j⟩,rfl⟩ := (mem_digitKeys T k).mp hk
+            change ps.getD (primeKey (.inr (.inr ⟨i,j⟩))) 0≤_
+            rw [hp]; exact hs.2.1 i j
+          · intro k hk
+            obtain ⟨i,rfl⟩ := (mem_channelKeys T k).mp hk
+            change ps.getD (primeKey (.inl i)) 0*ps.getD (primeKey (.inr (.inl i))) 0≤_
+            rw [hp,hp]; exact hs.2.2.1 i
+          · intro n hn
+            let n' : Column T := ⟨n,List.mem_range.mp hn⟩
+            change ps.getD (primeKey (.inl (.inl n'))) 0*ps.getD (primeKey (.inr (.inl (.inl n')))) 0≤_
+            rw [hp,hp]; exact hs.2.2.2 n'
+        · exact Or.inl hr
 
 def decodeParameterCertificate (n : ℕ) : ParameterCertificate :=
   (Encodable.decode n).getD ([],[],[])
@@ -190,10 +212,19 @@ theorem parameters_bounded_tight (T : System) (hC : 596750≤channelCount T) (hB
 theorem parameters_bounded_compact (T : System) (hC : 1202≤channelCount T) (hB : T.alphabet=3) :
     CompactPrimes (parameters T) := by
   have h := (parameterCertificate_valid (T.width,T.alphabet)).resolve_left (Nat.ne_of_gt T.width_pos)
-  have hs := h.2.2.2.2.2.2.resolve_left (not_not.mpr ⟨hC,hB⟩)
+  have hs := h.2.2.2.2.2.2.1.resolve_left (not_not.mpr ⟨hC,hB⟩)
   exact ⟨fun i => hs.1 _ ((mem_channelKeys T _).mpr ⟨i,rfl⟩),
     fun i j => hs.2.1 _ ((mem_digitKeys T _).mpr ⟨⟨i,j⟩,rfl⟩),
     fun i => hs.2.2 _ ((mem_channelKeys T _).mpr ⟨i,rfl⟩)⟩
+
+theorem parameters_bounded_economical (T : System) (hC : 962≤channelCount T) (hB : T.alphabet=3) :
+    EconomicalPrimes (parameters T) := by
+  have h := (parameterCertificate_valid (T.width,T.alphabet)).resolve_left (Nat.ne_of_gt T.width_pos)
+  have hs := h.2.2.2.2.2.2.2.resolve_left (not_not.mpr ⟨hC,hB⟩)
+  exact ⟨fun i => hs.1 _ ((mem_channelKeys T _).mpr ⟨i,rfl⟩),
+    fun i j => hs.2.1 _ ((mem_digitKeys T _).mpr ⟨⟨i,j⟩,rfl⟩),
+    fun i => hs.2.2.1 _ ((mem_channelKeys T _).mpr ⟨i,rfl⟩),
+    fun n => hs.2.2.2 n.val (List.mem_range.mpr n.isLt)⟩
 
 end
 end TranslationTiling.FiniteCompiler.Effective

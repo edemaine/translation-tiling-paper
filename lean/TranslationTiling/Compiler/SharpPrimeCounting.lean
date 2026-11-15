@@ -6,8 +6,8 @@ set_option maxRecDepth 10000
 set_option maxHeartbeats 2000000
 
 /-- A very weak logarithm estimate suffices at the compiler's actual sizes. -/
-theorem log_le_div_sixtyfour {C : ℕ} (hC : 1024 ≤ C) : Real.log (C:ℝ) ≤ C / 64 := by
-  have hc : (1024:ℝ) ≤ C := by exact_mod_cast hC
+theorem log_le_div_sixtyfour {C : ℕ} (hC : 768 ≤ C) : Real.log (C:ℝ) ≤ C / 64 := by
+  have hc : (768:ℝ) ≤ C := by exact_mod_cast hC
   have hp : (0:ℝ) < C / 256 := by positivity
   have he : (C:ℝ) = 256 * (C/256) := by ring
   have hlog256 : Real.log (256:ℝ) ≤ 8 := by
@@ -37,7 +37,7 @@ private theorem log_pow_add_one_le {C k : ℕ} (hC : 1024 ≤ C) (hk : 0 < k) :
 theorem primeCounting_square_medium {C : ℕ} (hC : 1024 ≤ C) :
     8*C ≤ Nat.primeCounting (C^2) := by
   have hc : (1024:ℝ) ≤ C := by exact_mod_cast (by omega : 1024 ≤ C)
-  have hlog := log_le_div_sixtyfour (by omega : 1024 ≤ C)
+  have hlog := log_le_div_sixtyfour (by omega : 768 ≤ C)
   have htail := log_pow_add_one_le (C:=C) (k:=2) (by omega) (by decide)
   have htwo : (1/2:ℝ) ≤ Real.log 2 := by
     have h := Real.one_sub_inv_le_log_of_pos (by norm_num : (0:ℝ)<2)
@@ -60,7 +60,7 @@ theorem primeCounting_square_medium {C : ℕ} (hC : 1024 ≤ C) :
 theorem primeCounting_fifth_medium {C : ℕ} (hC : 1024 ≤ C) :
     3*C^4 ≤ Nat.primeCounting (C^5) := by
   have hc : (1024:ℝ) ≤ C := by exact_mod_cast (by omega : 1024 ≤ C)
-  have hlog := log_le_div_sixtyfour (by omega : 1024 ≤ C)
+  have hlog := log_le_div_sixtyfour (by omega : 768 ≤ C)
   have htail := log_pow_add_one_le (C:=C) (k:=5) (by omega) (by decide)
   have htwo : (1/2:ℝ) ≤ Real.log 2 := by
     have h := Real.one_sub_inv_le_log_of_pos (by norm_num : (0:ℝ)<2)

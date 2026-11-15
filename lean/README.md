@@ -103,23 +103,26 @@ have no unproved mathematical input. No unfinished proof is accepted.
 ## Cube Bound by Wang Tile Count
 
 [Compiler/CleanQuasipolynomialBound.lean](TranslationTiling/Compiler/CleanQuasipolynomialBound.lean)
-gives `(n+4)^(10^6*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
+gives `(n+4)^(5*10^5*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
 logarithms. The theorem `Size.exists_connected_tile_clean_quasipolynomial_bound`
 includes nonemptiness, face connectedness, and both tilability directions.
 Here `n` counts distinct input tiles. The one-tile specialization in
 [Compiler/QuasipolynomialBound.lean](TranslationTiling/Compiler/QuasipolynomialBound.lean)
-gives at most `2^2312648` cubes.
+gives at most `2^1375660` cubes.
 
+[Effective/PackedWords.lean](TranslationTiling/FiniteCompiler/Effective/PackedWords.lean)
+counts and enumerates three disjoint classes of ternary words: words containing
+0 but no 1, words containing 1 but no 0, and words containing both.
+Their capacities are `2^k-1`, `2^k-1`, and `3^k-2^(k+1)+1`.
 [Effective/MixedCode.lean](TranslationTiling/FiniteCompiler/Effective/MixedCode.lean)
-uses prefixes `00`, `11`, and `01` for the two seed classes and all other
-symbols. Seed-class payloads use a binary tile index; other payloads use
-a ternary decorated index. Their common length is the maximum of the binary
-length of `n` and the ternary length of `pqn`, plus two prefix positions.
-For one Wang tile, ten positions per column suffice.
+assigns seed-class tile indices and other decorated indices to these words,
+without dedicated prefix positions. The code length is the maximum of the
+binary length of `n` and the ternary length of `2pqn`.
+For one Wang tile, eight positions per column suffice.
 [TaggedSystem.lean](TranslationTiling/FiniteCompiler/TaggedSystem.lean)
 proves the tiling equivalence for any injective code with the exact seed predicates.
 [Effective/MixedInput.lean](TranslationTiling/FiniteCompiler/Effective/MixedInput.lean)
-implements the mixed-radix code and proves primitive recursiveness and correctness.
+implements the code and proves primitive recursiveness and correctness.
 All positions share their column's original slope. The board has `2q+2 = 120`
 columns; coefficient residues use `p²q²`, and seed residues use `5pq = 15,635`.
 The fixed primes are `p = 53` and `q = 59`.
@@ -129,21 +132,23 @@ prime condition `r > 48`. The shorter-board proof also uses three
 prime-spaced columns in rescaling and two prime-multiple samples to identify
 the higher-digit coefficients.
 
-[Compiler/SharpPrimeCounting.lean](TranslationTiling/Compiler/SharpPrimeCounting.lean)
-and [CompactParameters.lean](TranslationTiling/FiniteCompiler/CompactParameters.lean)
-allocate ordinary useful primes at most `C²` and digit primes at most `C⁵`,
-for `C ≥ 1202`. Only two seed primes need the large seed threshold; all
-useful-prime pairs satisfy `a_i*b_i ≤ C⁴`. Individual pair thresholds suffice
-for positive block representations. The common parameter budget is `C^15`.
+[Compiler/EconomicalPrimeCounting.lean](TranslationTiling/Compiler/EconomicalPrimeCounting.lean)
+and [EconomicalParameters.lean](TranslationTiling/FiniteCompiler/EconomicalParameters.lean)
+allocate ordinary useful primes at most `C^(3/2)` and digit primes at most `C⁴`,
+for `C ≥ 962`. Only two seed primes need the large seed threshold.
+Ordinary useful-prime pairs satisfy `a_i*b_i ≤ C³`; seed pairs satisfy
+`a_i*b_i ≤ C⁴`. Individual pair thresholds suffice for positive block
+representations. The common parameter budget is `C^12`, while each seed
+channel's digit product is at most `C⁴`.
 [Proofs/LogDifferenceBound.lean](TranslationTiling/Proofs/LogDifferenceBound.lean)
 keeps the exponential probability estimate, giving a partition modulus
 quadratic times a logarithm in the equation count.
 [Effective/FreshStack.lean](TranslationTiling/FiniteCompiler/Effective/FreshStack.lean)
 implements this bounded partition search and proves coprimality from a bound
 on the prime divisors of the finite factor.
-[CompactBounds.lean](TranslationTiling/FiniteCompiler/CompactBounds.lean)
-bounds the cyclic order by `C^(35*C)`, equation count by `C^(11*C)`, and
-stacked modulus by `C^(58*C)` for `C` channels.
+[EconomicalBounds.lean](TranslationTiling/FiniteCompiler/EconomicalBounds.lean)
+bounds the cyclic order by `C^(27*C)`, equation count by `C^(8*C)`, and
+stacked modulus by `C^(44*C)` for `C` channels.
 [Compiler/SparseGeometryBound.lean](TranslationTiling/Compiler/SparseGeometryBound.lean)
 counts each MSS component by `2^24`, independently of its displacement.
 [FourLayer/](TranslationTiling/FourLayer/) replaces the cubic color partition
@@ -153,14 +158,14 @@ and arbitrary-complement rigidity are proved for the concrete shape.
 [FourLayer/Compiler.lean](TranslationTiling/FourLayer/Compiler.lean) proves
 computability, correctness, connectivity, and the `K*H⁴*R³` volume bound,
 where `K = 9*2^24*972*36*8003^4`.
-With `H ≤ C^3165`, `CompactBounds.lean` bounds this volume by `C^(185*C)`.
-The earlier large-channel estimates remain in `TightParameters.lean`,
-`TightBounds.lean`, and `FourLayer/SizeBound.lean`.
+With `H ≤ C^2532`, `EconomicalBounds.lean` bounds this volume by `C^(143*C)`.
+Earlier estimates remain in `CompactParameters.lean`, `CompactBounds.lean`,
+`TightParameters.lean`, `TightBounds.lean`, and `FourLayer/SizeBound.lean`.
 [Effective/SharpCompiler.lean](TranslationTiling/FiniteCompiler/Effective/SharpCompiler.lean)
 combines these bounds with correctness and computability.
 [Compiler/MixedLogBound.lean](TranslationTiling/Compiler/MixedLogBound.lean)
 converts this estimate directly to the clean logarithmic bound, using code
-length at most `(9/2)*log₂(n+4)`.
+length at most `(7/2)*log₂(n+4)`.
 
 [Effective/MixedCompiler.lean](TranslationTiling/FiniteCompiler/Effective/MixedCompiler.lean)
 proves the same bound for one total computable compiler, with input list length

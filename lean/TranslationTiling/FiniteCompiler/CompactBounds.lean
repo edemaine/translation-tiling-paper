@@ -208,7 +208,7 @@ theorem cyclicOrder_primeBound (hB : T.alphabet=3) (hp : CompactPrimes E)
 theorem differenceLog_channel_le {C : ℕ} (hC : 1202 ≤ C) :
     Stacking.differenceLog (C^(11*C)) ≤ C^2 := by
   have hcr : (1024:ℝ) ≤ C := by exact_mod_cast (by omega : 1024 ≤ C)
-  have hl := Compiler.Size.log_le_div_sixtyfour (by omega : 1024 ≤ C)
+  have hl := Compiler.Size.log_le_div_sixtyfour (by omega : 768 ≤ C)
   have htwo : (1/2:ℝ) ≤ Real.log 2 := by
     have h := Real.one_sub_inv_le_log_of_pos (by norm_num : (0:ℝ)<2)
     norm_num at h ⊢

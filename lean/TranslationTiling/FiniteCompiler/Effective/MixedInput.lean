@@ -27,13 +27,12 @@ theorem natLog_primrec (b : ℕ) (hb : 1 < b) : Primrec (Nat.log b) := by
 
 @[fun_prop] theorem mixedWidth_primrec : Primrec mixedWidth := by unfold mixedWidth; fun_prop
 
-/-- Numerical mixed-radix code, including its two-position seed prefix. -/
+/-- Numerical enumeration of the three disjoint seed classes. -/
 def rawMixedCode (T : LeanWang.TileSet) (s : RawSymbol) (k : ℕ) : ℕ :=
   let c := rawTag s.1 s.2.1
-  if k < 2 then if c = 2 then k else c
-  else if c = 2 then
-    ((s.1 * Sudoku.q + s.2.1) * T.length + T.idxOf s.2.2) / 3 ^ (k-2) % 3
-  else if (T.idxOf s.2.2).testBit (k-2) then 2 else c
+  let j := if c = 2 then
+    (s.1 * Sudoku.q + s.2.1) * T.length + T.idxOf s.2.2 else T.idxOf s.2.2
+  packedDigit (mixedWidth T.length) c j k
 
 @[fun_prop] theorem rawMixedCode_primrec :
     Primrec (fun z : LeanWang.TileSet × RawSymbol × ℕ => rawMixedCode z.1 z.2.1 z.2.2) := by
@@ -48,10 +47,8 @@ theorem rawMixedCode_eq (T : LeanWang.TileSet) (s : Sudoku.Symbol T)
   fin_cases c
   all_goals
     have ht := htag.symm
-    clear htag
     simp only [Fin.val_zero,Fin.val_one,Fin.val_ofNat,rawSymbol] at ht
-    simp [rawMixedCode,mixedWord,mixedPrefix,hc,ht,mixedIndex,arithmeticIndex,rawSymbol]
-  all_goals split_ifs <;> rfl
+    simp [rawMixedCode,mixedWord,mixedSourceIndex,hc,ht,mixedIndex,arithmeticIndex,rawSymbol]
 
 def mixedEncodedWord (T : LeanWang.TileSet) (w : RawWord) : List ℕ :=
   (List.range (Sudoku.Width * mixedWidth T.length)).map fun k =>
@@ -85,7 +82,7 @@ theorem mixedEncodedWord_eq (T : LeanWang.TileSet) (w : Compiler.Word T) :
   · intro k hk hk'
     simp only [mixedEncodedWord, List.getElem_map, List.getElem_range, List.getElem_ofFn]
     have hk0 : k < Sudoku.Width * mixedWidth T.length := by simpa [mixedEncodedWord] using hk
-    have hl : 0 < mixedWidth T.length := by unfold mixedWidth; omega
+    have hl : 0 < mixedWidth T.length := mixedWidth_pos _
     have hi : k / mixedWidth T.length < Sudoku.Width := (Nat.div_lt_iff_lt_mul hl).mpr hk0
     simp only [rawWordAt, Nat.mod_eq_of_lt hi, rawWord]
     rw [rawMixedCode_eq T _ ⟨k % mixedWidth T.length, Nat.mod_lt _ hl⟩]
