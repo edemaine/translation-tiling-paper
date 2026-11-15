@@ -16,6 +16,37 @@ def pairCap (b : ℕ) : ℕ := b * b + 2 * b
 def indexCap (b : ℕ) : ℕ := pairCap (pairCap (pairCap (pairCap b)))
 def horizontalCap (b : ℕ) : ℕ := b * (b ^ 5 * (indexCap b + 1) + 1)
 
+
+/-- Iterating the square-pair bound has an exact closed form. -/
+theorem indexCap_add_one (b : ℕ) : indexCap b+1=(b+1)^16 := by
+  unfold indexCap pairCap
+  ring
+
+theorem horizontalCap_eq (b : ℕ) : horizontalCap b=b^6*(b+1)^16+b := by
+  unfold horizontalCap
+  rw [indexCap_add_one]
+  ring
+
+theorem horizontalCap_le_factor {b : ℕ} (hb : 2≤b) : horizontalCap b≤658*b^22 := by
+  have hp := Nat.pow_le_pow_left (show 2*(b+1)≤3*b by omega) 16
+  simp only [mul_pow] at hp
+  have hself : b≤b^22 := Nat.le_self_pow (by decide) _
+  have hh : 2^16*horizontalCap b≤2^16*(658*b^22) := by
+    calc
+      _ = b^6*(2^16*(b+1)^16)+2^16*b := by rw [horizontalCap_eq]; ring
+      _ ≤ b^6*(3^16*b^16)+2^16*b^22 := Nat.add_le_add (Nat.mul_le_mul_left _ hp)
+        (Nat.mul_le_mul_left _ hself)
+      _ = (3^16+2^16)*b^22 := by ring
+      _ ≤ (2^16*658)*b^22 := Nat.mul_le_mul_right _ (by norm_num)
+      _ = _ := by ring
+  exact (Nat.mul_le_mul_left_iff (by decide : 0<2^16)).mp hh
+
+theorem horizontalCap_channel_le {C : ℕ} (hC : 962≤C) : horizontalCap (C^12)≤C^265 := by
+  calc
+    _ ≤ 658*(C^12)^22 := horizontalCap_le_factor ((by omega : 2≤C).trans (Nat.le_self_pow (by decide) _))
+    _ ≤ C*(C^12)^22 := Nat.mul_le_mul_right _ (by omega)
+    _ = _ := by ring
+
 theorem le_horizontalCap (b : ℕ) : b ≤ horizontalCap b := by
   unfold horizontalCap
   calc

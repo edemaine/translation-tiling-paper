@@ -23,7 +23,7 @@ theorem cyclicOrder_le (hB : T.alphabet=3) (hp : EconomicalPrimes E) (hC : 962�
   have ho (n : Column T) : E.blockModulus (.inl n)≤C^27 := by
     calc
       _ = E.r (.inl n)^2*(E.a (.inl n)*E.b (.inl n)) := by unfold EncodingParameters.blockModulus; ring
-      _ ≤ (C^12)^2*C^3 := Nat.mul_le_mul (Nat.pow_le_pow_left (economical_r_le E hB hp _) 2) (hp.2.2.2 n)
+      _ ≤ (C^12)^2*C^3 := Nat.mul_le_mul (Nat.pow_le_pow_left (economical_r_le E hB hp _) 2) (hp.2.2.2.1 n)
       _ = _ := by ring
   have hs (t : Fin 2) : E.blockModulus (.inr t)≤C^12 := by
     calc
@@ -43,7 +43,7 @@ theorem ordinary_cycle_card_le (hp : EconomicalPrimes E) (w : Word T) :
     (sparseCycleTiles E (ordinaryCycle T) (ordinaryCycleLabels w)).card≤channelCount T^(7*T.width) := by
   let C := channelCount T
   have hP (n : Column T) : Fintype.card (P E (.inl n))≤C^3 := by
-    simpa only [P,Fintype.card_prod,ZMod.card] using hp.2.2.2 n
+    simpa only [P,Fintype.card_prod,ZMod.card] using hp.2.2.2.1 n
   calc
     _ ≤ ∏ j : ZMod T.width, Fintype.card (P E (ordinaryCycle T (j-1)))*
         Fintype.card (digitSubgroup E (ordinaryCycle T j) (ordinaryCycleLabels w j)) := sparseCycleTiles_card_le E _ _
@@ -63,7 +63,7 @@ theorem seed_cycle_card_le (hp : EconomicalPrimes E) (t : Fin 2) (n : Column T) 
       seedCycleLabels_zero,seedCycleLabels_one,hP]
     calc
       _ ≤ (C^3*C^4)*(C^4*C^4) := Nat.mul_le_mul
-        (Nat.mul_le_mul (hp.2.2.2 n) ((digitSubgroup_card_le_prime E _ _).trans (hp.2.1 _ _)))
+        (Nat.mul_le_mul (hp.2.2.2.1 n) ((digitSubgroup_card_le_prime E _ _).trans (hp.2.1 _ _)))
         (Nat.mul_le_mul (hp.2.2.1 _) ((digitSubgroup_card_le_prime E _ _).trans (hp.2.1 _ _)))
       _ = _ := by ring
   exact (sparseCycleTiles_card_le E _ _).trans hprod

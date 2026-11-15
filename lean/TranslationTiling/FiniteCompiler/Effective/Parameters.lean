@@ -60,8 +60,9 @@ def EconomicalTableValid (d : ℕ×ℕ) (c : ParameterCertificate) : Prop :=
       c.1.getD (Nat.pair 1 i) 0≤(d.1+2)^4) ∧
     (∀ j∈digitKeys d.1 d.2, c.1.getD (Nat.pair 2 (Nat.pair j.1 j.2)) 0≤(d.1+2)^4) ∧
     (∀ i∈channelKeys d.1, c.1.getD (Nat.pair 0 i) 0*c.1.getD (Nat.pair 1 i) 0≤(d.1+2)^4) ∧
-    ∀ n∈List.range d.1, c.1.getD (Nat.pair 0 (Nat.pair 0 n)) 0*
-      c.1.getD (Nat.pair 1 (Nat.pair 0 n)) 0≤(d.1+2)^3
+    (∀ n∈List.range d.1, c.1.getD (Nat.pair 0 (Nat.pair 0 n)) 0*
+      c.1.getD (Nat.pair 1 (Nat.pair 0 n)) 0≤(d.1+2)^3) ∧
+    ∀ j∈digitKeys d.1 d.2, (c.1.getD (Nat.pair 2 (Nat.pair j.1 j.2)) 0)^20≤(d.1+2)^71
 
 def ParameterValid (d : ℕ × ℕ) (c : ParameterCertificate) : Prop :=
   d.1 = 0 ∨
@@ -94,10 +95,13 @@ noncomputable instance (d : ℕ × ℕ) (c : ParameterCertificate) : Decidable (
   unfold ParameterValid CompactTableValid EconomicalTableValid
   infer_instance
 
+@[local fun_prop] theorem certificatePower {α : Type*} [Primcodable α] {f g : α → ℕ}
+    (hf : Primrec f) (hg : Primrec g) : Primrec (fun a => f a ^ g a) :=
+  (Primrec₂.unpaired'.mp Nat.Primrec.pow).comp hf hg
+
 @[fun_prop] theorem parameterValid_primrec :
     PrimrecPred (fun z : (ℕ × ℕ) × ParameterCertificate => ParameterValid z.1 z.2) := by
-  simp only [ParameterValid, CompactTableValid, EconomicalTableValid, usefulPrimeCap, digitPrimeCap, primeThreshold,
-    pow_two,pow_succ,pow_zero,mul_one]
+  simp only [ParameterValid, CompactTableValid, EconomicalTableValid, usefulPrimeCap, digitPrimeCap, primeThreshold]
   fun_prop
 
 /-- Natural codes for channels and prime tags, with no arbitrary finite ordering. -/

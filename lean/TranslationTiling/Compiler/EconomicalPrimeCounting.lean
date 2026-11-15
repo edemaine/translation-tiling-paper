@@ -119,5 +119,139 @@ theorem economical_caps {C : ℕ} (hC : 962≤C) :
       nlinarith
   exact ⟨hUsq,hUhi,hpu,hL.trans (primeCounting_quartic_economical hC)⟩
 
+
+/-- Two explicit primes just above the compulsory seed threshold. -/
+def seedPrime0 : ℕ := 244453241
+def seedPrime1 : ℕ := 244453243
+
+theorem seedPrime0_prime : seedPrime0.Prime := by norm_num [seedPrime0]
+theorem seedPrime1_prime : seedPrime1.Prime := by norm_num [seedPrime1]
+
+def refinedDigitThreshold (C : ℕ) : ℕ :=
+  max (C^3+2*economicalUsefulCap C) (4*seedPrime1+3)+Sudoku.p+Sudoku.q+5
+
+def refinedDigitCap (C : ℕ) : ℕ := 4*C^3*Nat.nthRoot 2 C/3
+
+/-- The twentieth-power certificate avoids fractional exponents in the compiler. -/
+theorem refined_digit_caps {C : ℕ} (hC : 962≤C) :
+    refinedDigitCap C^20≤C^71 ∧ refinedDigitCap C≤C^4 ∧
+      refinedDigitThreshold C+3*C+1≤Nat.primeCounting (refinedDigitCap C) := by
+  let k := Nat.nthRoot 2 C
+  let Q := refinedDigitCap C
+  have hk : 31≤k := (Nat.le_nthRoot_iff (by decide : 2≠0)).mpr (by norm_num; omega)
+  have hklo : k^2≤C := Nat.pow_nthRoot_le (Or.inl (by decide))
+  have hkhi : C<(k+1)^2 := Nat.lt_pow_nthRoot_add_one (by decide) C
+  have hdiv : 3*Q≤4*C^3*k ∧ 8*C^3*k-4≤6*Q := by
+    have hm := Nat.mod_lt (4*C^3*k) (by decide : 0<3)
+    have he := Nat.mod_add_div (4*C^3*k) 3
+    change 4*C^3*k%3+3*Q=4*C^3*k at he
+    rw [show 8*C^3*k=2*(4*C^3*k) by ring]
+    omega
+  have hC3 : C≤C^3 := Nat.le_self_pow (by decide) C
+  have hC1 : 1≤C := by omega
+  have hQ2 : 2≤Q := by
+    have hh : 31*C≤C^3*k := by
+      calc
+        _ = C*31 := by ring
+        _ ≤ _ := Nat.mul_le_mul hC3 hk
+    have hl : 8*C^3*k≤6*Q+4 := by omega
+    nlinarith only [hh,hl,hC]
+  have h9 : 9*Q^2≤16*C^7 := by
+    have hh := Nat.pow_le_pow_left hdiv.1 2
+    have hh' := Nat.mul_le_mul_left (16*C^6) hklo
+    nlinarith only [hh,hh']
+  have hpow : Q^20≤C^71 := by
+    have hh := Nat.pow_le_pow_left h9 10
+    have he : (9*Q^2)^10=3^20*Q^20 := by ring
+    have he' : (16*C^7)^10=4^20*C^70 := by ring
+    rw [he,he'] at hh
+    have hn : 4^20≤3^20*C := by
+      apply (by norm_num : 4^20≤3^20*962).trans
+      exact Nat.mul_le_mul_left _ hC
+    have hmul : 3^20*Q^20≤3^20*C^71 := by
+      calc
+        _ ≤ 4^20*C^70 := hh
+        _ ≤ (3^20*C)*C^70 := Nat.mul_le_mul_right _ hn
+        _ = _ := by ring
+    exact (Nat.mul_le_mul_left_iff (by decide : 0<3^20)).mp hmul
+  have hQ4 : Q≤C^4 := by
+    apply (Nat.pow_le_pow_iff_left (by decide : 20≠0)).mp
+    apply hpow.trans
+    rw [← pow_mul]
+    exact Nat.pow_le_pow_right hC1 (by decide)
+  have hL : 7*(refinedDigitThreshold C+3*C+3)≤8*C^3 := by
+    have hU := (economical_caps hC).2.1
+    have hgap : 7*(2*C^2+3*C+120)≤C^3 := by
+      have hh := Nat.mul_le_mul_right (C^2) hC
+      have he : C*C^2=C^3 := by ring
+      rw [he] at hh
+      nlinarith
+    have hseed : 8*(4*seedPrime1+3)≤9*C^3 := by
+      apply (by norm_num [seedPrime1] : 8*(4*seedPrime1+3)≤9*962^3).trans
+      exact Nat.mul_le_mul_left _ (Nat.pow_le_pow_left hC 3)
+    have htail : 56*(3*C+120)≤C^3 := by
+      have hh := Nat.mul_le_mul_left C (Nat.pow_le_pow_left hC 2)
+      have he : C*C^2=C^3 := by ring
+      rw [he] at hh
+      nlinarith
+    unfold refinedDigitThreshold
+    rcases le_total (C^3+2*economicalUsefulCap C) (4*seedPrime1+3) with hh | hh
+    · rw [max_eq_right hh]
+      norm_num only [Sudoku.p,Sudoku.q]
+      nlinarith only [hseed,htail]
+    · rw [max_eq_left hh]
+      norm_num only [Sudoku.p,Sudoku.q]
+      nlinarith only [hgap,hU]
+  have hlog : Real.log (Q:ℝ)≤((7*(k:ℝ)-4)/6)*Real.log 2 := by
+    have hn : 3*Q≤4*(k+1)^7 := by
+      apply hdiv.1.trans
+      have hc := Nat.pow_le_pow_left hkhi.le 3
+      have he : ((k+1)^2)^3=(k+1)^6 := by ring
+      rw [he] at hc
+      calc
+        _ ≤ 4*(k+1)^6*(k+1) := Nat.mul_le_mul (Nat.mul_le_mul_left _ hc) (Nat.le_succ k)
+        _ = _ := by ring
+    have hr : (Q:ℝ)≤(4/3:ℝ)*((k:ℝ)+1)^7 := by
+      have hh : (3:ℝ)*Q≤4*((k:ℝ)+1)^7 := by exact_mod_cast hn
+      linarith
+    have hh := Real.log_le_log (by exact_mod_cast (by omega : 0<Q)) hr
+    rw [Real.log_mul (by norm_num) (by positivity),Real.log_pow] at hh
+    have h43 : Real.log (4/3:ℝ)≤(1/2:ℝ)*Real.log 2 := by
+      have he := Real.log_le_log (by norm_num : (0:ℝ)<(4/3:ℝ)^2) (by norm_num : (4/3:ℝ)^2≤2)
+      rw [Real.log_pow] at he
+      norm_num at he
+      linarith
+    have hklog := economical_log_root hk
+    norm_num only [Nat.cast_ofNat] at hh
+    linarith
+  have hpi : 8*C^3<7*(Nat.primeCounting Q+2) := by
+    have hpos : 0<Real.log (Q:ℝ) := Real.log_pos (by exact_mod_cast hQ2 : (1:ℝ)<Q)
+    have hp := (div_le_iff₀ hpos).mp (Chebyshev.pi_ge Q)
+    have htail : Real.log ((Q:ℝ)+1)≤2*Real.log (Q:ℝ) := by
+      have hqr : (2:ℝ)≤Q := by exact_mod_cast hQ2
+      have hh := Real.log_le_log (by positivity : (0:ℝ)<(Q:ℝ)+1)
+        (show (Q:ℝ)+1≤(Q:ℝ)^2 by nlinarith)
+      simpa only [Real.log_pow,Nat.cast_ofNat] using hh
+    have hp' : (Q:ℝ)*Real.log 2≤((Nat.primeCounting Q:ℝ)+2)*Real.log (Q:ℝ) := by
+      push_cast at hp
+      linarith
+    have hm := mul_le_mul_of_nonneg_left hlog (show (0:ℝ)≤(Nat.primeCounting Q:ℝ)+2 by positivity)
+    have htwo : 0<Real.log (2:ℝ) := Real.log_pos (by norm_num)
+    have hb : 6*(Q:ℝ)≤((Nat.primeCounting Q:ℝ)+2)*(7*(k:ℝ)-4) := by nlinarith only [hp',hm,htwo]
+    by_contra hh
+    have hn : 7*(Nat.primeCounting Q+2)≤8*C^3 := by omega
+    have hnr : 7*((Nat.primeCounting Q:ℝ)+2)≤8*(C:ℝ)^3 := by exact_mod_cast hn
+    have hkr : (31:ℝ)≤k := by exact_mod_cast hk
+    have hm' := mul_le_mul_of_nonneg_right hnr (show (0:ℝ)≤7*(k:ℝ)-4 by linarith)
+    have hlo : 8*(C:ℝ)^3*k-4≤6*(Q:ℝ) := by
+      have he := Nat.mod_add_div (4*C^3*k) 3
+      have hh := Nat.mod_lt (4*C^3*k) (by decide : 0<3)
+      have hn' : 8*C^3*k≤6*Q+4 := by change _+3*Q=_ at he; omega
+      have hr : (8:ℝ)*(C:ℝ)^3*k≤6*(Q:ℝ)+4 := by exact_mod_cast hn'
+      linarith
+    have hc : (1:ℝ)≤(C:ℝ)^3 := by exact_mod_cast (hC1.trans hC3)
+    nlinarith only [hb,hm',hlo,hc]
+  exact ⟨hpow,hQ4,by change _≤Nat.primeCounting Q; omega⟩
+
 end
 end TranslationTiling.Compiler.Size

@@ -102,7 +102,7 @@ private theorem exists_parameterCertificate (d : ℕ × ℕ) :
       · by_cases hr : 962≤d.1+2 ∧ d.2=3
         · right
           have hs := heconomical hr
-          refine ⟨?_,?_,?_,?_⟩
+          refine ⟨?_,?_,?_,?_,?_⟩
           · intro k hk
             obtain ⟨i,rfl⟩ := (mem_channelKeys T k).mp hk
             change ps.getD (primeKey (.inl i)) 0≤_ ∧ ps.getD (primeKey (.inr (.inl i))) 0≤_
@@ -118,7 +118,11 @@ private theorem exists_parameterCertificate (d : ℕ × ℕ) :
           · intro n hn
             let n' : Column T := ⟨n,List.mem_range.mp hn⟩
             change ps.getD (primeKey (.inl (.inl n'))) 0*ps.getD (primeKey (.inr (.inl (.inl n')))) 0≤_
-            rw [hp,hp]; exact hs.2.2.2 n'
+            rw [hp,hp]; exact hs.2.2.2.1 n'
+          · intro k hk
+            obtain ⟨⟨i,j⟩,rfl⟩ := (mem_digitKeys T k).mp hk
+            change (ps.getD (primeKey (.inr (.inr ⟨i,j⟩))) 0)^20≤_
+            rw [hp]; exact hs.2.2.2.2 i j
         · exact Or.inl hr
 
 def decodeParameterCertificate (n : ℕ) : ParameterCertificate :=
@@ -217,14 +221,22 @@ theorem parameters_bounded_compact (T : System) (hC : 1202≤channelCount T) (hB
     fun i j => hs.2.1 _ ((mem_digitKeys T _).mpr ⟨⟨i,j⟩,rfl⟩),
     fun i => hs.2.2 _ ((mem_channelKeys T _).mpr ⟨i,rfl⟩)⟩
 
+theorem parameters_digitPrime_eq (T : System) (i : Channel T) (j : Label T i) :
+    (parameters T).digitPrime i j =
+      (parameterCertificate (T.width,T.alphabet)).1.getD (primeKey (.inr (.inr ⟨i,j⟩))) 0 := rfl
+
 theorem parameters_bounded_economical (T : System) (hC : 962≤channelCount T) (hB : T.alphabet=3) :
     EconomicalPrimes (parameters T) := by
   have h := (parameterCertificate_valid (T.width,T.alphabet)).resolve_left (Nat.ne_of_gt T.width_pos)
   have hs := h.2.2.2.2.2.2.2.resolve_left (not_not.mpr ⟨hC,hB⟩)
-  exact ⟨fun i => hs.1 _ ((mem_channelKeys T _).mpr ⟨i,rfl⟩),
+  refine ⟨fun i => hs.1 _ ((mem_channelKeys T _).mpr ⟨i,rfl⟩),
     fun i j => hs.2.1 _ ((mem_digitKeys T _).mpr ⟨⟨i,j⟩,rfl⟩),
     fun i => hs.2.2.1 _ ((mem_channelKeys T _).mpr ⟨i,rfl⟩),
-    fun n => hs.2.2.2 n.val (List.mem_range.mpr n.isLt)⟩
+    fun n => hs.2.2.2.1 n.val (List.mem_range.mpr n.isLt),?_⟩
+  intro i j
+  rw [parameters_digitPrime_eq]
+  dsimp only [channelCount,primeKey]
+  exact hs.2.2.2.2 (channelKey i,labelKey i j) ((mem_digitKeys T _).mpr ⟨⟨i,j⟩,rfl⟩)
 
 end
 end TranslationTiling.FiniteCompiler.Effective

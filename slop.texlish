@@ -2086,21 +2086,26 @@ collision proof of @lem:cycle.
 
 Write $\lg=\log_2$ for the real logarithm to base~$2$.
 For $n\geq1$, let $k$ be the larger of the binary length of $n$ and the
-ternary length of $pqn$. Give a symbol class $0$ when its arithmetic pair
+ternary length of $2pqn$. Give a symbol class $0$ when its arithmetic pair
 $(a,a')=(1,1)$, class $1$ when $(a,a')=(2,2)$, and class $2$ otherwise.
-Prefix its code by $00$, $11$, or $01$, respectively, followed by $k$
-payload positions. In class $0$, encode the Wang tile's index in binary,
-using $0,2$ for its two digits; in class $1$, use $1,2$ instead. In
-class $2$, encode $(aq+a')n+j<pqn$ in ternary, where $j<n$ is the Wang
-tile's index. Pad each payload with its zero digit to length $k$.
-The prefix and payload determine the symbol, so the resulting code
-$\widehat c:\Sigma\to\{0,1,2\}^{k+2}$ is injective. Moreover, every
-position belongs to $\widehat B_1=\{0,2\}$ exactly for symbols with
-$(a,a')=(1,1)$, and every position belongs to $\widehat B_2=\{1,2\}$
-exactly for symbols with $(a,a')=(2,2)$.
+Encode each class directly by length-$k$ ternary words:
+class $0$ uses words containing $0$ but no $1$; class $1$ uses words
+containing $1$ but no $0$; class $2$ uses words containing both $0$ and $1$.
+These classes have $2^k-1$, $2^k-1$, and $3^k-2^{k+1}+1$ words,
+respectively. We have $n<2^k$, $2pqn<3^k$, and $k\geq8$.
+Since $4\cdot2^k\leq3^k$ for $k\geq4$, these capacities are at least
+$n$, $n$, and $pqn$. In each seed class, assign words by the Wang tile's
+index $j<n$; in class $2$, use the decorated index $(aq+a')n+j<pqn$.
+Enumerate each word class by its base-three integer value.
+The resulting code $\widehat c:\Sigma\to\{0,1,2\}^k$ is injective
+and needs no dedicated prefix positions. Moreover, every position belongs
+to $\widehat B_1=\{0,2\}$ exactly for symbols with $(a,a')=(1,1)$,
+and every position belongs to $\widehat B_2=\{1,2\}$ exactly for symbols
+with $(a,a')=(2,2)$. The word counts and computable enumeration are checked
+in \leanfile{FiniteCompiler/Effective/PackedWords.lean}.
 
 Replace each ordinary channel $i\in I$ by channels $(i,b)$,
-$b\in\{1,\ldots,k+2\}$, all having the same line map $L_i$.
+$b\in\{1,\ldots,k\}$, all having the same line map $L_i$.
 The two seed channels stay unchanged. The new ordinary alphabet is
 $\Gamma=\{0,1,2\}$. A word over the new channels is allowed exactly
 when it encodes some word in $\calW$. Use the original graph,
@@ -2115,10 +2120,10 @@ and its agreement with this code are checked in
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    (n+4)^{10^6\lg\lg(n+4)}=n^{O(\log\log n)}
+    (n+4)^{4\cdot10^5\lg\lg(n+4)}=n^{O(\log\log n)}
   $$
   unit cubes.
-  For $n=1$, we also have the explicit bound $2^{2{,}312{,}648}$ unit cubes.
+  For $n=1$, we also have the explicit bound $2^{1{,}098{,}604}$ unit cubes.
 
 : proof
   For $n=0$, consolidate the two contradictory equations with prototiles
@@ -2141,7 +2146,7 @@ and its agreement with this code are checked in
   \leanref{Compiler/BitChannels.lean}{Compiler.BitChannels.array_of_encoded_line_rule}.
 
   Each seed activates somewhere. Its pair exclusions place every
-  chosen ternary symbol in $\widehat B_t$ there. The prefix therefore
+  chosen ternary symbol in $\widehat B_t$ there. The code's seed class therefore
   forces both arithmetic digits of every decoded column symbol to equal $t$.
   The original two-prime soundness argument applies. Conversely, encode
   the canonical Sudoku array with $\widehat c$. Each ternary channel has
@@ -2153,7 +2158,7 @@ and its agreement with this code are checked in
   all exclusion equations on this same graph. This proves both
   tilability directions.
 
-  Now write $C=N(k+2)+2$ for the total number of channels. The constants
+  Now write $C=Nk+2$ for the total number of channels. The constants
   $N$, $M$, and $D$ are independent of $n$. There are $O(C)$ useful
   prime tags. Choosing their ranks above the fixed seed threshold and
   using $p_k\leq(8(k+1))^2$ gives a bound $U=C^{O(1)}$ for all useful
@@ -2166,7 +2171,7 @@ and its agreement with this code are checked in
     |V|=D\prod_i r_i^2a_ib_i=C^{O(C)}.
   $$
 
-  There are at most $3^{N(k+2)}$ forbidden ternary words. Each needs at
+  There are at most $3^{Nk}$ forbidden ternary words. Each needs at
   most $(U^2Q)^C=C^{O(C)}$ sparse cycle tests, since
   $|U_{i,j}|=r_{ij}\leq Q$. There are $O(C)$ seed-label exclusions,
   $O(C^2)$ dependence equations, and $C$ activation equations. The
@@ -2185,40 +2190,69 @@ and its agreement with this code are checked in
   and $\ell|V|$. The final cube count is therefore $C^{O(C)}$.
   Since $k=O(\lg(n+2))$, this gives the quasipolynomial dependence.
 
-  For the numerical coefficient, the actual channel count satisfies
-  $C\geq10N+2=1202$. Only the two seed primes $b_0,b_1$ need to
-  exceed $D$; Bertrand's postulate puts them below $4D$.
+  For the numerical coefficient, write $w=Nk=C-2$ for the number of
+  ordinary channels. We have $C\geq8N+2=962$.
+  The two auxiliary seed primes must exceed $D=244{,}453{,}225$.
+  Choose the explicit primes
+  $$
+    b_0=D+16=244{,}453{,}241,\qquad
+    b_1=D+18=244{,}453{,}243.
+  $$
+  This optimizes the prime budget: replacing the estimates $b_0\leq2D$
+  and $b_1\leq4D$ reduces the common seed representation threshold
+  from $16D+3$ to $4b_1+3$.
   Reserve these primes and the fixed primes $2,3,5,p,q$.
-  Chebyshev's elementary prime-counting bound gives
-  $\pi(C^2)\geq8C$, enough to choose all ordinary useful primes
-  at most $C^2$. The seed primes satisfy $a_0=2,a_1=3$ and
-  $a_i b_i\leq12D\leq C^4$, so every useful-prime pair has product
-  at most $C^4$. Each pair's positive-representation threshold
-  $a_i b_i+a_i+b_i$ is at most $C^4+2C^2$.
-  Chebyshev's bound $\pi(C^5)\geq3C^4$ supplies all digit primes
-  above these thresholds and $p,q$, and at most $C^5$.
-  These choices are checked in
-  \leanfile{Compiler/SharpPrimeCounting.lean} and
-  \leanfile{FiniteCompiler/CompactParameters.lean}.
-  Thus $r_i\leq C^{15}$ and $|P_i|\leq C^4$.
-  The seed modulus is at most $C^2$, giving
-  $|V|\leq C^{34C+4}\leq C^{35C}$.
-
-  A sparse cycle needs at most $C^{9C}$ tests.
-  There are at most $3^C\leq C^C$ forbidden words and at most $C^2$
-  seed-label pairs. With parameter budget $b=C^{15}$, the dependence
-  equations have count at most $b^4=C^{60}$.
-  Each of the six equation families is therefore bounded by $C^{10C}$,
-  and their total satisfies
+  Choose the integer $h$ with $h^2\leq C<(h+1)^2$ and put $U=Ch$.
+  Then $h\geq31$, $U^2\leq C^3$, and Chebyshev's elementary
+  prime-counting bound gives $\pi(U)\geq2C+7$.
+  Thus all ordinary useful primes can be at most $U\leq C^{3/2}$,
+  and each ordinary pair has product at most $C^3$.
+  The seed primes satisfy $a_0=2,a_1=3$ and $a_i b_i\leq C^4$.
+  Each pair's positive-representation threshold $a_i b_i+a_i+b_i$
+  is at most $C^3+2U$ for ordinary channels and $4b_1+3$ for seed channels.
+  Set $L=\max\{C^3+2U,4b_1+3\}+p+q+5$, and choose the integer $Q$ with
+  $3Q\leq4C^3h<3Q+3$.
+  Chebyshev's bound gives
   $$
-    s\leq6C^{10C}\leq C^{11C}.
+    \pi(Q)+2>\frac87C^3\geq L+3C+3.
   $$
-  These counts are checked in \leanfile{FiniteCompiler/CompactBounds.lean}.
+  Hence all digit primes can exceed $L$ and be at most $Q$.
+  Since $Q\leq(4/3)C^{7/2}$ and $(4/3)^{20}\leq962\leq C$,
+  they satisfy $r_{ij}^{20}\leq C^{71}$ as well as $r_{ij}\leq C^4$.
+  All individual useful primes are also at most $C^4$.
+  These choices and the explicit primes are checked in
+  \leanfile{Compiler/EconomicalPrimeCounting.lean} and
+  \leanfile{FiniteCompiler/EconomicalParameters.lean}.
+  The effective certificate checks the twentieth-power inequality for each digit
+  prime. Thus the remaining estimates apply to any certified parameters, taking
+  $Q$ to be a common digit-prime bound with $Q^{20}\leq C^{71}$.
+  For an ordinary channel, $r_i^{20}\leq C^{213}$, so its block modulus
+  $(r_i^2a_ib_i)^{10}$ is at most $C^{243}$.
+  The two seed block moduli remain at most $C^{12}$, and the reference modulus
+  $M=5pq$ is at most $C^2$. Consequently,
+  $$
+    |V|^{10}\leq C^{243w+280}.
+  $$
 
-  Set $X=C^{11C}$ and let $\lambda$ be the binary length of $2X$.
+  An ordinary sparse cycle needs at most $(C^3Q)^w$ tests,
+  and there are at most $3^w$ forbidden words.
+  A seed cycle needs at most $C^{15}$ tests; at most $C^2$
+  seed-label pairs therefore give at most $C^{17}$ tests.
+  With parameter budget $b=C^{12}$, the dependence equations have
+  count at most $b^4=C^{48}$.
+  Each of the six equation families is bounded by $(3C^3Q)^w$, so
+  $s\leq6(3C^3Q)^w$.
+  For stacking, use $X=\max\{s,C^2\}$ instead of the coarser $C^{8C}$.
+  Then $X\leq6(3C^3Q)^w\leq C^{8C}$ and, using $36\leq C$ and $9^3\leq C$,
+  $$
+    X^{60}\leq C^{403w+30}.
+  $$
+  These counts are checked in \leanfile{FiniteCompiler/RefinedBounds.lean}.
+
+  Let $\lambda$ be the binary length of $2X$.
   Choose a prime $\ell$ between
-  $64X^2\lambda+C^5+3$ and twice that number. Every prime divisor of
-  $|V|$ is at most $C^5$, so $\ell$ is coprime to $|V|$.
+  $64X^2\lambda+C^4+3$ and twice that number. Every prime divisor of
+  $|V|$ is at most $C^4$, so $\ell$ is coprime to $|V|$.
   To check the partition condition, write $\ell=2m+1$. The failure
   probability from @lem:partition is at most
   $$
@@ -2231,17 +2265,28 @@ and its agreement with this code are checked in
   \leanfile{Proofs/LogDifferenceBound.lean}; the computable partition
   search and coprime stacking are in
   \leanfile{FiniteCompiler/Effective/FreshStack.lean}.
-  Since $\lambda\leq C^2$, the stacking prime is at most $C^{23C}$,
-  giving stacked modulus $R\leq C^{58C}$. The common parameter budget
-  is $b=C^{15}$, so the horizontal bound is
-  $H\leq b^{211}\leq C^{3165}$.
+  Since $\lambda\leq C^2$, we have $\ell\leq132X^2\lambda\leq C^3X^2$.
+  Thus $\ell^{30}\leq C^{403w+120}$, and the stacked modulus $R=\ell|V|$ satisfies
+  $$
+    R^{30}\leq C^{1132w+960}.
+  $$
+  The common parameter budget is $b=C^{12}$.
+  Sharpening the horizontal estimate from degree~$211$ to degree~$22$ gives
+  $$
+    H=b^6(b+1)^{16}+b\leq658b^{22}\leq C^{265}.
+  $$
+  The identity and estimate are checked in
+  \leanfile{FiniteCompiler/SupportBounds.lean}.
 
   Count the geometric output directly. Each MSS component has at most
   $2^{24}$ cubes, independently of its displacement, so the unconnected
   lattice tile has at most $2^{24}(2H+1)^2R$ cubes. Its horizontal
   coordinates have absolute value at most $1000(2H+1)$, and its vertical
-  coordinates at most $1000(2R+1)$. Translate it into an $A\times A\times B$
-  box with $A\leq B$, $A\leq8003H$, and $B\leq8003R$.
+  coordinates at most $1000(2R+1)$.
+  Use $\widehat R=\max\{H,R\}$ to size the connectedness construction.
+  This also satisfies $\widehat R^{30}\leq C^{1132w+960}$.
+  Translate the lattice tile into an $A\times A\times B$ box with
+  $A\leq B$, $A\leq8003H$, and $B\leq8003\widehat R$.
 
   Use a four-layer variant of Kim's partition. Index the box's boundary
   points by $u_0,\ldots,u_{r-1}$, with $u_0=0$; there are at most $6AB$.
@@ -2261,32 +2306,39 @@ and its agreement with this code are checked in
   The assembly preserves tilability and is connected, as before.
   Consequently the final volume is at most
   $$
-    2^{24}(2H+1)^2R\cdot972(6AB)^2
-      \leq (9\cdot2^{24}\cdot972\cdot36\cdot8003^4)H^4R^3
-      \leq C^{185C}.
+    2^{24}(2H+1)^2\widehat R\cdot972(6AB)^2
+      \leq K H^4\widehat R^3,\qquad
+    K=9\cdot2^{24}\cdot972\cdot36\cdot8003^4\leq C^{11}.
   $$
-  The constant in parentheses is at most $2^{95}\leq C^{10}$.
-  Thus the exponent is at most $174C+12670\leq185C$,
-  using $12670\leq11C$.
+  Taking tenth powers preserves the fractional-exponent savings:
+  $$
+    |F|^{10}\leq C^{1132w+11670}\leq C^{1142C},
+    \qquad |F|^5\leq C^{571C},
+  $$
+  because $w=C-2$ and $9406\leq10C$.
   The partition, contacts, connectivity, and arbitrary-tiling rigidity
   are checked in `FourLayer/`; the computable compiler and its volume
   estimate are in \leanfile{FourLayer/Compiler.lean} and
-  \leanfile{FiniteCompiler/CompactBounds.lean}.
+  \leanfile{FiniteCompiler/RefinedBounds.lean}.
 
   Put $t=\lg(n+4)$ and $g=\lg t$. Direct estimates on the binary and
-  ternary lengths give $k+2\leq(9/2)t$, including the small inputs
-  $n=1,2,3$. Also $g\geq6/5$, so
+  ternary lengths give $k\leq(7/2)t$, treating $n=1,\ldots,5$ directly.
+  Also $g\geq6/5$, so
   $$
-    C\leq at,\qquad a=(9/2)N+1=541<2^{10},\qquad
-    \lg C\leq10+g\leq(28/3)g.
+    C\leq421t,\qquad 421^4\leq2^{35},\qquad
+    \lg C\leq35/4+g\leq(199/24)g.
   $$
-  Thus $185C\lg C\leq185\cdot(28/3)a\,tg$, and
-  $185\cdot(28/3)a=2{,}802{,}380/3<10^6$ gives the displayed bound.
+  Thus $\lg|F|\leq(571/5)C\lg C\leq(571/5)\cdot421\cdot(199/24)tg$, and
+  $$
+    \frac{571}{5}\cdot421\cdot\frac{199}{24}
+      =\frac{47{,}837{,}809}{120}<4\cdot10^5
+  $$
+  gives the displayed bound.
   The conversion is checked in \leanfile{Compiler/MixedLogBound.lean}.
-  For $n=1$, ten code positions per column give $C=1202$
-  and $C^5\leq2^{52}$. Hence
-  $|F|^5\leq2^{52\cdot185\cdot1202}=2^{5\cdot2{,}312{,}648}$,
-  hence $|F|\leq2^{2{,}312{,}648}$.
+  For $n=1$, eight code positions per column give $C=962$
+  and $C^5\leq2^{50}$. Hence
+  $|F|^{25}\leq(C^5)^{571C}\leq2^{50\cdot571\cdot962}=2^{25\cdot1{,}098{,}604}$,
+  hence $|F|\leq2^{1{,}098{,}604}$.
 
 The ternary-channel variant is formalized end to end in
 \leanfile{Compiler/CleanQuasipolynomialBound.lean} by
@@ -2328,7 +2380,7 @@ construction, with no corresponding lower bound for arbitrary reductions.
 A possible change is to reuse a fixed prime table across ordinary ternary
 channels. At the level of the size estimates, let every such channel
 have fixed moduli $a,b,r$, and keep the two seed channels fixed. With
-$m=N(k+2)$ ordinary channels the finite factor would have order
+$m=Nk$ ordinary channels the finite factor would have order
 $$
   |V|=D(r^2ab)^m\prod_{t=1}^2 r_{\eta_t}^2a_{\eta_t}b_{\eta_t}
       =n^{O(1)}.
@@ -2835,8 +2887,8 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, these bounds are $(n+4)^{10^6\lg\lg(n+4)}$ for translations and
-$64{,}000(n+4)^{10^6\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+function. In dimension three, these bounds are $(n+4)^{4\cdot10^5\lg\lg(n+4)}$ for translations and
+$64{,}000(n+4)^{4\cdot10^5\lg\lg(n+4)}$ for arbitrary Euclidean motions.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[
@@ -2854,12 +2906,12 @@ gives the translation-only equivalence; the lattice/real translation theorem
 then connects the two translation predicates. Thus no new construction or
 additional cubes are needed.
 
-The mixed-radix compiler is formalized in
-\leanfile{FiniteCompiler/Effective/MixedCompiler.lean}, using
+The compiler in
+\leanfile{FiniteCompiler/Effective/MixedCompiler.lean} uses
 \leanfile{FiniteCompiler/Effective/SharpCompiler.lean} and the common
 numerical equations in \leanfile{FiniteCompiler/Effective/Compiler.lean}.
-It encodes seed classes with binary tile indices and other symbols with
-ternary decorated indices, searches finite arithmetic certificates for the
+It assigns ternary words by tile index within each seed class and by
+decorated index otherwise, searches finite arithmetic certificates for the
 bounded prime parameters, and enumerates the sparse cycle maps supported at
 one useful-coordinate value. A common finite coordinate box
 canonically orders the test tiles, allowing duplicate descriptions to be removed
@@ -2871,7 +2923,7 @@ quadratic-logarithmic modulus bound used in the volume proof.
 \leanfile{FiniteCompiler/Effective/Correctness.lean} proves correctness of
 the common numerical equations; \leanfile{FiniteCompiler/Effective/SharpCompiler.lean}
 combines them with the sharper stacking and geometric bounds.
-\leanfile{FiniteCompiler/Effective/MixedCompiler.lean} adds the mixed-radix
+\leanfile{FiniteCompiler/Effective/MixedCompiler.lean} adds the ternary
 code and proves the cube bound.
 In particular, \leandecl{FiniteCompiler.Effective.mixedCompile_computable}
 and \leandecl{FiniteCompiler.Effective.mixedCompile_real_bound} concern

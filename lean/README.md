@@ -103,12 +103,12 @@ have no unproved mathematical input. No unfinished proof is accepted.
 ## Cube Bound by Wang Tile Count
 
 [Compiler/CleanQuasipolynomialBound.lean](TranslationTiling/Compiler/CleanQuasipolynomialBound.lean)
-gives `(n+4)^(5*10^5*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
+gives `(n+4)^(4*10^5*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
 logarithms. The theorem `Size.exists_connected_tile_clean_quasipolynomial_bound`
 includes nonemptiness, face connectedness, and both tilability directions.
 Here `n` counts distinct input tiles. The one-tile specialization in
 [Compiler/QuasipolynomialBound.lean](TranslationTiling/Compiler/QuasipolynomialBound.lean)
-gives at most `2^1375660` cubes.
+gives at most `2^1098604` cubes.
 
 [Effective/PackedWords.lean](TranslationTiling/FiniteCompiler/Effective/PackedWords.lean)
 counts and enumerates three disjoint classes of ternary words: words containing
@@ -134,21 +134,25 @@ the higher-digit coefficients.
 
 [Compiler/EconomicalPrimeCounting.lean](TranslationTiling/Compiler/EconomicalPrimeCounting.lean)
 and [EconomicalParameters.lean](TranslationTiling/FiniteCompiler/EconomicalParameters.lean)
-allocate ordinary useful primes at most `C^(3/2)` and digit primes at most `C⁴`,
-for `C ≥ 962`. Only two seed primes need the large seed threshold.
-Ordinary useful-prime pairs satisfy `a_i*b_i ≤ C³`; seed pairs satisfy
-`a_i*b_i ≤ C⁴`. Individual pair thresholds suffice for positive block
-representations. The common parameter budget is `C^12`, while each seed
-channel's digit product is at most `C⁴`.
+allocate ordinary useful primes at most `C^(3/2)` and digit primes satisfying
+`q^20 ≤ C^71`, for `C ≥ 962`. The explicit auxiliary seed primes are
+`244453241` and `244453243`, just above `D = 244453225`.
+They reduce the common seed representation threshold from `16D+3` to
+`4*244453243+3`. Ordinary useful-prime pairs satisfy `a_i*b_i ≤ C³`;
+seed pairs satisfy `a_i*b_i ≤ C⁴`. Individual pair thresholds suffice
+for positive block representations. The effective certificate checks the
+stronger digit-prime bound. The common parameter budget remains `C^12`.
 [Proofs/LogDifferenceBound.lean](TranslationTiling/Proofs/LogDifferenceBound.lean)
 keeps the exponential probability estimate, giving a partition modulus
 quadratic times a logarithm in the equation count.
 [Effective/FreshStack.lean](TranslationTiling/FiniteCompiler/Effective/FreshStack.lean)
 implements this bounded partition search and proves coprimality from a bound
 on the prime divisors of the finite factor.
-[EconomicalBounds.lean](TranslationTiling/FiniteCompiler/EconomicalBounds.lean)
-bounds the cyclic order by `C^(27*C)`, equation count by `C^(8*C)`, and
-stacked modulus by `C^(44*C)` for `C` channels.
+[RefinedBounds.lean](TranslationTiling/FiniteCompiler/RefinedBounds.lean)
+keeps powers integral: for `w = C-2` ordinary channels, the cyclic order
+satisfies `|V|^10 ≤ C^(243*w+280)`. Stacking uses `X = max(s,C²)` for the
+actual equation count `s`, with `X^60 ≤ C^(403*w+30)`, giving stacked modulus
+`R^30 ≤ C^(1132*w+960)`.
 [Compiler/SparseGeometryBound.lean](TranslationTiling/Compiler/SparseGeometryBound.lean)
 counts each MSS component by `2^24`, independently of its displacement.
 [FourLayer/](TranslationTiling/FourLayer/) replaces the cubic color partition
@@ -158,8 +162,11 @@ and arbitrary-complement rigidity are proved for the concrete shape.
 [FourLayer/Compiler.lean](TranslationTiling/FourLayer/Compiler.lean) proves
 computability, correctness, connectivity, and the `K*H⁴*R³` volume bound,
 where `K = 9*2^24*972*36*8003^4`.
-With `H ≤ C^2532`, `EconomicalBounds.lean` bounds this volume by `C^(143*C)`.
-Earlier estimates remain in `CompactParameters.lean`, `CompactBounds.lean`,
+[SupportBounds.lean](TranslationTiling/FiniteCompiler/SupportBounds.lean)
+uses the exact identity `H(b) = b^6*(b+1)^16+b` to give `H ≤ C^265`.
+The connectedness box uses `max(H,R)`. `RefinedBounds.lean` then gives
+`|F|^5 ≤ C^(571*C)`.
+Earlier estimates remain in `EconomicalBounds.lean`, `CompactParameters.lean`, `CompactBounds.lean`,
 `TightParameters.lean`, `TightBounds.lean`, and `FourLayer/SizeBound.lean`.
 [Effective/SharpCompiler.lean](TranslationTiling/FiniteCompiler/Effective/SharpCompiler.lean)
 combines these bounds with correctness and computability.

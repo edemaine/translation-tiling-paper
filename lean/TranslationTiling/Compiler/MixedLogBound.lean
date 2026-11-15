@@ -150,12 +150,19 @@ theorem mixed_channel_cap_real_bound {n : ℕ} (hn : 0<n) :
   norm_num only [Nat.cast_mul,Nat.cast_pow,Nat.cast_ofNat] at h ⊢
   exact h
 
-theorem sharp_channel_cap_real_bound {n : ℕ} (hn : 0<n) :
-    (((Sudoku.Width*mixedWidth n+2)^(143*(Sudoku.Width*mixedWidth n+2)):ℕ):ℝ) ≤
-      ((n:ℝ)+4)^((5*(10:ℝ)^5)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
-  have h := channel_cap_real_bound 143 (5*10 ^ 5) (by norm_num [Sudoku.Width,Sudoku.q]) hn
-  norm_num only [Nat.cast_mul,Nat.cast_pow,Nat.cast_ofNat] at h ⊢
-  exact h
+theorem sharp_channel_cap_real_bound {n N : ℕ} (hn : 0<n)
+    (hN : N^5≤(Sudoku.Width*mixedWidth n+2)^(571*(Sudoku.Width*mixedWidth n+2))) :
+    (N:ℝ)≤((n:ℝ)+4)^((4*(10:ℝ)^5)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
+  apply (pow_le_pow_iff_left₀ (Nat.cast_nonneg N) (Real.rpow_nonneg (by positivity) _) (by decide : 5≠0)).mp
+  calc
+    (N:ℝ)^5 ≤ (((Sudoku.Width*mixedWidth n+2)^(571*(Sudoku.Width*mixedWidth n+2)):ℕ):ℝ) := by exact_mod_cast hN
+    _ ≤ ((n:ℝ)+4)^(((5*4*10^5:ℕ):ℝ)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) :=
+      channel_cap_real_bound 571 (5*4*10^5) (by norm_num [Sudoku.Width,Sudoku.q]) hn
+    _ = (((n:ℝ)+4)^((4*(10:ℝ)^5)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))))^5 := by
+      rw [← Real.rpow_natCast,← Real.rpow_mul (by positivity : (0:ℝ)≤(n:ℝ)+4)]
+      congr 1
+      norm_num
+      ring
 
 end
 end TranslationTiling.Compiler.Size

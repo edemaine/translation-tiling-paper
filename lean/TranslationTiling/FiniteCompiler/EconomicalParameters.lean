@@ -19,12 +19,19 @@ theorem exists_economical_useful (T : System) (hC : 962 ≤ channelCount T) :
       ∀ i, u (.inl i)*u (.inr i)≤channelCount T^4 ∧
         u (.inl i)*u (.inr i)+u (.inl i)+u (.inr i)≤
           max (channelCount T^3+2*Compiler.Size.economicalUsefulCap (channelCount T))
-            (16*residueModulus^2+3) := by
+            (4*Compiler.Size.seedPrime1+3) := by
   let C := channelCount T
   let D := residueModulus^2
   have hD : 2 ≤ D := by norm_num [D,residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]
-  obtain ⟨b0,hb0,hb0l,hb0u⟩ := Nat.bertrand D (by omega)
-  obtain ⟨b1,hb1,hb1l,hb1u⟩ := Nat.bertrand (2*D) (by omega)
+  let b0 := Compiler.Size.seedPrime0
+  let b1 := Compiler.Size.seedPrime1
+  have hb0 := Compiler.Size.seedPrime0_prime
+  have hb1 := Compiler.Size.seedPrime1_prime
+  have hb0l : D<b0 := by norm_num [b0,D,Compiler.Size.seedPrime0,residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]
+  have hb1l : D<b1 := by norm_num [b1,D,Compiler.Size.seedPrime1,residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]
+  have hb0u : b0≤2*D := by norm_num [b0,D,Compiler.Size.seedPrime0,residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]
+  have hb1u : b1≤4*D := by norm_num [b1,D,Compiler.Size.seedPrime1,residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]
+  have hb01 : b0<b1 := by norm_num [b0,b1,Compiler.Size.seedPrime0,Compiler.Size.seedPrime1]
   have hbig : 4*D ≤ C^4 := by
     apply (show 4*D≤962^4 by
       norm_num [D,residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]).trans
@@ -117,7 +124,7 @@ theorem exists_economical_useful (T : System) (hC : 962 ≤ channelCount T) :
     cases i with
     | inl n =>
       change g (.inl n)*g (.inr n)≤C^4 ∧
-        g (.inl n)*g (.inr n)+g (.inl n)+g (.inr n)≤max (C^3+2*U) (16*D+3)
+        g (.inl n)*g (.inr n)+g (.inl n)+g (.inr n)≤max (C^3+2*U) (4*b1+3)
       have ha := (hg (.inl n)).2.1
       have hb := (hg (.inr n)).2.1
       have hm : g (.inl n)*g (.inr n)≤C^3 :=
@@ -126,21 +133,24 @@ theorem exists_economical_useful (T : System) (hC : 962 ≤ channelCount T) :
         (by nlinarith : g (.inl n)*g (.inr n)+g (.inl n)+g (.inr n)≤C^3+2*U).trans (le_max_left _ _)⟩
     | inr t =>
       change (t.val+2)*(if t=0 then b0 else b1)≤C^4 ∧
-        (t.val+2)*(if t=0 then b0 else b1)+(t.val+2)+(if t=0 then b0 else b1)≤max (C^3+2*U) (16*D+3)
+        (t.val+2)*(if t=0 then b0 else b1)+(t.val+2)+(if t=0 then b0 else b1)≤max (C^3+2*U) (4*b1+3)
       have ht := t.isLt
       have hb : (if t=0 then b0 else b1)≤4*D := by split_ifs <;> omega
       have hm : (t.val+2)*(if t=0 then b0 else b1)≤12*D := by nlinarith
       have hfixed : 16*D+3≤C^4 := by
         apply (show 16*D+3≤962^4 by norm_num [D,residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]).trans
         exact Nat.pow_le_pow_left hC 4
-      exact ⟨by omega,(by nlinarith : _≤16*D+3).trans (le_max_right _ _)⟩
+      have hth : (t.val+2)*(if t=0 then b0 else b1)+(t.val+2)+(if t=0 then b0 else b1)≤4*b1+3 := by
+        fin_cases t <;> simp <;> omega
+      exact ⟨by omega,hth.trans (le_max_right _ _)⟩
 
 /-- Separate caps for ordinary channels and the two exceptional seed channels. -/
 def EconomicalPrimes {T : System} (E : EncodingParameters T) : Prop :=
   (∀ i, E.a i≤channelCount T^4 ∧ E.b i≤channelCount T^4) ∧
   (∀ i j, E.digitPrime i j≤channelCount T^4) ∧
   (∀ i, E.a i*E.b i≤channelCount T^4) ∧
-  ∀ n : Column T, E.a (.inl n)*E.b (.inl n)≤channelCount T^3
+  (∀ n : Column T, E.a (.inl n)*E.b (.inl n)≤channelCount T^3) ∧
+  ∀ i j, E.digitPrime i j^20≤channelCount T^71
 
 theorem exists_economical_parameters (T : System) (hC : 962≤channelCount T) (hB : T.alphabet=3) :
     ∃ E : EncodingParameters T,
@@ -148,8 +158,10 @@ theorem exists_economical_parameters (T : System) (hC : 962≤channelCount T) (h
       (∀ i j, E.digitPrime i j≤digitPrimeCap T.alphabet (channelCount T)) ∧ EconomicalPrimes E := by
   obtain ⟨u,huinj,hu,hfive,hseed,hlarge,hOld,hOrd,hpair⟩ := exists_economical_useful T hC
   let C := channelCount T
-  let F := max (C^3+2*Compiler.Size.economicalUsefulCap C) (16*residueModulus^2+3)
+  let F := max (C^3+2*Compiler.Size.economicalUsefulCap C) (4*Compiler.Size.seedPrime1+3)
   let L := F+Sudoku.p+Sudoku.q+5
+  let Q := Compiler.Size.refinedDigitCap C
+  obtain ⟨hQ20,hQ4,hpiQ⟩ := Compiler.Size.refined_digit_caps hC
   have hu' (i : UsefulTag T) : (u i).Prime ∧ u i≤F ∧ u i≠Sudoku.p ∧ u i≠Sudoku.q := by
     refine ⟨(hu i).1,?_,(hu i).2.2⟩
     cases i with
@@ -161,13 +173,13 @@ theorem exists_economical_parameters (T : System) (hC : 962≤channelCount T) (h
   have hg (j : Tags) : L<g j := by
     have h := Nat.add_two_le_nth_prime (L+(ix j).val)
     dsimp [g]; omega
-  obtain ⟨E,he,hp⟩ := exists_parameters_of_pair_bounded_families T F (C^4) u huinj hu' hfive hseed hlarge
+  obtain ⟨E,he,hp⟩ := exists_parameters_of_pair_bounded_families T F Q u huinj hu' hfive hseed hlarge
     g (fun _ => Nat.prime_nth_prime _) (by
       intro j; have h := hg j; dsimp [L] at h; omega) (by
       intro i j
       have h := hg ⟨i,j⟩
       have hh := (hpair i).2
-      change u (.inl i)*u (.inr i)+u (.inl i)+u (.inr i)≤max (C^3+2*Compiler.Size.economicalUsefulCap C) (16*residueModulus^2+3) at hh
+      change u (.inl i)*u (.inr i)+u (.inl i)+u (.inr i)≤max (C^3+2*Compiler.Size.economicalUsefulCap C) (4*Compiler.Size.seedPrime1+3) at hh
       change _≤F at hh
       dsimp [L] at h
       omega) (by
@@ -183,22 +195,23 @@ theorem exists_economical_parameters (T : System) (hC : 962≤channelCount T) (h
         calc
           _ ≤ ∑ _i : Channel T, 3 := Finset.sum_le_sum (fun i _ => by cases i <;> simp [Label,Symbol,hB])
           _ = _ := by simp [C,channelCount,Nat.mul_comm]
-      have hpi : L+3*C+1≤Nat.primeCounting (C^4) := by
-        simpa [L,F,Compiler.Size.economicalDigitThreshold,residueModulus_eq] using (Compiler.Size.economical_caps hC).2.2.2
+      have hpi : L+3*C+1≤Nat.primeCounting Q := by
+        simpa [L,F,Compiler.Size.refinedDigitThreshold] using hpiQ
       have hk := (ix j).isLt
-      have hh : L+(ix j).val<Nat.count Nat.Prime (C^4+1) := by
-        change _<Nat.primeCounting (C^4)
+      have hh : L+(ix j).val<Nat.count Nat.Prime (Q+1) := by
+        change _<Nat.primeCounting Q
         omega
       exact Nat.le_of_lt_succ (Nat.nth_lt_of_lt_count hh))
-  refine ⟨E,?_,?_,?_,hp,?_,?_⟩
+  refine ⟨E,?_,?_,?_,(fun i j => (hp i j).trans hQ4),?_,?_,?_⟩
   · intro i; rw [(he i).1,(he i).2]; exact ⟨hOld _,hOld _⟩
   · intro i j
     rw [hB]
-    exact (hp i j).trans ((Nat.pow_le_pow_right (by omega : 1≤C) (by decide : 4≤5)).trans (fifth_le_digitPrimeCap (by omega)))
+    exact ((hp i j).trans hQ4).trans ((Nat.pow_le_pow_right (by omega : 1≤C) (by decide : 4≤5)).trans (fifth_le_digitPrimeCap (by omega)))
   · intro i; rw [(he i).1,(he i).2]; exact ⟨(hu _).2.1,(hu _).2.1⟩
   · intro i; rw [(he i).1,(he i).2]; exact (hpair i).1
 
   · intro n; rw [(he (.inl n)).1,(he (.inl n)).2]; exact hOrd n
+  · intro i j; exact (Nat.pow_le_pow_left (hp i j) 20).trans hQ20
 
 theorem EconomicalPrimes.compact {T : System} {E : EncodingParameters T} (h : EconomicalPrimes E) :
     CompactPrimes E :=
@@ -223,11 +236,14 @@ theorem exists_bounded_parameters_economical (T : System) :
       refine ⟨fun i => ⟨(hs.1 i).1.trans (Nat.pow_le_pow_right h1 (by decide)),
         (hs.1 i).2.trans (Nat.pow_le_pow_right h1 (by decide))⟩,
         fun i j => (hs.2.1 i j).trans (Nat.pow_le_pow_right h1 (by decide)),
-        (hc ⟨by omega,hbig.2⟩).2.2,fun n => ?_⟩
-      apply (Nat.pow_le_pow_iff_left (by decide : 3≠0)).mp
-      apply (hs.2.2 (.inl n)).trans
-      rw [← pow_mul]
-      exact Nat.pow_le_pow_right h1 (by decide)
+        (hc ⟨by omega,hbig.2⟩).2.2,(fun n => ?_),fun i j => ?_⟩
+      · apply (Nat.pow_le_pow_iff_left (by decide : 3≠0)).mp
+        apply (hs.2.2 (.inl n)).trans
+        rw [← pow_mul]
+        exact Nat.pow_le_pow_right h1 (by decide)
+      · apply (Nat.pow_le_pow_left (hs.2.1 i j) 20).trans
+        rw [← pow_mul]
+        exact Nat.pow_le_pow_right h1 (by decide)
     exact he
   · by_cases hshort : 962≤channelCount T ∧ T.alphabet=3
     · obtain ⟨E,hu,hd,hc⟩ := exists_economical_parameters T hshort.1 hshort.2
