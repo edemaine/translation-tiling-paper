@@ -2091,10 +2091,10 @@ and its agreement with this code are checked in
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    (n+4)^{2\cdot10^9\lg\lg(n+4)}=n^{O(\log\log n)}
+    (n+4)^{(5\cdot10^8)\lg\lg(n+4)}=n^{O(\log\log n)}
   $$
   unit cubes.
-  For $n=1$, we also have the explicit bound $2^{5\cdot10^9}$ unit cubes.
+  For $n=1$, we also have the explicit bound $2^{12\cdot10^8}$ unit cubes.
 
 : proof
   For $n=0$, consolidate the two contradictory equations with prototiles
@@ -2163,22 +2163,39 @@ and its agreement with this code are checked in
 
   For the numerical coefficient, the actual channel count satisfies
   $C\geq12N+2=596{,}750$. Only the two seed primes $b_0,b_1$ need to
-  exceed $D$; Bertrand's postulate puts them below $4D<C^2$. Reserve
-  these primes and the fixed primes $2,3,5,p,q$. Chebyshev's elementary
-  prime-counting bound gives $\pi(C^2)\geq8C$, enough to choose all
-  remaining useful primes below $C^2$. Similarly,
-  $\pi(C^5)\geq3C^4$ supplies all digit primes above their threshold
-  $C^4+2C^2+p+q+3$ and below $C^5$. These choices are checked in
-  \leanfile{Compiler/SharpPrimeCounting.lean} and
-  \leanfile{FiniteCompiler/SharpParameters.lean}.
-  Thus $r_i\leq C^{15}$ and $|P_i|\leq C^4$, giving
-  $|V|\leq C^{35C}$. A sparse cycle needs at most $C^{9C}$ tests,
-  and there are at most $s\leq C^{11C}$ equations in total.
+  exceed $D$; Bertrand's postulate puts them below $4D<C^2$.
+  Reserve these primes and the fixed primes $2,3,5,p,q$.
+  Let $U$ be the largest integer with $U^3\leq C^4$.
+  Chebyshev's elementary prime-counting bound gives
+  $\pi(U)\geq2C+7$, enough to choose all ordinary useful primes
+  below $C^{4/3}$. The seed pairs satisfy the same product bound
+  $(a_i b_i)^3\leq C^8$. A positive representation
+  $r_{ij}=A_{ij}a_i+B_{ij}b_i$ exists whenever
+  $r_{ij}>a_i b_i+a_i+b_i$.
+  These pairwise thresholds are at most $U^2+2U$;
+  Chebyshev's bound supplies all digit primes above
+  $U^2+2U+p+q+3$ and at most $C^3$.
+  These choices are checked in
+  \leanfile{Compiler/TightPrimeCounting.lean} and
+  \leanfile{FiniteCompiler/TightParameters.lean}.
+  Thus $r_i\leq C^9$ and $|P_i|\leq C^{8/3}$, giving
+  $|V|\leq C^{(62/3)C+2}\leq C^{21C}$.
 
-  Set $X=C^{11C}$ and let $\lambda$ be the binary length of $2X$.
+  A sparse cycle needs at most $C^{(17/3)C}$ tests.
+  Retain the bound $3^C$ on the number of forbidden words;
+  the number of seed-label pairs is at most $6C\leq3^C$.
+  The dependence equations have polynomial count at most $C^{292}$.
+  Each of the six equation families is therefore bounded by
+  $(3C^{17/3})^C$, and their total satisfies
+  $$
+    s\leq6(3C^{17/3})^C\leq(6C^{17/3})^C\leq C^{6C},
+  $$
+  using $6^3\leq C$.
+
+  Set $X=C^{6C}$ and let $\lambda$ be the binary length of $2X$.
   Choose a prime $\ell$ between
-  $64X^2\lambda+C^5+3$ and twice that number. Every prime divisor of
-  $|V|$ is at most $C^5$, so $\ell$ is coprime to $|V|$.
+  $64X^2\lambda+C^3+3$ and twice that number. Every prime divisor of
+  $|V|$ is at most $C^3$, so $\ell$ is coprime to $|V|$.
   To check the partition condition, write $\ell=2m+1$. The failure
   probability from @lem:partition is at most
   $$
@@ -2191,41 +2208,61 @@ and its agreement with this code are checked in
   \leanfile{Proofs/LogDifferenceBound.lean}; the computable partition
   search and coprime stacking are in
   \leanfile{FiniteCompiler/Effective/FreshStack.lean}.
-  Since $\lambda\leq C^2$, the stacking prime is at most $C^{23C}$,
-  giving stacked modulus $R\leq C^{58C}$. The common parameter budget
+  Since $\lambda\leq C^2$, the stacking prime is at most $C^{13C}$,
+  giving stacked modulus $R\leq C^{34C}$. The common parameter budget
   remains $b\leq C^{73}$, so the horizontal bound is
   $H\leq b^{211}\leq C^{15403}$.
 
   Count the geometric output directly. Each MSS component has at most
   $2^{24}$ cubes, independently of its displacement, so the unconnected
-  lattice tile has at most $2^{24}(2H+1)^2R$ cubes. Its bounding side
-  $L$ is at most $8003R$. The boundary used by Kim's construction has
-  at most $6L^2$ points, so its scale is at most $18L^2+6\leq24L^2$.
+  lattice tile has at most $2^{24}(2H+1)^2R$ cubes. Its horizontal
+  coordinates have absolute value at most $1000(2H+1)$, and its vertical
+  coordinates at most $1000(2R+1)$. Translate it into an $A\times A\times B$
+  box with $A\leq B$, $A\leq8003H$, and $B\leq8003R$.
+
+  Use a four-layer variant of Kim's partition. Index the box's boundary
+  points by $u_0,\ldots,u_{r-1}$, with $u_0=0$; there are at most $6AB$.
+  Choose permutations $p,q$ of the indices satisfying $p(j)=i$ whenever
+  $u_j=u_i+e_1$, and $q(j)=i$ whenever $u_j=u_i+e_2$.
+  These partial matchings extend to permutations. Partition
+  $\{0,\ldots,2r\}^2\times\{0,1,2,3\}$ into $r$ colors.
+  Layers zero and one have colors $y\bmod r$ and $x\bmod r$.
+  Layer two changes $y\bmod r$ to $p(y\bmod r)$ when $x\geq r$;
+  layer three changes $x\bmod r$ to $q(x\bmod r)$ when $y\geq r$.
+  Every color piece is connected, every pair touches internally, and the
+  opposite-face contacts realize the prescribed boundary adjacencies.
+  Scale each cell by three, relocate each color piece to its boundary
+  slot, and apply Kim's three bump-and-dent pairs to color zero.
+  The resulting shell forces grid scales $(3(2r+1),3(2r+1),12)$ in every
+  tiling and has at most $108(2r+1)^2\leq972r^2$ cubes.
+  The assembly preserves tilability and is connected, as before.
   Consequently the final volume is at most
   $$
-    2^{24}(2H+1)^2R(24L^2)^3
-      \leq (9\cdot2^{24}\cdot24^3\cdot8003^6)H^2R^7
-      \leq C^{407C}.
+    2^{24}(2H+1)^2R\cdot972(6AB)^2
+      \leq (9\cdot2^{24}\cdot972\cdot36\cdot8003^4)H^4R^3
+      \leq C^{103C}.
   $$
-  The constant in parentheses is less than $2^{120}\leq C^7$;
-  the remaining fixed exponent is absorbed because $30813\leq C$.
-  These estimates are checked in
-  \leanfile{Compiler/SparseGeometryBound.lean} and
-  \leanfile{FiniteCompiler/SharpBounds.lean}.
+  The constant in parentheses is at most $2^{95}\leq C^5$;
+  the remaining fixed exponent is absorbed because $61617\leq C$.
+  The partition, contacts, connectivity, and arbitrary-tiling rigidity
+  are checked in `FourLayer/`; the computable compiler and its volume
+  estimate are in \leanfile{FourLayer/Compiler.lean} and
+  \leanfile{FourLayer/SizeBound.lean}.
 
   Put $t=\lg(n+4)$ and $g=\lg t$. Direct estimates on the binary and
-  ternary lengths give $k+2\leq(11/2)t$, including the small inputs
+  ternary lengths give $k+2\leq(21/4)t$, including the small inputs
   $n=1,2,3$. Also $g\geq6/5$, so
   $$
-    C\leq at,\qquad a=(11/2)N+1<2^{19},\qquad
-    \lg C\leq19+g\leq17g.
+    C\leq at,\qquad a=(21/4)N+1<2^{18},\qquad
+    \lg C\leq18+g\leq16g.
   $$
-  Thus $407C\lg C\leq407\cdot17a\,tg$, and
-  $407\cdot17a=1{,}892{,}419{,}149.5\leq2\cdot10^9$ gives the displayed bound.
+  Thus $103C\lg C\leq103\cdot16a\,tg$, and
+  $103\cdot16a=430{,}256{,}956\leq5\cdot10^8$ gives the displayed bound.
   The conversion is checked in \leanfile{Compiler/MixedLogBound.lean}.
-  For $n=1$, the code has twelve positions per column and
-  $C=596{,}750<2^{20}$, giving
-  $|F|\leq2^{20\cdot407\cdot596{,}750}\leq2^{5\cdot10^9}$.
+  For $n=1$, twelve code positions per column give $C=596{,}750$
+  and $C^5\leq2^{96}$. Hence
+  $|F|^5\leq2^{96\cdot103\cdot596{,}750}\leq2^{5\cdot(12\cdot10^8)}$,
+  hence $|F|\leq2^{12\cdot10^8}$.
 
 The ternary-channel variant is formalized end to end in
 \leanfile{Compiler/CleanQuasipolynomialBound.lean} by
@@ -2774,8 +2811,8 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, these bounds are $(n+4)^{2\cdot10^9\lg\lg(n+4)}$ for translations and
-$64{,}000(n+4)^{2\cdot10^9\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+function. In dimension three, these bounds are $(n+4)^{(5\cdot10^8)\lg\lg(n+4)}$ for translations and
+$64{,}000(n+4)^{(5\cdot10^8)\lg\lg(n+4)}$ for arbitrary Euclidean motions.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[

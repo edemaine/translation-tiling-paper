@@ -117,7 +117,7 @@ theorem exists_connected_tile_clean_quasipolynomial_bound (T : LeanWang.TileSet)
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
       (cubeCount P : ℝ) ≤ ((T.toFinset.card : ℝ) + 4) ^
-        ((10 ^ 9 : ℝ) * Real.logb 2 (Real.logb 2 ((T.toFinset.card : ℝ) + 4))) := by
+        ((5 * 10 ^ 8 : ℝ) * Real.logb 2 (Real.logb 2 ((T.toFinset.card : ℝ) + 4))) := by
   obtain ⟨hn,hc,ht,hb⟩ := FiniteCompiler.Effective.mixedCompile_facts T.dedup
   have hd : LeanWang.TilesPlane T ↔ LeanWang.TilesPlane T.dedup :=
     LeanWang.tilesPlane_congr (by intro t; simp)

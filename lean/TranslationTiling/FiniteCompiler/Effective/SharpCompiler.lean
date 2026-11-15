@@ -1,6 +1,8 @@
 import TranslationTiling.FiniteCompiler.Effective.Correctness
 import TranslationTiling.FiniteCompiler.Effective.SparseGeometry
 import TranslationTiling.FiniteCompiler.TightBounds
+import TranslationTiling.FourLayer.MSSBound
+import TranslationTiling.FourLayer.SizeBound
 
 namespace TranslationTiling.FiniteCompiler.Effective
 open Compiler Compiler.Effective
@@ -21,11 +23,17 @@ theorem sharpCyclic_computable : Computable sharpCyclic := by
     ((rawOrder_primrec.to_comp.comp Computable.fst).pair (hP.to_comp.pair canonicalInputFamily_computable)))
 
 def sharpTile (d : InputData) : Tile 3 :=
-  (Compiler.connectedTile (Compiler.integerTile (sharpCyclic d))).dedup
+  FourLayer.connectedTile (Compiler.integerTile (sharpCyclic d)) (rawHorizontal d.1)
+    ((d.1.1+2)^(34*(d.1.1+2)))
 
-theorem sharpTile_computable : Computable sharpTile :=
-  dedup_primrec.to_comp.comp (Compiler.connectedTile_computable.comp
-    (Compiler.integerTile_computable.comp sharpCyclic_computable))
+theorem sharpTile_computable : Computable sharpTile := by
+  have hE := Compiler.integerTile_computable.comp sharpCyclic_computable
+  have hH : Primrec (fun d : InputData => rawHorizontal d.1) := by fun_prop
+  have hM : Primrec (fun d : InputData => (d.1.1+2)^(34*(d.1.1+2))) := by fun_prop
+  have h := FourLayer.connectedTile_computable.comp (hE.pair (hH.to_comp.pair hM.to_comp))
+  dsimp only at h
+  unfold sharpTile
+  exact h
 
 theorem sharpCyclic_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
     (hpos : ∀ n, 0≤T.slope n) (hS : ∀ n, (T.slope n).natAbs≤Sudoku.Width)
@@ -74,26 +82,41 @@ theorem sharpTile_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
     sharpTile (parameterData T,p)≠[] ∧ FaceConnected (sharpTile (parameterData T,p)) ∧
     ((∃ A : Set (Ambient (parameters T)), Solves (parameters T) A) ↔
       TranslationTiling.Tiles (sharpTile (parameterData T,p))) ∧
-    (sharpTile (parameterData T,p)).length≤channelCount T^(239*channelCount T) := by
+    (sharpTile (parameterData T,p)).length≤channelCount T^(103*channelCount T) := by
   obtain ⟨hm,hne,hM,hxy,hiff⟩ := sharpCyclic_facts T p hp hpos hS hB hC
   dsimp only [sharpTile]
   generalize hd : sharpCyclic (parameterData T,p)=d at hm hne hM hxy hiff ⊢
+  let H := rawHorizontal (parameterData T)
+  let C := channelCount T
+  let M := C^(34*C)
   have hn := Compiler.integerTile_nonempty d hne
-  have hc := Compiler.connectedTile_nonempty (Compiler.integerTile d) hn
-  change (Compiler.connectedTile (Compiler.integerTile d)).dedup≠[] ∧ _
-  refine ⟨(List.dedup_eq_nil _).not.mpr hc,?_,?_,?_⟩
-  · simpa only [FaceConnected,List.mem_dedup] using Compiler.connectedTile_connected (Compiler.integerTile d)
-  · have ht := hiff.trans ((Compiler.integerTile_correct MSS.rigidity d hm hne).trans
-        (Compiler.connectedTile_correct Kim.cosetRigidity (Compiler.integerTile d)).symm)
-    simpa only [TranslationTiling.Tiles,List.mem_dedup] using ht
-  · have hg := Compiler.Size.integerTile_connected_sparseGeometryCap d
-      (rawHorizontal (parameterData T)) (channelCount T^(34*channelCount T)) hm hM hne hxy
-    have hb : Size.parameterBase T.alphabet Sudoku.Width (channelCount T) ≤ channelCount T ^ 73 := by
+  have hrect := Compiler.Size.integerTile_rectangle_bound d H M hm hM hne hxy
+  change FourLayer.connectedTile (Compiler.integerTile d) H M≠[] ∧ _
+  refine ⟨FourLayer.connectedTile_nonempty _ H M hn,
+    FourLayer.connectedTile_connected _ H M hrect,?_,?_⟩
+  · exact hiff.trans ((Compiler.integerTile_correct MSS.rigidity d hm hne).trans
+      (FourLayer.connectedTile_correct (Compiler.integerTile d) H M).symm)
+  · have hb : Size.parameterBase T.alphabet Sudoku.Width C≤C^73 := by
       rw [hB]
       exact MixedSize.mixed_parameterBase_le hC
-    have hgeo := TightSize.sharp_geometry_bound hC hb (parameters_budget T Sudoku.Width hS).1.two
-    have hout := hg.trans hgeo
-    simpa only [Compiler.Size.cubeCount,List.card_toFinset] using hout
+    have hb2 := (parameters_budget T Sudoku.Width hS).1.two
+    have hH : H≤C^15403 := by
+      apply (Size.horizontalCap_degree_211 _ hb2).trans
+      calc
+        _ ≤ (C^73)^211 := Nat.pow_le_pow_left hb _
+        _ = _ := by rw [← pow_mul]
+    have hbig : 596750≤C := by simpa [C,Sudoku.Width,Sudoku.q] using hC
+    have hH1 : 1≤H := by
+      exact ((by decide : 1≤2).trans hb2).trans (Size.le_horizontalCap _)
+    have hHM : H≤M := hH.trans (Nat.pow_le_pow_right (by omega) (by omega))
+    have hs : (2*H+1)^2≤9*H^2 := by nlinarith
+    have hvol : Compiler.Size.cubeCount (Compiler.integerTile d)≤9*2^24*H^2*M := by
+      calc
+        _ ≤ 2^24*((2*H+1)^2*d.1) := Compiler.Size.integerTile_cubeCount_sparse d H hm hxy
+        _ ≤ 2^24*(9*H^2*M) := Nat.mul_le_mul_left _ (Nat.mul_le_mul hs hM)
+        _ = _ := by ring
+    exact (FourLayer.connectedTile_length_le _ H M hH1 hHM hvol).trans
+      (TightSize.four_layer_geometry_bound hC hb hb2)
 
 end
 end TranslationTiling.FiniteCompiler.Effective

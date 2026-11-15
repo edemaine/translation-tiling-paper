@@ -33,6 +33,8 @@ import TranslationTiling.Compiler.CleanQuasipolynomialBound
 import TranslationTiling.FiniteCompiler.SizeObstruction
 import TranslationTiling.Rotations.Euclidean.Main
 import TranslationTiling.Rotations.General.AxiomAudit
+import TranslationTiling.FourLayer.MSSBound
+import TranslationTiling.FourLayer.SizeBound
 import Lean.Util.CollectAxioms
 
 /-! Reject unfinished proofs, native evaluation axioms, and undeclared mathematical
@@ -41,7 +43,18 @@ All mathematical inputs to the public results are proved. -/
 
 open Lean Elab Command in
 run_cmd do
-  for name in [``TranslationTiling.EuclideanMembership.satisfiable_coRE,
+  for name in [``TranslationTiling.FourLayer.shape_connected,
+      ``TranslationTiling.FourLayer.shape_rigidity,
+      ``TranslationTiling.FourLayer.shape_contacts,
+      ``TranslationTiling.FourLayer.shape_card_le,
+      ``TranslationTiling.FourLayer.matching_computable,
+      ``TranslationTiling.FourLayer.connectedTile_computable,
+      ``TranslationTiling.FourLayer.connectedTile_correct,
+      ``TranslationTiling.FourLayer.connectedTile_connected,
+      ``TranslationTiling.FourLayer.connectedTile_length_le,
+      ``TranslationTiling.Compiler.Size.integerTile_rectangle_bound,
+      ``TranslationTiling.FiniteCompiler.TightSize.four_layer_geometry_bound,
+      ``TranslationTiling.EuclideanMembership.satisfiable_coRE,
       ``TranslationTiling.EuclideanMembership.motionTiles_iff_model,
       ``TranslationTiling.EuclideanMembership.constraints_primrec,
       ``TranslationTiling.EuclideanMembership.motionTiles_coRE,

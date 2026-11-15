@@ -103,12 +103,12 @@ have no unproved mathematical input. No unfinished proof is accepted.
 ## Cube Bound by Wang Tile Count
 
 [Compiler/CleanQuasipolynomialBound.lean](TranslationTiling/Compiler/CleanQuasipolynomialBound.lean)
-gives `(n+4)^(10^9*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
+gives `(n+4)^((5*10^8)*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
 logarithms. The theorem `Size.exists_connected_tile_clean_quasipolynomial_bound`
 includes nonemptiness, face connectedness, and both tilability directions.
 Here `n` counts distinct input tiles. The one-tile specialization in
 [Compiler/QuasipolynomialBound.lean](TranslationTiling/Compiler/QuasipolynomialBound.lean)
-gives at most `2^(3*10^9)` cubes.
+gives at most `2^(12*10^8)` cubes.
 
 [Effective/MixedCode.lean](TranslationTiling/FiniteCompiler/Effective/MixedCode.lean)
 uses prefixes `00`, `11`, and `01` for the two seed classes and all other
@@ -139,8 +139,16 @@ on the prime divisors of the finite factor.
 bounds the cyclic order by `C^(21*C)`, equation count by `C^(6*C)`, and
 stacked modulus by `C^(34*C)` for `C` channels.
 [Compiler/SparseGeometryBound.lean](TranslationTiling/Compiler/SparseGeometryBound.lean)
-counts the cube boundary by `6L²` and each MSS component by `2^24`, independently
-of its displacement. These give final volume at most `C^(239*C)`.
+counts each MSS component by `2^24`, independently of its displacement.
+[FourLayer/](TranslationTiling/FourLayer/) replaces the cubic color partition
+by four layers and uses a rectangular boundary with at most `6AB` slots.
+The shell has at most `972*m²` cubes for `m` slots; connectivity, contacts,
+and arbitrary-complement rigidity are proved for the concrete shape.
+[FourLayer/Compiler.lean](TranslationTiling/FourLayer/Compiler.lean) proves
+computability, correctness, connectivity, and the `K*H⁴*R³` volume bound,
+where `K = 9*2^24*972*36*8003^4`.
+[FourLayer/SizeBound.lean](TranslationTiling/FourLayer/SizeBound.lean)
+bounds this volume by `C^(103*C)`.
 [Effective/SharpCompiler.lean](TranslationTiling/FiniteCompiler/Effective/SharpCompiler.lean)
 combines these bounds with correctness and computability.
 [Compiler/MixedLogBound.lean](TranslationTiling/Compiler/MixedLogBound.lean)

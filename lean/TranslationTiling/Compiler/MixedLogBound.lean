@@ -140,9 +140,9 @@ theorem mixed_channel_cap_real_bound {n : ℕ} (hn : 0<n) :
   exact h
 
 theorem sharp_channel_cap_real_bound {n : ℕ} (hn : 0<n) :
-    (((Sudoku.Width*mixedWidth n+2)^(239*(Sudoku.Width*mixedWidth n+2)):ℕ):ℝ) ≤
-      ((n:ℝ)+4)^(((10:ℝ)^9)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
-  have h := channel_cap_real_bound 239 (10^9) (by norm_num [Sudoku.Width,Sudoku.q]) hn
+    (((Sudoku.Width*mixedWidth n+2)^(103*(Sudoku.Width*mixedWidth n+2)):ℕ):ℝ) ≤
+      ((n:ℝ)+4)^((5*(10:ℝ)^8)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
+  have h := channel_cap_real_bound 103 (5*10^8) (by norm_num [Sudoku.Width,Sudoku.q]) hn
   norm_num only [Nat.cast_mul,Nat.cast_pow,Nat.cast_ofNat] at h ⊢
   exact h
 
