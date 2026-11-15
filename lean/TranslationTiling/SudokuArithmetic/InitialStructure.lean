@@ -14,7 +14,7 @@ def FullAffineApproximation {r : ℕ} (V : Column → ℤ → (ZMod r)ˣ)
     (V n m).val = A * (n.val : ZMod r) + B * (m : ZMod r) + C
 
 theorem FullAffineApproximation.restrict {r : ℕ} {V : Column → ℤ → (ZMod r)ˣ}
-    {A B C : ZMod r} (h : FullAffineApproximation V A B C) (hr : r ^ 2 ≤ Width) :
+    {A B C : ZMod r} (h : FullAffineApproximation V A B C) (hr : ArithmeticRule.wordWidth r ≤ Width) :
     ArithmeticRule.AffineApproximation (arithmeticRestriction r hr V) A B C :=
   ⟨h.1, fun n m hn => h.2 (smallColumn r hr n) m hn⟩
 
@@ -36,9 +36,9 @@ theorem arithmeticLineRule_affine (r : ℕ) (V : Column → ℤ → (ZMod r)ˣ)
     simpa only [Int.cast_add, Int.cast_mul, Int.cast_natCast] using
       (arithmetic_tests r (fun n => V n (d * n.val + e)) a b hab ht n).1 hnd
 
-/-- The affine approximation obtained on the first `r²` columns extends along
+/-- The affine approximation obtained on the first `2r+2` columns extends along
 rows to the whole board. -/
-theorem arithmetic_initial_affine (r : ℕ) (hr : r ^ 2 ≤ Width)
+theorem arithmetic_initial_affine (r : ℕ) (hr : ArithmeticRule.wordWidth r ≤ Width)
     (hp : r.Prime) (hlarge : 200 < r) (V : Column → ℤ → (ZMod r)ˣ)
     (hV : ArithmeticLineRule r V) :
     ∃ A B C : ZMod r, FullAffineApproximation V A B C := by
@@ -82,7 +82,7 @@ theorem arithmetic_initial_affine (r : ℕ) (hr : r ^ 2 ≤ Width)
   have hh := hrow n hn'
   simpa only [zero_mul, zero_add, ← ha, ← hb, D, add_assoc] using hh
 
-theorem arithmetic_initial_structure (r : ℕ) (hr : r ^ 2 ≤ Width)
+theorem arithmetic_initial_structure (r : ℕ) (hr : ArithmeticRule.wordWidth r ≤ Width)
     (hp : r.Prime) (hlarge : 200 < r) (V : Column → ℤ → (ZMod r)ˣ)
     (hV : ArithmeticLineRule r V) (hcols : ∀ n, ∃ m m', V n m ≠ V n m') :
     ∃ A B C : ZMod r, B ≠ 0 ∧ ∀ (n : Column) (m : ℤ),

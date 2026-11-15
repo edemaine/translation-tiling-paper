@@ -29,7 +29,7 @@ theorem tight_r_le (hB : T.alphabet=3) (hp : TightPrimes E) (i : Channel T) :
       (by have := SharpSize.sharp_label_card hB i; omega)
 
 theorem tight_cyclicOrder_le (hB : T.alphabet=3) (hp : TightPrimes E)
-    (hC : 12*Sudoku.Width+2≤channelCount T) :
+    (hC : 596750≤channelCount T) :
     E.cyclicOrder≤channelCount T^(21*channelCount T) := by
   let C := channelCount T
   have h1 : 1≤C := by unfold C channelCount; omega
@@ -71,7 +71,7 @@ theorem cycleBudget_bounds {C : ℕ} (hC : 596750≤C) :
       _ ≤ C*C^17 := Nat.mul_le_mul_right _ (by omega)
       _ = _ := by ring
 
-theorem tight_cycleTiles_card_le (hp : TightPrimes E) (hC : 12*Sudoku.Width+2≤channelCount T)
+theorem tight_cycleTiles_card_le (hp : TightPrimes E) (hC : 596750≤channelCount T)
     {t : ℕ} [NeZero t] (cycle : ZMod t ↪ Channel T) (labels : ∀ j, Label T (cycle j)) :
     (sparseCycleTiles E cycle labels).card≤cycleBudget (channelCount T)^channelCount T := by
   let C := channelCount T
@@ -94,7 +94,7 @@ private theorem six_mul_le_three_pow {C : ℕ} (hC : 4≤C) : 6*C≤3^C := by
   | succ n hn ih => rw [pow_succ]; nlinarith
 
 theorem tight_testTiles_card_le (hB : T.alphabet=3) (hp : TightPrimes E)
-    (hC : 12*Sudoku.Width+2≤channelCount T) (hS : ∀ n, (T.slope n).natAbs≤Sudoku.Width) :
+    (hC : 596750≤channelCount T) (hS : ∀ n, (T.slope n).natAbs≤Sudoku.Width) :
     (testTiles E).card≤channelCount T^(6*channelCount T) := by
   let C := channelCount T
   let B := cycleBudget C
@@ -187,7 +187,7 @@ theorem tight_testTiles_card_le (hB : T.alphabet=3) (hp : TightPrimes E)
     _ = _ := by rw [← pow_mul]
 
 theorem cyclicOrder_primeBound (hB : T.alphabet=3) (hp : TightPrimes E)
-    (hC : 12*Sudoku.Width+2 ≤ channelCount T) :
+    (hC : 596750 ≤ channelCount T) :
     Effective.PrimeBound E.cyclicOrder (channelCount T^3) := by
   intro q hq
   by_cases hprime : q.Prime
@@ -227,7 +227,7 @@ theorem differenceLog_channel_le {C : ℕ} (hC : 596750≤C) :
       (Nat.pow_le_pow_right (by omega : 1≤C) (by omega)))) 1
   · exact SharpSize.differenceLog_channel_le hC
 
-theorem freshCap_channel_le {C : ℕ} (hC : 12*Sudoku.Width+2 ≤ C) :
+theorem freshCap_channel_le {C : ℕ} (hC : 596750 ≤ C) :
     Effective.freshCap (C^(6*C)) (C^3) ≤ C^(13*C) := by
   have hc : 596750 ≤ C := by simpa [Sudoku.Width,Sudoku.q] using hC
   have h1 : 1 ≤ C := by omega
@@ -252,7 +252,7 @@ theorem freshCap_channel_le {C : ℕ} (hC : 12*Sudoku.Width+2 ≤ C) :
     _ = C^(12*C+3) := by simpa only [Nat.add_assoc] using (pow_succ' C (12*C+2)).symm
     _ ≤ _ := Nat.pow_le_pow_right h1 (by omega)
 
-theorem sharp_geometry_bound {C b : ℕ} (hC : 12 * Sudoku.Width + 2 ≤ C)
+theorem sharp_geometry_bound {C b : ℕ} (hC : 596750 ≤ C)
     (hb : b ≤ C ^ 73) (hb2 : 2 ≤ b) :
     Compiler.Size.sparseGeometryCap (Size.horizontalCap b) (C ^ (34*C)) ≤ C ^ (239*C) := by
   let M := C ^ (34*C)

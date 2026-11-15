@@ -33,6 +33,7 @@ import TranslationTiling.Compiler.CleanQuasipolynomialBound
 import TranslationTiling.FiniteCompiler.SizeObstruction
 import TranslationTiling.Rotations.Euclidean.Main
 import TranslationTiling.Rotations.General.AxiomAudit
+import TranslationTiling.FiniteCompiler.CompactBounds
 import TranslationTiling.FourLayer.MSSBound
 import TranslationTiling.FourLayer.SizeBound
 import Lean.Util.CollectAxioms
@@ -43,7 +44,17 @@ All mathematical inputs to the public results are proved. -/
 
 open Lean Elab Command in
 run_cmd do
-  for name in [``TranslationTiling.FourLayer.shape_connected,
+  for name in [``TranslationTiling.FiniteCompiler.exists_compact_parameters,
+      ``TranslationTiling.FiniteCompiler.exists_bounded_parameters_compact,
+      ``TranslationTiling.FiniteCompiler.compact_parameterBudget,
+      ``TranslationTiling.FiniteCompiler.CompactSize.sharp_cyclicOrder_le,
+      ``TranslationTiling.FiniteCompiler.CompactSize.sharp_testTiles_card_le,
+      ``TranslationTiling.FiniteCompiler.CompactSize.compact_geometry_bound,
+      ``TranslationTiling.FiniteCompiler.Effective.parameters_bounded_compact,
+      ``TranslationTiling.FiniteCompiler.Effective.parameters_rawBudget,
+      ``TranslationTiling.Sudoku.rescale_vertical_coefficient,
+      ``TranslationTiling.Sudoku.scaled_word_coefficients,
+      ``TranslationTiling.FourLayer.shape_connected,
       ``TranslationTiling.FourLayer.shape_rigidity,
       ``TranslationTiling.FourLayer.shape_contacts,
       ``TranslationTiling.FourLayer.shape_card_le,
@@ -241,7 +252,7 @@ run_cmd do
       ``TranslationTiling.Compiler.Size.linear_channel_cap_le_exp_log_narrow,
       ``TranslationTiling.Compiler.Size.exp_iterated_log_le_clean_four,
       ``TranslationTiling.Compiler.Size.exists_connected_tile_ternary_count_bound,
-      ``TranslationTiling.FiniteCompiler.Size.seedModulus_le_channels,
+      ``TranslationTiling.FiniteCompiler.Size.seedModulus_le_channels_sq,
       ``TranslationTiling.FiniteCompiler.Size.ternary_usefulPrimeCap_le,
       ``TranslationTiling.FiniteCompiler.Size.ternary_digitPrimeCap_le,
       ``TranslationTiling.Compiler.Size.ternary_channel_cap_bound,

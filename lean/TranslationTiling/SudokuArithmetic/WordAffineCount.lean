@@ -2,6 +2,7 @@
 Adapted from openai/math, commit adc7f1241b42e322a6451854ab7e4b4c146bf78a.
 Copyright and license: see third_party/openai-math.LICENSE (Apache-2.0).
 -/
+import TranslationTiling.SudokuArithmetic.WordRule
 import Mathlib.Data.Int.Interval
 import Mathlib.Data.Finset.Prod
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
@@ -17,56 +18,53 @@ noncomputable section
 
 attribute [local instance] Classical.propDecidable
 
-def wordExceptionalCells (N : ℕ) (bad : ℤ → ℤ → ℤ → Prop) : Finset (ℤ × ℤ) :=
-  (Finset.Icc (-1 : ℤ) 1).biUnion fun d =>
-    (Finset.Ico (-(N : ℤ)) (2 * (N : ℤ))).biUnion fun e =>
-      ((Finset.Ico (0 : ℤ) N).filter (bad d e)).image fun n => (n, d * n + e)
+private def exceptionalAlong (N : ℕ) (bad : ℤ → ℤ → ℤ → Prop) (d : ℤ) (E : Finset ℤ) :=
+  E.biUnion fun e => ((Finset.Ico (0:ℤ) N).filter (bad d e)).image fun n => (n,d*n+e)
 
-theorem card_wordExceptionalCells_le (N p : ℕ) (bad : ℤ → ℤ → ℤ → Prop)
-    (hbad : ∀ d e : ℤ, (d = -1 ∨ d = 0 ∨ d = 1) →
-      ((Finset.Ico (0 : ℤ) N).filter (bad d e)).card ≤ p) :
-    (wordExceptionalCells N bad).card ≤ 9 * N * p := by
-  have hE : (Finset.Ico (-(N : ℤ)) (2 * (N : ℤ))).card = 3 * N := by
-    rw [Int.card_Ico]
-    omega
-  have hD : (Finset.Icc (-1 : ℤ) 1).card = 3 := by
-    norm_num [Int.card_Icc]
-  have hinner : ∀ d ∈ Finset.Icc (-1 : ℤ) 1,
-      ((Finset.Ico (-(N : ℤ)) (2 * (N : ℤ))).biUnion fun e =>
-        ((Finset.Ico (0 : ℤ) N).filter (bad d e)).image
-          fun n => (n, d * n + e)).card ≤ 3 * N * p := by
-    intro d hd
-    have hd' : d = -1 ∨ d = 0 ∨ d = 1 := by
-      have hd'' := Finset.mem_Icc.mp hd
-      omega
-    calc
-      _ ≤ (Finset.Ico (-(N : ℤ)) (2 * (N : ℤ))).card * p := by
-        apply Finset.card_biUnion_le_card_mul
-        intro e _he
-        exact Finset.card_image_le.trans (hbad d e hd')
-      _ = 3 * N * p := by rw [hE]
-  calc
-    (wordExceptionalCells N bad).card ≤
-        (Finset.Icc (-1 : ℤ) 1).card * (3 * N * p) :=
-      Finset.card_biUnion_le_card_mul _ _ _ hinner
-    _ = 9 * N * p := by rw [hD]; ring
+def wordExceptionalCells (N : ℕ) (bad : ℤ → ℤ → ℤ → Prop) : Finset (ℤ × ℤ) :=
+  exceptionalAlong N bad (-1) (Finset.Ico 0 (2*(N:ℤ))) ∪
+  exceptionalAlong N bad 0 (Finset.Ico 0 (N:ℤ)) ∪
+  exceptionalAlong N bad 1 (Finset.Ico (-(N:ℤ)) N)
+
+private theorem card_exceptionalAlong (N k : ℕ) (bad : ℤ → ℤ → ℤ → Prop) (d : ℤ) (E : Finset ℤ)
+    (h : ∀ e, ((Finset.Ico (0:ℤ) N).filter (bad d e)).card≤k) :
+    (exceptionalAlong N bad d E).card≤E.card*k := by
+  apply Finset.card_biUnion_le_card_mul
+  intro e _
+  exact Finset.card_image_le.trans (h e)
+
+theorem card_wordExceptionalCells_le (N k : ℕ) (bad : ℤ → ℤ → ℤ → Prop)
+    (hbad : ∀ d e : ℤ, (d=-1 ∨ d=0 ∨ d=1) →
+      ((Finset.Ico (0:ℤ) N).filter (bad d e)).card≤k) :
+    (wordExceptionalCells N bad).card≤5*N*k := by
+  have h0 := card_exceptionalAlong N k bad (-1) (Finset.Ico 0 (2*(N:ℤ))) (fun e => hbad _ e (Or.inl rfl))
+  have h1 := card_exceptionalAlong N k bad 0 (Finset.Ico 0 (N:ℤ)) (fun e => hbad _ e (Or.inr (Or.inl rfl)))
+  have h2 := card_exceptionalAlong N k bad 1 (Finset.Ico (-(N:ℤ)) N) (fun e => hbad _ e (Or.inr (Or.inr rfl)))
+  simp only [Int.card_Ico,sub_zero,Int.toNat_natCast] at h0 h1
+  have ht : (2*(N:ℤ)).toNat=2*N := by omega
+  rw [ht] at h0
+  have hc : (Finset.Ico (-(N:ℤ)) N).card=2*N := by rw [Int.card_Ico]; omega
+  rw [hc] at h2
+  have hu := Finset.card_union_le (exceptionalAlong N bad (-1) (Finset.Ico 0 (2*(N:ℤ))) ∪
+    exceptionalAlong N bad 0 (Finset.Ico 0 (N:ℤ))) (exceptionalAlong N bad 1 (Finset.Ico (-(N:ℤ)) N))
+  have hv := Finset.card_union_le (exceptionalAlong N bad (-1) (Finset.Ico 0 (2*(N:ℤ))))
+    (exceptionalAlong N bad 0 (Finset.Ico 0 (N:ℤ)))
+  change _≤5*N*k
+  unfold wordExceptionalCells
+  nlinarith
 
 theorem mem_wordExceptionalCells (N : ℕ) (bad : ℤ → ℤ → ℤ → Prop)
-    (n m d : ℤ) (hn0 : 0 ≤ n) (hnN : n < N)
-    (hm0 : 0 ≤ m) (hmN : m < N)
-    (hd : d = -1 ∨ d = 0 ∨ d = 1) (hb : bad d (m - d * n) n) :
-    (n, m) ∈ wordExceptionalCells N bad := by
-  have hdmem : d ∈ Finset.Icc (-1 : ℤ) 1 := by
-    rcases hd with rfl | rfl | rfl <;> simp
-  have hemem : m - d * n ∈ Finset.Ico (-(N : ℤ)) (2 * (N : ℤ)) := by
-    apply Finset.mem_Ico.mpr
-    rcases hd with rfl | rfl | rfl <;>
-      simp only [neg_one_mul, zero_mul, one_mul, sub_zero] <;> constructor <;> omega
-  apply Finset.mem_biUnion.mpr
-  refine ⟨d, hdmem, Finset.mem_biUnion.mpr ⟨m - d * n, hemem, ?_⟩⟩
-  apply Finset.mem_image.mpr
-  refine ⟨n, Finset.mem_filter.mpr ⟨Finset.mem_Ico.mpr ⟨hn0, hnN⟩, hb⟩, ?_⟩
-  exact Prod.ext rfl (by omega)
+    (n m d : ℤ) (hn0 : 0≤n) (hnN : n<N) (hm0 : 0≤m) (hmN : m<N)
+    (hd : d=-1 ∨ d=0 ∨ d=1) (hb : bad d (m-d*n) n) :
+    (n,m)∈wordExceptionalCells N bad := by
+  have hmem (E : Finset ℤ) (he : m-d*n∈E) : (n,m)∈exceptionalAlong N bad d E := by
+    apply Finset.mem_biUnion.mpr
+    refine ⟨m-d*n,he,Finset.mem_image.mpr ⟨n,Finset.mem_filter.mpr ⟨Finset.mem_Ico.mpr ⟨hn0,hnN⟩,hb⟩,?_⟩⟩
+    exact Prod.ext rfl (by ring)
+  rcases hd with rfl | rfl | rfl
+  · exact Finset.mem_union_left _ (Finset.mem_union_left _ (hmem _ (by simp only [Finset.mem_Ico,neg_one_mul]; constructor <;> omega)))
+  · exact Finset.mem_union_left _ (Finset.mem_union_right _ (hmem _ (by simp [hm0,hmN])))
+  · exact Finset.mem_union_right _ (hmem _ (by simp only [Finset.mem_Ico,one_mul]; constructor <;> omega))
 
 def wordBlockedOrigins (B : Finset (ℤ × ℤ)) : Finset (ℤ × ℤ) :=
   B.biUnion fun c =>
@@ -92,31 +90,22 @@ theorem mem_wordBlockedOrigins (B : Finset (ℤ × ℤ)) (r q : ℤ)
     constructor <;> apply Finset.mem_Icc.mpr <;> constructor <;> omega
   · apply Prod.ext <;> simp
 
-private theorem four_square_count_inequality (p : ℕ) (hp : 200 < p) :
-    144 * (p ^ 2) * p < (p ^ 2 - 3) ^ 2 := by
-  have hp0 : 0 < p := by omega
-  have hp201 : 201 ≤ p := by omega
-  have hpred : p - 1 + 1 = p := by omega
-  have hpredsq := congrArg (fun k : ℕ => k * k) hpred
-  have hpredmul := congrArg (fun k : ℕ => p * k) hpred
-  have hsq : 3 ≤ p ^ 2 := by nlinarith
-  have hsub : p ^ 2 - 3 + 3 = p ^ 2 := Nat.sub_add_cancel hsq
-  have hmul : 201 * p ≤ p * p := by nlinarith [Nat.mul_le_mul_right p hp201]
-  have hgap : 144 * p < (p - 1) * (p - 1) := by nlinarith
-  have hsmall : p * (p - 1) ≤ p ^ 2 - 3 := by nlinarith
-  have hlarge := Nat.mul_lt_mul_of_pos_left hgap (pow_pos hp0 2)
-  have hbound := Nat.mul_le_mul hsmall hsmall
+private theorem four_square_count_inequality (p : ℕ) (hp : 200<p) :
+    240*wordWidth p<(wordWidth p-3)^2 := by
+  have hs : 3≤wordWidth p := by change 3≤2*p+2; omega
+  have he := Nat.sub_add_cancel hs
+  dsimp [wordWidth] at *
   nlinarith
 
 theorem exists_clean_four_square (p : ℕ) (hp : 200 < p)
     (bad : ℤ → ℤ → ℤ → Prop)
     (hbad : ∀ d e : ℤ, (d = -1 ∨ d = 0 ∨ d = 1) →
-      ((Finset.Ico (0 : ℤ) (p ^ 2 : ℕ)).filter (bad d e)).card ≤ p) :
-    ∃ r q : ℤ, 0 ≤ r ∧ r + 3 < (p ^ 2 : ℕ) ∧
-      0 ≤ q ∧ q + 3 < (p ^ 2 : ℕ) ∧
+      ((Finset.Ico (0 : ℤ) (wordWidth p : ℕ)).filter (bad d e)).card ≤ 3) :
+    ∃ r q : ℤ, 0 ≤ r ∧ r + 3 < (wordWidth p : ℕ) ∧
+      0 ≤ q ∧ q + 3 < (wordWidth p : ℕ) ∧
       ∀ i j : Fin 4, ∀ d : ℤ, (d = -1 ∨ d = 0 ∨ d = 1) →
         ¬ bad d ((q + j.val) - d * (r + i.val)) (r + i.val) := by
-  let N : ℕ := p ^ 2
+  let N : ℕ := wordWidth p
   have hN : 3 ≤ N := by dsimp [N]; nlinarith
   let C : Finset (ℤ × ℤ) :=
     (Finset.Ico (0 : ℤ) (N - 3 : ℕ)).product
@@ -124,13 +113,13 @@ theorem exists_clean_four_square (p : ℕ) (hp : 200 < p)
   let B := wordBlockedOrigins (wordExceptionalCells N bad)
   have hC : C.card = (N - 3) ^ 2 := by
     simp [C, Finset.card_product, Int.card_Ico, pow_two]
-  have hB : B.card ≤ 144 * N * p := by
+  have hB : B.card ≤ 240 * N := by
     calc
       B.card ≤ (wordExceptionalCells N bad).card * 16 :=
         card_wordBlockedOrigins_le _
-      _ ≤ (9 * N * p) * 16 :=
-        Nat.mul_le_mul_right 16 (card_wordExceptionalCells_le N p bad hbad)
-      _ = 144 * N * p := by ring
+      _ ≤ (5 * N * 3) * 16 :=
+        Nat.mul_le_mul_right 16 (card_wordExceptionalCells_le N 3 bad hbad)
+      _ = 240 * N := by ring
   have hlt : B.card < C.card := by
     rw [hC]
     exact hB.trans_lt (four_square_count_inequality p hp)

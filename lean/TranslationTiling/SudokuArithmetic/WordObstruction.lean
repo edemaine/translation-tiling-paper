@@ -38,12 +38,12 @@ private def fourColumn {p : ℕ} (hlarge : 200 < p) (i : Fin 4) : Column p :=
 
 private theorem small_affine_nonzero {p : ℕ} (hp : p.Prime)
     (A C : ZMod p) (hAC : A ≠ 0 ∨ C ≠ 0) :
-    ∃ n : Fin p, A * (n.val : ZMod p) + C ≠ 0 := by
+    ∃ n : Fin p, n.val≤1 ∧ A * (n.val : ZMod p) + C ≠ 0 := by
   by_cases hC : C = 0
   · have hA : A ≠ 0 := hAC.resolve_right (fun h => h hC)
-    refine ⟨⟨1, hp.one_lt⟩, ?_⟩
+    refine ⟨⟨1, hp.one_lt⟩,by simp, ?_⟩
     simpa only [Nat.cast_one, mul_one, hC, add_zero] using hA
-  · refine ⟨⟨0, hp.pos⟩, ?_⟩
+  · refine ⟨⟨0, hp.pos⟩,by simp, ?_⟩
     simpa only [Nat.cast_zero, mul_zero, zero_add] using hC
 
 private theorem exists_vertical_value {p : ℕ} (hp : p.Prime)
@@ -70,7 +70,7 @@ theorem nonconstantColumns_iff_vertical_coefficient {p : ℕ} (hp : p.Prime)
       · exact Or.inl hA
       · exact (hB' hB).elim
       · exact Or.inr hC
-    obtain ⟨n₀, hn₀⟩ := small_affine_nonzero hp A C hAC
+    obtain ⟨n₀, _, hn₀⟩ := small_affine_nonzero hp A C hAC
     let n := smallColumn hlarge n₀
     obtain ⟨m, m', hmm'⟩ := hcolumns n
     apply hmm'
@@ -97,7 +97,7 @@ theorem prime_dvd_vertical_period {p : ℕ} (hp : p.Prime)
     (hH : AffineApproximation W A B C) (hB : B ≠ 0) {M : ℤ}
     (hperiod : VerticalPeriod W M) : (p : ℤ) ∣ M := by
   let : Fact p.Prime := ⟨hp⟩
-  let n : Column p := ⟨0, pow_pos hp.pos 2⟩
+  let n : Column p := ⟨0,by unfold wordWidth; omega⟩
   let x : Fin 4 → ZMod p := fun i => (i.val : ZMod p)
   have hx : Function.Injective x := by
     simpa only [zero_add, Int.cast_natCast] using
@@ -203,35 +203,35 @@ theorem rescale_lineRule {p : ℕ} {W : WordArray p} (hW : LineRule p W) :
   exact hW ((p : ℤ) * d) ((p : ℤ) * e)
 
 private theorem exists_nonzero_affine_ne {p : ℕ} (hp : p.Prime)
-    (hlarge : 200 < p) (a z c : ZMod p) (ha : a ≠ 0) :
-    ∃ k : Fin p, z + a * (k.val : ZMod p) ≠ 0 ∧
-      z + a * (k.val : ZMod p) ≠ c := by
-  let : Fact p.Prime := ⟨hp⟩
-  let : NeZero p := ⟨hp.ne_zero⟩
-  have ht : ∃ t : ZMod p, t ≠ 0 ∧ t ≠ c := by
-    by_cases hc : c = 1
-    · exact ⟨2, word_two_ne_zero hlarge, by
-        rw [hc]
-        exact Ne.symm (word_one_ne_two hlarge)⟩
-    · exact ⟨1, one_ne_zero, Ne.symm hc⟩
-  obtain ⟨t, ht0, htc⟩ := ht
-  let x : ZMod p := a⁻¹ * (t - z)
-  let k : Fin p := ⟨x.val, ZMod.val_lt x⟩
-  have hk : (k.val : ZMod p) = x := ZMod.natCast_zmod_val x
-  have heq : z + a * (k.val : ZMod p) = t := by
-    rw [hk]
-    dsimp only [x]
-    rw [← mul_assoc, mul_inv_cancel₀ ha, one_mul]
-    ring
-  exact ⟨k, by rw [heq]; exact ht0, by rw [heq]; exact htc⟩
+    (hlarge : 200<p) (a z c : ZMod p) (ha : a≠0) :
+    ∃ k : Fin 3, z+a*(k.val:ZMod p)≠0 ∧ z+a*(k.val:ZMod p)≠c := by
+  classical
+  letI : Fact p.Prime := ⟨hp⟩
+  have hinj : Function.Injective (fun k : Fin 3 => z+a*(k.val:ZMod p)) := by
+    intro i j he
+    have hh : (i.val:ZMod p)=(j.val:ZMod p) := mul_left_cancel₀ ha (add_left_cancel he)
+    have hv := congrArg ZMod.val hh
+    rw [ZMod.val_natCast_of_lt (by have := i.isLt; omega),
+      ZMod.val_natCast_of_lt (by have := j.isLt; omega)] at hv
+    exact Fin.ext hv
+  by_contra h
+  push_neg at h
+  let f : Fin 3 → ↥({0,c}:Finset (ZMod p)) := fun k => ⟨z+a*(k.val:ZMod p),by
+    have hk := h k
+    simp only [Finset.mem_insert,Finset.mem_singleton]
+    tauto⟩
+  have hf : Function.Injective f := fun i j he => hinj (congrArg Subtype.val he)
+  have hc := Fintype.card_le_of_injective f hf
+  have hcard : ({0,c}:Finset (ZMod p)).card≤2 := by
+    exact (Finset.card_insert_le _ _).trans (by simp)
+  simp only [Fintype.card_fin,Fintype.card_coe] at hc
+  omega
 
-private def fiberColumn {p : ℕ} (n₀ k : Fin p) : Column p :=
-  ⟨n₀.val + p * k.val, by
-    calc
-      n₀.val + p * k.val < p + p * k.val := Nat.add_lt_add_right n₀.isLt _
-      _ = p * (k.val + 1) := by ring
-      _ ≤ p * p := Nat.mul_le_mul_left p (Nat.succ_le_of_lt k.isLt)
-      _ = p ^ 2 := by ring⟩
+private def fiberColumn {p : ℕ} (n₀ : Fin p) (hn₀ : n₀.val≤1) (k : Fin 3) : Column p :=
+  ⟨n₀.val+p*k.val,by
+    have hk := k.isLt
+    change n₀.val+p*k.val<2*p+2
+    nlinarith⟩
 
 theorem rescale_vertical_coefficient_ne_zero {p : ℕ} (hp : p.Prime)
     (hlarge : 200 < p) {W : WordArray p} (hW : LineRule p W)
@@ -246,7 +246,7 @@ theorem rescale_vertical_coefficient_ne_zero {p : ℕ} (hp : p.Prime)
     · exact Or.inl hA
     · exact (hB' hB₁).elim
     · exact Or.inr hC
-  obtain ⟨n₀, hc⟩ := small_affine_nonzero hp A₁ C₁ hAC
+  obtain ⟨n₀, hn₀small, hc⟩ := small_affine_nonzero hp A₁ C₁ hAC
   let c : ZMod p := A₁ * (n₀.val : ZMod p) + C₁
   obtain ⟨a, b, hab, hw⟩ := hW 1 (-(n₀.val : ℤ))
   have hab' : (a : ZMod p) ≠ 0 ∨ (b : ZMod p) ≠ 0 := by
@@ -296,7 +296,7 @@ theorem rescale_vertical_coefficient_ne_zero {p : ℕ} (hp : p.Prime)
     ring
   obtain ⟨z, hz⟩ := hdiv
   obtain ⟨k, hk0, hkc⟩ := exists_nonzero_affine_ne hp hlarge (a : ZMod p) (z : ZMod p) c ha0
-  let n := fiberColumn n₀ k
+  let n := fiberColumn n₀ hn₀small k
   have hnv : (n.val : ℤ) = (n₀.val : ℤ) + (p : ℤ) * (k.val : ℤ) := by
     simp only [n, fiberColumn, Nat.cast_add, Nat.cast_mul]
   have hnvmod : (n.val : ZMod p) = (n₀.val : ZMod p) := by

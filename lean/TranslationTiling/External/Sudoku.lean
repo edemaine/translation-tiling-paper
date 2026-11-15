@@ -10,7 +10,7 @@ namespace TranslationTiling.Sudoku
 abbrev p : ℕ := 211
 abbrev q : ℕ := 223
 /-- Board columns, coefficient period, and seed reference size have separate roles. -/
-abbrev Width : ℕ := q ^ 2
+abbrev Width : ℕ := 2 * q + 2
 abbrev CoefficientModulus : ℕ := p ^ 2 * q ^ 2
 abbrev SeedModulus : ℕ := 5 * p * q
 abbrev Column := Fin Width

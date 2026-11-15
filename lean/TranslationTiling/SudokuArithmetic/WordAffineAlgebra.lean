@@ -114,12 +114,12 @@ theorem four_residues_injective {p : ℕ} (hp : 4 ≤ p) (r : ℤ) :
 
 theorem affine_int_roots_card_le {p : ℕ} (hp : p.Prime) (a b : ZMod p)
     (hab : a ≠ 0 ∨ b ≠ 0) :
-    ((Finset.Ico (0 : ℤ) (p ^ 2 : ℕ)).filter
-      (fun n : ℤ => a * (n : ZMod p) + b = 0)).card ≤ p := by
+    ((Finset.Ico (0 : ℤ) (wordWidth p : ℕ)).filter
+      (fun n : ℤ => a * (n : ZMod p) + b = 0)).card ≤ 3 := by
   classical
   let : Fact p.Prime := ⟨hp⟩
   have hpz : (0 : ℤ) < p := by exact_mod_cast hp.pos
-  have hc : (Finset.Ico (0 : ℤ) (p : ℤ)).card = p := by simp
+  have hc : (Finset.Ico (0 : ℤ) (3 : ℤ)).card = 3 := by simp
   refine le_trans ?_ (le_of_eq hc)
   apply Finset.card_le_card_of_injOn (fun n : ℤ => n / p)
   · intro n hn
@@ -127,7 +127,10 @@ theorem affine_int_roots_card_le {p : ℕ} (hp : p.Prime) (a b : ZMod p)
     apply Finset.mem_Ico.mpr
     refine ⟨Int.ediv_nonneg hn'.1 hpz.le, ?_⟩
     apply Int.ediv_lt_of_lt_mul hpz
-    simpa only [pow_two, Nat.cast_mul] using hn'.2
+    have hp2 := hp.two_le
+    change n < 3*(p:ℤ)
+    have hnhi : n < (2*p+2:ℕ) := hn'.2
+    omega
   · intro n hn m hm hq
     have hnm : (n : ZMod p) = (m : ZMod p) := affine_root_unique hab
       (Finset.mem_filter.mp hn).2 (Finset.mem_filter.mp hm).2

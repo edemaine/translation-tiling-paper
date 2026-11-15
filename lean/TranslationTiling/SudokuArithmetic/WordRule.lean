@@ -11,7 +11,8 @@ namespace TranslationTiling.Sudoku
 
 namespace ArithmeticRule
 
-abbrev Column (p : ℕ) := Fin (p ^ 2)
+abbrev wordWidth (p : ℕ) := 2 * p + 2
+abbrev Column (p : ℕ) := Fin (wordWidth p)
 abbrev Symbol (p : ℕ) := (ZMod p)ˣ
 abbrev Word (p : ℕ) := Column p → Symbol p
 abbrev WordArray (p : ℕ) := Column p → ℤ → Symbol p

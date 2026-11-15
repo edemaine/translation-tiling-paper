@@ -34,7 +34,7 @@ private theorem log_pow_add_one_le {C k : ℕ} (hC : 1024 ≤ C) (hk : 0 < k) :
   have h2 := Real.log_le_sub_one_of_pos (by norm_num : (0:ℝ)<2)
   linarith
 
-theorem primeCounting_square_large {C : ℕ} (hC : 596750 ≤ C) :
+theorem primeCounting_square_medium {C : ℕ} (hC : 1024 ≤ C) :
     8*C ≤ Nat.primeCounting (C^2) := by
   have hc : (1024:ℝ) ≤ C := by exact_mod_cast (by omega : 1024 ≤ C)
   have hlog := log_le_div_sixtyfour (by omega : 1024 ≤ C)
@@ -57,7 +57,7 @@ theorem primeCounting_square_large {C : ℕ} (hC : 596750 ≤ C) :
   have hresult := (mul_le_mul_iff_left₀ hpos).mp (hden.trans hp')
   exact_mod_cast hresult
 
-theorem primeCounting_fifth_large {C : ℕ} (hC : 596750 ≤ C) :
+theorem primeCounting_fifth_medium {C : ℕ} (hC : 1024 ≤ C) :
     3*C^4 ≤ Nat.primeCounting (C^5) := by
   have hc : (1024:ℝ) ≤ C := by exact_mod_cast (by omega : 1024 ≤ C)
   have hlog := log_le_div_sixtyfour (by omega : 1024 ≤ C)
@@ -83,6 +83,12 @@ theorem primeCounting_fifth_large {C : ℕ} (hC : 596750 ≤ C) :
   norm_num only [Nat.cast_add,Nat.cast_one] at hden
   have hresult := (mul_le_mul_iff_left₀ hpos).mp (hden.trans hp')
   exact_mod_cast hresult
+
+theorem primeCounting_square_large {C : ℕ} (hC : 596750≤C) :
+    8*C≤Nat.primeCounting (C^2) := primeCounting_square_medium (by omega)
+
+theorem primeCounting_fifth_large {C : ℕ} (hC : 596750≤C) :
+    3*C^4≤Nat.primeCounting (C^5) := primeCounting_fifth_medium (by omega)
 
 end
 end TranslationTiling.Compiler.Size

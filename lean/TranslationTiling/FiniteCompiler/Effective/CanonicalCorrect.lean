@@ -59,7 +59,7 @@ theorem rawFamily_horizontal (T : System) (p : Payload) (hp : PayloadCorrect T p
   have hm : F.toFinset.image (decodeNumericalPoint (parameters T)) ∈ testTiles (parameters T) := by
     rw [← rawFamily_correct T p hp hpos]
     exact (mem_decodedFamily _ _ _).mpr ⟨F,hF,rfl⟩
-  exact Size.testTile_horizontal_bound (parameters_budget T Sudoku.Width hS).1 hm
+  exact Size.testTile_horizontal_bound (parameters_rawBudget T hS).1 hm
     (Finset.mem_image.mpr ⟨f,List.mem_toFinset.mpr hf,rfl⟩)
 
 theorem canonicalInputFamily_correct (T : System) (p : Payload) (hp : PayloadCorrect T p)

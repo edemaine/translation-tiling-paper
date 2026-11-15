@@ -29,25 +29,25 @@ theorem allowed_affine {p : ℕ} {w : Word p} (hw : Allowed p w) :
       simpa only [Int.cast_add, Int.cast_mul, Int.cast_natCast] using h
     simpa only [Int.cast_add, Int.cast_mul, Int.cast_natCast] using (hw n).1 hnd
 
-private def intColumn {p : ℕ} (n : ℤ) (hn : 0 ≤ n ∧ n < (p ^ 2 : ℕ)) :
+private def intColumn {p : ℕ} (n : ℤ) (hn : 0 ≤ n ∧ n < (wordWidth p : ℕ)) :
     Column p := ⟨n.toNat, by omega⟩
 
 private theorem intColumn_val {p : ℕ} (n : ℤ)
-    (hn : 0 ≤ n ∧ n < (p ^ 2 : ℕ)) :
+    (hn : 0 ≤ n ∧ n < (wordWidth p : ℕ)) :
     ((intColumn n hn).val : ℤ) = n := Int.toNat_of_nonneg hn.1
 
 private theorem intColumn_cast {p : ℕ} (n : ℤ)
-    (hn : 0 ≤ n ∧ n < (p ^ 2 : ℕ)) :
+    (hn : 0 ≤ n ∧ n < (wordWidth p : ℕ)) :
     ((intColumn n hn).val : ZMod p) = (n : ZMod p) := by
   simpa only [Int.cast_natCast] using
     congrArg (fun x : ℤ => (x : ZMod p)) (intColumn_val n hn)
 
 private def rawArray {p : ℕ} (W : WordArray p) (n m : ℤ) : ZMod p :=
-  if hn : 0 ≤ n ∧ n < (p ^ 2 : ℕ) then (W (intColumn n hn) m : ZMod p) else 1
+  if hn : 0 ≤ n ∧ n < (wordWidth p : ℕ) then (W (intColumn n hn) m : ZMod p) else 1
 
 private theorem rawArray_column {p : ℕ} (W : WordArray p) (n : Column p) (m : ℤ) :
     rawArray W n.val m = (W n m : ZMod p) := by
-  have hn : (0 : ℤ) ≤ n.val ∧ (n.val : ℤ) < (p ^ 2 : ℕ) := by
+  have hn : (0 : ℤ) ≤ n.val ∧ (n.val : ℤ) < (wordWidth p : ℕ) := by
     exact ⟨Int.natCast_nonneg _, by exact_mod_cast n.isLt⟩
   have hc : intColumn (n.val : ℤ) hn = n := by
     apply Fin.ext
@@ -55,7 +55,7 @@ private theorem rawArray_column {p : ℕ} (W : WordArray p) (n : Column p) (m : 
   rw [rawArray, dif_pos hn, hc]
 
 private theorem rawArray_ne_zero {p : ℕ} [Fact p.Prime] (W : WordArray p)
-    (n m : ℤ) (hn : 0 ≤ n ∧ n < (p ^ 2 : ℕ)) : rawArray W n m ≠ 0 := by
+    (n m : ℤ) (hn : 0 ≤ n ∧ n < (wordWidth p : ℕ)) : rawArray W n m ≠ 0 := by
   rw [rawArray, dif_pos hn]
   exact Units.ne_zero _
 
@@ -73,7 +73,7 @@ private def chooseLine {p : ℕ} {W : WordArray p} (hW : LineRule p W)
     h.choose_spec.choose_spec.2⟩
 
 private theorem LineAffine.raw_agrees {p : ℕ} {W : WordArray p} {d e : ℤ}
-    (L : LineAffine W d e) (n : ℤ) (hn : 0 ≤ n ∧ n < (p ^ 2 : ℕ))
+    (L : LineAffine W d e) (n : ℤ) (hn : 0 ≤ n ∧ n < (wordWidth p : ℕ))
     (hz : L.a * (n : ZMod p) + L.b ≠ 0) :
     rawArray W n (d * n + e) = L.a * (n : ZMod p) + L.b := by
   have h := L.agrees (intColumn n hn) (by simpa only [intColumn_cast] using hz)
@@ -120,7 +120,7 @@ private theorem clean_second_difference {p : ℕ} {W : WordArray p}
 
 private theorem affine_four_line_closure {p : ℕ} (hp : p.Prime) (hlarge : 200 < p)
     {W : WordArray p} (hW : LineRule p W) (A B C : ZMod p) :
-    FourLineClosure (p ^ 2 : ℕ)
+    FourLineClosure (wordWidth p : ℕ)
       (fun n m => A * (n : ZMod p) + B * (m : ZMod p) + C = 0 ∨
         rawArray W n m = A * (n : ZMod p) + B * (m : ZMod p) + C) := by
   let : Fact p.Prime := ⟨hp⟩
@@ -150,7 +150,7 @@ private theorem affine_four_line_closure {p : ℕ} (hp : p.Prime) (hlarge : 200 
         dsimp only at hk
         rw [hrest] at hk
         have hk' := hk.resolve_left hkA
-        have hbound : 0 ≤ r + k.val ∧ r + k.val < (p ^ 2 : ℕ) := by
+        have hbound : 0 ≤ r + k.val ∧ r + k.val < (wordWidth p : ℕ) := by
           have := k.isLt
           omega
         exact hk'.symm.trans (L.raw_agrees _ hbound hkL)
@@ -177,7 +177,7 @@ private theorem affine_four_line_closure {p : ℕ} (hp : p.Prime) (hlarge : 200 
       dsimp only at hk
       rw [hrest] at hk
       have hk' := hk.resolve_left hkA
-      have hbound : 0 ≤ r + k.val ∧ r + k.val < (p ^ 2 : ℕ) := by
+      have hbound : 0 ≤ r + k.val ∧ r + k.val < (wordWidth p : ℕ) := by
         have := k.isLt
         omega
       exact hk'.symm.trans (L.raw_agrees _ hbound hkL)
@@ -201,7 +201,7 @@ theorem global_affine_approximation {p : ℕ} (hp : p.Prime) (hlarge : 200 < p)
   let bad : ℤ → ℤ → ℤ → Prop := fun d e n =>
     (chooseLine hW d e).a * (n : ZMod p) + (chooseLine hW d e).b = 0
   have hbad : ∀ d e, d = -1 ∨ d = 0 ∨ d = 1 →
-      ((Finset.Ico (0 : ℤ) (p ^ 2 : ℕ)).filter (bad d e)).card ≤ p := by
+      ((Finset.Ico (0 : ℤ) (wordWidth p : ℕ)).filter (bad d e)).card ≤ 3 := by
     intro d e _
     exact affine_int_roots_card_le hp _ _ (chooseLine hW d e).nonzero
   obtain ⟨r, q, hr₀, hr₃, _, _, hclean⟩ :=
@@ -209,18 +209,18 @@ theorem global_affine_approximation {p : ℕ} (hp : p.Prime) (hlarge : 200 < p)
       (by
         intro d e hd
         have hfilter := @Finset.filter_congr_decidable ℤ
-          (Finset.Ico (0 : ℤ) (p ^ 2 : ℕ)) (bad d e)
+          (Finset.Ico (0 : ℤ) (wordWidth p : ℕ)) (bad d e)
           (fun n => Classical.propDecidable (bad d e n))
           (fun n => ZMod.decidableEq p
             ((chooseLine hW d e).a * (n : ZMod p) + (chooseLine hW d e).b) 0)
-        exact (congrArg (fun s : Finset ℤ => s.card ≤ p) hfilter).mpr (hbad d e hd))
+        exact (congrArg (fun s : Finset ℤ => s.card ≤ 3) hfilter).mpr (hbad d e hd))
   have hcell : ∀ i j : Fin 4, ∀ d : ℤ, (d = -1 ∨ d = 0 ∨ d = 1) →
       rawArray W (r + i.val) (q + j.val) =
         (chooseLine hW d ((q + j.val) - d * (r + i.val))).a *
           ((r + i.val : ℤ) : ZMod p) +
         (chooseLine hW d ((q + j.val) - d * (r + i.val))).b := by
     intro i j d hd
-    have hn : 0 ≤ r + i.val ∧ r + i.val < (p ^ 2 : ℕ) := by
+    have hn : 0 ≤ r + i.val ∧ r + i.val < (wordWidth p : ℕ) := by
       have := i.isLt
       omega
     have h := (chooseLine hW d ((q + j.val) - d * (r + i.val))).raw_agrees
@@ -332,11 +332,10 @@ theorem global_affine_approximation {p : ℕ} (hp : p.Prime) (hlarge : 200 < p)
         exact rawArray_ne_zero W r q ⟨hr₀, by omega⟩ hz
       · exact Or.inr (Or.inl hB)
     · exact Or.inl hA
-  have hN : (8 : ℤ) ≤ (p ^ 2 : ℕ) := by
-    have hp' : 201 ≤ p := by omega
-    have hsq : 201 ^ 2 ≤ p ^ 2 := Nat.pow_le_pow_left hp' 2
-    exact_mod_cast (show 8 ≤ p ^ 2 by omega)
-  have hglobal := good_everywhere_of_four_square (p ^ 2 : ℕ) hN
+  have hN : (8 : ℤ) ≤ (wordWidth p : ℕ) := by
+    change (8:ℤ)≤(2*p+2:ℕ)
+    omega
+  have hglobal := good_everywhere_of_four_square (wordWidth p : ℕ) hN
     (fun n m => A * (n : ZMod p) + B * (m : ZMod p) + C = 0 ∨
       rawArray W n m = A * (n : ZMod p) + B * (m : ZMod p) + C)
     (affine_four_line_closure hp hlarge hW A B C) r q hr₀ hr₃

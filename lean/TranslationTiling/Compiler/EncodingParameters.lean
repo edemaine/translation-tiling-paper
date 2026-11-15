@@ -77,9 +77,6 @@ theorem prime_coprime_p (t : PrimeTag T) : Nat.Coprime (E.primeAt t) Sudoku.p :=
 theorem prime_coprime_q (t : PrimeTag T) : Nat.Coprime (E.primeAt t) Sudoku.q :=
   (Nat.coprime_primes (E.prime_isPrime t) (by decide : Sudoku.q.Prime)).2 (E.prime_ne_q t)
 
-theorem prime_coprime_width (t : PrimeTag T) : Nat.Coprime (E.primeAt t) Sudoku.Width :=
-  (E.prime_coprime_q t).pow_right 2
-
 theorem prime_coprime_modulus (t : PrimeTag T) : Nat.Coprime (E.primeAt t) residueModulus := by
   rw [residueModulus_eq]
   have h5 : Nat.Coprime (E.primeAt t) 5 :=
@@ -135,12 +132,6 @@ theorem r_coprime_p (i : Channel T) : Nat.Coprime (E.r i) Sudoku.p := by
   apply Nat.coprime_fintype_prod_left_iff.mpr
   intro k
   exact E.prime_coprime_p _
-
-theorem r_coprime_width (i : Channel T) : Nat.Coprime (E.r i) Sudoku.Width := by
-  rw [E.r_eq_prod]
-  apply Nat.coprime_fintype_prod_left_iff.mpr
-  intro j
-  exact E.prime_coprime_width _
 
 theorem r_coprime_modulus (i : Channel T) : Nat.Coprime (E.r i) residueModulus := by
   rw [E.r_eq_prod]

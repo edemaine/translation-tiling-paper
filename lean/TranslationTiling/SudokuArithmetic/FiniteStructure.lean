@@ -5,7 +5,7 @@ import TranslationTiling.SudokuArithmetic.Normalize
 namespace TranslationTiling.Sudoku
 
 theorem normalized_finite_structure {r : ℕ} (hp : r.Prime) (hlarge : 200 < r)
-    (hr : r ^ 2 ≤ Width) (k : ℕ) :
+    (hr : ArithmeticRule.wordWidth r ≤ Width) (k : ℕ) :
     ∀ (V : Column → ℤ → (ZMod r)ˣ) (B : ZMod r), ArithmeticLineRule r V →
       B ≠ 0 → FullAffineApproximation V 0 B 0 →
       ∃ D E : ℤ, (r : ℤ) ∣ D ∧ (r : ℤ) ∣ E ∧
@@ -82,7 +82,7 @@ theorem normalized_finite_structure {r : ℕ} (hp : r.Prime) (hlarge : 200 < r)
 /-- At any finite valuation depth, a nonconstant arithmetic solution is a
 constant multiple of the last nonzero digit of a sheared height. -/
 theorem arithmetic_finite_structure {r : ℕ} (hp : r.Prime) (hlarge : 200 < r)
-    (hr : r ^ 2 ≤ Width) (V : Column → ℤ → (ZMod r)ˣ)
+    (hr : ArithmeticRule.wordWidth r ≤ Width) (V : Column → ℤ → (ZMod r)ˣ)
     (hV : ArithmeticLineRule r V) (hcols : ∀ n, ∃ m m', V n m ≠ V n m') (k : ℕ) :
     ∃ (D E : ℤ) (B : ZMod r), B ≠ 0 ∧
       ∀ (n : Column) (m : ℤ), m - D * n.val - E ≠ 0 →

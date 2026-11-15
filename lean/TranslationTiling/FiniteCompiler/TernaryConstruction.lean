@@ -1,4 +1,5 @@
 import TranslationTiling.FiniteCompiler.TernaryBounds
+import TranslationTiling.FiniteCompiler.CompactParameters
 import TranslationTiling.FiniteCompiler.TernarySystem
 
 namespace TranslationTiling.FiniteCompiler.Size
@@ -73,8 +74,13 @@ theorem exists_connected_tile_ternary_channel_bound (T : System) (W : LeanWang.T
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane W ↔ TranslationTiling.Tiles P) ∧
       cubeCount P ≤ channelCount T ^ (3510 * channelCount T) := by
-  obtain ⟨E, hu, hd⟩ := exists_bounded_parameters T
-  have hp := smallPrimes_of_caps E hB hC hu hd
+  have hc : 5378≤channelCount T := by
+    have hw : 269≤Sudoku.Width := by norm_num [Sudoku.Width,Sudoku.q]
+    omega
+  obtain ⟨E,_,_,hcompact⟩ := exists_compact_parameters T hc hB
+  have hp : SmallPrimes E := ⟨fun i => ⟨(hcompact.1 i).1.trans (Nat.pow_le_pow_right (by omega) (by decide)),
+    (hcompact.1 i).2.trans (Nat.pow_le_pow_right (by omega) (by decide))⟩,
+    fun i j => (hcompact.2.1 i j).trans (Nat.pow_le_pow_right (by omega) (by decide))⟩
   have hb := smallPrimes_budget E hB hp hC hS
   have h1 : 1 ≤ channelCount T := by unfold channelCount; omega
   have hself : channelCount T ≤ channelCount T ^ 73 := Nat.le_self_pow (by decide) _

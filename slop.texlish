@@ -226,7 +226,7 @@ For a prime $r$, write $\F_r=\Z/r\Z$ for its field of residues and
 $\F_r^\times$ for the nonzero residues.
 Fix the primes $p=211$ and $q=223$ once and for all, and set
 $$
- N=q^2=49{,}729,\qquad I=\{0,\ldots,N-1\},\qquad
+ N=2q+2=448,\qquad I=\{0,\ldots,N-1\},\qquad
  \Sigma=\F_p^\times\times\F_q^\times\times\calT.
 $$
 The board width $N$ and coefficient period $p^2q^2$ are fixed independently
@@ -307,11 +307,11 @@ a rectangle of adjacent domino positions.  The integer components
 record last nonzero digits so that the tests remain consistent across
 different lines and valuation scales.  The reverse assertion, that
 these local tests and nonconstant columns force a global domino
-solution, is the substantive theorem we import.
+solution, is the substantive soundness theorem below.
 
-## The Imported Soundness Theorem and a Canonical Solution
+## The Soundness Theorem and a Canonical Solution
 
-: theorem[Decorated Sudoku, Greenfeld--Tao] @=thm:GT
+: theorem[Decorated Sudoku, shorter-board variant] @=thm:GT
   The word rule just defined has the following properties.
   ::list [label=\textup{(\roman*)}]
   1. If an array satisfies \eqref{eq:line-rule} and both $W_p$ and $W_q$
@@ -330,10 +330,23 @@ solution, is the substantive theorem we import.
 
 The array in \eqref{eq:canonical-sudoku} is called the
 ***canonical Sudoku array*** associated to $\tau$.
-Part \textup{(i)} is the implication of
-\cite[Proposition~5.2]{GTUndecidable} that we use as a black box.
-It is formalized as
+Part \textup{(i)} is a shorter-board refinement of
+\cite[Proposition~5.2]{GTUndecidable}, formalized as
 \leanref{SudokuArithmetic/Soundness.lean}{Sudoku.soundness}.
+For each prime $r>200$, its arithmetic argument needs only $M=2r+2$
+columns. In an $M\times M$ square, the lines of slopes $-1,0,1$
+have at most $5M$ intercepts altogether and at most three exceptional
+positions per line. Each exceptional cell blocks at most sixteen
+$4\times4$ square origins. Since $240M<(M-3)^2$, a clean square exists,
+providing the initial affine structure. The rescaling obstruction uses
+three columns $n_0+rk$, with $n_0\in\{0,1\}$ and $k=0,1,2$.
+To compare vertical coefficients after rescaling, a vertical shift makes
+one of the affine forms nonzero on all three prime-spaced columns;
+the other can vanish at most once, leaving two comparisons.
+Once the ordinary slope is fixed, the higher-digit coefficient test
+needs only columns $r,2r$. These refinements replace the quadratic board
+width in the arithmetic soundness proof; the two-prime decoration and
+valuation-plane extraction then apply as before.
 For completeness, we verify part \textup{(ii)} directly.
 On the line $m=dn+e$ with $(d,e)\ne(0,0)$, put
 $$
@@ -448,7 +461,7 @@ the much larger lattice prototile produced by the full reduction.
     valuation address. (c) Sample heights for the toy primes $3,5$;
     the integer components are suppressed in the table. These
     small primes illustrate the formula and do not instantiate the
-    imported soundness theorem. The two-prime addressing method is from
+    soundness theorem. The two-prime addressing method is from
     \cite[Section~5]{GTUndecidable}.}
   \label{fig:sudoku-example}
 
@@ -2091,10 +2104,10 @@ and its agreement with this code are checked in
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    (n+4)^{(5\cdot10^8)\lg\lg(n+4)}=n^{O(\log\log n)}
+    (n+4)^{(5\cdot10^6)\lg\lg(n+4)}=n^{O(\log\log n)}
   $$
   unit cubes.
-  For $n=1$, we also have the explicit bound $2^{12\cdot10^8}$ unit cubes.
+  For $n=1$, we also have the explicit bound $2^{12\cdot10^6}$ unit cubes.
 
 : proof
   For $n=0$, consolidate the two contradictory equations with prototiles
@@ -2162,40 +2175,39 @@ and its agreement with this code are checked in
   Since $k=O(\lg(n+2))$, this gives the quasipolynomial dependence.
 
   For the numerical coefficient, the actual channel count satisfies
-  $C\geq12N+2=596{,}750$. Only the two seed primes $b_0,b_1$ need to
-  exceed $D$; Bertrand's postulate puts them below $4D<C^2$.
+  $C\geq12N+2=5378$. Only the two seed primes $b_0,b_1$ need to
+  exceed $D$; Bertrand's postulate puts them below $4D$.
   Reserve these primes and the fixed primes $2,3,5,p,q$.
-  Let $U$ be the largest integer with $U^3\leq C^4$.
   Chebyshev's elementary prime-counting bound gives
-  $\pi(U)\geq2C+7$, enough to choose all ordinary useful primes
-  below $C^{4/3}$. The seed pairs satisfy the same product bound
-  $(a_i b_i)^3\leq C^8$. A positive representation
-  $r_{ij}=A_{ij}a_i+B_{ij}b_i$ exists whenever
-  $r_{ij}>a_i b_i+a_i+b_i$.
-  These pairwise thresholds are at most $U^2+2U$;
-  Chebyshev's bound supplies all digit primes above
-  $U^2+2U+p+q+3$ and at most $C^3$.
+  $\pi(C^2)\geq8C$, enough to choose all ordinary useful primes
+  at most $C^2$. The seed primes satisfy $a_0=2,a_1=3$ and
+  $a_i b_i\leq12D\leq C^4$, so every useful-prime pair has product
+  at most $C^4$. Each pair's positive-representation threshold
+  $a_i b_i+a_i+b_i$ is at most $C^4+2C^2$.
+  Chebyshev's bound $\pi(C^5)\geq3C^4$ supplies all digit primes
+  above these thresholds and $p,q$, and at most $C^5$.
   These choices are checked in
-  \leanfile{Compiler/TightPrimeCounting.lean} and
-  \leanfile{FiniteCompiler/TightParameters.lean}.
-  Thus $r_i\leq C^9$ and $|P_i|\leq C^{8/3}$, giving
-  $|V|\leq C^{(62/3)C+2}\leq C^{21C}$.
+  \leanfile{Compiler/SharpPrimeCounting.lean} and
+  \leanfile{FiniteCompiler/CompactParameters.lean}.
+  Thus $r_i\leq C^{15}$ and $|P_i|\leq C^4$.
+  The seed modulus is at most $C^2$, giving
+  $|V|\leq C^{34C+4}\leq C^{35C}$.
 
-  A sparse cycle needs at most $C^{(17/3)C}$ tests.
-  Retain the bound $3^C$ on the number of forbidden words;
-  the number of seed-label pairs is at most $6C\leq3^C$.
-  The dependence equations have polynomial count at most $C^{292}$.
-  Each of the six equation families is therefore bounded by
-  $(3C^{17/3})^C$, and their total satisfies
+  A sparse cycle needs at most $C^{9C}$ tests.
+  There are at most $3^C\leq C^C$ forbidden words and at most $C^2$
+  seed-label pairs. With parameter budget $b=C^{15}$, the dependence
+  equations have count at most $b^4=C^{60}$.
+  Each of the six equation families is therefore bounded by $C^{10C}$,
+  and their total satisfies
   $$
-    s\leq6(3C^{17/3})^C\leq(6C^{17/3})^C\leq C^{6C},
+    s\leq6C^{10C}\leq C^{11C}.
   $$
-  using $6^3\leq C$.
+  These counts are checked in \leanfile{FiniteCompiler/CompactBounds.lean}.
 
-  Set $X=C^{6C}$ and let $\lambda$ be the binary length of $2X$.
+  Set $X=C^{11C}$ and let $\lambda$ be the binary length of $2X$.
   Choose a prime $\ell$ between
-  $64X^2\lambda+C^3+3$ and twice that number. Every prime divisor of
-  $|V|$ is at most $C^3$, so $\ell$ is coprime to $|V|$.
+  $64X^2\lambda+C^5+3$ and twice that number. Every prime divisor of
+  $|V|$ is at most $C^5$, so $\ell$ is coprime to $|V|$.
   To check the partition condition, write $\ell=2m+1$. The failure
   probability from @lem:partition is at most
   $$
@@ -2208,10 +2220,10 @@ and its agreement with this code are checked in
   \leanfile{Proofs/LogDifferenceBound.lean}; the computable partition
   search and coprime stacking are in
   \leanfile{FiniteCompiler/Effective/FreshStack.lean}.
-  Since $\lambda\leq C^2$, the stacking prime is at most $C^{13C}$,
-  giving stacked modulus $R\leq C^{34C}$. The common parameter budget
-  remains $b\leq C^{73}$, so the horizontal bound is
-  $H\leq b^{211}\leq C^{15403}$.
+  Since $\lambda\leq C^2$, the stacking prime is at most $C^{23C}$,
+  giving stacked modulus $R\leq C^{58C}$. The common parameter budget
+  is $b=C^{15}$, so the horizontal bound is
+  $H\leq b^{211}\leq C^{3165}$.
 
   Count the geometric output directly. Each MSS component has at most
   $2^{24}$ cubes, independently of its displacement, so the unconnected
@@ -2240,29 +2252,30 @@ and its agreement with this code are checked in
   $$
     2^{24}(2H+1)^2R\cdot972(6AB)^2
       \leq (9\cdot2^{24}\cdot972\cdot36\cdot8003^4)H^4R^3
-      \leq C^{103C}.
+      \leq C^{177C}.
   $$
-  The constant in parentheses is at most $2^{95}\leq C^5$;
-  the remaining fixed exponent is absorbed because $61617\leq C$.
+  The constant in parentheses is at most $2^{95}\leq C^8$.
+  Thus the exponent is at most $174C+12668\leq177C$,
+  using $12668\leq3C$.
   The partition, contacts, connectivity, and arbitrary-tiling rigidity
   are checked in `FourLayer/`; the computable compiler and its volume
   estimate are in \leanfile{FourLayer/Compiler.lean} and
-  \leanfile{FourLayer/SizeBound.lean}.
+  \leanfile{FiniteCompiler/CompactBounds.lean}.
 
   Put $t=\lg(n+4)$ and $g=\lg t$. Direct estimates on the binary and
   ternary lengths give $k+2\leq(21/4)t$, including the small inputs
   $n=1,2,3$. Also $g\geq6/5$, so
   $$
-    C\leq at,\qquad a=(21/4)N+1<2^{18},\qquad
-    \lg C\leq18+g\leq16g.
+    C\leq at,\qquad a=(21/4)N+1=2353<2^{12},\qquad
+    \lg C\leq12+g\leq11g.
   $$
-  Thus $103C\lg C\leq103\cdot16a\,tg$, and
-  $103\cdot16a=430{,}256{,}956\leq5\cdot10^8$ gives the displayed bound.
+  Thus $177C\lg C\leq177\cdot11a\,tg$, and
+  $177\cdot11a=4{,}581{,}291\leq5\cdot10^6$ gives the displayed bound.
   The conversion is checked in \leanfile{Compiler/MixedLogBound.lean}.
-  For $n=1$, twelve code positions per column give $C=596{,}750$
-  and $C^5\leq2^{96}$. Hence
-  $|F|^5\leq2^{96\cdot103\cdot596{,}750}\leq2^{5\cdot(12\cdot10^8)}$,
-  hence $|F|\leq2^{12\cdot10^8}$.
+  For $n=1$, twelve code positions per column give $C=5378$
+  and $C^5\leq2^{62}$. Hence
+  $|F|^5\leq2^{62\cdot177\cdot5378}\leq2^{5\cdot(12\cdot10^6)}$,
+  hence $|F|\leq2^{12\cdot10^6}$.
 
 The ternary-channel variant is formalized end to end in
 \leanfile{Compiler/CleanQuasipolynomialBound.lean} by
@@ -2811,8 +2824,8 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, these bounds are $(n+4)^{(5\cdot10^8)\lg\lg(n+4)}$ for translations and
-$64{,}000(n+4)^{(5\cdot10^8)\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+function. In dimension three, these bounds are $(n+4)^{(5\cdot10^6)\lg\lg(n+4)}$ for translations and
+$64{,}000(n+4)^{(5\cdot10^6)\lg\lg(n+4)}$ for arbitrary Euclidean motions.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[

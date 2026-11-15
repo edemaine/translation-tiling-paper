@@ -7,7 +7,7 @@ noncomputable section
 set_option maxRecDepth 10000
 set_option maxHeartbeats 1000000
 
-theorem four_layer_geometry_bound {C b : ℕ} (hC : 12*Sudoku.Width+2≤C)
+theorem four_layer_geometry_bound {C b : ℕ} (hC : 596750≤C)
     (hb : b≤C^73) (hb2 : 2≤b) :
     (9*2^24*972*36*8003^4)*(Size.horizontalCap b)^4*(C^(34*C))^3≤C^(103*C) := by
   have hbig : 596750≤C := by simpa [Sudoku.Width,Sudoku.q] using hC

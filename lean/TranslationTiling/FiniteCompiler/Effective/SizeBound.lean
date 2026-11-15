@@ -66,16 +66,24 @@ theorem optimizedCompile_channel_bound (T : LeanWang.TileSet) :
       unfold bitWidth
       omega
     nlinarith
-  have hsmall := Size.smallPrimes_of_caps (parameters S) rfl hC
-    (parameters_bounded S).1 (parameters_bounded S).2
+  have hc : 5378≤C := by
+    have hw : 269≤Sudoku.Width := by norm_num [Sudoku.Width,Sudoku.q]
+    omega
+  have hcompact := parameters_bounded_compact S hc rfl
+  have hsmall : Size.SmallPrimes (parameters S) := ⟨fun i => ⟨(hcompact.1 i).1.trans (Nat.pow_le_pow_right (by omega) (by decide)),
+    (hcompact.1 i).2.trans (Nat.pow_le_pow_right (by omega) (by decide))⟩,
+    fun i j => (hcompact.2.1 i j).trans (Nat.pow_le_pow_right (by omega) (by decide))⟩
   have hV := Size.ternary_cyclicOrder_le (parameters S) rfl hsmall hC
   have hcount : (canonicalInputFamily (parameterData S,ternaryPayload T)).length ≤ C ^ (30 * C) := by
     rw [canonicalInputFamily_length S _ hp (ternarySystem_nonnegative T) hslope]
     exact Size.ternary_testTiles_card_le (parameters S) rfl hsmall hC hslope
   have hM := (Size.separateModulusCap_mono hV hcount).trans (Size.ternary_modulus_cap_le hC)
   apply (Size.geometryCap_mono (le_refl _) hM).trans
-  exact Size.ternary_geometry_bound hC (Size.ternary_parameterBase_le hC)
-    (parameters_budget S Sudoku.Width hslope).1.two
+  exact Size.ternary_geometry_bound hC (show rawBudget (parameterData S)≤C^73 from by
+    change (if 5378≤S.width+2 ∧ S.alphabet=3 then _ else _)≤_
+    rw [if_pos ⟨hc,rfl⟩]
+    exact Nat.pow_le_pow_right (by omega) (by decide))
+    (parameters_rawBudget S hslope).1.two
 
 theorem optimizedCompile_exp_bound (T : LeanWang.TileSet) :
     (optimizedCompile T).length ≤ 2 ^ ((2 * 10 ^ 10) * (Nat.log 2 (T.length+2)+1) *

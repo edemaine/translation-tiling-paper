@@ -50,14 +50,14 @@ theorem arithmetic_tests (r : ℕ) (V : Column → (ZMod r)ˣ) (a b : ℤ)
     have hv : lowValuation r (a * n.val + b) = some 1 := by simp [lowValuation, ht, ht2]
     simpa only [lowDigit, if_pos ht] using hV n 1 hv (by simp [threshold, ha])
 
-def smallColumn (r : ℕ) (hr : r ^ 2 ≤ Width) (n : ArithmeticRule.Column r) : Column :=
+def smallColumn (r : ℕ) (hr : ArithmeticRule.wordWidth r ≤ Width) (n : ArithmeticRule.Column r) : Column :=
   ⟨n.val, n.isLt.trans_le hr⟩
 
-def arithmeticRestriction (r : ℕ) (hr : r ^ 2 ≤ Width)
+def arithmeticRestriction (r : ℕ) (hr : ArithmeticRule.wordWidth r ≤ Width)
     (V : Column → ℤ → (ZMod r)ˣ) : ArithmeticRule.WordArray r :=
   fun n m => V (smallColumn r hr n) m
 
-theorem arithmeticRestriction_lineRule (r : ℕ) (hr : r ^ 2 ≤ Width)
+theorem arithmeticRestriction_lineRule (r : ℕ) (hr : ArithmeticRule.wordWidth r ≤ Width)
     (V : Column → ℤ → (ZMod r)ˣ) (hV : ArithmeticLineRule r V) :
     ArithmeticRule.LineRule r (arithmeticRestriction r hr V) := by
   intro d e
@@ -66,7 +66,7 @@ theorem arithmeticRestriction_lineRule (r : ℕ) (hr : r ^ 2 ≤ Width)
   intro n
   exact arithmetic_tests r (fun n => V n (d * n.val + e)) a b hab ht (smallColumn r hr n)
 
-theorem arithmeticRestriction_nonconstant (r : ℕ) (hr : r ^ 2 ≤ Width)
+theorem arithmeticRestriction_nonconstant (r : ℕ) (hr : ArithmeticRule.wordWidth r ≤ Width)
     (V : Column → ℤ → (ZMod r)ˣ)
     (hV : ∀ n, ∃ m m', V n m ≠ V n m') :
     ArithmeticRule.NonconstantColumns (arithmeticRestriction r hr V) :=

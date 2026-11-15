@@ -88,7 +88,7 @@ theorem mixed_loglog_lower {n : ℕ} (hn : 0 < n) :
   linarith
 
 theorem channel_cap_real_bound (d k : ℕ)
-    (hcoeff : (d:ℝ)*((21/4:ℝ)*Sudoku.Width+1)*16 ≤ k)
+    (hcoeff : (d:ℝ)*((21/4:ℝ)*Sudoku.Width+1)*11 ≤ k)
     {n : ℕ} (hn : 0<n) :
     (((Sudoku.Width * mixedWidth n + 2) ^ (d*(Sudoku.Width*mixedWidth n+2)) : ℕ):ℝ) ≤
       ((n:ℝ)+4) ^ ((k:ℝ) * Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
@@ -106,8 +106,8 @@ theorem channel_cap_real_bound (d k : ℕ)
     push_cast
     nlinarith
   have hCpos : (0:ℝ) < C := by dsimp [C]; positivity
-  have ha : a ≤ (2:ℝ)^18 := by norm_num [a,Sudoku.Width,Sudoku.q]
-  have hlog : Real.logb 2 (C:ℝ) ≤ 16*g := by
+  have ha : a ≤ (2:ℝ)^12 := by norm_num [a,Sudoku.Width,Sudoku.q]
+  have hlog : Real.logb 2 (C:ℝ) ≤ 11*g := by
     have hlog := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2) hCpos
       (hC.trans (mul_le_mul_of_nonneg_right ha (by linarith)))
     rw [Real.logb_mul (by positivity) (by linarith),logb_two_pow] at hlog
@@ -119,7 +119,7 @@ theorem channel_cap_real_bound (d k : ℕ)
   have he : (d:ℝ)*(C:ℝ)*Real.logb 2 (C:ℝ) ≤ (k:ℝ)*t*g := by
     have hclog : 0 ≤ Real.logb 2 (C:ℝ) := Real.logb_nonneg (by norm_num) hc1
     have hmul := mul_le_mul hC hlog hclog (by dsimp [a]; positivity : 0 ≤ a*t)
-    have hconst : (d:ℝ)*a*16 ≤ (k:ℝ) := hcoeff
+    have hconst : (d:ℝ)*a*11 ≤ (k:ℝ) := hcoeff
     have hc := mul_le_mul_of_nonneg_left hmul (Nat.cast_nonneg d)
     have hb := mul_le_mul_of_nonneg_right hconst (show 0 ≤ t*g by positivity)
     nlinarith only [hc,hb]
@@ -140,9 +140,9 @@ theorem mixed_channel_cap_real_bound {n : ℕ} (hn : 0<n) :
   exact h
 
 theorem sharp_channel_cap_real_bound {n : ℕ} (hn : 0<n) :
-    (((Sudoku.Width*mixedWidth n+2)^(103*(Sudoku.Width*mixedWidth n+2)):ℕ):ℝ) ≤
-      ((n:ℝ)+4)^((5*(10:ℝ)^8)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
-  have h := channel_cap_real_bound 103 (5*10^8) (by norm_num [Sudoku.Width,Sudoku.q]) hn
+    (((Sudoku.Width*mixedWidth n+2)^(177*(Sudoku.Width*mixedWidth n+2)):ℕ):ℝ) ≤
+      ((n:ℝ)+4)^((5*(10:ℝ)^6)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
+  have h := channel_cap_real_bound 177 (5*10^6) (by norm_num [Sudoku.Width,Sudoku.q]) hn
   norm_num only [Nat.cast_mul,Nat.cast_pow,Nat.cast_ofNat] at h ⊢
   exact h
 

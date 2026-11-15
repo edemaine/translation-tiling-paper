@@ -57,7 +57,7 @@ noncomputable def arithmeticCubeBound (N C A n : ℕ) : ℕ :=
 
 /-- The bound with all constants specified by numerals. -/
 noncomputable def explicitCubeBound (n : ℕ) : ℕ :=
-  arithmeticCubeBound 235265 49731 46620 n
+  arithmeticCubeBound 235265 450 46620 n
 
 theorem closedCubeBound_eq_arithmetic (n : ℕ) :
     closedCubeBound n = arithmeticCubeBound residueModulus channelCount arithmeticAlphabet n := by
@@ -78,12 +78,12 @@ theorem closedCubeBound_eq_explicit (n : ℕ) : closedCubeBound n = explicitCube
   have hN : residueModulus = 235265 := by
     rw [residueModulus_eq]
     norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
-  have hC : channelCount = 49731 := by norm_num [channelCount_eq, Sudoku.Width, Sudoku.q]
+  have hC : channelCount = 450 := by norm_num [channelCount_eq, Sudoku.Width, Sudoku.q]
   have hA : arithmeticAlphabet = 46620 := by norm_num [arithmeticAlphabet, Sudoku.p, Sudoku.q]
   calc
     closedCubeBound n = arithmeticCubeBound residueModulus channelCount arithmeticAlphabet n :=
       closedCubeBound_eq_arithmetic n
-    _ = arithmeticCubeBound 235265 49731 46620 n := by rw [hN, hC, hA]
+    _ = arithmeticCubeBound 235265 450 46620 n := by rw [hN, hC, hA]
     _ = explicitCubeBound n := rfl
 
 @[local fun_prop] theorem natPowerRule {α : Type*} [Primcodable α] {f g : α → ℕ}

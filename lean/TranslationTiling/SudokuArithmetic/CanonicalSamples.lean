@@ -34,7 +34,7 @@ theorem digit_mul_unit (r : ℕ) (hp : r.Prime) {M n : ℤ} (hM : M ≠ 0)
       lastDigit_val_of_ne_zero r hp hM, Int.cast_mul]
 
 theorem canonical_scaled_coefficients (r : ℕ) (hp : r.Prime) (hlarge : 200 < r)
-    (hr : r ^ 2 ≤ Width) {V : Column → ℤ → (ZMod r)ˣ} {B : ZMod r} {K : ℕ}
+    (hr : ArithmeticRule.wordWidth r ≤ Width) {V : Column → ℤ → (ZMod r)ˣ} {B : ZMod r} {K : ℕ}
     (hC : CanonicalArithmetic r hp V B K) (M : ℤ) (hM : M ≠ 0)
     (hdepth : padicValInt r M + 1 ≤ K) (a b : ℤ)
     (hab : ¬ (r : ℤ) ∣ a ∨ ¬ (r : ℤ) ∣ b)
@@ -49,16 +49,16 @@ theorem canonical_scaled_coefficients (r : ℕ) (hp : r.Prime) (hlarge : 200 < r
     rw [hC.2 (sample k) _ hnz (by rw [hv]; omega), hd]
     simp only [Int.cast_natCast, mul_assoc]
   · intro k
-    obtain ⟨hnz, hv, hd⟩ := digit_mul_unit r hp hM (sample_not_dvd r hlarge k)
+    obtain ⟨hnz, hv, hd⟩ := digit_mul_unit r hp hM (sample_not_dvd r hlarge (primeIndex k))
     have hr0 : (r : ℤ) ≠ 0 := Int.natCast_ne_zero.mpr hp.ne_zero
-    have he : M * (primeSample r hr hlarge k).val = (r : ℤ) * (M * (sample k).val) := by
-      simp only [primeSample, sample, Nat.cast_mul, Nat.cast_add, Nat.cast_one]
+    have he : M * (primeSample r hr hlarge k).val = (r : ℤ) * (M * (sample (primeIndex k)).val) := by
+      simp only [primeSample, sample, primeIndex, Nat.cast_mul, Nat.cast_add, Nat.cast_one]
       ring
     have hv' : padicValInt r (M * (primeSample r hr hlarge k).val) = padicValInt r M + 1 := by
       rw [he, padicValInt.mul hr0 hnz, padicValInt_self, hv]
       omega
     rw [hC.2 _ _ (by rw [he]; exact mul_ne_zero hr0 hnz) (by rwa [hv']), he]
-    rw [show (r : ℤ) * (M * (sample k).val) = (r : ℤ) ^ 1 * (M * (sample k).val) by rw [pow_one],
+    rw [show (r : ℤ) * (M * (sample (primeIndex k)).val) = (r : ℤ) ^ 1 * (M * (sample (primeIndex k)).val) by rw [pow_one],
       lastDigit_mul_prime_pow, hd]
     simp only [Int.cast_natCast, mul_assoc]
 

@@ -84,7 +84,7 @@ theorem normalized_line_coefficients {r : ℕ} (hp : r.Prime) (hlarge : 200 < r)
 
 /-- The vertical coefficient is unchanged when one prime factor is removed. -/
 theorem rescale_vertical_coefficient {r : ℕ} (hp : r.Prime) (hlarge : 200 < r)
-    (hr : r ^ 2 ≤ Width) {V : Column → ℤ → (ZMod r)ˣ} (hV : ArithmeticLineRule r V)
+    (hr : ArithmeticRule.wordWidth r ≤ Width) {V : Column → ℤ → (ZMod r)ˣ} (hV : ArithmeticLineRule r V)
     {B A₁ B₁ C₁ : ZMod r} (hB : B ≠ 0) (hH : FullAffineApproximation V 0 B 0)
     (hH₁ : FullAffineApproximation (arithmeticReparametrize V r 0 0) A₁ B₁ C₁) :
     B₁ = B := by
@@ -94,51 +94,84 @@ theorem rescale_vertical_coefficient {r : ℕ} (hp : r.Prime) (hlarge : 200 < r)
     (by simpa only [ArithmeticRule.AffineApproximation, arithmeticRestriction,
       arithmeticReparametrize, zero_mul,
       add_zero, ArithmeticRule.rescale] using hH₁.restrict hr)
-  obtain ⟨a, b, hab, ht⟩ := hV 1 0
-  obtain ⟨ha, hb⟩ := normalized_line_coefficients hp hlarge hH hB 1 0 a b hab ht
-    (Or.inl (by simp))
-  simp only [Int.cast_one, mul_one, Int.cast_zero, mul_zero] at ha hb
-  have hbd : (r : ℤ) ∣ b := (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).mp hb
-  obtain ⟨z, hz⟩ := hbd
-  let x : Fin 4 → ZMod r := fun i => (i.val : ZMod r)
-  have hx : Function.Injective x := by
-    simpa only [zero_add, Int.cast_natCast] using
-      (ArithmeticRule.four_residues_injective (p := r) (by omega) 0)
-  obtain ⟨i, j, hij, hi, hi', hj, hj'⟩ := ArithmeticRule.two_common_nonzero_of_four
-    x hx (a : ZMod r) (z : ZMod r) B₁ C₁ (Or.inl (by rwa [ha])) (Or.inl hB₁)
-  let c : Fin 4 → Column := fun k => ⟨r * k.val, by
-    have := k.isLt; have := hp.one_lt; nlinarith⟩
-  have agrees (k : Fin 4) (hk : (a : ZMod r) * x k + (z : ZMod r) ≠ 0)
-      (hk' : B₁ * x k + C₁ ≠ 0) :
-      (a : ZMod r) * x k + (z : ZMod r) = B₁ * x k + C₁ := by
-    have hcv : ((c k).val : ℤ) = (r : ℤ) * k.val := by simp only [c, Nat.cast_mul]
-    have he : a * (c k).val + b = (r : ℤ) * (a * k.val + z) := by
-      rw [hcv, hz]; ring
-    have hn : ¬ (r : ℤ) ∣ a * k.val + z := by
+  have htwo : (2:ZMod r)≠0 := by
+    intro h
+    have hd := (ZMod.natCast_eq_zero_iff 2 r).mp h
+    exact Nat.not_dvd_of_pos_of_lt (by decide) (by omega) hd
+  have hinj : Function.Injective (fun k : Fin 6 => B₁*(k.val:ZMod r)+C₁) := by
+    intro i j he
+    have hh := mul_left_cancel₀ hB₁ (add_right_cancel he)
+    have hv := congrArg ZMod.val hh
+    rw [ZMod.val_natCast_of_lt (by have := i.isLt; omega),
+      ZMod.val_natCast_of_lt (by have := j.isLt; omega)] at hv
+    exact Fin.ext hv
+  have hshift : ∃ t : ℤ, ∀ k : Fin 3, B₁*((t+k.val:ℤ):ZMod r)+C₁≠0 := by
+    by_cases h0 : ∀ k : Fin 3, B₁*(k.val:ZMod r)+C₁≠0
+    · exact ⟨0,by simpa using h0⟩
+    · push_neg at h0
+      obtain ⟨j,hj⟩ := h0
+      refine ⟨3,fun k hk => ?_⟩
+      have hh : B₁*((3+k.val:ℕ):ZMod r)+C₁=B₁*(j.val:ZMod r)+C₁ := by
+        simpa using hk.trans hj.symm
+      have he := hinj (a₁:=⟨3+k.val,by have := k.isLt; omega⟩) (a₂:=⟨j.val,by have := j.isLt; omega⟩) hh
+      have hev := congrArg Fin.val he
+      change 3+k.val=j.val at hev
+      have := j.isLt
+      omega
+  obtain ⟨t,htnonzero⟩ := hshift
+  obtain ⟨a,b,hab,ht⟩ := hV 1 ((r:ℤ)*t)
+  obtain ⟨ha,hb⟩ := normalized_line_coefficients hp hlarge hH hB 1 ((r:ℤ)*t) a b hab ht (Or.inl (by simp))
+  simp only [Int.cast_one,mul_one,Int.cast_mul,Int.cast_natCast,ZMod.natCast_self,zero_mul,mul_zero] at ha hb
+  have hbd : (r:ℤ)∣b := (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).mp hb
+  obtain ⟨z,hz⟩ := hbd
+  have ha0 : (a:ZMod r)≠0 := by rwa [ha]
+  let c : Fin 3 → Column := fun k => ⟨r*k.val,by
+    have hk := k.isLt
+    have hr' : 2*r+2≤Width := hr
+    nlinarith⟩
+  have agrees (k : Fin 3) (hk : (a:ZMod r)*(k.val:ZMod r)+(z:ZMod r)≠0) :
+      (a:ZMod r)*(k.val:ZMod r)+(z:ZMod r)=B₁*(k.val:ZMod r)+(B₁*(t:ZMod r)+C₁) := by
+    have hcv : ((c k).val:ℤ)=(r:ℤ)*k.val := by simp only [c,Nat.cast_mul]
+    have he : a*(c k).val+b=(r:ℤ)*(a*k.val+z) := by rw [hcv,hz]; ring
+    have hn : ¬(r:ℤ)∣a*k.val+z := by
       intro hd
       apply hk
-      simpa only [x, Int.cast_add, Int.cast_mul, Int.cast_natCast] using
+      simpa only [Int.cast_add,Int.cast_mul,Int.cast_natCast] using
         (ZMod.intCast_zmod_eq_zero_iff_dvd _ r).mpr hd
-    have hr0 : (r : ℤ) ≠ 0 := Int.natCast_ne_zero.mpr hp.ne_zero
-    have hn2 : ¬ (r : ℤ) ^ 2 ∣ a * (c k).val + b := by
+    have hr0 : (r:ℤ)≠0 := Int.natCast_ne_zero.mpr hp.ne_zero
+    have hn2 : ¬(r:ℤ)^2∣a*(c k).val+b := by
       intro hd
       apply hn
       apply (Int.mul_dvd_mul_iff_left hr0).mp
-      simpa only [he, pow_two] using hd
-    have ht' := (arithmetic_tests r _ a b hab ht (c k)).2
-      ⟨a * k.val + z, he⟩ hn2
-    simp only [one_mul, add_zero] at ht'
-    rw [he, Int.mul_ediv_cancel_left _ hr0, hcv] at ht'
-    simp only [Int.cast_add, Int.cast_mul, Int.cast_natCast] at ht'
-    have hnform : A₁ * ((c k).val : ZMod r) + B₁ * (k.val : ZMod r) + C₁ =
-        B₁ * x k + C₁ := by
-      simp [c, x]
-    have hh := hH₁.2 (c k) (k.val : ℤ) (by
-      simpa only [Int.cast_natCast, hnform] using hk')
-    simp only [arithmeticReparametrize, zero_mul, add_zero] at hh
-    exact ht'.symm.trans (by simpa only [Int.cast_natCast, hnform, x] using hh)
-  obtain ⟨hcoeff, _⟩ := ArithmeticRule.affine_coefficients_eq_of_two
-    (fun he => hij (hx he)) (agrees i hi hi') (agrees j hj hj')
-  exact hcoeff.symm.trans ha
+      simpa only [he,pow_two] using hd
+    have ht' := (arithmetic_tests r _ a b hab ht (c k)).2 ⟨a*k.val+z,he⟩ hn2
+    simp only [one_mul] at ht'
+    rw [he,Int.mul_ediv_cancel_left _ hr0,hcv] at ht'
+    simp only [Int.cast_add,Int.cast_mul,Int.cast_natCast] at ht'
+    have hh := hH₁.2 (c k) (t+k.val) (by simpa [c] using htnonzero k)
+    simp only [arithmeticReparametrize,zero_mul,add_zero] at hh
+    have hearg : (r:ℤ)*(t+k.val)=(r:ℤ)*k.val+(r:ℤ)*t := by ring
+    rw [hearg] at hh
+    have heq := ht'.symm.trans hh
+    simpa [c,mul_add,add_assoc,add_comm,add_left_comm] using heq
+  have hslope : (a:ZMod r)=B₁ := by
+    by_cases hz0 : (z:ZMod r)=0
+    · have h1 := agrees 1 (by simpa [hz0] using ha0)
+      have h2 := agrees 2 (by simpa [hz0,mul_comm] using mul_ne_zero htwo ha0)
+      norm_num at h1 h2
+      linear_combination h2-h1
+    · have h0 := agrees 0 (by simpa using hz0)
+      norm_num at h0
+      by_cases hz1 : (a:ZMod r)+z=0
+      · have hz2 : (a:ZMod r)*2+z≠0 := by
+          intro he; apply ha0; linear_combination he-hz1
+        have h2 := agrees 2 (by simpa using hz2)
+        norm_num at h2
+        apply mul_left_cancel₀ htwo
+        linear_combination h2-h0
+      · have h1 := agrees 1 (by simpa using hz1)
+        norm_num at h1
+        linear_combination h1-h0
+  exact hslope.symm.trans ha
 
 end TranslationTiling.Sudoku

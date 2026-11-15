@@ -22,7 +22,9 @@ def sample (k : Fin 4) : Column :=
     have : 5 < Width := by decide
     omega⟩
 
-def primeSample (r : ℕ) (hr : r ^ 2 ≤ Width) (hlarge : 200 < r) (k : Fin 4) : Column :=
+def primeIndex (k : Fin 2) : Fin 4 := ⟨k.val,by have := k.isLt; omega⟩
+
+def primeSample (r : ℕ) (hr : ArithmeticRule.wordWidth r ≤ Width) (hlarge : 200 < r) (k : Fin 2) : Column :=
   ⟨r * (k.val + 1), by have := k.isLt; nlinarith⟩
 
 theorem sample_injective_mod (r : ℕ) (hlarge : 200 < r) :
@@ -55,13 +57,13 @@ theorem word_coefficients_from_four (r : ℕ) (hp : r.Prime) (hlarge : 200 < r)
 
 /-- The valuation-one samples force the intercept to vanish modulo `r²`. -/
 theorem scaled_word_coefficients (r : ℕ) (hp : r.Prime) (hlarge : 200 < r)
-    (hr : r ^ 2 ≤ Width) (V : Column → (ZMod r)ˣ) (a b : ℤ)
+    (hr : ArithmeticRule.wordWidth r ≤ Width) (V : Column → (ZMod r)ˣ) (a b : ℤ)
     (hab : ¬ (r : ℤ) ∣ a ∨ ¬ (r : ℤ) ∣ b)
     (ht : ∀ n u, lowValuation r (a * n.val + b) = some u → u ≤ threshold r a →
       (V n).val = lowDigit r (a * n.val + b))
     (c : ZMod r) (hc : c ≠ 0)
     (hsmall : ∀ k, (V (sample k)).val = c * ((sample k).val : ZMod r))
-    (hprime : ∀ k, (V (primeSample r hr hlarge k)).val = c * ((sample k).val : ZMod r)) :
+    (hprime : ∀ k, (V (primeSample r hr hlarge k)).val = c * ((sample (primeIndex k)).val : ZMod r)) :
     (a : ZMod r) = c ∧ (r : ℤ) ^ 2 ∣ b := by
   let : Fact r.Prime := ⟨hp⟩
   obtain ⟨ha, hb⟩ := word_coefficients_from_four r hp hlarge V a b hab
@@ -70,19 +72,16 @@ theorem scaled_word_coefficients (r : ℕ) (hp : r.Prime) (hlarge : 200 < r)
   have hbd : (r : ℤ) ∣ b := (ZMod.intCast_zmod_eq_zero_iff_dvd _ r).mp hb
   obtain ⟨z, hz⟩ := hbd
   have ha0 : (a : ZMod r) ≠ 0 := by rwa [ha]
-  have hz0 : (z : ZMod r) = 0 := by
-    apply (affine_eq_from_four
-      (fun k => ((sample k).val : ZMod r))
-      (fun k => (V (primeSample r hr hlarge k)).val)
-      (sample_injective_mod r hlarge) (a : ZMod r) (z : ZMod r) c 0
-      (Or.inl ha0) (Or.inl hc) ?_ (fun k _ => by simpa using hprime k)).2
-    intro k hk
+  have agrees (k : Fin 2)
+      (hk : (a:ZMod r)*((sample (primeIndex k)).val:ZMod r)+(z:ZMod r)≠0) :
+      (a:ZMod r)*((sample (primeIndex k)).val:ZMod r)+(z:ZMod r)=
+        (a:ZMod r)*((sample (primeIndex k)).val:ZMod r) := by
     let n := primeSample r hr hlarge k
-    have hnv : (n.val : ℤ) = (r : ℤ) * (sample k).val := by
-      simp only [n, primeSample, sample, Nat.cast_mul, Nat.cast_add, Nat.cast_one]
-    have he : a * n.val + b = (r : ℤ) * (a * (sample k).val + z) := by
+    have hnv : (n.val : ℤ) = (r : ℤ) * (sample (primeIndex k)).val := by
+      simp only [n, primeSample, sample, primeIndex, Nat.cast_mul, Nat.cast_add, Nat.cast_one]
+    have he : a * n.val + b = (r : ℤ) * (a * (sample (primeIndex k)).val + z) := by
       rw [hnv, hz]; ring
-    have hnd : ¬ (r : ℤ) ∣ a * (sample k).val + z := by
+    have hnd : ¬ (r : ℤ) ∣ a * (sample (primeIndex k)).val + z := by
       intro hd
       apply hk
       simpa only [Int.cast_add, Int.cast_mul, Int.cast_natCast] using
@@ -93,9 +92,23 @@ theorem scaled_word_coefficients (r : ℕ) (hp : r.Prime) (hlarge : 200 < r)
       apply hnd
       apply (Int.mul_dvd_mul_iff_left hr0).mp
       simpa only [he, pow_two] using hd
-    have hh := (arithmetic_tests r V a b hab ht n).2 ⟨a * (sample k).val + z, he⟩ hnd2
+    have hh := (arithmetic_tests r V a b hab ht n).2 ⟨a * (sample (primeIndex k)).val + z, he⟩ hnd2
     rw [he, Int.mul_ediv_cancel_left _ hr0] at hh
-    simpa only [n, Int.cast_add, Int.cast_mul, Int.cast_natCast] using hh
+    have hquot : (V n).val=(a:ZMod r)*((sample (primeIndex k)).val:ZMod r)+(z:ZMod r) := by
+      simpa only [Int.cast_add,Int.cast_mul,Int.cast_natCast] using hh
+    exact hquot.symm.trans (by simpa only [ha] using hprime k)
+  have hz0 : (z:ZMod r)=0 := by
+    have h1 : (a:ZMod r)+z≠0 → (a:ZMod r)+z=a := by
+      simpa [sample,primeIndex] using agrees 0
+    have h2 : 2*(a:ZMod r)+z≠0 → 2*(a:ZMod r)+z=2*a := by
+      simpa [sample,primeIndex,mul_comm] using agrees 1
+    by_cases he1 : (a:ZMod r)+z=0
+    · have he2 : 2*(a:ZMod r)+z≠0 := by
+        intro h
+        apply ha0
+        linear_combination h-he1
+      linear_combination h2 he2
+    · linear_combination h1 he1
   have hzdiv := (ZMod.intCast_zmod_eq_zero_iff_dvd z r).mp hz0
   refine ⟨ha, ?_⟩
   obtain ⟨t, ht⟩ := hzdiv

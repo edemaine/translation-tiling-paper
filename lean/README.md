@@ -103,12 +103,12 @@ have no unproved mathematical input. No unfinished proof is accepted.
 ## Cube Bound by Wang Tile Count
 
 [Compiler/CleanQuasipolynomialBound.lean](TranslationTiling/Compiler/CleanQuasipolynomialBound.lean)
-gives `(n+4)^((5*10^8)*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
+gives `(n+4)^((5*10^6)*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
 logarithms. The theorem `Size.exists_connected_tile_clean_quasipolynomial_bound`
 includes nonemptiness, face connectedness, and both tilability directions.
 Here `n` counts distinct input tiles. The one-tile specialization in
 [Compiler/QuasipolynomialBound.lean](TranslationTiling/Compiler/QuasipolynomialBound.lean)
-gives at most `2^(12*10^8)` cubes.
+gives at most `2^(12*10^6)` cubes.
 
 [Effective/MixedCode.lean](TranslationTiling/FiniteCompiler/Effective/MixedCode.lean)
 uses prefixes `00`, `11`, and `01` for the two seed classes and all other
@@ -120,24 +120,27 @@ For one Wang tile, twelve positions per column suffice.
 proves the tiling equivalence for any injective code with the exact seed predicates.
 [Effective/MixedInput.lean](TranslationTiling/FiniteCompiler/Effective/MixedInput.lean)
 implements the mixed-radix code and proves primitive recursiveness and correctness.
-All positions share their column's original slope. The board has `q² = 49,729`
+All positions share their column's original slope. The board has `2q+2 = 448`
 columns; coefficient residues use `p²q²`, and seed residues use `5pq = 235,265`.
+The shorter-board soundness proof is in `SudokuArithmetic/`: it refines the
+clean-square count, uses three prime-spaced columns in rescaling, and needs
+only two prime-multiple samples to identify the higher-digit coefficients.
 
-[Compiler/TightPrimeCounting.lean](TranslationTiling/Compiler/TightPrimeCounting.lean)
-and [TightParameters.lean](TranslationTiling/FiniteCompiler/TightParameters.lean)
-allocate ordinary useful primes below `C^(4/3)` and digit primes below `C³`.
-Only two seed primes need the large seed threshold; all useful-prime pairs
-satisfy `(a_i*b_i)^3 ≤ C^8`. Individual pair thresholds suffice for positive
-block representations, avoiding the square of the largest useful prime.
+[Compiler/SharpPrimeCounting.lean](TranslationTiling/Compiler/SharpPrimeCounting.lean)
+and [CompactParameters.lean](TranslationTiling/FiniteCompiler/CompactParameters.lean)
+allocate ordinary useful primes at most `C²` and digit primes at most `C⁵`,
+for `C ≥ 5378`. Only two seed primes need the large seed threshold; all
+useful-prime pairs satisfy `a_i*b_i ≤ C⁴`. Individual pair thresholds suffice
+for positive block representations. The common parameter budget is `C^15`.
 [Proofs/LogDifferenceBound.lean](TranslationTiling/Proofs/LogDifferenceBound.lean)
 keeps the exponential probability estimate, giving a partition modulus
 quadratic times a logarithm in the equation count.
 [Effective/FreshStack.lean](TranslationTiling/FiniteCompiler/Effective/FreshStack.lean)
 implements this bounded partition search and proves coprimality from a bound
 on the prime divisors of the finite factor.
-[TightBounds.lean](TranslationTiling/FiniteCompiler/TightBounds.lean)
-bounds the cyclic order by `C^(21*C)`, equation count by `C^(6*C)`, and
-stacked modulus by `C^(34*C)` for `C` channels.
+[CompactBounds.lean](TranslationTiling/FiniteCompiler/CompactBounds.lean)
+bounds the cyclic order by `C^(35*C)`, equation count by `C^(11*C)`, and
+stacked modulus by `C^(58*C)` for `C` channels.
 [Compiler/SparseGeometryBound.lean](TranslationTiling/Compiler/SparseGeometryBound.lean)
 counts each MSS component by `2^24`, independently of its displacement.
 [FourLayer/](TranslationTiling/FourLayer/) replaces the cubic color partition
@@ -147,8 +150,9 @@ and arbitrary-complement rigidity are proved for the concrete shape.
 [FourLayer/Compiler.lean](TranslationTiling/FourLayer/Compiler.lean) proves
 computability, correctness, connectivity, and the `K*H⁴*R³` volume bound,
 where `K = 9*2^24*972*36*8003^4`.
-[FourLayer/SizeBound.lean](TranslationTiling/FourLayer/SizeBound.lean)
-bounds this volume by `C^(103*C)`.
+With `H ≤ C^3165`, `CompactBounds.lean` bounds this volume by `C^(177*C)`.
+The earlier large-channel estimates remain in `TightParameters.lean`,
+`TightBounds.lean`, and `FourLayer/SizeBound.lean`.
 [Effective/SharpCompiler.lean](TranslationTiling/FiniteCompiler/Effective/SharpCompiler.lean)
 combines these bounds with correctness and computability.
 [Compiler/MixedLogBound.lean](TranslationTiling/Compiler/MixedLogBound.lean)
@@ -272,7 +276,7 @@ The earlier one-tile bound `2^(2^(10^29))` remains available as
 proves `Size.exists_connected_tile_closed_bound`: for `n` distinct Wang tiles,
 there is a nonempty, face-connected polycube with the same tileability and at
 most `closedCubeBound n` distinct cubes. All constants in the bound are explicit.
-Set `N = 235265` (the seed modulus), `C = 49731` (the channel count), and define:
+Set `N = 235265` (the seed modulus), `C = 450` (the channel count), and define:
 
 ```text
 U = 4^(2C+1) * (N²+438)

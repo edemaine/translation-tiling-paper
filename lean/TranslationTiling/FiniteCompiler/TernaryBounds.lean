@@ -8,13 +8,13 @@ set_option maxRecDepth 10000
 set_option maxHeartbeats 2000000
 
 /-- The ternary compiler has at least twenty copies of the smaller board. -/
-theorem seedModulus_le_channels {C : ℕ} (hC : 20 * Sudoku.Width + 2 ≤ C) :
-    residueModulus ≤ C := by
+theorem seedModulus_le_channels_sq {C : ℕ} (hC : 20 * Sudoku.Width + 2 ≤ C) :
+    residueModulus ≤ C^2 := by
   rw [residueModulus_eq]
   norm_num [Sudoku.SeedModulus,Sudoku.Width,Sudoku.p,Sudoku.q] at *
-  omega
+  nlinarith
 
-theorem ternary_usefulPrimeCap_le {C : ℕ} (hC : 20 * Sudoku.Width + 2 ≤ C) :
+theorem ternary_usefulPrimeCap_le {C : ℕ} (hC : 994582 ≤ C) :
     usefulPrimeCap C ≤ C ^ 4 := by
   have hbig : 994582 ≤ C := by simpa [Sudoku.Width,Sudoku.q] using hC
   have hs : 8 * (usefulStart + 2 * C + 1) ≤ C ^ 2 := by
@@ -26,7 +26,7 @@ theorem ternary_usefulPrimeCap_le {C : ℕ} (hC : 20 * Sudoku.Width + 2 ≤ C) :
     _ ≤ (C ^ 2) ^ 2 := Nat.pow_le_pow_left hs 2
     _ = _ := by ring
 
-theorem ternary_digitPrimeCap_le {C : ℕ} (hC : 20 * Sudoku.Width + 2 ≤ C) :
+theorem ternary_digitPrimeCap_le {C : ℕ} (hC : 994582 ≤ C) :
     digitPrimeCap 3 C ≤ C ^ 18 := by
   have hbig : 994582 ≤ C := by simpa [Sudoku.Width,Sudoku.q] using hC
   have h1 : 1 ≤ C := by omega
@@ -45,7 +45,7 @@ theorem ternary_digitPrimeCap_le {C : ℕ} (hC : 20 * Sudoku.Width + 2 ≤ C) :
     _ ≤ C ^ 2 * C ^ 16 := Nat.mul_le_mul_right _ (by nlinarith)
     _ = _ := by ring
 
-theorem ternary_parameterBase_le {C : ℕ} (hC : 20 * Sudoku.Width + 2 ≤ C) :
+theorem ternary_parameterBase_le {C : ℕ} (hC : 994582 ≤ C) :
     parameterBase 3 Sudoku.Width C ≤ C ^ 73 := by
   have hbig : 256 ≤ C := by
     have : 256 ≤ Sudoku.Width := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
@@ -62,8 +62,8 @@ theorem ternary_parameterBase_le {C : ℕ} (hC : 20 * Sudoku.Width + 2 ≤ C) :
   have hpow {k : ℕ} (hk : k ≤ 72) : C ^ k ≤ C ^ 72 := Nat.pow_le_pow_right hC1 hk
   have h1 : C ≤ C ^ 72 := by simpa using hpow (k := 1) (by omega)
   have h5 := hpow (k := 5) (by omega)
-  have hN : Sudoku.Width ≤ C := by omega
-  have hSeed : Sudoku.SeedModulus ≤ C := by simpa only [residueModulus_eq] using seedModulus_le_channels hC
+  have hN : Sudoku.Width ≤ C := (show Sudoku.Width≤994582 by norm_num [Sudoku.Width,Sudoku.q]).trans hC
+  have hSeed : Sudoku.SeedModulus ≤ C := by norm_num [Sudoku.SeedModulus,Sudoku.p,Sudoku.q]; omega
   have hsum : parameterBase 3 Sudoku.Width C ≤ 7 * C ^ 72 := by
     unfold parameterBase
     rw [residueModulus_eq]
@@ -86,7 +86,7 @@ def SmallPrimes : Prop :=
   (∀ i, E.a i ≤ channelCount T ^ 5 ∧ E.b i ≤ channelCount T ^ 5) ∧
   ∀ i j, E.digitPrime i j ≤ channelCount T ^ 18
 
-theorem smallPrimes_of_caps (hB : T.alphabet = 3) (hC : 20 * Sudoku.Width + 2 ≤ channelCount T)
+theorem smallPrimes_of_caps (hB : T.alphabet = 3) (hC : 994582 ≤ channelCount T)
     (hu : ∀ i, E.a i ≤ usefulPrimeCap (channelCount T) ∧ E.b i ≤ usefulPrimeCap (channelCount T))
     (hp : ∀ i j, E.digitPrime i j ≤ digitPrimeCap T.alphabet (channelCount T)) : SmallPrimes E := by
   have hbig : 256 ≤ channelCount T := by
@@ -124,15 +124,18 @@ theorem ternary_cyclicOrder_le (hB : T.alphabet = 3) (hp : SmallPrimes E)
         exact Nat.mul_le_mul (Nat.mul_le_mul (Nat.pow_le_pow_left (ternary_r_le E hB hp i) 2)
           (hp.1 i).1) (hp.1 i).2
       _ = _ := by ring
-  have hN : residueModulus ≤ C := seedModulus_le_channels hC
+  have hN : residueModulus ≤ C^2 := seedModulus_le_channels_sq hC
   calc
-    _ ≤ C ^ 2 * ∏ _i : Channel T, C ^ 118 :=
-      Nat.mul_le_mul (Nat.pow_le_pow_left hN 2) (Finset.prod_le_prod (fun i _ => hblock i))
-    _ = C ^ 2 * (C ^ 118) ^ C := by
+    _ ≤ C ^ 4 * ∏ _i : Channel T, C ^ 118 :=
+      by simpa only [EncodingParameters.cyclicOrder,← pow_mul] using Nat.mul_le_mul (Nat.pow_le_pow_left hN 2) (Finset.prod_le_prod (fun i _ => hblock i))
+    _ = C ^ 4 * (C ^ 118) ^ C := by
       simp only [Finset.prod_const, Finset.card_univ, channel_card]
       rfl
-    _ = C ^ (118 * C + 2) := by rw [← pow_mul, ← pow_add]; congr 1; omega
-    _ ≤ _ := Nat.pow_le_pow_right h1 (by unfold C channelCount; omega)
+    _ = C ^ (118 * C + 4) := by rw [← pow_mul, ← pow_add]; congr 1; omega
+    _ ≤ _ := Nat.pow_le_pow_right h1 (by
+      have hW : 1≤Sudoku.Width := by decide
+      change 118*channelCount T+4≤119*channelCount T
+      omega)
 
 theorem digitSubgroup_card_le_prime (i : Channel T) (j : Label T i) :
     Fintype.card (digitSubgroup E i j) ≤ E.digitPrime i j := by
@@ -170,8 +173,8 @@ theorem smallPrimes_budget (hB : T.alphabet = 3) (hp : SmallPrimes E)
     ParameterBudget E (channelCount T ^ 73) := by
   have h1 : 1 ≤ channelCount T := by unfold channelCount; omega
   have hself : channelCount T ≤ channelCount T ^ 73 := Nat.le_self_pow (by decide) _
-  have hN : residueModulus ≤ channelCount T := seedModulus_le_channels hC
-  exact ⟨(by unfold channelCount; omega : 2 ≤ channelCount T).trans hself, hN.trans hself,
+  have hN : residueModulus ≤ channelCount T^73 := (seedModulus_le_channels_sq hC).trans (Nat.pow_le_pow_right h1 (by decide))
+  exact ⟨(by unfold channelCount; omega : 2 ≤ channelCount T).trans hself, hN,
     fun i => (ternary_r_le E hB hp i).trans (Nat.pow_le_pow_right h1 (by omega)),
     fun i => (hp.1 i).1.trans (Nat.pow_le_pow_right h1 (by omega)),
     fun i => (hp.1 i).2.trans (Nat.pow_le_pow_right h1 (by omega)),

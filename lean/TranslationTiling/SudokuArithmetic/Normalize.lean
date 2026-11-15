@@ -47,7 +47,7 @@ theorem exists_normalize {T : LeanWang.TileSet} {W : Array T}
       (huq.cast_eq.trans huᵩ) (hvq.cast_eq.trans hvᵩ)
 
 theorem arithmetic_rescale_nonconstant {r : ℕ} (hp : r.Prime) (hlarge : 200 < r)
-    (hr : r ^ 2 ≤ Width) {V : Column → ℤ → (ZMod r)ˣ} (hV : ArithmeticLineRule r V)
+    (hr : ArithmeticRule.wordWidth r ≤ Width) {V : Column → ℤ → (ZMod r)ˣ} (hV : ArithmeticLineRule r V)
     {B : ZMod r} (hB : B ≠ 0) (hH : FullAffineApproximation V 0 B 0) :
     ∀ n, ∃ m m', arithmeticReparametrize V r 0 0 n m ≠
       arithmeticReparametrize V r 0 0 n m' := by

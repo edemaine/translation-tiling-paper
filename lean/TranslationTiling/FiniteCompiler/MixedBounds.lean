@@ -9,13 +9,13 @@ set_option maxRecDepth 10000
 set_option maxHeartbeats 2000000
 
 /-- The ternary compiler has at least twelve copies of the smaller board. -/
-theorem seedModulus_le_channels {C : ℕ} (hC : 12 * Sudoku.Width + 2 ≤ C) :
+theorem seedModulus_le_channels {C : ℕ} (hC : 596750 ≤ C) :
     residueModulus ≤ C := by
   rw [residueModulus_eq]
   norm_num [Sudoku.SeedModulus,Sudoku.Width,Sudoku.p,Sudoku.q] at *
   omega
 
-theorem mixed_usefulPrimeCap_le {C : ℕ} (hC : 12 * Sudoku.Width + 2 ≤ C) :
+theorem mixed_usefulPrimeCap_le {C : ℕ} (hC : 596750 ≤ C) :
     usefulPrimeCap C ≤ 2 * C ^ 4 := by
   have hbig : 596750 ≤ C := by simpa [Sudoku.Width,Sudoku.q] using hC
   have hs : 6 * (usefulStart + 2 * C + 1) ≤ C ^ 2 := by
@@ -27,7 +27,7 @@ theorem mixed_usefulPrimeCap_le {C : ℕ} (hC : 12 * Sudoku.Width + 2 ≤ C) :
   nlinarith [sq_nonneg (C ^ 2 - 6 * (usefulStart + 2 * C + 1) : ℤ),
     Nat.pow_le_pow_left hs 2,show (C ^ 2)^2 = C ^ 4 by ring]
 
-theorem mixed_digitPrimeCap_le {C : ℕ} (hC : 12 * Sudoku.Width + 2 ≤ C) :
+theorem mixed_digitPrimeCap_le {C : ℕ} (hC : 596750 ≤ C) :
     digitPrimeCap 3 C ≤ C ^ 17 := by
   have hbig : 596750 ≤ C := by simpa [Sudoku.Width,Sudoku.q] using hC
   have hU := mixed_usefulPrimeCap_le hC
@@ -45,7 +45,7 @@ theorem mixed_digitPrimeCap_le {C : ℕ} (hC : 12 * Sudoku.Width + 2 ≤ C) :
     _ ≤ C * C ^ 16 := Nat.mul_le_mul_right _ (by omega)
     _ = _ := by ring
 
-theorem mixed_parameterBase_le {C : ℕ} (hC : 12 * Sudoku.Width + 2 ≤ C) :
+theorem mixed_parameterBase_le {C : ℕ} (hC : 596750 ≤ C) :
     parameterBase 3 Sudoku.Width C ≤ C ^ 73 := by
   have hbig : 256 ≤ C := by
     have : 256 ≤ Sudoku.Width := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
@@ -63,7 +63,7 @@ theorem mixed_parameterBase_le {C : ℕ} (hC : 12 * Sudoku.Width + 2 ≤ C) :
   have hpow {k : ℕ} (hk : k ≤ 72) : C ^ k ≤ C ^ 72 := Nat.pow_le_pow_right hC1 hk
   have h1 : C ≤ C ^ 72 := by simpa using hpow (k := 1) (by omega)
   have h5 := hpow (k := 5) (by omega)
-  have hN : Sudoku.Width ≤ C := by omega
+  have hN : Sudoku.Width ≤ C := (show Sudoku.Width≤596750 by norm_num [Sudoku.Width,Sudoku.q]).trans hC
   have hSeed : Sudoku.SeedModulus ≤ C := by simpa only [residueModulus_eq] using seedModulus_le_channels hC
   have hsum : parameterBase 3 Sudoku.Width C ≤ 7 * C ^ 72 := by
     unfold parameterBase
@@ -87,7 +87,7 @@ def SmallPrimes : Prop :=
   (∀ i, E.a i ≤ 2 * channelCount T ^ 4 ∧ E.b i ≤ 2 * channelCount T ^ 4) ∧
   ∀ i j, E.digitPrime i j ≤ channelCount T ^ 17
 
-theorem smallPrimes_of_caps (hB : T.alphabet = 3) (hC : 12 * Sudoku.Width + 2 ≤ channelCount T)
+theorem smallPrimes_of_caps (hB : T.alphabet = 3) (hC : 596750 ≤ channelCount T)
     (hu : ∀ i, E.a i ≤ usefulPrimeCap (channelCount T) ∧ E.b i ≤ usefulPrimeCap (channelCount T))
     (hp : ∀ i j, E.digitPrime i j ≤ digitPrimeCap T.alphabet (channelCount T)) : SmallPrimes E := by
   have hbig : 256 ≤ channelCount T := by
@@ -110,7 +110,7 @@ theorem mixed_r_le (hB : T.alphabet = 3) (hp : SmallPrimes E) (i : Channel T) :
     _ ≤ _ := Nat.pow_le_pow_right hC (by have := mixed_label_card hB i; omega)
 
 theorem mixed_cyclicOrder_le (hB : T.alphabet = 3) (hp : SmallPrimes E)
-    (hC : 12 * Sudoku.Width + 2 ≤ channelCount T) :
+    (hC : 596750 ≤ channelCount T) :
     E.cyclicOrder ≤ channelCount T ^ (112 * channelCount T) := by
   let C := channelCount T
   have h1 : 1 ≤ C := by unfold C channelCount; omega
@@ -137,7 +137,7 @@ theorem mixed_cyclicOrder_le (hB : T.alphabet = 3) (hp : SmallPrimes E)
     _ ≤ _ := Nat.pow_le_pow_right h1 (by unfold C channelCount; omega)
 
 set_option maxHeartbeats 200000 in
-theorem mixed_cycleTiles_card_le (hp : SmallPrimes E) (hC : 12 * Sudoku.Width + 2 ≤ channelCount T)
+theorem mixed_cycleTiles_card_le (hp : SmallPrimes E) (hC : 596750 ≤ channelCount T)
     {t : ℕ} [NeZero t] (cycle : ZMod t ↪ Channel T) (labels : ∀ j, Label T (cycle j)) :
     (sparseCycleTiles E cycle labels).card ≤ channelCount T ^ (26 * channelCount T) := by
   have ht : t ≤ channelCount T := by
@@ -162,7 +162,7 @@ theorem mixed_cycleTiles_card_le (hp : SmallPrimes E) (hC : 12 * Sudoku.Width + 
     _ ≤ _ := Nat.pow_le_pow_right (by unfold channelCount; omega) (by omega)
 
 theorem smallPrimes_budget (hB : T.alphabet = 3) (hp : SmallPrimes E)
-    (hC : 12 * Sudoku.Width + 2 ≤ channelCount T) (hS : ∀ n, (T.slope n).natAbs ≤ Sudoku.Width) :
+    (hC : 596750 ≤ channelCount T) (hS : ∀ n, (T.slope n).natAbs ≤ Sudoku.Width) :
     ParameterBudget E (channelCount T ^ 73) := by
   have h1 : 1 ≤ channelCount T := by unfold channelCount; omega
   have hself : channelCount T ≤ channelCount T ^ 73 := Nat.le_self_pow (by decide) _
@@ -175,10 +175,10 @@ theorem smallPrimes_budget (hB : T.alphabet = 3) (hp : SmallPrimes E)
     fun i => (hp.1 i).2.trans ((show 2*channelCount T^4 ≤ channelCount T^5 by
       calc _ ≤ channelCount T * channelCount T^4 := Nat.mul_le_mul_right _ (by unfold channelCount; omega)
            _ = _ := by ring).trans (Nat.pow_le_pow_right h1 (by omega))),
-    fun n => (hS n).trans ((by omega : Sudoku.Width ≤ channelCount T).trans hself)⟩
+    fun n => (hS n).trans (((show Sudoku.Width≤596750 by norm_num [Sudoku.Width,Sudoku.q]).trans hC).trans hself)⟩
 
 theorem mixed_wordConstraintTiles_card_le (hB : T.alphabet = 3) (hp : SmallPrimes E)
-    (hC : 12 * Sudoku.Width + 2 ≤ channelCount T) :
+    (hC : 596750 ≤ channelCount T) :
     (wordConstraintTiles E).card ≤ channelCount T ^ (27 * channelCount T) := by
   let C := channelCount T
   have hwords : Fintype.card (Word T) ≤ C ^ C := by
@@ -197,7 +197,7 @@ theorem mixed_wordConstraintTiles_card_le (hB : T.alphabet = 3) (hp : SmallPrime
     _ = _ := by rw [← pow_add]; congr 1; omega
 
 theorem mixed_seedConstraintTiles_card_le (hB : T.alphabet = 3) (hp : SmallPrimes E)
-    (hbig : 6 ≤ channelCount T) (hC : 12 * Sudoku.Width + 2 ≤ channelCount T) :
+    (hbig : 6 ≤ channelCount T) (hC : 596750 ≤ channelCount T) :
     (seedConstraintTiles E).card ≤ channelCount T ^ (27 * channelCount T) := by
   let C := channelCount T
   have hindex : Fintype.card (Fin 2 × Column T × Symbol T) ≤ C ^ 2 := by
@@ -218,7 +218,7 @@ theorem mixed_seedConstraintTiles_card_le (hB : T.alphabet = 3) (hp : SmallPrime
     _ ≤ _ := Nat.pow_le_pow_right (by unfold C channelCount; omega) (by dsimp [C]; omega)
 
 theorem mixed_testTiles_card_le (hB : T.alphabet = 3) (hp : SmallPrimes E)
-    (hC : 12 * Sudoku.Width + 2 ≤ channelCount T) (hS : ∀ n, (T.slope n).natAbs ≤ Sudoku.Width) :
+    (hC : 596750 ≤ channelCount T) (hS : ∀ n, (T.slope n).natAbs ≤ Sudoku.Width) :
     (testTiles E).card ≤ channelCount T ^ (28 * channelCount T) := by
   let C := channelCount T
   have hbig : 300 ≤ C := by
@@ -269,7 +269,7 @@ theorem mixed_testTiles_card_le (hB : T.alphabet = 3) (hp : SmallPrimes E)
     _ ≤ _ := Nat.pow_le_pow_right h1 (by omega)
 
 
-theorem mixed_modulus_cap_le {C : ℕ} (hC : 12 * Sudoku.Width + 2 ≤ C) :
+theorem mixed_modulus_cap_le {C : ℕ} (hC : 596750 ≤ C) :
     separateModulusCap (C ^ (112*C)) (C ^ (28*C)) ≤ C ^ (253*C) := by
   have hbig : 24 ≤ C := by
     have hw : 24 ≤ Sudoku.Width := by decide
@@ -290,7 +290,7 @@ theorem mixed_modulus_cap_le {C : ℕ} (hC : 12 * Sudoku.Width + 2 ≤ C) :
     _ ≤ C ^ (112*C) * C ^ (141*C) := Nat.mul_le_mul_left _ hq
     _ = _ := by rw [← pow_add]; congr 1; ring
 
-theorem mixed_geometry_bound {C b : ℕ} (hC : 12 * Sudoku.Width + 2 ≤ C)
+theorem mixed_geometry_bound {C b : ℕ} (hC : 596750 ≤ C)
     (hb : b ≤ C ^ 73) (hb2 : 2 ≤ b) :
     Compiler.Size.sparseGeometryCap (Size.horizontalCap b) (C ^ (253*C)) ≤ C ^ (1772*C) := by
   let M := C ^ (253*C)

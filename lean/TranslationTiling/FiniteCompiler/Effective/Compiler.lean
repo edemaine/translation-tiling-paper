@@ -171,7 +171,6 @@ def rawFamily (d : InputData) : List CyclicTile :=
   unfold rawFamily
   fun_prop
 
-def rawBudget (d : ParameterData) : ℕ := Size.parameterBase d.2.1 Sudoku.Width (d.1 + 2)
 def rawHorizontal (d : ParameterData) : ℕ := Size.horizontalCap (rawBudget d)
 def rawCountCap (d : ParameterData) : ℕ := Size.commonCap (rawBudget d) (d.1 + 2)
 

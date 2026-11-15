@@ -127,7 +127,7 @@ theorem exists_connected_tile_mixed_count_bound (T : LeanWang.TileSet) (hn : 0 <
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
       cubeCount P ≤ (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card + 2) ^
-        (103 * (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card + 2)) := by
+        (177 * (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card + 2)) := by
   have hn' : 0 < T.dedup.length := by simpa only [List.card_toFinset] using hn
   obtain ⟨hne,hc,ht,hb⟩ := FiniteCompiler.Effective.mixedCompileCore_channel_bound T.dedup hn'
   have hd : LeanWang.TilesPlane T ↔ LeanWang.TilesPlane T.dedup :=
@@ -137,13 +137,13 @@ theorem exists_connected_tile_mixed_count_bound (T : LeanWang.TileSet) (hn : 0 <
   simpa only [List.card_toFinset,FiniteCompiler.channelCount,FiniteCompiler.Effective.mixedSystem,
     FiniteCompiler.TaggedSystem.system] using hb
 
-private theorem channel_power_le_binary (C k : ℕ) (hbase : C^5≤2^96)
-    (hexp : 96*(103*C)≤5*k) : C^(103*C)≤2^k := by
+private theorem channel_power_le_binary (C k : ℕ) (hbase : C^5≤2^62)
+    (hexp : 62*(177*C)≤5*k) : C^(177*C)≤2^k := by
   apply (Nat.pow_le_pow_iff_left (by decide : 5≠0)).mp
   calc
-    (C^(103*C))^5 = (C^5)^(103*C) := by simp only [← pow_mul]; congr 1; ring
-    _ ≤ (2^96)^(103*C) := Nat.pow_le_pow_left hbase _
-    _ = 2^(96*(103*C)) := (pow_mul _ _ _).symm
+    (C^(177*C))^5 = (C^5)^(177*C) := by simp only [← pow_mul]; congr 1; ring
+    _ ≤ (2^62)^(177*C) := Nat.pow_le_pow_left hbase _
+    _ = 2^(62*(177*C)) := (pow_mul _ _ _).symm
     _ ≤ 2^(k*5) := Nat.pow_le_pow_right (by decide) (by omega)
     _ = (2^k)^5 := pow_mul _ _ _
 
@@ -152,10 +152,10 @@ theorem exists_connected_tile_one_quasipolynomial_bound (T : LeanWang.TileSet)
     (hT : T.toFinset.card = 1) :
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
-      cubeCount P ≤ 2 ^ (12 * 10 ^ 8) := by
+      cubeCount P ≤ 2 ^ (12 * 10 ^ 6) := by
   obtain ⟨P,hP,hconn,hiff,hcubes⟩ := exists_connected_tile_mixed_count_bound T (by omega)
   have hb := channel_power_le_binary
-    (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card + 2) (12 * 10 ^ 8)
+    (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card + 2) (12 * 10 ^ 6)
     (by norm_num [hT,mixedWidth_one,Sudoku.Width,Sudoku.q])
     (by norm_num [hT,mixedWidth_one,Sudoku.Width,Sudoku.q])
   exact ⟨P,hP,hconn,hiff,hcubes.trans hb⟩
