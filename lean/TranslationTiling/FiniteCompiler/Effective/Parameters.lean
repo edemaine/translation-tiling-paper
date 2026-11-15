@@ -64,7 +64,13 @@ def ParameterValid (d : ℕ × ℕ) (c : ParameterCertificate) : Prop :=
         0 < c.2.1.getD k 0 ∧ 0 < c.2.2.getD k 0 ∧
         c.1.getD k 0 = c.2.1.getD k 0 * c.1.getD (Nat.pair 0 j.1) 0 +
           c.2.2.getD k 0 * c.1.getD (Nat.pair 1 j.1) 0 ∧
-        c.1.getD k 0 ≤ digitPrimeCap d.2 (d.1 + 2)))
+        c.1.getD k 0 ≤ digitPrimeCap d.2 (d.1 + 2)) ∧
+    (¬(596750 ≤ d.1+2 ∧ d.2=3) ∨
+      (∀ i ∈ channelKeys d.1,
+        c.1.getD (Nat.pair 0 i) 0 ≤ (d.1+2)^2 ∧
+        c.1.getD (Nat.pair 1 i) 0 ≤ (d.1+2)^2) ∧
+      ∀ j ∈ digitKeys d.1 d.2,
+        c.1.getD (Nat.pair 2 (Nat.pair j.1 j.2)) 0 ≤ (d.1+2)^5))
 
 noncomputable instance (d : ℕ × ℕ) (c : ParameterCertificate) : Decidable (ParameterValid d c) := by
   unfold ParameterValid
@@ -73,7 +79,7 @@ noncomputable instance (d : ℕ × ℕ) (c : ParameterCertificate) : Decidable (
 @[fun_prop] theorem parameterValid_primrec :
     PrimrecPred (fun z : (ℕ × ℕ) × ParameterCertificate => ParameterValid z.1 z.2) := by
   simp only [ParameterValid, usefulPrimeCap, digitPrimeCap, primeThreshold,
-    pow_two]
+    pow_two,pow_succ,pow_zero,mul_one]
   fun_prop
 
 /-- Natural codes for channels and prime tags, with no arbitrary finite ordering. -/

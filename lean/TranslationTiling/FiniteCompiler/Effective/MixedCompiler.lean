@@ -2,6 +2,7 @@ import TranslationTiling.FiniteCompiler.Effective.Correctness
 import TranslationTiling.FiniteCompiler.Effective.SparseGeometry
 import TranslationTiling.FiniteCompiler.MixedBounds
 import TranslationTiling.Compiler.MixedLogBound
+import TranslationTiling.FiniteCompiler.Effective.SharpCompiler
 import TranslationTiling.Compiler.EmptyInputBound
 
 namespace TranslationTiling.FiniteCompiler.Effective
@@ -46,10 +47,10 @@ theorem mixedWangInput_computable : Computable mixedWangInput := by
   have hc := parameterCertificate_computable.comp hshape
   exact (hw.to_comp.pair ((Computable.const _).pair hc)).pair mixedPayload_primrec.to_comp
 
-def mixedCompileCore (T : LeanWang.TileSet) : Tile 3 := optimizedTile (mixedWangInput T)
+def mixedCompileCore (T : LeanWang.TileSet) : Tile 3 := sharpTile (mixedWangInput T)
 
 theorem mixedCompileCore_computable : Computable mixedCompileCore :=
-  optimizedTile_computable.comp mixedWangInput_computable
+  sharpTile_computable.comp mixedWangInput_computable
 
 theorem mixedSystem_nonnegative (T : LeanWang.TileSet) : ∀ n, 0 ≤ (mixedSystem T).slope n := by
   intro n
@@ -59,29 +60,17 @@ theorem mixedSystem_nonnegative (T : LeanWang.TileSet) : ∀ n, 0 ≤ (mixedSyst
 theorem mixedCompileCore_channel_bound (T : LeanWang.TileSet) (hn : 0 < T.length) :
     mixedCompileCore T ≠ [] ∧ FaceConnected (mixedCompileCore T) ∧
     (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles (mixedCompileCore T)) ∧
-    (mixedCompileCore T).length ≤ channelCount (mixedSystem T) ^ (1772*channelCount (mixedSystem T)) := by
+    (mixedCompileCore T).length ≤ channelCount (mixedSystem T) ^ (407*channelCount (mixedSystem T)) := by
   have hp := mixedPayload_correct T
   have hslope := TaggedSystem.slope_bound (mixedCode T)
-  obtain ⟨hne,hconn,hiff,hbound⟩ := optimizedTile_sparse_facts (mixedSystem T) (mixedPayload T) hp
-    (mixedSystem_nonnegative T) hslope
-  have hw := TaggedSystem.finite_system_iff_wang (mixedCode T) (parameters (mixedSystem T))
-  refine ⟨hne,hconn,hw.trans hiff,hbound.trans ?_⟩
-  let S := mixedSystem T
-  let C := channelCount S
-  have hC : 12*Sudoku.Width+2 ≤ C := by
+  have hC : 12*Sudoku.Width+2 ≤ channelCount (mixedSystem T) := by
     change 12*Sudoku.Width+2 ≤ Sudoku.Width*mixedWidth T.length+2
     have hl := Compiler.Size.mixedWidth_lower hn
     nlinarith
-  have hsmall := MixedSize.smallPrimes_of_caps (parameters S) rfl hC
-    (parameters_bounded S).1 (parameters_bounded S).2
-  have hV := MixedSize.mixed_cyclicOrder_le (parameters S) rfl hsmall hC
-  have hcount : (canonicalInputFamily (parameterData S,mixedPayload T)).length ≤ C ^ (28*C) := by
-    rw [canonicalInputFamily_length S _ hp (mixedSystem_nonnegative T) hslope]
-    exact MixedSize.mixed_testTiles_card_le (parameters S) rfl hsmall hC hslope
-  have hM := (Size.separateModulusCap_mono hV hcount).trans (MixedSize.mixed_modulus_cap_le hC)
-  apply (Compiler.Size.sparseGeometryCap_mono (le_refl _) hM).trans
-  exact MixedSize.mixed_geometry_bound hC (MixedSize.mixed_parameterBase_le hC)
-    (parameters_budget S Sudoku.Width hslope).1.two
+  obtain ⟨hne,hconn,hiff,hbound⟩ := sharpTile_facts (mixedSystem T) (mixedPayload T) hp
+    (mixedSystem_nonnegative T) hslope rfl hC
+  have hw := TaggedSystem.finite_system_iff_wang (mixedCode T) (parameters (mixedSystem T))
+  exact ⟨hne,hconn,hw.trans hiff,hbound⟩
 
 def mixedCompile (T : LeanWang.TileSet) : Tile 3 :=
   if T = [] then Compiler.Size.emptyTile else mixedCompileCore T
@@ -96,7 +85,7 @@ theorem mixedCompile_facts (T : LeanWang.TileSet) :
     mixedCompile T ≠ [] ∧ FaceConnected (mixedCompile T) ∧
     (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles (mixedCompile T)) ∧
     ((mixedCompile T).length : ℝ) ≤ ((T.length:ℝ)+4) ^
-      ((10:ℝ)^10 * Real.logb 2 (Real.logb 2 ((T.length:ℝ)+4))) := by
+      ((2*10^9:ℝ) * Real.logb 2 (Real.logb 2 ((T.length:ℝ)+4))) := by
   by_cases ht : T = []
   · subst T
     simp only [mixedCompile,if_pos rfl,List.length_nil,Nat.cast_zero,zero_add]
@@ -119,13 +108,13 @@ theorem mixedCompile_facts (T : LeanWang.TileSet) :
     simp only [mixedCompile,if_neg ht]
     refine ⟨hne,hconn,hiff,?_⟩
     have hcast : ((mixedCompileCore T).length:ℝ) ≤
-        ((channelCount (mixedSystem T) ^ (1772*channelCount (mixedSystem T)):ℕ):ℝ) := by exact_mod_cast hbound
+        ((channelCount (mixedSystem T) ^ (407*channelCount (mixedSystem T)):ℕ):ℝ) := by exact_mod_cast hbound
     apply hcast.trans
-    exact Compiler.Size.mixed_channel_cap_real_bound hn
+    exact Compiler.Size.sharp_channel_cap_real_bound hn
 
 theorem mixedCompile_real_bound (T : LeanWang.TileSet) :
     ((mixedCompile T).length:ℝ) ≤ ((T.length:ℝ)+4) ^
-      ((10:ℝ)^10 * Real.logb 2 (Real.logb 2 ((T.length:ℝ)+4))) := (mixedCompile_facts T).2.2.2
+      ((2*10^9:ℝ) * Real.logb 2 (Real.logb 2 ((T.length:ℝ)+4))) := (mixedCompile_facts T).2.2.2
 
 end
 end TranslationTiling.FiniteCompiler.Effective

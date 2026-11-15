@@ -24,7 +24,7 @@ theorem stackCodes_horizontal (N : ℕ) (c : PartitionCertificate) (Fs : List Cy
   exact hb _ (getD_mem_of_lt Fs i [] (List.mem_range.mp hi)) p hp
 
 theorem stackCodes_nonempty (N : ℕ) (c : PartitionCertificate) (Fs : List CyclicTile)
-    (hs : 0 < Fs.length) (hc : PartitionValid (Fs.length-1) N c)
+    (hs : 0 < Fs.length) {lower : ℕ} (hc : PartitionValid (Fs.length-1) lower c)
     (hne : ∀ F ∈ Fs, F ≠ []) : stackCodes (N,c,Fs) ≠ [] := by
   have hF : Fs.getD 0 [] ∈ Fs := getD_mem_of_lt Fs 0 [] hs
   have hp : (Fs.getD 0 []).headD ((0,0),0) ∈ Fs.getD 0 [] := by

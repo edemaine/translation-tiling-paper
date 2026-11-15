@@ -1,3 +1,4 @@
+import TranslationTiling.FiniteCompiler.SharpParameters
 import TranslationTiling.FiniteCompiler.Effective.Parameters
 import TranslationTiling.FiniteCompiler.Effective.Tables
 
@@ -15,7 +16,7 @@ private theorem exists_parameterCertificate (d : ℕ × ℕ) :
   by_cases hw : d.1 = 0
   · exact ⟨([],[],[]), Or.inl hw⟩
   let T : System := ⟨d.1, Nat.pos_of_ne_zero hw, d.2, fun _ => 0, ∅, fun _ _ => False⟩
-  obtain ⟨E, hu, hd⟩ := exists_bounded_parameters T
+  obtain ⟨E, hu, hd, hsharp⟩ := exists_bounded_parameters_sharp T
   obtain ⟨ps, hp⟩ := exists_finite_table (primeKey (T := T)) (primeKey_injective T) E.primeAt 0
   let key (j : Σ i : Channel T, Label T i) := primeKey (.inr (.inr j))
   have hkey : Function.Injective key := by
@@ -23,7 +24,7 @@ private theorem exists_parameterCertificate (d : ℕ × ℕ) :
     exact Sum.inr.inj (Sum.inr.inj (primeKey_injective T h))
   obtain ⟨as, ha⟩ := exists_finite_table key hkey (fun j => E.blockA j.1 j.2) 0
   obtain ⟨bs, hb⟩ := exists_finite_table key hkey (fun j => E.blockB j.1 j.2) 0
-  refine ⟨(ps,as,bs), Or.inr ⟨?_,?_,?_,?_,?_⟩⟩
+  refine ⟨(ps,as,bs), Or.inr ⟨?_,?_,?_,?_,?_,?_⟩⟩
   · intro k hk
     obtain ⟨i,rfl⟩ := (mem_primeKeys T k).mp hk
     dsimp only [Prod.fst]
@@ -58,6 +59,21 @@ private theorem exists_parameterCertificate (d : ℕ × ℕ) :
     change _ ∧ _ ∧ _ ∧ ps.getD (primeKey (.inr (.inr ⟨i,j⟩))) 0 ≤ _
     rw [ha, hb, hp, hp, hp]
     exact ⟨E.blockA_pos i j, E.blockB_pos i j, E.digit_representation i j, hd i j⟩
+  · by_cases hr : 596750 ≤ d.1+2 ∧ d.2=3
+    · right
+      have hs := hsharp hr
+      constructor
+      · intro k hk
+        obtain ⟨i,rfl⟩ := (mem_channelKeys T k).mp hk
+        change ps.getD (primeKey (.inl i)) 0 ≤ _ ∧ ps.getD (primeKey (.inr (.inl i))) 0 ≤ _
+        rw [hp,hp]
+        exact hs.1 i
+      · intro k hk
+        obtain ⟨⟨i,j⟩,rfl⟩ := (mem_digitKeys T k).mp hk
+        change ps.getD (primeKey (.inr (.inr ⟨i,j⟩))) 0 ≤ _
+        rw [hp]
+        exact hs.2 i j
+    · exact Or.inl hr
 
 def decodeParameterCertificate (n : ℕ) : ParameterCertificate :=
   (Encodable.decode n).getD ([],[],[])
@@ -93,7 +109,7 @@ theorem parameterCertificate_valid (d : ℕ × ℕ) : ParameterValid d (paramete
 /-- Reconstruct the typed encoding parameters from a checked numerical table. -/
 def parametersOfCertificate (T : System) (c : ParameterCertificate)
     (hc : ParameterValid (T.width,T.alphabet) c) : EncodingParameters T := by
-  obtain ⟨hp,hinj,_,hs,hd⟩ := hc.resolve_left (Nat.ne_of_gt T.width_pos)
+  obtain ⟨hp,hinj,_,hs,hd,_⟩ := hc.resolve_left (Nat.ne_of_gt T.width_pos)
   exact {
     primeAt := fun i => c.1.getD (primeKey i) 0
     prime_isPrime := fun i => (hp _ ((mem_primeKeys T _).mpr ⟨i,rfl⟩)).1
@@ -125,7 +141,16 @@ theorem parameters_bounded (T : System) :
   · intro i
     exact h.2.2.1 _ ((mem_channelKeys T _).mpr ⟨i,rfl⟩)
   · intro i j
-    exact (h.2.2.2.2 _ ((mem_digitKeys T _).mpr ⟨⟨i,j⟩,rfl⟩)).2.2.2
+    exact (h.2.2.2.2.1 _ ((mem_digitKeys T _).mpr ⟨⟨i,j⟩,rfl⟩)).2.2.2
+
+
+theorem parameters_bounded_sharp (T : System) (hC : 596750 ≤ channelCount T) (hB : T.alphabet=3) :
+    (∀ i, (parameters T).a i ≤ channelCount T^2 ∧ (parameters T).b i ≤ channelCount T^2) ∧
+    ∀ i j, (parameters T).digitPrime i j ≤ channelCount T^5 := by
+  have h := (parameterCertificate_valid (T.width,T.alphabet)).resolve_left (Nat.ne_of_gt T.width_pos)
+  have hs := h.2.2.2.2.2.resolve_left (not_not.mpr ⟨hC,hB⟩)
+  exact ⟨fun i => hs.1 _ ((mem_channelKeys T _).mpr ⟨i,rfl⟩),
+    fun i j => hs.2 _ ((mem_digitKeys T _).mpr ⟨⟨i,j⟩,rfl⟩)⟩
 
 end
 end TranslationTiling.FiniteCompiler.Effective

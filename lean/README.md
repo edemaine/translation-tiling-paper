@@ -103,12 +103,12 @@ have no unproved mathematical input. No unfinished proof is accepted.
 ## Cube Bound by Wang Tile Count
 
 [Compiler/CleanQuasipolynomialBound.lean](TranslationTiling/Compiler/CleanQuasipolynomialBound.lean)
-gives `(n+4)^(10^10*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
+gives `(n+4)^(2*10^9*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
 logarithms. The theorem `Size.exists_connected_tile_clean_quasipolynomial_bound`
 includes nonemptiness, face connectedness, and both tilability directions.
 Here `n` counts distinct input tiles. The one-tile specialization in
 [Compiler/QuasipolynomialBound.lean](TranslationTiling/Compiler/QuasipolynomialBound.lean)
-gives at most `2^(22*10^9)` cubes.
+gives at most `2^(5*10^9)` cubes.
 
 [Effective/MixedCode.lean](TranslationTiling/FiniteCompiler/Effective/MixedCode.lean)
 uses prefixes `00`, `11`, and `01` for the two seed classes and all other
@@ -123,12 +123,24 @@ implements the mixed-radix code and proves primitive recursiveness and correctne
 All positions share their column's original slope. The board has `q² = 49,729`
 columns; coefficient residues use `p²q²`, and seed residues use `5pq = 235,265`.
 
-[MixedBounds.lean](TranslationTiling/FiniteCompiler/MixedBounds.lean)
-bounds the cyclic order by `C^(112*C)`, equation count by `C^(28*C)`, and
-stacked modulus by `C^(253*C)` for `C` channels.
+[Compiler/SharpPrimeCounting.lean](TranslationTiling/Compiler/SharpPrimeCounting.lean)
+and [SharpParameters.lean](TranslationTiling/FiniteCompiler/SharpParameters.lean)
+allocate useful primes below `C²` and digit primes below `C⁵`.
+Only two seed primes need the large seed threshold.
+[Proofs/LogDifferenceBound.lean](TranslationTiling/Proofs/LogDifferenceBound.lean)
+keeps the exponential probability estimate, giving a partition modulus
+quadratic times a logarithm in the equation count.
+[Effective/FreshStack.lean](TranslationTiling/FiniteCompiler/Effective/FreshStack.lean)
+implements this bounded partition search and proves coprimality from a bound
+on the prime divisors of the finite factor.
+[SharpBounds.lean](TranslationTiling/FiniteCompiler/SharpBounds.lean)
+bounds the cyclic order by `C^(35*C)`, equation count by `C^(11*C)`, and
+stacked modulus by `C^(58*C)` for `C` channels.
 [Compiler/SparseGeometryBound.lean](TranslationTiling/Compiler/SparseGeometryBound.lean)
 counts the cube boundary by `6L²` and each MSS component by `2^24`, independently
-of its displacement. These give final volume at most `C^(1772*C)`.
+of its displacement. These give final volume at most `C^(407*C)`.
+[Effective/SharpCompiler.lean](TranslationTiling/FiniteCompiler/Effective/SharpCompiler.lean)
+combines these bounds with correctness and computability.
 [Compiler/MixedLogBound.lean](TranslationTiling/Compiler/MixedLogBound.lean)
 converts this estimate directly to the clean logarithmic bound.
 
