@@ -107,22 +107,22 @@ theorem exists_useful_parameters (T : System) : ∃ u : UsefulTag T → ℕ,
       have : 5 ≤ Sudoku.p + Sudoku.q := by decide
       omega
 
-theorem exists_parameters_of_bounded_families (T : System) (U Q : ℕ)
+theorem exists_parameters_of_pair_bounded_families (T : System) (U Q : ℕ)
     (u : UsefulTag T → ℕ) (huinj : Function.Injective u)
     (hu : ∀ i, (u i).Prime ∧ u i ≤ U ∧ u i ≠ Sudoku.p ∧ u i ≠ Sudoku.q)
     (hfive : ∀ i, u i ≠ 5)
     (hseed : ∀ t : Fin 2, u (.inl (.inr t)) = t.val + 2)
     (hseedlarge : ∀ t : Fin 2, residueModulus ^ 2 < u (.inr (.inr t)))
     (g : (Σ i : Channel T, Label T i) → ℕ)
-    (hgprime : ∀ j, (g j).Prime) (hggt : ∀ j, primeThreshold U < g j)
+    (hgprime : ∀ j, (g j).Prime) (hggt : ∀ j, U + Sudoku.p + Sudoku.q + 5 < g j)
+    (hthreshold : ∀ i j, u (.inl i)*u (.inr i)+u (.inl i)+u (.inr i)<g ⟨i,j⟩)
     (hginj : Function.Injective g) (hbound : ∀ j, g j ≤ Q) :
     ∃ E : EncodingParameters T,
-      (∀ i, E.a i ≤ U ∧ E.b i ≤ U) ∧ ∀ i j, E.digitPrime i j ≤ Q := by
+      (∀ i, E.a i = u (.inl i) ∧ E.b i = u (.inr i)) ∧ ∀ i j, E.digitPrime i j ≤ Q := by
   let Tags := Σ i : Channel T, Label T i
   have hsep (t : UsefulTag T) (j : Tags) : u t ≠ g j := by
     have ht := (hu t).2.1
     have hj := hggt j
-    unfold primeThreshold at hj
     omega
   let primes : PrimeTag T → ℕ := Sum.elim u g ∘
     (Equiv.sumAssoc (Channel T) (Channel T) Tags).symm
@@ -145,7 +145,6 @@ theorem exists_parameters_of_bounded_families (T : System) (U Q : ℕ)
       · exact (hu (.inr i)).2.2.2
     · change g j ≠ v
       have h := hggt j
-      unfold primeThreshold at h
       rcases hv with rfl | rfl <;> omega
   have hrepr (i : Channel T) (j : Label T i) : ∃ A B : ℕ,
       0 < A ∧ 0 < B ∧ g ⟨i, j⟩ = A * u (.inl i) + B * u (.inr i) := by
@@ -153,14 +152,8 @@ theorem exists_parameters_of_bounded_families (T : System) (U Q : ℕ)
     have hb := (hu (.inr i)).1
     have hcop : Nat.Coprime (u (.inl i)) (u (.inr i)) :=
       (Nat.coprime_primes ha hb).mpr (fun h => by have := huinj h; cases this)
-    have haB := (hu (.inl i)).2.1
-    have hbB := (hu (.inr i)).2.1
-    have hm := Nat.mul_le_mul haB hbB
-    have h := hggt ⟨i, j⟩
-    unfold primeThreshold at h
-    simp only [pow_two] at h
     exact Compiler.EncodingPrimeSelection.exists_positive_combination hcop
-      ha.one_lt hb.one_lt (by omega)
+      ha.one_lt hb.one_lt (hthreshold i j)
   choose A B hA hB hrepr using hrepr
   let E : EncodingParameters T := {
     primeAt := primes
@@ -175,7 +168,6 @@ theorem exists_parameters_of_bounded_families (T : System) (U Q : ℕ)
       · exact hfive (.inr i)
       · change g j ≠ 5
         have h := hggt j
-        unfold primeThreshold at h
         have : 5 ≤ Sudoku.p + Sudoku.q := by decide
         omega
     seed_a_eq := hseed
@@ -189,8 +181,33 @@ theorem exists_parameters_of_bounded_families (T : System) (U Q : ℕ)
     digit_representation := hrepr
     digitProduct := fun i => ∏ j : Label T i, g ⟨i, j⟩
     digitProduct_eq := fun _ => rfl }
-  exact ⟨E, fun i => ⟨(hu (.inl i)).2.1, (hu (.inr i)).2.1⟩,
+  exact ⟨E, fun _ => ⟨rfl,rfl⟩,
     fun i j => hbound ⟨i, j⟩⟩
+
+theorem exists_parameters_of_bounded_families (T : System) (U Q : ℕ)
+    (u : UsefulTag T → ℕ) (huinj : Function.Injective u)
+    (hu : ∀ i, (u i).Prime ∧ u i ≤ U ∧ u i ≠ Sudoku.p ∧ u i ≠ Sudoku.q)
+    (hfive : ∀ i, u i ≠ 5)
+    (hseed : ∀ t : Fin 2, u (.inl (.inr t)) = t.val + 2)
+    (hseedlarge : ∀ t : Fin 2, residueModulus ^ 2 < u (.inr (.inr t)))
+    (g : (Σ i : Channel T, Label T i) → ℕ)
+    (hgprime : ∀ j, (g j).Prime) (hggt : ∀ j, primeThreshold U < g j)
+    (hginj : Function.Injective g) (hbound : ∀ j, g j ≤ Q) :
+    ∃ E : EncodingParameters T,
+      (∀ i, E.a i ≤ U ∧ E.b i ≤ U) ∧ ∀ i j, E.digitPrime i j ≤ Q := by
+  have hU : 2≤U := ((hu (.inl (.inr (0:Fin 2)))).1.two_le).trans (hu _).2.1
+  obtain ⟨E,he,hp⟩ := exists_parameters_of_pair_bounded_families T U Q u huinj hu hfive hseed hseedlarge
+    g hgprime (fun j => by have h := hggt j; unfold primeThreshold at h; nlinarith) (by
+      intro i j
+      have ha := (hu (.inl i)).2.1
+      have hb := (hu (.inr i)).2.1
+      have hm := Nat.mul_le_mul ha hb
+      have h := hggt ⟨i,j⟩
+      unfold primeThreshold at h
+      nlinarith) hginj hbound
+  refine ⟨E,fun i => ?_,hp⟩
+  rw [(he i).1,(he i).2]
+  exact ⟨(hu (.inl i)).2.1,(hu (.inr i)).2.1⟩
 
 theorem exists_bounded_parameters (T : System) :
     ∃ E : EncodingParameters T,

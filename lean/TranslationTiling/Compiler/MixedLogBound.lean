@@ -29,7 +29,7 @@ theorem mixedWidth_one : mixedWidth 1 = 12 := by decide
 
 /-- A direct conversion avoids multiplying the integer-log rounding losses. -/
 theorem mixedWidth_le_log {n : ℕ} (hn : 0 < n) :
-    (mixedWidth n : ℝ) ≤ (11/2:ℝ) * Real.logb 2 ((n:ℝ)+4) := by
+    (mixedWidth n : ℝ) ≤ (21/4:ℝ) * Real.logb 2 ((n:ℝ)+4) := by
   let t := Real.logb 2 ((n:ℝ)+4)
   have h5 : (23:ℝ) ≤ 10 * Real.logb 2 5 := pow_le_log_bound (by norm_num) 23 10 (by norm_num)
   have ht5 : Real.logb 2 5 ≤ t := Real.logb_le_logb_of_le (by norm_num) (by norm_num)
@@ -69,10 +69,10 @@ theorem mixedWidth_le_log {n : ℕ} (hn : 0 < n) :
       nlinarith [mul_le_mul_of_nonneg_left h3base (Nat.cast_nonneg (Nat.log 3 (Sudoku.p*Sudoku.q*n)))]
     unfold mixedWidth mixedPayloadWidth
     push_cast
-    change max ((Nat.log 2 n:ℝ)+1) ((Nat.log 3 (Sudoku.p*Sudoku.q*n):ℝ)+1) + 2 ≤ (11/2:ℝ)*t
-    have hm : max ((Nat.log 2 n:ℝ)+1) ((Nat.log 3 (Sudoku.p*Sudoku.q*n):ℝ)+1) ≤ (11/2:ℝ)*t-2 :=
+    change max ((Nat.log 2 n:ℝ)+1) ((Nat.log 3 (Sudoku.p*Sudoku.q*n):ℝ)+1) + 2 ≤ (21/4:ℝ)*t
+    have hm : max ((Nat.log 2 n:ℝ)+1) ((Nat.log 3 (Sudoku.p*Sudoku.q*n):ℝ)+1) ≤ (21/4:ℝ)*t-2 :=
       max_le (by nlinarith only [h2,ht]) (by
-        have helper (u v : ℝ) (hv : 3 ≤ v) (hu : 3*u ≤ 32+2*v) : u+1 ≤ (11/2:ℝ)*v-2 := by linarith
+        have helper (u v : ℝ) (hv : 3 ≤ v) (hu : 3*u ≤ 32+2*v) : u+1 ≤ (21/4:ℝ)*v-2 := by linarith
         exact helper _ _ ht h3)
     linarith
 
@@ -88,14 +88,14 @@ theorem mixed_loglog_lower {n : ℕ} (hn : 0 < n) :
   linarith
 
 theorem channel_cap_real_bound (d k : ℕ)
-    (hcoeff : (d:ℝ)*((11/2:ℝ)*Sudoku.Width+1)*17 ≤ k)
+    (hcoeff : (d:ℝ)*((21/4:ℝ)*Sudoku.Width+1)*16 ≤ k)
     {n : ℕ} (hn : 0<n) :
     (((Sudoku.Width * mixedWidth n + 2) ^ (d*(Sudoku.Width*mixedWidth n+2)) : ℕ):ℝ) ≤
       ((n:ℝ)+4) ^ ((k:ℝ) * Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
   let C := Sudoku.Width*mixedWidth n+2
   let t := Real.logb 2 ((n:ℝ)+4)
   let g := Real.logb 2 t
-  let a : ℝ := (11/2:ℝ)*Sudoku.Width+1
+  let a : ℝ := (21/4:ℝ)*Sudoku.Width+1
   have ht : 2 ≤ t := by
     have h := pow_le_log_bound (by positivity : 0 < (n:ℝ)+4) 2 1 (by simpa only [pow_one,show (2:ℝ)^2 = 4 by norm_num] using (show (4:ℝ) ≤ (n:ℝ)+4 by have := Nat.cast_nonneg (α := ℝ) n; linarith))
     simpa [t] using h
@@ -106,8 +106,8 @@ theorem channel_cap_real_bound (d k : ℕ)
     push_cast
     nlinarith
   have hCpos : (0:ℝ) < C := by dsimp [C]; positivity
-  have ha : a ≤ (2:ℝ)^19 := by norm_num [a,Sudoku.Width,Sudoku.q]
-  have hlog : Real.logb 2 (C:ℝ) ≤ 17*g := by
+  have ha : a ≤ (2:ℝ)^18 := by norm_num [a,Sudoku.Width,Sudoku.q]
+  have hlog : Real.logb 2 (C:ℝ) ≤ 16*g := by
     have hlog := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2) hCpos
       (hC.trans (mul_le_mul_of_nonneg_right ha (by linarith)))
     rw [Real.logb_mul (by positivity) (by linarith),logb_two_pow] at hlog
@@ -119,7 +119,7 @@ theorem channel_cap_real_bound (d k : ℕ)
   have he : (d:ℝ)*(C:ℝ)*Real.logb 2 (C:ℝ) ≤ (k:ℝ)*t*g := by
     have hclog : 0 ≤ Real.logb 2 (C:ℝ) := Real.logb_nonneg (by norm_num) hc1
     have hmul := mul_le_mul hC hlog hclog (by dsimp [a]; positivity : 0 ≤ a*t)
-    have hconst : (d:ℝ)*a*17 ≤ (k:ℝ) := hcoeff
+    have hconst : (d:ℝ)*a*16 ≤ (k:ℝ) := hcoeff
     have hc := mul_le_mul_of_nonneg_left hmul (Nat.cast_nonneg d)
     have hb := mul_le_mul_of_nonneg_right hconst (show 0 ≤ t*g by positivity)
     nlinarith only [hc,hb]
@@ -140,9 +140,9 @@ theorem mixed_channel_cap_real_bound {n : ℕ} (hn : 0<n) :
   exact h
 
 theorem sharp_channel_cap_real_bound {n : ℕ} (hn : 0<n) :
-    (((Sudoku.Width*mixedWidth n+2)^(407*(Sudoku.Width*mixedWidth n+2)):ℕ):ℝ) ≤
-      ((n:ℝ)+4)^((2*10^9:ℝ)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
-  have h := channel_cap_real_bound 407 (2*10^9) (by norm_num [Sudoku.Width,Sudoku.q]) hn
+    (((Sudoku.Width*mixedWidth n+2)^(239*(Sudoku.Width*mixedWidth n+2)):ℕ):ℝ) ≤
+      ((n:ℝ)+4)^(((10:ℝ)^9)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
+  have h := channel_cap_real_bound 239 (10^9) (by norm_num [Sudoku.Width,Sudoku.q]) hn
   norm_num only [Nat.cast_mul,Nat.cast_pow,Nat.cast_ofNat] at h ⊢
   exact h
 

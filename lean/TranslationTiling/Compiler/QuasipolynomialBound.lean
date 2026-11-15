@@ -127,7 +127,7 @@ theorem exists_connected_tile_mixed_count_bound (T : LeanWang.TileSet) (hn : 0 <
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
       cubeCount P ≤ (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card + 2) ^
-        (407 * (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card + 2)) := by
+        (239 * (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card + 2)) := by
   have hn' : 0 < T.dedup.length := by simpa only [List.card_toFinset] using hn
   obtain ⟨hne,hc,ht,hb⟩ := FiniteCompiler.Effective.mixedCompileCore_channel_bound T.dedup hn'
   have hd : LeanWang.TilesPlane T ↔ LeanWang.TilesPlane T.dedup :=
@@ -138,10 +138,10 @@ theorem exists_connected_tile_mixed_count_bound (T : LeanWang.TileSet) (hn : 0 <
     FiniteCompiler.TaggedSystem.system] using hb
 
 private theorem channel_power_le_binary (C k : ℕ) (hbase : C ≤ 2 ^ 20)
-    (hexp : 20 * (407 * C) ≤ k) : C ^ (407 * C) ≤ 2 ^ k := by
+    (hexp : 20 * (239 * C) ≤ k) : C ^ (239 * C) ≤ 2 ^ k := by
   calc
-    _ ≤ (2 ^ 20) ^ (407 * C) := Nat.pow_le_pow_left hbase _
-    _ = 2 ^ (20 * (407 * C)) := (pow_mul _ _ _).symm
+    _ ≤ (2 ^ 20) ^ (239 * C) := Nat.pow_le_pow_left hbase _
+    _ = 2 ^ (20 * (239 * C)) := (pow_mul _ _ _).symm
     _ ≤ _ := Nat.pow_le_pow_right (by decide) hexp
 
 /-- Evaluate the shorter code's channel count directly for one Wang tile. -/
@@ -149,10 +149,10 @@ theorem exists_connected_tile_one_quasipolynomial_bound (T : LeanWang.TileSet)
     (hT : T.toFinset.card = 1) :
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
-      cubeCount P ≤ 2 ^ (5 * 10 ^ 9) := by
+      cubeCount P ≤ 2 ^ (3 * 10 ^ 9) := by
   obtain ⟨P,hP,hconn,hiff,hcubes⟩ := exists_connected_tile_mixed_count_bound T (by omega)
   have hb := channel_power_le_binary
-    (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card + 2) (5 * 10 ^ 9)
+    (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card + 2) (3 * 10 ^ 9)
     (by norm_num [hT,mixedWidth_one,Sudoku.Width,Sudoku.q])
     (by norm_num [hT,mixedWidth_one,Sudoku.Width,Sudoku.q])
   exact ⟨P,hP,hconn,hiff,hcubes.trans hb⟩

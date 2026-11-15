@@ -69,8 +69,10 @@ def ParameterValid (d : ℕ × ℕ) (c : ParameterCertificate) : Prop :=
       (∀ i ∈ channelKeys d.1,
         c.1.getD (Nat.pair 0 i) 0 ≤ (d.1+2)^2 ∧
         c.1.getD (Nat.pair 1 i) 0 ≤ (d.1+2)^2) ∧
-      ∀ j ∈ digitKeys d.1 d.2,
-        c.1.getD (Nat.pair 2 (Nat.pair j.1 j.2)) 0 ≤ (d.1+2)^5))
+      (∀ j ∈ digitKeys d.1 d.2,
+        c.1.getD (Nat.pair 2 (Nat.pair j.1 j.2)) 0 ≤ (d.1+2)^3) ∧
+      ∀ i ∈ channelKeys d.1,
+        (c.1.getD (Nat.pair 0 i) 0*c.1.getD (Nat.pair 1 i) 0)^3 ≤ (d.1+2)^8))
 
 noncomputable instance (d : ℕ × ℕ) (c : ParameterCertificate) : Decidable (ParameterValid d c) := by
   unfold ParameterValid
