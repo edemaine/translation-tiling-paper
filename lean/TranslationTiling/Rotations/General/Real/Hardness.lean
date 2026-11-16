@@ -47,7 +47,7 @@ theorem rotationCompile_length (hd : 3 ≤ d) (T : LeanWang.TileSet) :
 constant in the optimized compiler's closed-form size estimate. -/
 theorem rotationCompile_length_bound (hd : 3 ≤ d) (T : LeanWang.TileSet) :
     ((rotationCompile hd T).length : ℝ) ≤ (2 : ℝ)^(10*(d+1)^2)*
-      ((T.length : ℝ)+4)^((4 * 10 ^ 5)*Real.logb 2 (Real.logb 2 ((T.length : ℝ)+4))) := by
+      ((T.length : ℝ)+4)^((35 * 10 ^ 4)*Real.logb 2 (Real.logb 2 ((T.length : ℝ)+4))) := by
   have hb := General.protect_length_bound ((FiniteCompiler.Effective.mixedCompile T).map (pad hd))
   simp only [List.length_map] at hb
   have hb' : ((rotationCompile hd T).length : ℝ) ≤

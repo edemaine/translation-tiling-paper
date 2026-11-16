@@ -62,7 +62,9 @@ def EconomicalTableValid (d : ℕ×ℕ) (c : ParameterCertificate) : Prop :=
     (∀ i∈channelKeys d.1, c.1.getD (Nat.pair 0 i) 0*c.1.getD (Nat.pair 1 i) 0≤(d.1+2)^4) ∧
     (∀ n∈List.range d.1, c.1.getD (Nat.pair 0 (Nat.pair 0 n)) 0*
       c.1.getD (Nat.pair 1 (Nat.pair 0 n)) 0≤(d.1+2)^3) ∧
-    ∀ j∈digitKeys d.1 d.2, (c.1.getD (Nat.pair 2 (Nat.pair j.1 j.2)) 0)^20≤(d.1+2)^71
+    (∀ j∈digitKeys d.1 d.2, (c.1.getD (Nat.pair 2 (Nat.pair j.1 j.2)) 0)^20≤(d.1+2)^71) ∧
+    ∀ n∈List.range d.1, ∀ j∈List.range d.2,
+      c.1.getD (Nat.pair 2 (Nat.pair (Nat.pair 0 n) j)) 0≤(d.1+2)^3
 
 def ParameterValid (d : ℕ × ℕ) (c : ParameterCertificate) : Prop :=
   d.1 = 0 ∨

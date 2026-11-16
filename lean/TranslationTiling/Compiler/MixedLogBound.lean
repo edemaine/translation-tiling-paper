@@ -92,8 +92,21 @@ theorem mixed_loglog_lower {n : ℕ} (hn : 0 < n) :
     (show (23/10:ℝ) ≤ Real.logb 2 ((n:ℝ)+4) by linarith)
   linarith
 
+/-- Two rational power comparisons sharpen the small-input log-log constant. -/
+theorem mixed_loglog_lower_sharp {n : ℕ} (hn : 0<n) :
+    (121/100:ℝ)≤Real.logb 2 (Real.logb 2 ((n:ℝ)+4)) := by
+  have h5 := pow_le_log_bound (by norm_num : (0:ℝ)<5) 58 25 (by norm_num : (2:ℝ)^58≤5^25)
+  have h58 := pow_le_log_bound (by norm_num : (0:ℝ)<58/25) 121 100 (by norm_num : (2:ℝ)^121≤(58/25)^100)
+  have ht := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2) (by norm_num : (0:ℝ)<5)
+    (show (5:ℝ)≤(n:ℝ)+4 by exact_mod_cast (by omega : 5≤n+4))
+  have hh := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2) (by norm_num : (0:ℝ)<58/25)
+    (show (58/25:ℝ)≤Real.logb 2 ((n:ℝ)+4) by norm_num at h5; linarith)
+  norm_num at h58
+  linarith
+
+set_option exponentiation.threshold 2000 in
 theorem channel_cap_real_bound (d k : ℕ)
-    (hcoeff : (d:ℝ)*((7/2:ℝ)*Sudoku.Width+1)*(199/24:ℝ) ≤ k)
+    (hcoeff : (d:ℝ)*((7/2:ℝ)*Sudoku.Width+1)*(1987/242:ℝ) ≤ k)
     {n : ℕ} (hn : 0<n) :
     (((Sudoku.Width * mixedWidth n + 2) ^ (d*(Sudoku.Width*mixedWidth n+2)) : ℕ):ℝ) ≤
       ((n:ℝ)+4) ^ ((k:ℝ) * Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
@@ -104,25 +117,25 @@ theorem channel_cap_real_bound (d k : ℕ)
   have ht : 2 ≤ t := by
     have h := pow_le_log_bound (by positivity : 0 < (n:ℝ)+4) 2 1 (by simpa only [pow_one,show (2:ℝ)^2 = 4 by norm_num] using (show (4:ℝ) ≤ (n:ℝ)+4 by have := Nat.cast_nonneg (α := ℝ) n; linarith))
     simpa [t] using h
-  have hg : (6/5:ℝ) ≤ g := mixed_loglog_lower hn
+  have hg : (121/100:ℝ) ≤ g := mixed_loglog_lower_sharp hn
   have hC : (C:ℝ) ≤ a*t := by
     have hw := mixedWidth_le_log hn
     dsimp [C,a,t]
     push_cast
     nlinarith
   have hCpos : (0:ℝ) < C := by dsimp [C]; positivity
-  have ha : Real.logb 2 a ≤ 35/4 := by
-    have hh := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2) (by norm_num [a,Sudoku.Width,Sudoku.q] : (0:ℝ)<a^4)
-      (show a^4≤(2:ℝ)^35 by norm_num [a,Sudoku.Width,Sudoku.q])
+  have ha : Real.logb 2 a ≤ 349/40 := by
+    have hh := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2) (by norm_num [a,Sudoku.Width,Sudoku.q] : (0:ℝ)<a^40)
+      (show a^40≤(2:ℝ)^349 by norm_num [a,Sudoku.Width,Sudoku.q])
     rw [Real.logb_pow,logb_two_pow] at hh
     norm_num at hh
     linarith
-  have hlog : Real.logb 2 (C:ℝ) ≤ (199/24:ℝ)*g := by
+  have hlog : Real.logb 2 (C:ℝ) ≤ (1987/242:ℝ)*g := by
     have hh := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2) hCpos hC
     rw [Real.logb_mul (by norm_num [a,Sudoku.Width,Sudoku.q]) (by linarith)] at hh
-    change Real.logb 2 (C:ℝ)≤(199/24:ℝ)*Real.logb 2 t
+    change Real.logb 2 (C:ℝ)≤(1987/242:ℝ)*Real.logb 2 t
     dsimp [g] at hg
-    have helper (u v w : ℝ) (hu : u≤(35/4:ℝ)) (hv : (6/5:ℝ)≤v) (hw : w≤u+v) : w≤(199/24:ℝ)*v := by linarith
+    have helper (u v w : ℝ) (hu : u≤(349/40:ℝ)) (hv : (121/100:ℝ)≤v) (hw : w≤u+v) : w≤(1987/242:ℝ)*v := by linarith
     exact helper _ _ _ ha hg hh
   have hc1 : 1 ≤ (C:ℝ) := by
     have hnat : 1 ≤ C := by dsimp [C]; omega
@@ -130,7 +143,7 @@ theorem channel_cap_real_bound (d k : ℕ)
   have he : (d:ℝ)*(C:ℝ)*Real.logb 2 (C:ℝ) ≤ (k:ℝ)*t*g := by
     have hclog : 0 ≤ Real.logb 2 (C:ℝ) := Real.logb_nonneg (by norm_num) hc1
     have hmul := mul_le_mul hC hlog hclog (by dsimp [a]; positivity : 0 ≤ a*t)
-    have hconst : (d:ℝ)*a*(199/24:ℝ) ≤ (k:ℝ) := hcoeff
+    have hconst : (d:ℝ)*a*(1987/242:ℝ) ≤ (k:ℝ) := hcoeff
     have hc := mul_le_mul_of_nonneg_left hmul (Nat.cast_nonneg d)
     have hb := mul_le_mul_of_nonneg_right hconst (show 0 ≤ t*g by positivity)
     nlinarith only [hc,hb]
@@ -151,18 +164,25 @@ theorem mixed_channel_cap_real_bound {n : ℕ} (hn : 0<n) :
   exact h
 
 theorem sharp_channel_cap_real_bound {n N : ℕ} (hn : 0<n)
-    (hN : N^5≤(Sudoku.Width*mixedWidth n+2)^(571*(Sudoku.Width*mixedWidth n+2))) :
-    (N:ℝ)≤((n:ℝ)+4)^((4*(10:ℝ)^5)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
-  apply (pow_le_pow_iff_left₀ (Nat.cast_nonneg N) (Real.rpow_nonneg (by positivity) _) (by decide : 5≠0)).mp
+    (hN : N^10≤(Sudoku.Width*mixedWidth n+2)^(1000*(Sudoku.Width*mixedWidth n+2)+7030)) :
+    (N:ℝ)≤((n:ℝ)+4)^((35*(10:ℝ)^4)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
+  let C := Sudoku.Width*mixedWidth n+2
+  have hC : 962≤C := by
+    have hw := mixedWidth_eight hn
+    dsimp [C]
+    norm_num only [Sudoku.Width,Sudoku.q]
+    omega
+  have hN' : N≤C^(101*C) := by
+    apply (Nat.pow_le_pow_iff_left (by decide : 10≠0)).mp
+    apply hN.trans
+    rw [← pow_mul]
+    exact Nat.pow_le_pow_right (by omega) (by omega)
   calc
-    (N:ℝ)^5 ≤ (((Sudoku.Width*mixedWidth n+2)^(571*(Sudoku.Width*mixedWidth n+2)):ℕ):ℝ) := by exact_mod_cast hN
-    _ ≤ ((n:ℝ)+4)^(((5*4*10^5:ℕ):ℝ)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) :=
-      channel_cap_real_bound 571 (5*4*10^5) (by norm_num [Sudoku.Width,Sudoku.q]) hn
-    _ = (((n:ℝ)+4)^((4*(10:ℝ)^5)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))))^5 := by
-      rw [← Real.rpow_natCast,← Real.rpow_mul (by positivity : (0:ℝ)≤(n:ℝ)+4)]
-      congr 1
-      norm_num
-      ring
+    (N:ℝ) ≤ ((C^(101*C):ℕ):ℝ) := by exact_mod_cast hN'
+    _ ≤ _ := by
+      have hh := channel_cap_real_bound 101 (35*10^4) (by norm_num [Sudoku.Width,Sudoku.q]) hn
+      norm_num only [Nat.cast_mul,Nat.cast_pow,Nat.cast_ofNat] at hh ⊢
+      exact hh
 
 end
 end TranslationTiling.Compiler.Size

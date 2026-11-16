@@ -103,12 +103,12 @@ have no unproved mathematical input. No unfinished proof is accepted.
 ## Cube Bound by Wang Tile Count
 
 [Compiler/CleanQuasipolynomialBound.lean](TranslationTiling/Compiler/CleanQuasipolynomialBound.lean)
-gives `(n+4)^(4*10^5*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
+gives `(n+4)^(3.5*10^5*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
 logarithms. The theorem `Size.exists_connected_tile_clean_quasipolynomial_bound`
 includes nonemptiness, face connectedness, and both tilability directions.
 Here `n` counts distinct input tiles. The one-tile specialization in
 [Compiler/QuasipolynomialBound.lean](TranslationTiling/Compiler/QuasipolynomialBound.lean)
-gives at most `2^1098604` cubes.
+gives at most `2^960309` cubes.
 
 [Effective/PackedWords.lean](TranslationTiling/FiniteCompiler/Effective/PackedWords.lean)
 counts and enumerates three disjoint classes of ternary words: words containing
@@ -132,16 +132,20 @@ prime condition `r > 48`. The shorter-board proof also uses three
 prime-spaced columns in rescaling and two prime-multiple samples to identify
 the higher-digit coefficients.
 
-[Compiler/EconomicalPrimeCounting.lean](TranslationTiling/Compiler/EconomicalPrimeCounting.lean)
+[Compiler/IntervalPrimeCounting.lean](TranslationTiling/Compiler/IntervalPrimeCounting.lean)
 and [EconomicalParameters.lean](TranslationTiling/FiniteCompiler/EconomicalParameters.lean)
-allocate ordinary useful primes at most `C^(3/2)` and digit primes satisfying
-`q^20 ≤ C^71`, for `C ≥ 962`. The explicit auxiliary seed primes are
-`244453241` and `244453243`, just above `D = 244453225`.
-They reduce the common seed representation threshold from `16D+3` to
-`4*244453243+3`. Ordinary useful-prime pairs satisfy `a_i*b_i ≤ C³`;
-seed pairs satisfy `a_i*b_i ≤ C⁴`. Individual pair thresholds suffice
-for positive block representations. The effective certificate checks the
-stronger digit-prime bound. The common parameter budget remains `C^12`.
+allocate ordinary useful primes asymmetrically: `a_i ≤ 15U/32`, `b_i ≤ U`,
+where `U = C*isqrt(C)`, for `C ≥ 962`. The two pools contain enough primes
+for distinct choices. Ordinary digit primes lie between the positive
+representation threshold and `C³`; their count follows by subtracting
+Chebyshev theta bounds. Choosing primes by value avoids the previous loss
+from starting at a prime index exceeding the threshold.
+The explicit auxiliary seed primes remain `244453241` and `244453243`,
+just above `D = 244453225`. Their common representation threshold is
+`4*244453243+3`. The two seed digit primes are selected separately and remain
+at most `C⁴`. Ordinary useful-prime pairs satisfy `a_i*b_i ≤ C³`;
+seed pairs satisfy `a_i*b_i ≤ C⁴`. The effective certificate checks the
+ordinary digit-prime bound, reducing the common parameter budget to `C^9`.
 [Proofs/LogDifferenceBound.lean](TranslationTiling/Proofs/LogDifferenceBound.lean)
 keeps the exponential probability estimate, giving a partition modulus
 quadratic times a logarithm in the equation count.
@@ -150,9 +154,9 @@ implements this bounded partition search and proves coprimality from a bound
 on the prime divisors of the finite factor.
 [RefinedBounds.lean](TranslationTiling/FiniteCompiler/RefinedBounds.lean)
 keeps powers integral: for `w = C-2` ordinary channels, the cyclic order
-satisfies `|V|^10 ≤ C^(243*w+280)`. Stacking uses `X = max(s,C²)` for the
-actual equation count `s`, with `X^60 ≤ C^(403*w+30)`, giving stacked modulus
-`R^30 ≤ C^(1132*w+960)`.
+satisfies `|V|^10 ≤ C^(210*w+280)`. Stacking uses `X = max(s,C²)` for the
+actual equation count `s`, with `X^60 ≤ C^(370*w+30)`, giving stacked modulus
+`R^30 ≤ C^(1000*w+960)`.
 [Compiler/SparseGeometryBound.lean](TranslationTiling/Compiler/SparseGeometryBound.lean)
 counts each MSS component by `2^24`, independently of its displacement.
 [FourLayer/](TranslationTiling/FourLayer/) replaces the cubic color partition
@@ -163,9 +167,9 @@ and arbitrary-complement rigidity are proved for the concrete shape.
 computability, correctness, connectivity, and the `K*H⁴*R³` volume bound,
 where `K = 9*2^24*972*36*8003^4`.
 [SupportBounds.lean](TranslationTiling/FiniteCompiler/SupportBounds.lean)
-uses the exact identity `H(b) = b^6*(b+1)^16+b` to give `H ≤ C^265`.
+uses the exact identity `H(b) = b^6*(b+1)^16+b` to give `H ≤ C^199`.
 The connectedness box uses `max(H,R)`. `RefinedBounds.lean` then gives
-`|F|^5 ≤ C^(571*C)`.
+`|F|^10 ≤ C^(1000*C+7030)`, hence `|F| ≤ C^(101*C)`.
 Earlier estimates remain in `EconomicalBounds.lean`, `CompactParameters.lean`, `CompactBounds.lean`,
 `TightParameters.lean`, `TightBounds.lean`, and `FourLayer/SizeBound.lean`.
 [Effective/SharpCompiler.lean](TranslationTiling/FiniteCompiler/Effective/SharpCompiler.lean)

@@ -60,7 +60,7 @@ theorem mixedSystem_nonnegative (T : LeanWang.TileSet) : ∀ n, 0 ≤ (mixedSyst
 theorem mixedCompileCore_channel_bound (T : LeanWang.TileSet) (hn : 0 < T.length) :
     mixedCompileCore T ≠ [] ∧ FaceConnected (mixedCompileCore T) ∧
     (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles (mixedCompileCore T)) ∧
-    (mixedCompileCore T).length^5 ≤ channelCount (mixedSystem T) ^ (571*channelCount (mixedSystem T)) := by
+    (mixedCompileCore T).length^10 ≤ channelCount (mixedSystem T) ^ (1000*channelCount (mixedSystem T)+7030) := by
   have hp := mixedPayload_correct T
   have hslope := TaggedSystem.slope_bound (mixedCode T)
   have hC : 8*Sudoku.Width+2 ≤ channelCount (mixedSystem T) := by
@@ -85,7 +85,7 @@ theorem mixedCompile_facts (T : LeanWang.TileSet) :
     mixedCompile T ≠ [] ∧ FaceConnected (mixedCompile T) ∧
     (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles (mixedCompile T)) ∧
     ((mixedCompile T).length : ℝ) ≤ ((T.length:ℝ)+4) ^
-      ((4*(10:ℝ)^5) * Real.logb 2 (Real.logb 2 ((T.length:ℝ)+4))) := by
+      ((35*(10:ℝ)^4) * Real.logb 2 (Real.logb 2 ((T.length:ℝ)+4))) := by
   by_cases ht : T = []
   · subst T
     simp only [mixedCompile,if_pos rfl,List.length_nil,Nat.cast_zero,zero_add]
@@ -111,7 +111,7 @@ theorem mixedCompile_facts (T : LeanWang.TileSet) :
 
 theorem mixedCompile_real_bound (T : LeanWang.TileSet) :
     ((mixedCompile T).length:ℝ) ≤ ((T.length:ℝ)+4) ^
-      ((4*(10:ℝ)^5) * Real.logb 2 (Real.logb 2 ((T.length:ℝ)+4))) := (mixedCompile_facts T).2.2.2
+      ((35*(10:ℝ)^4) * Real.logb 2 (Real.logb 2 ((T.length:ℝ)+4))) := (mixedCompile_facts T).2.2.2
 
 end
 end TranslationTiling.FiniteCompiler.Effective

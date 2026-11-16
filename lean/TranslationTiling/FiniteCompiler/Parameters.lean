@@ -107,7 +107,7 @@ theorem exists_useful_parameters (T : System) : ∃ u : UsefulTag T → ℕ,
       have : 5 ≤ Sudoku.p + Sudoku.q := by decide
       omega
 
-theorem exists_parameters_of_pair_bounded_families (T : System) (U Q : ℕ)
+theorem exists_parameters_of_pair_bounded_families_exact (T : System) (U Q : ℕ)
     (u : UsefulTag T → ℕ) (huinj : Function.Injective u)
     (hu : ∀ i, (u i).Prime ∧ u i ≤ U ∧ u i ≠ Sudoku.p ∧ u i ≠ Sudoku.q)
     (hfive : ∀ i, u i ≠ 5)
@@ -118,7 +118,7 @@ theorem exists_parameters_of_pair_bounded_families (T : System) (U Q : ℕ)
     (hthreshold : ∀ i j, u (.inl i)*u (.inr i)+u (.inl i)+u (.inr i)<g ⟨i,j⟩)
     (hginj : Function.Injective g) (hbound : ∀ j, g j ≤ Q) :
     ∃ E : EncodingParameters T,
-      (∀ i, E.a i = u (.inl i) ∧ E.b i = u (.inr i)) ∧ ∀ i j, E.digitPrime i j ≤ Q := by
+      (∀ i, E.a i = u (.inl i) ∧ E.b i = u (.inr i)) ∧ ∀ i j, E.digitPrime i j = g ⟨i,j⟩ := by
   let Tags := Σ i : Channel T, Label T i
   have hsep (t : UsefulTag T) (j : Tags) : u t ≠ g j := by
     have ht := (hu t).2.1
@@ -182,7 +182,23 @@ theorem exists_parameters_of_pair_bounded_families (T : System) (U Q : ℕ)
     digitProduct := fun i => ∏ j : Label T i, g ⟨i, j⟩
     digitProduct_eq := fun _ => rfl }
   exact ⟨E, fun _ => ⟨rfl,rfl⟩,
-    fun i j => hbound ⟨i, j⟩⟩
+    fun _ _ => rfl⟩
+
+theorem exists_parameters_of_pair_bounded_families (T : System) (U Q : ℕ)
+    (u : UsefulTag T → ℕ) (huinj : Function.Injective u)
+    (hu : ∀ i, (u i).Prime ∧ u i ≤ U ∧ u i ≠ Sudoku.p ∧ u i ≠ Sudoku.q)
+    (hfive : ∀ i, u i ≠ 5)
+    (hseed : ∀ t : Fin 2, u (.inl (.inr t)) = t.val + 2)
+    (hseedlarge : ∀ t : Fin 2, residueModulus ^ 2 < u (.inr (.inr t)))
+    (g : (Σ i : Channel T, Label T i) → ℕ)
+    (hgprime : ∀ j, (g j).Prime) (hggt : ∀ j, U + Sudoku.p + Sudoku.q + 5 < g j)
+    (hthreshold : ∀ i j, u (.inl i)*u (.inr i)+u (.inl i)+u (.inr i)<g ⟨i,j⟩)
+    (hginj : Function.Injective g) (hbound : ∀ j, g j ≤ Q) :
+    ∃ E : EncodingParameters T,
+      (∀ i, E.a i = u (.inl i) ∧ E.b i = u (.inr i)) ∧ ∀ i j, E.digitPrime i j ≤ Q := by
+  obtain ⟨E,he,hg⟩ := exists_parameters_of_pair_bounded_families_exact T U Q u huinj hu hfive
+    hseed hseedlarge g hgprime hggt hthreshold hginj hbound
+  exact ⟨E,he,fun i j => (hg i j).le.trans (hbound ⟨i,j⟩)⟩
 
 theorem exists_parameters_of_bounded_families (T : System) (U Q : ℕ)
     (u : UsefulTag T → ℕ) (huinj : Function.Injective u)

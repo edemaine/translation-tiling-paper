@@ -102,7 +102,7 @@ private theorem exists_parameterCertificate (d : ℕ × ℕ) :
       · by_cases hr : 962≤d.1+2 ∧ d.2=3
         · right
           have hs := heconomical hr
-          refine ⟨?_,?_,?_,?_,?_⟩
+          refine ⟨?_,?_,?_,?_,?_,?_⟩
           · intro k hk
             obtain ⟨i,rfl⟩ := (mem_channelKeys T k).mp hk
             change ps.getD (primeKey (.inl i)) 0≤_ ∧ ps.getD (primeKey (.inr (.inl i))) 0≤_
@@ -122,7 +122,13 @@ private theorem exists_parameterCertificate (d : ℕ × ℕ) :
           · intro k hk
             obtain ⟨⟨i,j⟩,rfl⟩ := (mem_digitKeys T k).mp hk
             change (ps.getD (primeKey (.inr (.inr ⟨i,j⟩))) 0)^20≤_
-            rw [hp]; exact hs.2.2.2.2 i j
+            rw [hp]; exact hs.2.2.2.2.1 i j
+          · intro n hn j hj
+            let n' : Column T := ⟨n,List.mem_range.mp hn⟩
+            let j' : Label T (.inl n') := ⟨j,List.mem_range.mp hj⟩
+            change ps.getD (primeKey (.inr (.inr ⟨.inl n',j'⟩))) 0≤_
+            rw [hp]
+            exact hs.2.2.2.2.2 n' j'
         · exact Or.inl hr
 
 def decodeParameterCertificate (n : ℕ) : ParameterCertificate :=
@@ -232,11 +238,14 @@ theorem parameters_bounded_economical (T : System) (hC : 962≤channelCount T) (
   refine ⟨fun i => hs.1 _ ((mem_channelKeys T _).mpr ⟨i,rfl⟩),
     fun i j => hs.2.1 _ ((mem_digitKeys T _).mpr ⟨⟨i,j⟩,rfl⟩),
     fun i => hs.2.2.1 _ ((mem_channelKeys T _).mpr ⟨i,rfl⟩),
-    fun n => hs.2.2.2.1 n.val (List.mem_range.mpr n.isLt),?_⟩
-  intro i j
-  rw [parameters_digitPrime_eq]
-  dsimp only [channelCount,primeKey]
-  exact hs.2.2.2.2 (channelKey i,labelKey i j) ((mem_digitKeys T _).mpr ⟨⟨i,j⟩,rfl⟩)
+    fun n => hs.2.2.2.1 n.val (List.mem_range.mpr n.isLt),?_,?_⟩
+  · intro i j
+    rw [parameters_digitPrime_eq]
+    dsimp only [channelCount,primeKey]
+    exact hs.2.2.2.2.1 (channelKey i,labelKey i j) ((mem_digitKeys T _).mpr ⟨⟨i,j⟩,rfl⟩)
+  · intro n j
+    rw [parameters_digitPrime_eq]
+    exact hs.2.2.2.2.2 n.val (List.mem_range.mpr n.isLt) j.val (List.mem_range.mpr j.isLt)
 
 end
 end TranslationTiling.FiniteCompiler.Effective

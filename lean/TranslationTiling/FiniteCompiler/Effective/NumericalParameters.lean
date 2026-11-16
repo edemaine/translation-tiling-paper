@@ -131,7 +131,7 @@ theorem parameters_rawBudget (T : System) (hS : ∀ n, (T.slope n).natAbs≤Sudo
       channelCount T≤rawBudget (parameterData T) ∧ T.alphabet+1≤rawBudget (parameterData T) := by
   by_cases h : 962≤T.width+2 ∧ T.alphabet=3
   · simpa [rawBudget,parameterData,h,channelCount] using
-      economical_parameterBudget (parameters T) h.1 h.2 (parameters_bounded_economical T h.1 h.2) hS
+      economical_parameterBudget_nine (parameters T) h.1 h.2 (parameters_bounded_economical T h.1 h.2) hS
   · have h' : ¬ (960≤T.width ∧ T.alphabet=3) := by omega
     simpa [rawBudget,parameterData,h,h',channelCount] using parameters_budget T Sudoku.Width hS
 
