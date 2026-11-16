@@ -187,8 +187,8 @@ theorem testTile_horizontal_bound (hb : ParameterBudget E b)
   have hbase : b ≤ horizontalCap b := le_horizontalCap b
   have hq (h : q0 E g = 0) : g.1 = 0 := congrArg Prod.fst h
   have hoff {t : ℕ} [NeZero t] (cycle : ZMod t ↪ Channel T)
-      (labels : ∀ j, Label T (cycle j)) (hf : F ∈ sparseCycleTiles E cycle labels) : g.1 = 0 := by
-    obtain ⟨d, _, rfl⟩ := Finset.mem_image.mp hf
+      (labels : ∀ j, Label T (cycle j)) (hf : F ∈ fixedCycleTiles E cycle labels) : g.1 = 0 := by
+    obtain rfl := Finset.mem_singleton.mp hf
     exact congrArg Prod.fst ((mem_offsetTile E _ _).mp hg)
   rcases (mem_testTiles_iff E F).mp hF with rfl | hF | hF | hF | ⟨n, rfl⟩ | ⟨t, rfl⟩
   · rw [hq ((mem_kernelTile E g).mp hg)]

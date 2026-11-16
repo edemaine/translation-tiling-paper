@@ -1,5 +1,5 @@
 import TranslationTiling.FiniteCompiler.Effective.Compiler
-import TranslationTiling.FiniteCompiler.Effective.SparseCorrect
+import TranslationTiling.FiniteCompiler.Effective.FixedCorrect
 import TranslationTiling.FiniteCompiler.Effective.DigitTest
 import TranslationTiling.FiniteCompiler.ConstraintCycles
 
@@ -55,11 +55,21 @@ def configurations_match {T : System} {t : ℕ} [NeZero t]
 theorem specifiedGadgets_correct {T : System} {t : ℕ} [NeZero t]
     (spec : List NumericalSpec) (cycle : ZMod t ↪ Channel T)
     (labels : ∀ j, Label T (cycle j)) (hs : SpecMatches spec cycle labels) :
-    ((sparseGadgets (rawOrder (parameterData T)) (rawConfigurations (parameterData T) spec)).map
+    ((fixedGadgets (rawOrder (parameterData T)) (rawConfigurations (parameterData T) spec)
+      (rawOwnDigits (parameterData T) spec)).map
       (fun xs => xs.toFinset.image (decodeNumericalPoint (parameters T)))).toFinset =
-      sparseCycleTiles (parameters T) cycle labels := by
+      fixedCycleTiles (parameters T) cycle labels := by
   rw [rawOrder_eq,rawConfigurations_eq]
-  exact sparseGadgets_correct (configurations_match spec cycle labels hs)
+  apply fixedGadgets_correct (configurations_match spec cycle labels hs)
+  intro j
+  have hk := ((channelEquiv T) (cycle j)).isLt
+  have hd : (parameterData T).1 = T.width := rfl
+  simp only [rawOwnDigits,hd,List.getD_eq_getElem?_getD,List.getElem?_map,
+    List.getElem?_range hk,Option.map_some,Option.getD_some]
+  change rawDigit (parameterData T)
+    (denseChannelKey T.width ((channelEquiv T) (cycle j)).val)
+    (spec.getD ((channelEquiv T) (cycle j)).val (false,0,0)).2.2=_
+  rw [denseChannelKey_eq,hs.on j,rawDigit_eq]
 
 theorem rawWordSpec_get (T : System) (w : List ℕ) (k : ℕ) (hk : k < T.width + 2) :
     (rawWordSpec (parameterData T) w).getD k (false,0,0) =

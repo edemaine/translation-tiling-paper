@@ -39,12 +39,12 @@ theorem cyclicOrder_pow (hB : T.alphabet=3) (hp : EconomicalPrimes E) (hC : 962�
 
 theorem ordinary_cycle_card (hp : EconomicalPrimes E) (Q : ℕ)
     (hq : ∀ n j, E.digitPrime (.inl n) j≤Q) (w : Word T) :
-    (sparseCycleTiles E (ordinaryCycle T) (ordinaryCycleLabels w)).card≤(channelCount T^3*Q)^T.width := by
+    (fixedCycleTiles E (ordinaryCycle T) (ordinaryCycleLabels w)).card≤(channelCount T^3*Q)^T.width := by
   have hP (n : Column T) : Fintype.card (P E (.inl n))≤channelCount T^3 := by
     simpa only [P,Fintype.card_prod,ZMod.card] using hp.2.2.2.1 n
   calc
     _ ≤ ∏ j : ZMod T.width, Fintype.card (P E (ordinaryCycle T (j-1)))*
-        Fintype.card (digitSubgroup E (ordinaryCycle T j) (ordinaryCycleLabels w j)) := sparseCycleTiles_card_le E _ _
+        Fintype.card (digitSubgroup E (ordinaryCycle T j) (ordinaryCycleLabels w j)) := fixedCycleTiles_card_le E _ _
     _ ≤ ∏ _j : ZMod T.width, channelCount T^3*Q := Finset.prod_le_prod (fun j _ =>
       Nat.mul_le_mul (hP _) ((digitSubgroup_card_le_prime E _ _).trans (hq _ _)))
     _ = _ := by simp

@@ -42,7 +42,7 @@ theorem parameterBudget_nine (hC : 962≤C) (hc : channelCount T≤C)
   exact (by omega : 4≤C).trans hh
 
 theorem seed_cycle_card_le (hp : BudgetPrimes E C) (t : Fin 2) (n : Column T) (j : Symbol T) :
-    (sparseCycleTiles E (seedCycle t n) (seedCycleLabels t n j)).card≤C^15 := by
+    (fixedCycleTiles E (seedCycle t n) (seedCycleLabels t n j)).card≤C^15 := by
   have hP (i : Channel T) : Fintype.card (P E i) = E.a i*E.b i := by simp [P]
   have hprod : (∏ z : ZMod 2, Fintype.card (P E (seedCycle t n (z-1)))*
       Fintype.card (digitSubgroup E (seedCycle t n z) (seedCycleLabels t n j z)))≤C^15 := by
@@ -55,7 +55,7 @@ theorem seed_cycle_card_le (hp : BudgetPrimes E C) (t : Fin 2) (n : Column T) (j
         (Nat.mul_le_mul (hp.2.2.2.1 n) ((digitSubgroup_card_le_prime E _ _).trans (hp.2.1 _ _)))
         (Nat.mul_le_mul (hp.2.2.1 _) ((digitSubgroup_card_le_prime E _ _).trans (hp.2.1 _ _)))
       _ = _ := by ring
-  exact (sparseCycleTiles_card_le E _ _).trans hprod
+  exact (fixedCycleTiles_card_le E _ _).trans hprod
 
 theorem seed_card_le (hB : T.alphabet=3) (hp : BudgetPrimes E C) (hC : 962≤C) (hc : channelCount T≤C) :
     (seedConstraintTiles E).card≤C^17 := by
@@ -103,12 +103,12 @@ theorem cyclicOrder_pow (hB : T.alphabet=3) (hp : BudgetPrimes E C) (hC : 962≤
 
 theorem ordinary_cycle_card (hp : BudgetPrimes E C) (Q : ℕ)
     (hq : ∀ n j, E.digitPrime (.inl n) j≤Q) (w : Word T) :
-    (sparseCycleTiles E (ordinaryCycle T) (ordinaryCycleLabels w)).card≤(C^3*Q)^T.width := by
+    (fixedCycleTiles E (ordinaryCycle T) (ordinaryCycleLabels w)).card≤(C^3*Q)^T.width := by
   have hP (n : Column T) : Fintype.card (P E (.inl n))≤C^3 := by
     simpa only [P,Fintype.card_prod,ZMod.card] using hp.2.2.2.1 n
   calc
     _ ≤ ∏ j : ZMod T.width, Fintype.card (P E (ordinaryCycle T (j-1)))*
-        Fintype.card (digitSubgroup E (ordinaryCycle T j) (ordinaryCycleLabels w j)) := sparseCycleTiles_card_le E _ _
+        Fintype.card (digitSubgroup E (ordinaryCycle T j) (ordinaryCycleLabels w j)) := fixedCycleTiles_card_le E _ _
     _ ≤ ∏ _j : ZMod T.width, C^3*Q := Finset.prod_le_prod (fun j _ =>
       Nat.mul_le_mul (hP _) ((digitSubgroup_card_le_prime E _ _).trans (hq _ _)))
     _ = _ := by simp

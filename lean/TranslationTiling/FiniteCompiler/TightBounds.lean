@@ -73,7 +73,7 @@ theorem cycleBudget_bounds {C : ℕ} (hC : 596750≤C) :
 
 theorem tight_cycleTiles_card_le (hp : TightPrimes E) (hC : 596750≤channelCount T)
     {t : ℕ} [NeZero t] (cycle : ZMod t ↪ Channel T) (labels : ∀ j, Label T (cycle j)) :
-    (sparseCycleTiles E cycle labels).card≤cycleBudget (channelCount T)^channelCount T := by
+    (fixedCycleTiles E cycle labels).card≤cycleBudget (channelCount T)^channelCount T := by
   let C := channelCount T
   have hc : 596750≤C := by simpa [C,Sudoku.Width,Sudoku.q] using hC
   have ht : t≤C := by simpa only [ZMod.card,channel_card] using Fintype.card_le_of_injective cycle cycle.injective
@@ -81,7 +81,7 @@ theorem tight_cycleTiles_card_le (hp : TightPrimes E) (hC : 596750≤channelCoun
     apply (Nat.le_nthRoot_iff (by decide : 3≠0)).mpr
     simpa only [P,Fintype.card_prod,ZMod.card] using hp.2.2 i
   calc
-    _ ≤ ∏ j : ZMod t, Fintype.card (P E (cycle (j-1)))*Fintype.card (digitSubgroup E (cycle j) (labels j)) := sparseCycleTiles_card_le E cycle labels
+    _ ≤ ∏ j : ZMod t, Fintype.card (P E (cycle (j-1)))*Fintype.card (digitSubgroup E (cycle j) (labels j)) := fixedCycleTiles_card_le E cycle labels
     _ ≤ ∏ _j : ZMod t, cycleBudget C := Finset.prod_le_prod (fun j _ => Nat.mul_le_mul (hP _)
       ((digitSubgroup_card_le_prime E _ _).trans (hp.2.1 _ _)))
     _ = cycleBudget C^t := by simp

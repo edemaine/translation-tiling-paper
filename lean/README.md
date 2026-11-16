@@ -103,12 +103,22 @@ have no unproved mathematical input. No unfinished proof is accepted.
 ## Cube Bound by Wang Tile Count
 
 [Compiler/CleanQuasipolynomialBound.lean](TranslationTiling/Compiler/CleanQuasipolynomialBound.lean)
-gives `(n+4)^(10^5*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
+gives `(n+4)^(6*10^4*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
 logarithms. The theorem `Size.exists_connected_tile_clean_quasipolynomial_bound`
 includes nonemptiness, face connectedness, and both tilability directions.
 Here `n` counts distinct input tiles. The one-tile specialization in
 [Compiler/QuasipolynomialBound.lean](TranslationTiling/Compiler/QuasipolynomialBound.lean)
-gives at most `2^246789` cubes.
+gives at most `2^161147` cubes.
+
+[FixedCycleTests.lean](TranslationTiling/FiniteCompiler/FixedCycleTests.lean)
+uses one fixed test per forbidden word or seed-label pair. Each digit subgroup
+is cyclic, so activity has a witness separated by its fixed generator
+`r_i/r_ij`. The response is zero at zero and this generator at every nonzero
+input; the witnesses give a collision whenever all selected labels are active.
+[Effective/FixedPrimitives.lean](TranslationTiling/FiniteCompiler/Effective/FixedPrimitives.lean)
+implements these response tables and proves primitive recursiveness;
+[Effective/FixedCorrect.lean](TranslationTiling/FiniteCompiler/Effective/FixedCorrect.lean)
+proves that the numerical gadget is exactly the fixed semantic test.
 
 [Effective/PackedWords.lean](TranslationTiling/FiniteCompiler/Effective/PackedWords.lean)
 counts and enumerates three disjoint classes of ternary words: words containing
@@ -164,8 +174,10 @@ on the prime divisors of the finite factor.
 [BudgetBounds.lean](TranslationTiling/FiniteCompiler/BudgetBounds.lean)
 keeps powers integral and retains the actual ordinary-channel count `w = 40k`:
 the cyclic order satisfies `|V|^10 ≤ P^(210*w+280)`.
-Stacking uses `X = max(s,P²)` for the actual equation count `s`, with
-`X^60 ≤ P^(370*w+30)`, giving stacked modulus `R^30 ≤ P^(1000*w+960)`.
+[FixedBounds.lean](TranslationTiling/FiniteCompiler/FixedBounds.lean)
+counts the fixed tests: `s ≤ 3^w + P^36 + 7*w+3 ≤ 3^(w+1)` for `w ≥ 240`.
+Stacking uses `X = max(s,P²) ≤ 3^(w+1)`, giving stacked modulus
+`R^30 ≤ P^(630*w+930)*3^(60*w+60)`.
 [Compiler/SparseGeometryBound.lean](TranslationTiling/Compiler/SparseGeometryBound.lean)
 counts each MSS component by `2^24`, independently of its displacement.
 [FourLayer/](TranslationTiling/FourLayer/) replaces the cubic color partition
@@ -177,8 +189,8 @@ computability, correctness, connectivity, and the `K*H⁴*R³` volume bound,
 where `K = 9*2^24*972*36*8003^4`.
 [SupportBounds.lean](TranslationTiling/FiniteCompiler/SupportBounds.lean)
 uses the exact identity `H(b) = b^6*(b+1)^16+b` to give `H ≤ P^199`.
-The connectedness box uses `max(H,R)`. `BudgetBounds.lean` then gives
-`|F|^10 ≤ P^(1000*w+9030)`, hence `|F| ≤ P^(100*w+903)`.
+The connectedness box uses `max(H,R)`. `FixedBounds.lean` then gives
+`|F|^10 ≤ P^(640*w+9010)`, hence `|F| ≤ P^(64*w+901)`.
 Earlier estimates remain in `EconomicalBounds.lean`, `CompactParameters.lean`, `CompactBounds.lean`,
 `TightParameters.lean`, `TightBounds.lean`, and `FourLayer/SizeBound.lean`.
 [Effective/SharpCompiler.lean](TranslationTiling/FiniteCompiler/Effective/SharpCompiler.lean)
@@ -487,8 +499,8 @@ arbitrary-tiling soundness and completeness, and face-connectivity. The algorith
 does not depend on proofs of the mathematical inputs.
 
 The optimized compiler is in `FiniteCompiler/Effective/Compiler.lean`.
-It computes the bit-channel input and bounded prime parameters, enumerates the
-sparse cycle tests, removes duplicate canonical tile descriptions, and searches
+It computes the ternary-channel input and bounded prime parameters, emits one
+fixed cycle test per forbidden tuple, removes duplicate canonical tile descriptions, and searches
 for a full-difference partition with the polynomial modulus bound.
 `FiniteCompiler/Effective/Correctness.lean` proves answer preservation;
 `FiniteCompiler/Effective/SizeBound.lean` proves the closed quasipolynomial bound

@@ -1,7 +1,7 @@
 import TranslationTiling.FiniteCompiler.Effective.Correctness
 import TranslationTiling.FiniteCompiler.Effective.SparseGeometry
 import TranslationTiling.FiniteCompiler.TightBounds
-import TranslationTiling.FiniteCompiler.BudgetBounds
+import TranslationTiling.FiniteCompiler.FixedBounds
 import TranslationTiling.FourLayer.MSSBound
 import TranslationTiling.FourLayer.SizeBound
 
@@ -45,7 +45,7 @@ theorem sharpCyclic_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
     (hpos : ∀ n, 0≤T.slope n) (hS : ∀ n, (T.slope n).natAbs≤Sudoku.Width)
     (hB : T.alphabet=3) (hC : 6*Sudoku.Width+2 ≤ channelCount T) :
     0<(sharpCyclic (parameterData T,p)).1 ∧ (sharpCyclic (parameterData T,p)).2≠[] ∧
-    (sharpCyclic (parameterData T,p)).1^30≤primeBudget T^(1000*T.width+960) ∧
+    (sharpCyclic (parameterData T,p)).1^30≤primeBudget T^(630*T.width+930)*3^(60*T.width+60) ∧
     (∀ f ∈ (sharpCyclic (parameterData T,p)).2,
       f.1.1.natAbs≤rawHorizontal (parameterData T) ∧ f.1.2.natAbs≤rawHorizontal (parameterData T)) ∧
     ((∃ A : Set (Ambient (parameters T)), Solves (parameters T) A) ↔
@@ -58,25 +58,20 @@ theorem sharpCyclic_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
   have hcp : channelCount T≤C := le_max_left _ _
   have hw : 16≤T.width := by norm_num [channelCount,Sudoku.Width,Sudoku.q] at hC; omega
   have hsmall : BudgetPrimes (parameters T) C := parameters_bounded_budget T hB
-  have hcount' := BudgetSize.testTiles_card (parameters T) hB hsmall hbig hcp hw hS
-    (C^3) (Nat.one_le_pow _ _ (by omega)) (hsmall.2.2.2.2)
-  have hcount : Fs.length≤C^(8*C) := by
+  have hcount : Fs.length≤3^(T.width+1) := by
     rw [canonicalInputFamily_length T p hp hpos hS]
-    apply hcount'.trans
-    calc
-      _ = 6*(3*C^6)^T.width := by congr 2; ring
-      _ ≤ C*(C^7)^T.width := Nat.mul_le_mul (by omega)
-        (Nat.pow_le_pow_left (by calc
-          3*C^6 ≤ C*C^6 := Nat.mul_le_mul_right _ (by omega : 3≤C)
-          _ = C^7 := (pow_succ' _ _).symm) _)
-      _ = C^(7*T.width+1) := by rw [← pow_mul,pow_succ']
-      _ ≤ _ := Nat.pow_le_pow_right (by omega) (by unfold channelCount at hcp; omega)
-  have hXhi : X≤C^(8*C) := max_le hcount (Nat.pow_le_pow_right (by omega) (by omega))
+    exact FixedSize.testTiles_card (parameters T) hB hsmall (by
+      norm_num [channelCount,Sudoku.Width,Sudoku.q] at hC; omega) hS
+  have hpow36 : C^36≤3^T.width := FixedSize.budget_pow_le_three T.width (by
+    norm_num [channelCount,Sudoku.Width,Sudoku.q] at hC; omega)
+  have hX3 : X≤3^(T.width+1) := max_le hcount (by
+    apply (Nat.pow_le_pow_right (by omega : 1≤C) (by decide : 2≤36)).trans
+    exact hpow36.trans (Nat.pow_le_pow_right (by decide) (by omega)))
+  have hXhi : X≤C^(8*C) := by
+    apply hX3.trans
+    apply (Nat.pow_le_pow_left (by omega : 3≤C) _).trans
+    exact Nat.pow_le_pow_right (by omega) (by unfold channelCount at hcp; omega)
   have hXlo : C^2≤X := le_max_right _ _
-  have hX60 : X^60≤C^(370*T.width+30) := by
-    dsimp only [X,Fs]
-    rw [canonicalInputFamily_length T p hp hpos hS]
-    exact BudgetSize.testBudget_pow (parameters T) hB hsmall hbig hcp hw hS
   have hlen : 0<Fs.length := by
     rw [canonicalInputFamily_length T p hp hpos hS]
     exact Finset.card_pos.mpr (testTiles_nonempty (parameters T))
@@ -93,12 +88,20 @@ theorem sharpCyclic_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
   · have hv := BudgetSize.cyclicOrder_pow (parameters T) hB hsmall hbig
     have hv30 : (parameters T).cyclicOrder^30≤C^(630*T.width+840) := by
       convert Nat.pow_le_pow_left hv 3 using 1 <;> simp only [← pow_mul] <;> congr 1 <;> ring
+    have hell : freshCap X (C^4)≤C^3*3^(2*T.width+2) := by
+      apply (FixedSize.freshCap_le hbig hXlo hXhi).trans
+      apply Nat.mul_le_mul_left
+      convert Nat.pow_le_pow_left hX3 2 using 1 <;> rw [←pow_mul] <;> congr 1 <;> ring
     calc
       _ ≤ ((parameters T).cyclicOrder*freshCap X (C^4))^30 := Nat.pow_le_pow_left hcap _
       _ = (parameters T).cyclicOrder^30*freshCap X (C^4)^30 := by ring
-      _ ≤ C^(630*T.width+840)*C^(370*T.width+120) := Nat.mul_le_mul hv30
-        (RefinedSize.freshCap_pow hbig hXlo hXhi hX60)
-      _ = _ := by rw [← pow_add]; congr 1; ring
+      _ ≤ C^(630*T.width+840)*(C^3*3^(2*T.width+2))^30 :=
+        Nat.mul_le_mul hv30 (Nat.pow_le_pow_left hell _)
+      _ = C^(630*T.width+930)*3^(60*T.width+60) := by
+        simp only [mul_pow,←pow_mul]
+        rw [←mul_assoc,←pow_add]
+        rw [show 630*T.width+840+3*30=630*T.width+930 by ring,
+          show (2*T.width+2)*30=60*T.width+60 by ring]
   · exact stackCodes_horizontal _ _ Fs _ (canonicalFamily_horizontal _ _ _)
   · exact (family_solution_iff (parameters T) Fs (canonicalInputFamily_correct T p hp hpos hS)).trans hiff
 
@@ -108,7 +111,7 @@ theorem sharpTile_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
     sharpTile (parameterData T,p)≠[] ∧ FaceConnected (sharpTile (parameterData T,p)) ∧
     ((∃ A : Set (Ambient (parameters T)), Solves (parameters T) A) ↔
       TranslationTiling.Tiles (sharpTile (parameterData T,p))) ∧
-    (sharpTile (parameterData T,p)).length^10≤primeBudget T^(1000*T.width+9030) := by
+    (sharpTile (parameterData T,p)).length^10≤primeBudget T^(640*T.width+9010) := by
   obtain ⟨hm,hne,hR30,hxy,hiff⟩ := sharpCyclic_facts T p hp hpos hS hB hC
   dsimp only [sharpTile]
   generalize hd : sharpCyclic (parameterData T,p)=d at hm hne hR30 hxy hiff ⊢
@@ -127,13 +130,14 @@ theorem sharpTile_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
     exact Size.horizontalCap_channel_nine_le hbig
   have hH1 : 1≤H := by
     exact ((by unfold channelCount; omega : 1≤channelCount T).trans (parameters_rawBudget T hS).2.1).trans (Size.le_horizontalCap _)
-  have hM30 : M^30≤C^(1000*T.width+960) := by
+  have hM30 : M^30≤C^(630*T.width+930)*3^(60*T.width+60) := by
     rcases le_total H d.1 with hh | hh
     · simpa only [M,max_eq_right hh] using hR30
     · rw [show M=H from max_eq_left hh]
       apply (Nat.pow_le_pow_left hH _).trans
-      rw [← pow_mul]
-      exact Nat.pow_le_pow_right (by omega) (by omega)
+      rw [←pow_mul]
+      apply (Nat.pow_le_pow_right (by omega : 1≤C) (by omega : 199*30≤630*T.width+930)).trans
+      exact Nat.le_mul_of_pos_right _ (by positivity)
   have hM : d.1≤M := le_max_right _ _
   have hHM : H≤M := le_max_left _ _
   have hn := Compiler.integerTile_nonempty d hne
@@ -150,7 +154,7 @@ theorem sharpTile_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
         _ ≤ 2^24*(9*H^2*M) := Nat.mul_le_mul_left _ (Nat.mul_le_mul hs hM)
         _ = _ := by ring
     exact (Nat.pow_le_pow_left (FourLayer.connectedTile_length_le _ H M hH1 hHM hvol) _).trans
-      (BudgetSize.geometry_pow hbig hH hM30)
+      (FixedSize.geometry_bound hbig hH hM30)
 
 end
 end TranslationTiling.FiniteCompiler.Effective

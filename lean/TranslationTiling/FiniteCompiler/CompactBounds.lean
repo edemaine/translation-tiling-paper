@@ -50,14 +50,14 @@ theorem sharp_cyclicOrder_le (hB : T.alphabet = 3) (hp : CompactPrimes E)
 set_option maxHeartbeats 200000 in
 theorem sharp_cycleTiles_card_le (hp : CompactPrimes E) (hC : 1202≤channelCount T)
     {t : ℕ} [NeZero t] (cycle : ZMod t ↪ Channel T) (labels : ∀ j, Label T (cycle j)) :
-    (sparseCycleTiles E cycle labels).card ≤ channelCount T ^ (9 * channelCount T) := by
+    (fixedCycleTiles E cycle labels).card ≤ channelCount T ^ (9 * channelCount T) := by
   have ht : t ≤ channelCount T := by
     simpa only [ZMod.card, channel_card] using Fintype.card_le_of_injective cycle cycle.injective
   have hP (i : Channel T) : Fintype.card (P E i)≤channelCount T^4 := by
     simpa only [P,Fintype.card_prod,ZMod.card] using hp.2.2 i
   calc
     _ ≤ ∏ j : ZMod t, Fintype.card (P E (cycle (j-1))) *
-        Fintype.card (digitSubgroup E (cycle j) (labels j)) := sparseCycleTiles_card_le E cycle labels
+        Fintype.card (digitSubgroup E (cycle j) (labels j)) := fixedCycleTiles_card_le E cycle labels
     _ ≤ ∏ _j : ZMod t, (channelCount T ^ 4 * channelCount T ^ 5) :=
       Finset.prod_le_prod (fun j _ => Nat.mul_le_mul (hP _)
         ((digitSubgroup_card_le_prime E _ _).trans (hp.2.1 _ _)))

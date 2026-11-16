@@ -1,6 +1,6 @@
 import TranslationTiling.FiniteCompiler.Effective.TernaryInput
 import TranslationTiling.FiniteCompiler.Effective.NumericalParameters
-import TranslationTiling.FiniteCompiler.Effective.SparsePrimitives
+import TranslationTiling.FiniteCompiler.Effective.FixedPrimitives
 import TranslationTiling.FiniteCompiler.Effective.Canonical
 import TranslationTiling.FiniteCompiler.Effective.BoundedStack
 import TranslationTiling.Compiler.Main
@@ -111,9 +111,19 @@ def rawConfigurations (d : ParameterData) (spec : List NumericalSpec) : List Cyc
   unfold rawConfigurations
   fun_prop
 
+def rawOwnDigits (d : ParameterData) (spec : List NumericalSpec) : List ℕ :=
+  (List.range (d.1+2)).map fun k => rawDigit d (denseChannelKey d.1 k)
+    (spec.getD k (false,0,0)).2.2
+
+@[fun_prop] theorem rawOwnDigits_primrec : Primrec (fun z : ParameterData×List NumericalSpec =>
+    rawOwnDigits z.1 z.2) := by
+  unfold rawOwnDigits
+  fun_prop
+
 def rawWordFamily (d : InputData) : List CyclicTile :=
   (numericalBadWords d.1 d.2).flatMap fun w =>
-    sparseGadgets (rawOrder d.1) (rawConfigurations d.1 (rawWordSpec d.1 w))
+    fixedGadgets (rawOrder d.1) (rawConfigurations d.1 (rawWordSpec d.1 w))
+      (rawOwnDigits d.1 (rawWordSpec d.1 w))
 
 @[fun_prop] theorem rawWordFamily_primrec : Primrec rawWordFamily := by
   unfold rawWordFamily
@@ -132,7 +142,8 @@ def badSeedArguments (d : InputData) : List (ℕ × ℕ × ℕ) :=
 
 def rawSeedConstraintFamily (d : InputData) : List CyclicTile :=
   (badSeedArguments d).flatMap fun z =>
-    sparseGadgets (rawOrder d.1) (rawConfigurations d.1 (rawSeedSpec d.1 z.1 z.2.1 z.2.2))
+    fixedGadgets (rawOrder d.1) (rawConfigurations d.1 (rawSeedSpec d.1 z.1 z.2.1 z.2.2))
+      (rawOwnDigits d.1 (rawSeedSpec d.1 z.1 z.2.1 z.2.2))
 
 @[fun_prop] theorem rawSeedConstraintFamily_primrec : Primrec rawSeedConstraintFamily := by
   unfold rawSeedConstraintFamily

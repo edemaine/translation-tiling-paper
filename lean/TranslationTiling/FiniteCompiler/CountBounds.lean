@@ -16,7 +16,7 @@ variable {T : System} {E : EncodingParameters T} {b : ℕ}
 theorem cycleTiles_card_le (hb : ParameterBudget E b)
     {t : ℕ} [NeZero t] (cycle : ZMod t ↪ Channel T)
     (labels : ∀ j, Label T (cycle j)) :
-    (sparseCycleTiles E cycle labels).card ≤ b ^ cycleCountExponent T := by
+    (fixedCycleTiles E cycle labels).card ≤ b ^ cycleCountExponent T := by
   have ht : t ≤ channelCount T := by
     simpa only [ZMod.card, channel_card] using
       Fintype.card_le_of_injective cycle cycle.injective
@@ -28,7 +28,7 @@ theorem cycleTiles_card_le (hb : ParameterBudget E b)
   have hP (i : Channel T) : Fintype.card (P E i) ≤ b ^ 2 := by
     simpa only [P, Fintype.card_prod, ZMod.card, pow_two] using
       Nat.mul_le_mul (hb.a i) (hb.usefulB i)
-  apply (sparseCycleTiles_card_le E cycle labels).trans
+  apply (fixedCycleTiles_card_le E cycle labels).trans
   calc
     _ ≤ ∏ _j : ZMod t, (b ^ 2 * b) :=
       Finset.prod_le_prod (fun j _ => Nat.mul_le_mul (hP _) (hU _ _))

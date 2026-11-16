@@ -2085,36 +2085,35 @@ the equation count and weaker prime bounds.
 The linear dependence on $n$ in the exponent comes from assigning a
 separate prime to each possible label in a channel. Encoding the Wang
 label and arithmetic decorations over a fixed small alphabet changes the
-number of channels instead. A second change
-is essential: use only the single-support maps already present in the
-collision proof of @lem:cycle.
+number of channels instead. We also optimize the cycle test using
+cyclicity of each digit subgroup.
 
-: lemma[Sparse cycle tests] @=lem:sparse-cycle
-  In @lem:cycle, it suffices to test maps of the form
+: lemma[One fixed cycle test] @=lem:fixed-cycle
+  In @lem:cycle, a single test suffices. Fix the generator
+  $u_i=r_i/r_{i,j(i)}\pmod{r_i}$ of $U_{i,j(i)}$ and use
   $$
-    d_i(e)=\begin{cases}u_i,&e=\epsilon_i,\\0,&e\ne\epsilon_i,\end{cases}
-    \qquad \epsilon_i\in P_{\operatorname{prev}(i)},\quad u_i\in U_{i,j(i)}.
-  $$
-  The number of tests for a cycle of length $t$ is at most
-  $$
-    \prod_{i\in C}|P_{\operatorname{prev}(i)}|\,|U_{i,j(i)}|.
+    d_i(e)=\begin{cases}0,&e=0,\\u_i,&e\ne0.\end{cases}
   $$
 
 : proof
   If one selected label is inactive, the same inverse argument works
-  for every map, hence for this restricted family. If all selected
-  labels are active, use the witnesses $v_i,v_i'$ from @lem:cycle and set
+  for this fixed map. If all selected labels are active at some $x$,
+  then $g_{i,x}$ is not invariant under $U_{i,j(i)}$. Since $u_i$
+  generates this subgroup, there is a $v_i$ with
+  $g_{i,x}(v_i)\ne g_{i,x}(v_i-u_i)$. Put
   $$
-    \epsilon_i=g_{\operatorname{prev}(i),x}(v_{\operatorname{prev}(i)})
-       -g_{\operatorname{prev}(i),x}(v'_{\operatorname{prev}(i)}),
-    \qquad u_i=v_i-v_i'.
+    \epsilon_i=g_{i,x}(v_i)-g_{i,x}(v_i-u_i)\ne0.
   $$
-  Each $\epsilon_i$ is nonzero. Thus $d_i(0)=0$ and
-  $d_i(\epsilon_i)=u_i$, which gives exactly the same collision.
-  The equivalence and count are checked in
-  \leanfile{Compiler/SparseCycleTests.lean} by
-  \leandecl{Compiler.sparse_cycle_exclusion_iff} and
-  \leandecl{Compiler.sparseCycleTiles_card_le}.
+  Extend $\epsilon$ by zero off the cycle and take $k_i=v_i$ on it.
+  Then $d_i(0)=0$ and $d_i(\epsilon_{\operatorname{prev}(i)})=u_i$,
+  so $0$ and $\epsilon$ have the same image in \eqref{eq:cycle-map}.
+  The generator, adjacent witnesses, and exclusion equivalence are checked in
+  \leanfile{FiniteCompiler/FixedCycleTests.lean} by
+  \leandecl{FiniteCompiler.digitGenerator_spans},
+  \leandecl{FiniteCompiler.digitActive_step}, and
+  \leandecl{FiniteCompiler.fixed_cycle_exclusion_iff}.
+  The numerical implementation is checked in
+  \leanfile{FiniteCompiler/Effective/FixedCorrect.lean}.
 
 Write $\lg=\log_2$ for the real logarithm to base~$2$.
 For $n\geq1$, let $k$ be the larger of the binary length of $n$ and the
@@ -2124,7 +2123,7 @@ Encode each class directly by length-$k$ ternary words:
 class $0$ uses words containing $0$ but no $1$; class $1$ uses words
 containing $1$ but no $0$; class $2$ uses words containing both $0$ and $1$.
 These classes have $2^k-1$, $2^k-1$, and $3^k-2^{k+1}+1$ words,
-respectively. We have $n<2^k$, $2pqn<3^k$, and $k\geq8$.
+respectively. We have $n<2^k$, $2pqn<3^k$, and $k\geq6$.
 Since $4\cdot2^k\leq3^k$ for $k\geq4$, these capacities are at least
 $n$, $n$, and $pqn$. In each seed class, assign words by the Wang tile's
 index $j<n$; in class $2$, use the decorated index $(aq+a')n+j<pqn$.
@@ -2142,7 +2141,7 @@ The two seed channels stay unchanged. The new ordinary alphabet is
 $\Gamma=\{0,1,2\}$. A word over the new channels is allowed exactly
 when it encodes some word in $\calW$. Use the original graph,
 dependence, and activation equations for these channels, and the
-sparse exclusion equations for the new forbidden words and seed-label
+fixed cycle exclusion equations for the new forbidden words and seed-label
 pairs. The code and its seed predicates are checked in
 \leanfile{FiniteCompiler/Effective/MixedCode.lean}; the computable payload
 and its agreement with this code are checked in
@@ -2152,10 +2151,10 @@ and its agreement with this code are checked in
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    (n+4)^{10^5\lg\lg(n+4)}=n^{O(\log\log n)}
+    (n+4)^{6\cdot10^4\lg\lg(n+4)}=n^{O(\log\log n)}
   $$
   unit cubes.
-  For $n=1$, we also have the explicit bound $2^{246{,}789}$ unit cubes.
+  For $n=1$, we also have the explicit bound $2^{161{,}147}$ unit cubes.
 
 : proof
   For $n=0$, consolidate the two contradictory equations with prototiles
@@ -2169,7 +2168,7 @@ and its agreement with this code are checked in
   gives a nonempty active set in every ordinary ternary channel. Choose
   one active symbol $V(i,b,m)$ at the common vertical section $(0,m)$.
   At every horizontal point $x$, the tuple
-  $(V(i,b,L_i(x)))_{i,b}$ is an allowed encoded word, by the sparse
+  $(V(i,b,L_i(x)))_{i,b}$ is an allowed encoded word, by the fixed
   word exclusions. In particular, at $(0,m)$ the digits for each $i$
   decode uniquely to a symbol $W(i,m)\in\Sigma$. At a general $x$,
   injectivity of the code shows that decoding its $i$th digit tuple gives
@@ -2186,7 +2185,7 @@ and its agreement with this code are checked in
   The ordinary activation inverse uses only that channel and its slope;
   it requires no distinctness of slopes between channels. The two-seed
   construction and its common auxiliary output remain valid. The
-  encoded line and seed restrictions hold, so @lem:sparse-cycle proves
+  encoded line and seed restrictions hold, so @lem:fixed-cycle proves
   all exclusion equations on this same graph. This proves both
   tilability directions.
 
@@ -2203,13 +2202,12 @@ and its agreement with this code are checked in
     |V|=D\prod_i r_i^2a_ib_i=C^{O(C)}.
   $$
 
-  There are at most $3^{Nk}$ forbidden ternary words. Each needs at
-  most $(U^2Q)^C=C^{O(C)}$ sparse cycle tests, since
-  $|U_{i,j}|=r_{ij}\leq Q$. There are $O(C)$ seed-label exclusions,
+  There are at most $3^{Nk}$ forbidden ternary words. Each needs one
+  fixed cycle test. There are $O(C)$ seed-label exclusions,
   $O(C^2)$ dependence equations, and $C$ activation equations. The
-  total number of equations is therefore $s=C^{O(C)}$. Enumerating
+  total number of equations is therefore $s\leq3^{Nk}+O(C^2)=2^{O(C)}$. Enumerating
   all maps would instead introduce the growing exponent $|P_i|$;
-  the sparse restriction is what avoids that loss.
+  the fixed test avoids that loss.
 
   The activation CRT moduli, batch indices, and their separated lifts
   are polynomial in the individual channel budgets. The slopes are
@@ -2283,19 +2281,19 @@ and its agreement with this code are checked in
     |V|^{10}\leq P^{210w+280}.
   $$
 
-  An ordinary sparse cycle needs at most $(P^3Q)^w=P^{6w}$ tests,
-  and there are at most $3^w$ forbidden words.
-  A seed cycle needs at most $P^{15}$ tests; at most $P^2$
-  seed-label pairs therefore give at most $P^{17}$ tests.
-  The dependence equations have count at most $P^{48}$.
-  Each of the six equation families is bounded by $(3P^3Q)^w$, so
-  $s\leq6(3P^3Q)^w$.
-  For stacking, use $X=\max\{s,P^2\}$ instead of the coarser $P^{8P}$.
-  Then $X\leq6(3P^3Q)^w\leq P^{8P}$ and, using $36\leq P$ and $9^3\leq P$,
+  Each forbidden word or seed-label pair needs one fixed cycle test.
+  There are at most $3^w$ forbidden words and $6w$ seed-label pairs.
+  The dependence equations have count at most $b^4=P^{36}$;
+  the kernel and activation equations contribute at most $w+3$.
+  Since $w\geq240$, we have $P^{36}\leq3^w$:
+  the base case is $962^{36}\leq3^{240}$, and the induction step uses
+  $963^{36}\leq3\cdot962^{36}$ to give $(P+1)^{36}\leq3P^{36}$.
+  Also $7w+3\leq P^{36}$. Thus
   $$
-    X^{60}\leq P^{370w+30}.
+    s\leq3^w+P^{36}+7w+3\leq3^{w+1},\qquad
+    X=\max\{s,P^2\}\leq3^{w+1}\leq P^{8P}.
   $$
-  These counts are checked in \leanfile{FiniteCompiler/BudgetBounds.lean}.
+  These counts are checked in \leanfile{FiniteCompiler/FixedBounds.lean}.
 
   Let $\lambda$ be the binary length of $2X$.
   Choose a prime $\ell$ between
@@ -2314,9 +2312,9 @@ and its agreement with this code are checked in
   search and coprime stacking are in
   \leanfile{FiniteCompiler/Effective/FreshStack.lean}.
   Since $\lambda\leq P^2$, we have $\ell\leq132X^2\lambda\leq P^3X^2$.
-  Thus $\ell^{30}\leq P^{370w+120}$, and the stacked modulus $R=\ell|V|$ satisfies
+  Thus $\ell\leq P^3 3^{2w+2}$, and the stacked modulus $R=\ell|V|$ satisfies
   $$
-    R^{30}\leq P^{1000w+960}.
+    R^{30}\leq P^{630w+930}3^{60w+60}.
   $$
   The common parameter budget improves from $P^{12}$ to $b=P^9$.
   Sharpening the horizontal estimate from degree~$211$ to degree~$22$ gives
@@ -2332,7 +2330,7 @@ and its agreement with this code are checked in
   coordinates have absolute value at most $1000(2H+1)$, and its vertical
   coordinates at most $1000(2R+1)$.
   Use $\widehat R=\max\{H,R\}$ to size the connectedness construction.
-  This also satisfies $\widehat R^{30}\leq P^{1000w+960}$.
+  This also satisfies $\widehat R^{30}\leq P^{630w+930}3^{60w+60}$.
   Translate the lattice tile into an $A\times A\times B$ box with
   $A\leq B$, $A\leq8003H$, and $B\leq8003\widehat R$.
 
@@ -2358,51 +2356,53 @@ and its agreement with this code are checked in
       \leq K H^4\widehat R^3,\qquad
     K=9\cdot2^{24}\cdot972\cdot36\cdot8003^4\leq P^{11}.
   $$
-  Taking tenth powers gives
+  Taking tenth powers and using $3^6\leq P$ gives
   $$
-    |F|^{10}\leq P^{1000w+9030},\qquad |F|\leq P^{100w+903}.
+    |F|^{10}\leq P^{630w+9000}3^{60w+60}
+      \leq P^{640w+9010},\qquad |F|\leq P^{64w+901}.
   $$
   The partition, contacts, connectivity, and arbitrary-tiling rigidity
   are checked in `FourLayer/`; the computable compiler and its volume
   estimate are in \leanfile{FourLayer/Compiler.lean} and
-  \leanfile{FiniteCompiler/BudgetBounds.lean}.
+  \leanfile{FiniteCompiler/FixedBounds.lean}.
 
   Put $t=\lg(n+4)$ and $g=\lg t$. Direct estimates on the binary and
   ternary lengths give $k\leq(11/4)t$, treating $n=1,\ldots,6$ directly.
   For larger $n$, use $t\geq10/3$, $646^8\leq2^{75}$, and
   $2^{19}\leq3^{12}$ in the ternary-length estimate.
-  The inequalities $2^{58}\leq5^{25}$ and
-  $2^{121}\leq(58/25)^{100}$ give $t\geq58/25$ and $g\geq121/100$.
-  Thus
+  For $n\geq2$, the inequalities $2^{31}\leq6^{12}$ and
+  $2^4\leq(31/12)^3$ give $t\geq31/12$ and $g\geq4/3$. Thus
   $$
-    w\leq110t,\qquad P\leq421t,\qquad 421^{40}\leq2^{349},\qquad
-    \lg P\leq349/40+g\leq(1987/242)g.
+    w\leq110t,\qquad P\leq373t,\qquad 373^5\leq2^{43},\qquad
+    \lg P\leq43/5+g\leq(149/20)g.
   $$
   Hence
   $$
-    \lg|F|\leq(100w+903)\lg P
-      \leq\left(11000+\frac{903\cdot25}{58}\right)
-           \frac{1987}{242}\,tg,
+    \lg|F|\leq(64w+901)\lg P
+      \leq\left(7040+\frac{901\cdot12}{31}\right)
+           \frac{149}{20}\,tg,
   $$
   and
   $$
-    \left(11000+\frac{903\cdot25}{58}\right)\frac{1987}{242}
-      =\frac{1{,}312{,}562{,}525}{14{,}036}<10^5
+    \left(7040+\frac{901\cdot12}{31}\right)\frac{149}{20}
+      =\frac{8{,}532{,}187}{155}<6\cdot10^4
   $$
   gives the displayed bound.
   The conversion is checked in \leanfile{Compiler/MixedLogBound.lean}.
   For $n=1$, six code positions per column give $w=240$ and $P=962$,
   with $P^{100}\leq2^{991}$. Hence
   $$
-    |F|^{1000}\leq2^{991(1000\cdot240+9030)}
-      =2^{246{,}788{,}730}\leq2^{1000\cdot246{,}789},
+    |F|^{1000}\leq2^{991(640\cdot240+9010)}
+      =2^{161{,}146{,}510}\leq2^{1000\cdot161{,}147},
   $$
-  so $|F|\leq2^{246{,}789}$.
+  so $|F|\leq2^{161{,}147}$. This also fits the displayed general bound:
+  $2^{58}\leq5^{25}$ and $2^{121}\leq(58/25)^{100}$ give
+  $t\geq58/25$ and $g\geq121/100$, so $6\cdot10^4tg\geq168{,}432$.
 
 The ternary-channel variant is formalized end to end in
 \leanfile{Compiler/CleanQuasipolynomialBound.lean} by
 \leandecl{Compiler.Size.exists_connected_tile_clean_quasipolynomial_bound}.
-The generalized graph, dependence, sparse cycle, and activation equations
+The generalized graph, dependence, fixed cycle, and activation equations
 are in `FiniteCompiler/`; their common-solution and soundness proofs allow
 repeated column slopes. The code-independent equivalence is
 \leanref{FiniteCompiler/TaggedSystem.lean}{FiniteCompiler.TaggedSystem.finite_system_iff_wang}.
@@ -2444,8 +2444,7 @@ $$
   |V|=D(r^2ab)^m\prod_{t=1}^2 r_{\eta_t}^2a_{\eta_t}b_{\eta_t}
       =n^{O(1)}.
 $$
-The sparse-test count would also be $n^{O(1)}$: both the alphabet and
-every factor in the sparse-test bound would be constant. However, this
+The fixed-test count would also be $n^{O(1)}$, because $m=O(\lg n)$. However, this
 finite factor is noncyclic; its quotient $(\Cyc a)^m$ already needs
 $m$ generators when $a$ is prime. The present quotient-to-lattice step,
 which uses one finite cyclic coordinate and two infinite coordinates,
@@ -2946,8 +2945,8 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, these bounds are $(n+4)^{10^5\lg\lg(n+4)}$ for translations and
-$64{,}000(n+4)^{10^5\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+function. In dimension three, these bounds are $(n+4)^{6\cdot10^4\lg\lg(n+4)}$ for translations and
+$64{,}000(n+4)^{6\cdot10^4\lg\lg(n+4)}$ for arbitrary Euclidean motions.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[
@@ -2971,8 +2970,8 @@ The compiler in
 numerical equations in \leanfile{FiniteCompiler/Effective/Compiler.lean}.
 It assigns ternary words by tile index within each seed class and by
 decorated index otherwise, searches finite arithmetic certificates for the
-bounded prime parameters, and enumerates the sparse cycle maps supported at
-one useful-coordinate value. A common finite coordinate box
+bounded prime parameters, and emits one fixed cycle test per forbidden
+word or seed-label pair. A common finite coordinate box
 canonically orders the test tiles, allowing duplicate descriptions to be removed
 before stacking. This makes the list length equal the number of distinct
 mathematical test tiles. The full-difference partition search in

@@ -395,6 +395,7 @@ as summarized in @fig:reduction:
    to enforce matching edge colors.
    We additionally require that neither integer component is constant
    down any column.
+
    To optimize the reduction size, our soundness proof uses six-point affine
    recovery to reduce the prime requirement from $p,q>48$ to $p,q>16$
    and the number of columns from $p^2q^2$ to $2q+2$,
@@ -417,6 +418,11 @@ as summarized in @fig:reduction:
    The target space being tiled is $\Z^2 \times (\Z/m\Z)$,
    a 3D integer grid whose $z$ coordinate wraps around modulo~$m$
    (where $m$ depends on the Wang tile set).
+
+   The original encoding uses many prototiles to rule out each forbidden
+   combination of symbols. To optimize the reduction size, we use the cyclic
+   structure of the encoding to show that one fixed test prototile per
+   forbidden combination suffices.
 3. We apply OpenAI's stacking construction \cite[Section~6]{OpenAI2026}
    (based on an earlier construction of Greenfeld and Tao
    \cite[Theorem~3.1 and Lemma~3.2]{GTPeriodic})
@@ -454,6 +460,7 @@ as summarized in @fig:reduction:
    while preserving dimension, the number of prototiles, and tileability.
    This construction scales up the prototile, giving space to connect the
    lattice points by thin corridors, with bumps and dents to force alignment.
+
    We use a four-layer variant to optimize the reduction size slightly,
    reducing the volume expansion factor from $O(L^6)$ to $O(L^4)$ for an input
    prototile contained in an $L\times L\times L$ box.
@@ -473,9 +480,9 @@ closed polynomial constraints and using finite-precision tests
 to recognize infeasibility.
 
 For $n$ Wang tiles, the translation-only reduction uses at most
-$B(n)=(n+4)^{10^5\lg\lg(n+4)}=n^{O(\log\log n)}$ lattice points / unit cubes
+$B(n)=(n+4)^{6\cdot10^4\lg\lg(n+4)}=n^{O(\log\log n)}$ lattice points / unit cubes
 in every fixed dimension $d\geq3$, where $\lg=\log_2$.
-For $n=1$, we can improve the upper bound to $2^{246{,}789}$.
+For $n=1$, we can improve the upper bound to $2^{161{,}147}$.
 Allowing rotations and/or reflections gives bounds of $64{,}000B(n)$ in 3D
 and $2^{10(d+1)^2}B(n)$ in $d$D.
 
@@ -552,7 +559,7 @@ In both statements, the proof is a single call to a theorem in
 
 A computable reduction converts a list of $n$ Wang tiles into an
 equivalent nonempty connected prototile $P\subset\Z^d$ using
-at most $B(n) = (n+4)^{10^5\lg\lg(n+4)}$ unit cubes:
+at most $B(n) = (n+4)^{6\cdot10^4\lg\lg(n+4)}$ unit cubes:
 the Wang tiles tile the plane if and only if $P$ tiles $\Z^d$ by translations.
 Here `LeanWang.TileSet` is a list of Wang tiles, and `LeanWang.TilesPlane`
 asserts that they tile the whole plane.

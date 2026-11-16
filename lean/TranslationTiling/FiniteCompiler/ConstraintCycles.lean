@@ -2,7 +2,7 @@
 adc7f1241b42e322a6451854ab7e4b4c146bf78a. Apache 2.0; see
 third_party/openai-math.LICENSE. Decorated alphabet and two-prime residue size;
 namespace and imports changed for Lean 4.31. -/
-import TranslationTiling.FiniteCompiler.SparseCycleTests
+import TranslationTiling.FiniteCompiler.FixedCycleTests
 import TranslationTiling.Proofs.SudokuSoundness
 import Mathlib.Data.Finset.Union
 import Mathlib.Tactic.FinCases
@@ -70,11 +70,11 @@ variable (E : EncodingParameters T)
 
 theorem ordinaryCycle_exclusion_iff (w : Word T) (o : GraphOutputs E)
     (hdep : HasDependence E o) :
-    (∀ F ∈ sparseCycleTiles E (ordinaryCycle T) (ordinaryCycleLabels w),
+    (∀ F ∈ fixedCycleTiles E (ordinaryCycle T) (ordinaryCycleLabels w),
       Tiles F (graph o)) ↔
       ∀ x, ¬ (∀ n : Column T, Active E o (.inl n) x (w n)) := by
   classical
-  rw [sparse_cycle_exclusion_iff E (ordinaryCycle T) (ordinaryCycleLabels w) o hdep]
+  rw [fixed_cycle_exclusion_iff E (ordinaryCycle T) (ordinaryCycleLabels w) o hdep]
   constructor
   · intro h x hall
     obtain ⟨z, hz⟩ := h x
@@ -88,11 +88,11 @@ theorem ordinaryCycle_exclusion_iff (w : Word T) (o : GraphOutputs E)
 
 theorem seedCycle_exclusion_iff (t : Fin 2) (n : Column T) (j : Symbol T)
     (o : GraphOutputs E) (hdep : HasDependence E o) :
-    (∀ F ∈ sparseCycleTiles E (seedCycle t n) (seedCycleLabels t n j),
+    (∀ F ∈ fixedCycleTiles E (seedCycle t n) (seedCycleLabels t n j),
       Tiles F (graph o)) ↔
       ∀ x, ¬ (Active E o (.inr t) x () ∧ Active E o (.inl n) x j) := by
   classical
-  rw [sparse_cycle_exclusion_iff E (seedCycle t n) (seedCycleLabels t n j) o hdep]
+  rw [fixed_cycle_exclusion_iff E (seedCycle t n) (seedCycleLabels t n j) o hdep]
   constructor
   · intro h x hx
     obtain ⟨z, hz⟩ := h x
@@ -110,25 +110,25 @@ theorem seedCycle_exclusion_iff (t : Fin 2) (n : Column T) (j : Symbol T)
 def wordConstraintTiles : Finset (Finset (Ambient E)) := by
   classical
   exact (Finset.univ.filter (fun w : Word T => w ∉ allowedWords T)).biUnion
-    (fun w => sparseCycleTiles E (ordinaryCycle T) (ordinaryCycleLabels w))
+    (fun w => fixedCycleTiles E (ordinaryCycle T) (ordinaryCycleLabels w))
 
 def seedConstraintTiles : Finset (Finset (Ambient E)) := by
   classical
   exact (Finset.univ.filter (fun q : Fin 2 × Column T × Symbol T =>
       ¬ SeedSet T q.1 q.2.2)).biUnion
-    (fun q => sparseCycleTiles E (seedCycle q.1 q.2.1) (seedCycleLabels q.1 q.2.1 q.2.2))
+    (fun q => fixedCycleTiles E (seedCycle q.1 q.2.1) (seedCycleLabels q.1 q.2.1 q.2.2))
 
 theorem nonempty_of_mem_wordConstraintTiles {F : Finset (Ambient E)}
     (hF : F ∈ wordConstraintTiles E) : F.Nonempty := by
   classical
   obtain ⟨w, _, hF⟩ := Finset.mem_biUnion.mp hF
-  exact nonempty_of_mem_sparseCycleTiles E (ordinaryCycle T) (ordinaryCycleLabels w) hF
+  exact nonempty_of_mem_fixedCycleTiles E (ordinaryCycle T) (ordinaryCycleLabels w) hF
 
 theorem nonempty_of_mem_seedConstraintTiles {F : Finset (Ambient E)}
     (hF : F ∈ seedConstraintTiles E) : F.Nonempty := by
   classical
   obtain ⟨q, _, hF⟩ := Finset.mem_biUnion.mp hF
-  exact nonempty_of_mem_sparseCycleTiles E (seedCycle q.1 q.2.1)
+  exact nonempty_of_mem_fixedCycleTiles E (seedCycle q.1 q.2.1)
     (seedCycleLabels q.1 q.2.1 q.2.2) hF
 
 theorem wordConstraintTiles_iff (o : GraphOutputs E) (hdep : HasDependence E o) :
@@ -138,7 +138,7 @@ theorem wordConstraintTiles_iff (o : GraphOutputs E) (hdep : HasDependence E o) 
   constructor
   · intro h x w hw
     by_contra hnot
-    have hcycle : ∀ F ∈ sparseCycleTiles E (ordinaryCycle T) (ordinaryCycleLabels w),
+    have hcycle : ∀ F ∈ fixedCycleTiles E (ordinaryCycle T) (ordinaryCycleLabels w),
         Tiles F (graph o) := by
       intro F hF
       apply h F
@@ -160,7 +160,7 @@ theorem seedConstraintTiles_iff (o : GraphOutputs E) (hdep : HasDependence E o) 
   constructor
   · intro h t n x j hseed hord
     by_contra hj
-    have hcycle : ∀ F ∈ sparseCycleTiles E (seedCycle t n) (seedCycleLabels t n j),
+    have hcycle : ∀ F ∈ fixedCycleTiles E (seedCycle t n) (seedCycleLabels t n j),
         Tiles F (graph o) := by
       intro F hF
       apply h F

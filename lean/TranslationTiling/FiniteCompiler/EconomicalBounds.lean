@@ -40,19 +40,19 @@ theorem cyclicOrder_le (hB : T.alphabet=3) (hp : EconomicalPrimes E) (hC : 962�
     _ ≤ _ := Nat.pow_le_pow_right h1 (by unfold channelCount; omega)
 
 theorem ordinary_cycle_card_le (hp : EconomicalPrimes E) (w : Word T) :
-    (sparseCycleTiles E (ordinaryCycle T) (ordinaryCycleLabels w)).card≤channelCount T^(7*T.width) := by
+    (fixedCycleTiles E (ordinaryCycle T) (ordinaryCycleLabels w)).card≤channelCount T^(7*T.width) := by
   let C := channelCount T
   have hP (n : Column T) : Fintype.card (P E (.inl n))≤C^3 := by
     simpa only [P,Fintype.card_prod,ZMod.card] using hp.2.2.2.1 n
   calc
     _ ≤ ∏ j : ZMod T.width, Fintype.card (P E (ordinaryCycle T (j-1)))*
-        Fintype.card (digitSubgroup E (ordinaryCycle T j) (ordinaryCycleLabels w j)) := sparseCycleTiles_card_le E _ _
+        Fintype.card (digitSubgroup E (ordinaryCycle T j) (ordinaryCycleLabels w j)) := fixedCycleTiles_card_le E _ _
     _ ≤ ∏ _j : ZMod T.width, C^3*C^4 := Finset.prod_le_prod (fun j _ =>
       Nat.mul_le_mul (hP _) ((digitSubgroup_card_le_prime E _ _).trans (hp.2.1 _ _)))
     _ = _ := by simp [C,← pow_add,← pow_mul]
 
 theorem seed_cycle_card_le (hp : EconomicalPrimes E) (t : Fin 2) (n : Column T) (j : Symbol T) :
-    (sparseCycleTiles E (seedCycle t n) (seedCycleLabels t n j)).card≤channelCount T^15 := by
+    (fixedCycleTiles E (seedCycle t n) (seedCycleLabels t n j)).card≤channelCount T^15 := by
   let C := channelCount T
   have hP (i : Channel T) : Fintype.card (P E i) = E.a i*E.b i := by simp [P]
   have hprod : (∏ z : ZMod 2, Fintype.card (P E (seedCycle t n (z-1)))*
@@ -66,7 +66,7 @@ theorem seed_cycle_card_le (hp : EconomicalPrimes E) (t : Fin 2) (n : Column T) 
         (Nat.mul_le_mul (hp.2.2.2.1 n) ((digitSubgroup_card_le_prime E _ _).trans (hp.2.1 _ _)))
         (Nat.mul_le_mul (hp.2.2.1 _) ((digitSubgroup_card_le_prime E _ _).trans (hp.2.1 _ _)))
       _ = _ := by ring
-  exact (sparseCycleTiles_card_le E _ _).trans hprod
+  exact (fixedCycleTiles_card_le E _ _).trans hprod
 
 theorem word_card_le (hB : T.alphabet=3) (hp : EconomicalPrimes E) :
     (wordConstraintTiles E).card≤(3*channelCount T^7)^(channelCount T) := by
