@@ -36,6 +36,7 @@ import TranslationTiling.Rotations.General.AxiomAudit
 import TranslationTiling.FiniteCompiler.CompactBounds
 import TranslationTiling.FourLayer.MSSBound
 import TranslationTiling.FourLayer.SizeBound
+import TranslationTiling.Rails.SizeBound
 import Lean.Util.CollectAxioms
 
 /-! Reject unfinished proofs, native evaluation axioms, and undeclared mathematical
@@ -44,7 +45,19 @@ All mathematical inputs to the public results are proved. -/
 
 open Lean Elab Command in
 run_cmd do
-  for name in [``TranslationTiling.Sudoku.ArithmeticRule.exists_clean_four_rectangle,
+  for name in [``TranslationTiling.Rails.fiber_connected,
+      ``TranslationTiling.Rails.shell_computable,
+      ``TranslationTiling.Rails.shell_fundamental,
+      ``TranslationTiling.Rails.shell_rigidity,
+      ``TranslationTiling.Rails.shell_connected,
+      ``TranslationTiling.Rails.shell_contacts,
+      ``TranslationTiling.Rails.connectedTile_computable,
+      ``TranslationTiling.Rails.connectedTile_correct,
+      ``TranslationTiling.Rails.connectedTile_connected,
+      ``TranslationTiling.Rails.connectedTile_length_mass,
+      ``TranslationTiling.Rails.geometry_bound,
+      ``TranslationTiling.Compiler.Size.channel_product_le_binary,
+      ``TranslationTiling.Sudoku.ArithmeticRule.exists_clean_four_rectangle,
       ``TranslationTiling.Sudoku.ArithmeticRule.affine_origin_roots_card_le_two,
       ``TranslationTiling.FiniteCompiler.Effective.wordClassSet_card,
       ``TranslationTiling.FiniteCompiler.Effective.packedCandidates_length,

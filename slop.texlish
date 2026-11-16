@@ -2151,10 +2151,10 @@ and its agreement with this code are checked in
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    (n+4)^{5\cdot10^4\lg\lg(n+4)}=n^{O(\log\log n)}
+    (n+4)^{3\cdot10^4\lg\lg(n+4)}=n^{O(\log\log n)}
   $$
   unit cubes.
-  For $n=1$, we also have the explicit bound $2^{135{,}708}$ unit cubes.
+  For $n=1$, we also have the explicit bound $2^{84{,}609}$ unit cubes.
 
 : proof
   For $n=0$, consolidate the two contradictory equations with prototiles
@@ -2349,42 +2349,68 @@ and its agreement with this code are checked in
   unconnected lattice tile has at most $2^{24}\ell J$ cubes. Its horizontal
   coordinates have absolute value at most $1000(2H+1)$, and its vertical
   coordinates at most $1000(2R+1)$.
-  Use $\widehat R=\max\{H,R\}$ to size the connectedness construction.
-  This also satisfies $\widehat R\leq P^{21w+31}3^{2w+2}$.
+  Use $\widehat R=\max\{H^2,R\}$ to size the connectedness construction.
+  Since $w\geq240$, this still satisfies
+  $\widehat R\leq P^{21w+31}3^{2w+2}$.
   Translate the lattice tile into an $A\times A\times B$ box with
-  $A\leq B$, $A\leq8003H$, and $B\leq8003\widehat R$.
+  $A^2\leq B$, $A\leq8003H$, and $B\leq8003^2\widehat R$.
 
-  Use a four-layer variant of Kim's partition. Index the box's boundary
-  points by $u_0,\ldots,u_{r-1}$, with $u_0=0$; there are at most $6AB$.
-  Choose permutations $p,q$ of the indices satisfying $p(j)=i$ whenever
-  $u_j=u_i+e_1$, and $q(j)=i$ whenever $u_j=u_i+e_2$.
-  These partial matchings extend to permutations. Partition
-  $\{0,\ldots,2r\}^2\times\{0,1,2,3\}$ into $r$ colors.
-  Layers zero and one have colors $y\bmod r$ and $x\bmod r$.
-  Layer two changes $y\bmod r$ to $p(y\bmod r)$ when $x\geq r$;
-  layer three changes $x\bmod r$ to $q(x\bmod r)$ when $y\geq r$.
-  Every color piece is connected, every pair touches internally, and the
-  opposite-face contacts realize the prescribed boundary adjacencies.
-  Scale each cell by three, relocate each color piece to its boundary
+  To optimize the connectedness construction, separate the short planar
+  directions from the long vertical direction. Use the planar slots
+  $[-A,A]^2\times\{0\}$, indexed by $u_0,\ldots,u_{r-1}$ with $u_0=0$,
+  and the rail slots $v_i=(0,0,i)$ for $0\leq i<c=B+1$.
+  The computable enumeration gives $r\leq10A^2$.
+  Identify the two slots at the origin. Every displacement between input
+  points is a rail slot minus a planar slot, up to sign. Thus only
+  rail--planar internal contacts are needed, together with the contacts
+  that connect the slot set itself. Choose permutations $p,q$ of the
+  planar indices satisfying $p(j)=i$ whenever $u_j=u_i+e_1$, and $q(j)=i$
+  whenever $u_j=u_i+e_2$.
+
+  Use planar colors $C_0,\ldots,C_{r-1}$ and rail colors
+  $D_0,\ldots,D_{c-1}$, with $C_0=D_0=0$. Partition an eight-layer box of
+  dimensions
+  $$
+    L=4r+7(c+1)+1,\qquad Y=4r+1,\qquad Z=8.
+  $$
+  Let $\rho_z(x)=D_i$ on $4r+z+7i\leq x<4r+z+7(i+1)$ for $1\leq i<c$,
+  and zero elsewhere. Layers zero and seven have color $\rho_z(x)$,
+  except that the bottom row $y=0$ is all zero. In layers one through six,
+  reserve the line $x\geq4r$, $y=2r$ for $\rho_z(x)$.
+  Elsewhere, layers one and two have colors $C_{y\bmod r}$ and
+  $C_{x\bmod r}$. Layer three changes $C_{y\bmod r}$ to
+  $C_{p(y\bmod r)}$ when $x\geq r$; layers four through six change
+  $C_{x\bmod r}$ to $C_{q(x\bmod r)}$ when $y\geq r$.
+  Every color piece is connected: the planar stripes route around the
+  reserved line, successive rail strips overlap in six cells, and color
+  zero connects the remaining boundary regions.
+  Each rail color touches every planar color internally. The opposite
+  faces realize $p,q$ and the successive rail-slot adjacencies.
+  Scale each cell by three, relocate its color piece to the corresponding
   slot, and apply Kim's three bump-and-dent pairs to color zero.
-  The resulting shell forces grid scales $(3(2r+1),3(2r+1),12)$ in every
-  tiling and has at most $108(2r+1)^2\leq972r^2$ cubes.
+  The resulting shell forces grid scales $(3L,3Y,24)$ in every tiling.
+  Since $A^2\leq B$, we have $L\leq62B$ and $Y\leq41A^2$, so its volume is
+  at most $216LY\leq549{,}072A^2B$.
+  Padding the long dimension to at least $A^2$ therefore gives a volume
+  expansion factor $O(A^4+A^2B)$, improving the four-layer variant's
+  $O(A^2B^2)$ factor for the long boxes used here.
   The assembly preserves tilability and is connected, as before.
   Consequently the final volume is at most
   $$
-    2^{24}\ell J\cdot972(6AB)^2
-      \leq K H^2\widehat R^2\ell J,\qquad
-    K=2^{24}\cdot972\cdot36\cdot8003^4\leq P^{10}.
+    2^{24}\ell J\cdot549{,}072A^2B
+      \leq K H^2\widehat R\ell J,\qquad
+    K=2^{24}\cdot549{,}072\cdot8003^4\leq P^{10}.
   $$
   Substituting the bounds on $H$, $\widehat R$, $\ell$, and $J$,
-  and using $3^6\leq P$, gives
+  and using $3^4\leq P$, gives
   $$
-    |F|\leq P^{54w+493}3^{6w+6}\leq P^{55w+494}.
+    |F|\leq P^{33w+462}3^{4w+4}\leq P^{34w+463}.
   $$
-  The partition, contacts, connectivity, and arbitrary-tiling rigidity
-  are checked in `FourLayer/`; the computable compiler and its volume
-  estimate are in \leanfile{FiniteCompiler/Effective/SharpCompiler.lean} and
-  \leanfile{FiniteCompiler/Effective/MassGeometry.lean}.
+  The partition, contacts, connectivity, arbitrary-tiling rigidity, and
+  computable shell assembly are checked in `Rails/`; the compiler and its
+  volume estimate are in
+  \leanfile{FiniteCompiler/Effective/SharpCompiler.lean} and
+  \leanfile{Rails/SizeBound.lean}.
 
   Put $t=\lg(n+4)$ and $g=\lg t$. Direct estimates on the binary and
   ternary lengths give $k\leq(11/4)t$, treating $n=1,\ldots,6$ directly.
@@ -2398,26 +2424,27 @@ and its agreement with this code are checked in
   $$
   Hence
   $$
-    \lg|F|\leq(55w+494)\lg P
-      \leq\left(6050+\frac{494\cdot12}{31}\right)
+    \lg|F|\leq(34w+463)\lg P
+      \leq\left(3740+\frac{463\cdot12}{31}\right)
            \frac{149}{20}\,tg,
   $$
   and
   $$
-    \left(6050+\frac{494\cdot12}{31}\right)\frac{149}{20}
-      =\frac{14{,}414{,}111}{310}<5\cdot10^4
+    \left(3740+\frac{463\cdot12}{31}\right)\frac{149}{20}
+      =\frac{4{,}525{,}726}{155}<3\cdot10^4
   $$
   gives the displayed bound.
   The conversion is checked in \leanfile{Compiler/MixedLogBound.lean}.
-  For $n=1$, six code positions per column give $w=240$ and $P=962$,
-  with $P^{100}\leq2^{991}$. Hence
+  For $n=1$, six code positions per column give $w=240$ and $P=962$.
+  Retaining the factor $3^{4w+4}$ gives $|F|\leq962^{8382}3^{964}$.
+  Since $962^{100}\leq2^{991}$ and $3^5\leq2^8$,
   $$
-    |F|^{1000}\leq2^{991(550\cdot240+4940)}
-      =2^{135{,}707{,}540}\leq2^{1000\cdot135{,}708},
+    |F|^{100}\leq2^{991\cdot8382+160\cdot964}
+      =2^{8{,}460{,}802}\leq2^{100\cdot84{,}609},
   $$
-  so $|F|\leq2^{135{,}708}$. This also fits the displayed general bound:
-  $2^{58}\leq5^{25}$ and $2^{121}\leq(58/25)^{100}$ give
-  $t\geq58/25$ and $g\geq121/100$, so $5\cdot10^4tg\geq140{,}360$.
+  so $|F|\leq2^{84{,}609}$. This also fits the displayed general bound:
+  $2^{65}\leq5^{28}$ and $2^{243}\leq(65/28)^{200}$ give
+  $t\geq65/28$ and $g\geq243/200$, so $3\cdot10^4tg>84{,}609$.
 
 The ternary-channel variant is formalized end to end in
 \leanfile{Compiler/CleanQuasipolynomialBound.lean} by
@@ -2965,8 +2992,8 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, these bounds are $(n+4)^{5\cdot10^4\lg\lg(n+4)}$ for translations and
-$64{,}000(n+4)^{5\cdot10^4\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+function. In dimension three, these bounds are $(n+4)^{3\cdot10^4\lg\lg(n+4)}$ for translations and
+$64{,}000(n+4)^{3\cdot10^4\lg\lg(n+4)}$ for arbitrary Euclidean motions.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[

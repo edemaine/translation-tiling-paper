@@ -103,12 +103,12 @@ have no unproved mathematical input. No unfinished proof is accepted.
 ## Cube Bound by Wang Tile Count
 
 [Compiler/CleanQuasipolynomialBound.lean](TranslationTiling/Compiler/CleanQuasipolynomialBound.lean)
-gives `(n+4)^(5*10^4*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
+gives `(n+4)^(3*10^4*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
 logarithms. The theorem `Size.exists_connected_tile_clean_quasipolynomial_bound`
 includes nonemptiness, face connectedness, and both tilability directions.
 Here `n` counts distinct input tiles. The one-tile specialization in
 [Compiler/QuasipolynomialBound.lean](TranslationTiling/Compiler/QuasipolynomialBound.lean)
-gives at most `2^135708` cubes.
+gives at most `2^84609` cubes.
 
 [FixedCycleTests.lean](TranslationTiling/FiniteCompiler/FixedCycleTests.lean)
 uses one fixed test per forbidden word or seed-label pair. Each digit subgroup
@@ -187,19 +187,23 @@ the fixed coordinates within each batch.
 [Effective/MassGeometry.lean](TranslationTiling/FiniteCompiler/Effective/MassGeometry.lean)
 carries this count through stacking and geometry: the stacked tile has at
 most `ℓ*J` points, and the MSS output has at most `2^24*ℓ*J` cubes.
-[FourLayer/](TranslationTiling/FourLayer/) replaces the cubic color partition
-by four layers and uses a rectangular boundary with at most `6AB` slots.
-The shell has at most `972*m²` cubes for `m` slots; connectivity, contacts,
-and arbitrary-complement rigidity are proved for the concrete shape.
-[FourLayer/Compiler.lean](TranslationTiling/FourLayer/Compiler.lean) proves
-computability, correctness, connectivity, and the `K*H⁴*R³` volume bound,
-where `K = 9*2^24*972*36*8003^4`.
+[Rails/](TranslationTiling/Rails/) separates the short planar slots from the
+long vertical rail in an eight-layer color partition. Every rail color touches
+every planar color, and opposite-face contacts connect the slot set. The
+partition, inflated pieces, modified shell, and arbitrary-complement rigidity
+are proved for all parameters. The shell expands an `A×A×B` input box by a
+volume factor `O(A⁴+A²B)`, using at most `549072*A²*B` cubes after padding `B`
+to at least `A²`. The earlier four-layer variant uses `O(A²B²)` cubes.
+[Rails/Compiler.lean](TranslationTiling/Rails/Compiler.lean) proves total
+computability, correctness, connectivity, and the volume bound for the concrete
+compiler output.
 [SupportBounds.lean](TranslationTiling/FiniteCompiler/SupportBounds.lean)
 uses the exact identity `H(b) = b^6*(b+1)^16+b` to give `H ≤ P^199`.
-The connectedness box uses `max(H,R)`. Counting the actual points gives
-volume at most `K₀*H²*max(H,R)²*ℓ*J`, where
-`K₀ = 2^24*972*36*8003^4 ≤ P^10`. `MassGeometry.lean` then gives
-`|F| ≤ P^(55*w+494)`.
+The connectedness box uses `max(H²,R)`. Counting the actual points gives
+volume at most `K₀*H²*max(H²,R)*ℓ*J`, where
+`K₀ = 2^24*549072*8003^4 ≤ P^10`.
+[Rails/SizeBound.lean](TranslationTiling/Rails/SizeBound.lean) gives
+`|F| ≤ P^(33*w+462)*3^(4*w+4) ≤ P^(34*w+463)`.
 Earlier estimates remain in `EconomicalBounds.lean`, `CompactParameters.lean`, `CompactBounds.lean`,
 `TightParameters.lean`, `TightBounds.lean`, and `FourLayer/SizeBound.lean`.
 [Effective/SharpCompiler.lean](TranslationTiling/FiniteCompiler/Effective/SharpCompiler.lean)

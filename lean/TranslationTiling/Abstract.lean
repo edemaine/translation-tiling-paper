@@ -78,7 +78,7 @@ theorem tiling_reduction (d : ℕ) (hd : 3 ≤ d) :
   ∃ f : LeanWang.TileSet → Prototile d, Computable f ∧
     ∀ T, f T ≠ [] ∧ Connected (f T) ∧ (LeanWang.TilesPlane T ↔ Tiles (f T)) ∧
       ((f T).length : ℝ) ≤ ((T.length : ℝ) + 4) ^
-        ((5 * 10 ^ 4) * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4))) :=
+        ((3 * 10 ^ 4) * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4))) :=
   AbstractBridge.tiling_reduction d hd
 
 /-! ### Tiling `ℝ^d` by Euclidean motions -/
@@ -168,7 +168,7 @@ theorem real_tiling_reduction (d : ℕ) (hd : 3 ≤ d) :
       (LeanWang.TilesPlane T ↔ Tiles (f T)) ∧
       (Tiles (f T) ↔ RealTiles (f T) translations) ∧
       ((f T).length : ℝ) ≤ ((T.length : ℝ) + 4) ^
-        ((5 * 10 ^ 4) * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4))) :=
+        ((3 * 10 ^ 4) * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4))) :=
   AbstractBridge.set_real_tiling_reduction d hd
 
 /-- **Theorem.** For each fixed `d ≥ 3`, a computable reduction from Wang tiling
@@ -182,7 +182,7 @@ theorem rigid_tiling_reduction (d : ℕ) (hd : 3 ≤ d) :
       (∀ motions : Set (Motion d), translations ⊆ motions →
         (Tiles (f T) ↔ RealTiles (f T) motions)) ∧
       ((f T).length : ℝ) ≤ (2 : ℝ) ^ (10 * (d + 1) ^ 2) * (((T.length : ℝ) + 4) ^
-        ((5 * 10 ^ 4) * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4)))) :=
+        ((3 * 10 ^ 4) * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4)))) :=
   AbstractBridge.set_motion_tiling_reduction d hd
 
 /-- **Corollary.** In 3D, the same equivalences hold with the sharper
@@ -194,7 +194,7 @@ theorem rigid_tiling_reduction_three :
       (∀ motions : Set (Motion 3), translations ⊆ motions →
         (Tiles (f T) ↔ RealTiles (f T) motions)) ∧
       ((f T).length : ℝ) ≤ 64000 * (((T.length : ℝ) + 4) ^
-        ((5 * 10 ^ 4) * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4)))) :=
+        ((3 * 10 ^ 4) * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4)))) :=
   AbstractBridge.set_motion_tiling_reduction_three
 
 end TranslationTiling.Abstract

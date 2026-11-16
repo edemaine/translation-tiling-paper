@@ -3,6 +3,7 @@ import TranslationTiling.FiniteCompiler.Effective.SparseGeometry
 import TranslationTiling.FiniteCompiler.TightBounds
 import TranslationTiling.FiniteCompiler.FixedBounds
 import TranslationTiling.FiniteCompiler.Effective.MassGeometry
+import TranslationTiling.Rails.SizeBound
 import TranslationTiling.FourLayer.MSSBound
 import TranslationTiling.FourLayer.SizeBound
 
@@ -30,14 +31,14 @@ theorem sharpCyclic_computable : Computable sharpCyclic := by
 def sharpTile (d : InputData) : Tile 3 :=
   let c := sharpCyclic d
   let H := rawHorizontal d.1
-  FourLayer.connectedTile (Compiler.integerTile c) H (max H c.1)
+  Rails.connectedTile (Compiler.integerTile c) H (max (H^2) c.1)
 
 theorem sharpTile_computable : Computable sharpTile := by
   have hE := Compiler.integerTile_computable.comp sharpCyclic_computable
   have hH : Primrec (fun d : InputData => rawHorizontal d.1) := by fun_prop
   have hmax : Primrec (fun z : ℕ×ℕ => max z.1 z.2) := by fun_prop
-  have hM := hmax.to_comp.comp (hH.to_comp.pair (Computable.fst.comp sharpCyclic_computable))
-  have h := FourLayer.connectedTile_computable.comp (hE.pair (hH.to_comp.pair hM))
+  have hM := hmax.to_comp.comp (((show Primrec (fun d : InputData => (rawHorizontal d.1)^2) by fun_prop).to_comp).pair (Computable.fst.comp sharpCyclic_computable))
+  have h := Rails.connectedTile_computable.comp (hE.pair (hH.to_comp.pair hM))
   dsimp only at h
   unfold sharpTile
   exact h
@@ -162,16 +163,16 @@ theorem sharpTile_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
     sharpTile (parameterData T,p)≠[] ∧ FaceConnected (sharpTile (parameterData T,p)) ∧
     ((∃ A : Set (Ambient (parameters T)), Solves (parameters T) A) ↔
       TranslationTiling.Tiles (sharpTile (parameterData T,p))) ∧
-    (sharpTile (parameterData T,p)).length^10≤primeBudget T^(550*T.width+4940) := by
+    (sharpTile (parameterData T,p)).length≤primeBudget T^(33*T.width+462)*3^(4*T.width+4) := by
   obtain ⟨hm,hne,hR30,hxy,hiff⟩ := sharpCyclic_facts T p hp hpos hS hB hC
   have hcard := sharpCyclic_mass T p hp hpos hS hB hC
   dsimp only [sharpTile]
   generalize hd : sharpCyclic (parameterData T,p)=d at hm hne hR30 hxy hiff hcard ⊢
   let H := rawHorizontal (parameterData T)
   let C := primeBudget T
-  let M := max H d.1
+  let M := max (H^2) d.1
   have hbig : 962≤C := le_max_right _ _
-  have hw : 16≤T.width := by norm_num [channelCount,Sudoku.Width,Sudoku.q] at hC; omega
+  have hw : 240≤T.width := by norm_num [channelCount,Sudoku.Width,Sudoku.q] at hC; omega
   have heq : rawBudget (parameterData T)=C^9 := by
     change (if T.alphabet=3 then (max (T.width+2) 962)^9 else _)=C^9
     rw [if_pos hB]
@@ -188,24 +189,23 @@ theorem sharpTile_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
       show (2*T.width+2)*30=60*T.width+60 by ring] using hR30
   have hMc : M≤C^(21*T.width+31)*3^(2*T.width+2) := by
     apply max_le _ hR
-    apply hH.trans
-    apply (Nat.pow_le_pow_right (by omega : 1≤C) (by omega : 199≤21*T.width+31)).trans
+    apply (Nat.pow_le_pow_left hH 2).trans
+    rw [←pow_mul]
+    apply (Nat.pow_le_pow_right (by omega : 1≤C) (by omega : 199*2≤21*T.width+31)).trans
     exact Nat.le_mul_of_pos_right _ (by positivity)
   have hM : d.1≤M := le_max_right _ _
-  have hHM : H≤M := le_max_left _ _
+  have hHM : H^2≤M := le_max_left _ _
   have hn := Compiler.integerTile_nonempty d hne
   have hrect := Compiler.Size.integerTile_rectangle_bound d H M hm hM hne hxy
-  change FourLayer.connectedTile (Compiler.integerTile d) H M≠[] ∧ _
-  refine ⟨FourLayer.connectedTile_nonempty _ H M hn,
-    FourLayer.connectedTile_connected _ H M hrect,?_,?_⟩
+  change Rails.connectedTile (Compiler.integerTile d) H M≠[] ∧ _
+  refine ⟨Rails.connectedTile_nonempty _ H M hn,
+    Rails.connectedTile_connected _ H M hrect,?_,?_⟩
   · exact hiff.trans ((Compiler.integerTile_correct MSS.rigidity d hm hne).trans
-      (FourLayer.connectedTile_correct (Compiler.integerTile d) H M).symm)
+      (Rails.connectedTile_correct (Compiler.integerTile d) H M).symm)
   · have hvol := Compiler.Size.integerTile_cubeCount_mass d hm
-    have hlen := FourLayer.connectedTile_length_mass (Compiler.integerTile d) H M hH1 hHM
-    have hb : (FourLayer.connectedTile (Compiler.integerTile d) H M).length≤C^(55*T.width+494) :=
-      hlen.trans ((Nat.mul_le_mul_right _ (Nat.mul_le_mul_right _
-        (Nat.mul_le_mul_right _ hvol))).trans (MassSize.geometry_bound hbig hH hMc hcard))
-    convert Nat.pow_le_pow_left hb 10 using 1 <;> rw [←pow_mul] <;> congr 1 <;> ring
+    have hlen := Rails.connectedTile_length_mass (Compiler.integerTile d) H M hH1 hHM
+    exact hlen.trans ((Nat.mul_le_mul_right _ (Nat.mul_le_mul_right _
+      (Nat.mul_le_mul_right _ hvol))).trans (Rails.geometry_bound hbig hH hMc hcard))
 
 end
 end TranslationTiling.FiniteCompiler.Effective
