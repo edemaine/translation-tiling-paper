@@ -2151,10 +2151,10 @@ and its agreement with this code are checked in
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    (n+4)^{6\cdot10^4\lg\lg(n+4)}=n^{O(\log\log n)}
+    (n+4)^{5\cdot10^4\lg\lg(n+4)}=n^{O(\log\log n)}
   $$
   unit cubes.
-  For $n=1$, we also have the explicit bound $2^{161{,}147}$ unit cubes.
+  For $n=1$, we also have the explicit bound $2^{135{,}708}$ unit cubes.
 
 : proof
   For $n=0$, consolidate the two contradictory equations with prototiles
@@ -2314,7 +2314,7 @@ and its agreement with this code are checked in
   Since $\lambda\leq P^2$, we have $\ell\leq132X^2\lambda\leq P^3X^2$.
   Thus $\ell\leq P^3 3^{2w+2}$, and the stacked modulus $R=\ell|V|$ satisfies
   $$
-    R^{30}\leq P^{630w+930}3^{60w+60}.
+    R\leq P^{21w+31}3^{2w+2}.
   $$
   The common parameter budget improves from $P^{12}$ to $b=P^9$.
   Sharpening the horizontal estimate from degree~$211$ to degree~$22$ gives
@@ -2324,13 +2324,33 @@ and its agreement with this code are checked in
   The identity and estimate are checked in
   \leanfile{FiniteCompiler/SupportBounds.lean}.
 
-  Count the geometric output directly. Each MSS component has at most
-  $2^{24}$ cubes, independently of its displacement, so the unconnected
-  lattice tile has at most $2^{24}(2H+1)^2R$ cubes. Its horizontal
+  To optimize the size estimate, count points in the test tiles rather
+  than their bounding boxes. Put
+  $$
+    J=D\prod_i r_i a_i b_i\leq P^{12w+20}.
+  $$
+  Every test tile has at most $J$ points. For the graph-kernel and cycle
+  tiles, fixing the useful outputs fixes each low residue, leaving
+  $r_i$ high residues per channel and $D$ auxiliary choices.
+  Dependence tiles rearrange the graph-kernel tile.
+  An ordinary activation tile has $r_i a_i b_i$ batches, each with at most
+  $D\prod_{j\ne i}r_j a_j b_j$ points. A seed activation tile has
+  $D r_i a_i b_i$ batches, each with at most
+  $\prod_{j\ne i}r_j a_j b_j$ points.
+  These counts use the total shift multiplicity $a_i b_i$.
+  For the displayed bound on $J$, each ordinary factor is at most
+  $P^9P^3=P^{12}$, each seed factor at most $P^4P^4=P^8$,
+  and $D\leq P^4$. The counts are checked in
+  \leanfile{FiniteCompiler/MassBounds.lean}.
+
+  Stacking distributes the test tiles among a partition of $\ell$ layers,
+  so the stacked tile has at most $\ell J$ points. Each MSS component has
+  at most $2^{24}$ cubes, independently of its displacement, so the
+  unconnected lattice tile has at most $2^{24}\ell J$ cubes. Its horizontal
   coordinates have absolute value at most $1000(2H+1)$, and its vertical
   coordinates at most $1000(2R+1)$.
   Use $\widehat R=\max\{H,R\}$ to size the connectedness construction.
-  This also satisfies $\widehat R^{30}\leq P^{630w+930}3^{60w+60}$.
+  This also satisfies $\widehat R\leq P^{21w+31}3^{2w+2}$.
   Translate the lattice tile into an $A\times A\times B$ box with
   $A\leq B$, $A\leq8003H$, and $B\leq8003\widehat R$.
 
@@ -2352,19 +2372,19 @@ and its agreement with this code are checked in
   The assembly preserves tilability and is connected, as before.
   Consequently the final volume is at most
   $$
-    2^{24}(2H+1)^2\widehat R\cdot972(6AB)^2
-      \leq K H^4\widehat R^3,\qquad
-    K=9\cdot2^{24}\cdot972\cdot36\cdot8003^4\leq P^{11}.
+    2^{24}\ell J\cdot972(6AB)^2
+      \leq K H^2\widehat R^2\ell J,\qquad
+    K=2^{24}\cdot972\cdot36\cdot8003^4\leq P^{10}.
   $$
-  Taking tenth powers and using $3^6\leq P$ gives
+  Substituting the bounds on $H$, $\widehat R$, $\ell$, and $J$,
+  and using $3^6\leq P$, gives
   $$
-    |F|^{10}\leq P^{630w+9000}3^{60w+60}
-      \leq P^{640w+9010},\qquad |F|\leq P^{64w+901}.
+    |F|\leq P^{54w+493}3^{6w+6}\leq P^{55w+494}.
   $$
   The partition, contacts, connectivity, and arbitrary-tiling rigidity
   are checked in `FourLayer/`; the computable compiler and its volume
-  estimate are in \leanfile{FourLayer/Compiler.lean} and
-  \leanfile{FiniteCompiler/FixedBounds.lean}.
+  estimate are in \leanfile{FiniteCompiler/Effective/SharpCompiler.lean} and
+  \leanfile{FiniteCompiler/Effective/MassGeometry.lean}.
 
   Put $t=\lg(n+4)$ and $g=\lg t$. Direct estimates on the binary and
   ternary lengths give $k\leq(11/4)t$, treating $n=1,\ldots,6$ directly.
@@ -2378,26 +2398,26 @@ and its agreement with this code are checked in
   $$
   Hence
   $$
-    \lg|F|\leq(64w+901)\lg P
-      \leq\left(7040+\frac{901\cdot12}{31}\right)
+    \lg|F|\leq(55w+494)\lg P
+      \leq\left(6050+\frac{494\cdot12}{31}\right)
            \frac{149}{20}\,tg,
   $$
   and
   $$
-    \left(7040+\frac{901\cdot12}{31}\right)\frac{149}{20}
-      =\frac{8{,}532{,}187}{155}<6\cdot10^4
+    \left(6050+\frac{494\cdot12}{31}\right)\frac{149}{20}
+      =\frac{14{,}414{,}111}{310}<5\cdot10^4
   $$
   gives the displayed bound.
   The conversion is checked in \leanfile{Compiler/MixedLogBound.lean}.
   For $n=1$, six code positions per column give $w=240$ and $P=962$,
   with $P^{100}\leq2^{991}$. Hence
   $$
-    |F|^{1000}\leq2^{991(640\cdot240+9010)}
-      =2^{161{,}146{,}510}\leq2^{1000\cdot161{,}147},
+    |F|^{1000}\leq2^{991(550\cdot240+4940)}
+      =2^{135{,}707{,}540}\leq2^{1000\cdot135{,}708},
   $$
-  so $|F|\leq2^{161{,}147}$. This also fits the displayed general bound:
+  so $|F|\leq2^{135{,}708}$. This also fits the displayed general bound:
   $2^{58}\leq5^{25}$ and $2^{121}\leq(58/25)^{100}$ give
-  $t\geq58/25$ and $g\geq121/100$, so $6\cdot10^4tg\geq168{,}432$.
+  $t\geq58/25$ and $g\geq121/100$, so $5\cdot10^4tg\geq140{,}360$.
 
 The ternary-channel variant is formalized end to end in
 \leanfile{Compiler/CleanQuasipolynomialBound.lean} by
@@ -2945,8 +2965,8 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, these bounds are $(n+4)^{6\cdot10^4\lg\lg(n+4)}$ for translations and
-$64{,}000(n+4)^{6\cdot10^4\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+function. In dimension three, these bounds are $(n+4)^{5\cdot10^4\lg\lg(n+4)}$ for translations and
+$64{,}000(n+4)^{5\cdot10^4\lg\lg(n+4)}$ for arbitrary Euclidean motions.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[

@@ -175,8 +175,8 @@ theorem mixed_channel_cap_real_bound {n : ℕ} (hn : 0<n) :
 
 set_option exponentiation.threshold 2000 in
 theorem sharp_channel_cap_real_bound {n N : ℕ} (hn : 0<n)
-    (hN : N^10≤(max (Sudoku.Width*mixedWidth n+2) 962)^(640*(Sudoku.Width*mixedWidth n)+9010)) :
-    (N:ℝ)≤((n:ℝ)+4)^((6*(10:ℝ)^4)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
+    (hN : N^10≤(max (Sudoku.Width*mixedWidth n+2) 962)^(550*(Sudoku.Width*mixedWidth n)+4940)) :
+    (N:ℝ)≤((n:ℝ)+4)^((5*(10:ℝ)^4)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
   let w := Sudoku.Width*mixedWidth n
   let P := max (w+2) 962
   let t := Real.logb 2 ((n:ℝ)+4)
@@ -196,10 +196,10 @@ theorem sharp_channel_cap_real_bound {n N : ℕ} (hn : 0<n)
     norm_num only [Sudoku.Width,Sudoku.q,Nat.cast_mul,Nat.cast_ofNat]
     nlinarith
   have hPpos : (0:ℝ)<P := by exact_mod_cast (by omega : 0<P)
-  have hN' : N≤P^(64*w+901) := by
+  have hN' : N≤P^(55*w+494) := by
     apply (Nat.pow_le_pow_iff_left (by decide : 10≠0)).mp
-    simpa only [←pow_mul,show (64*w+901)*10=640*w+9010 by omega] using hN
-  have he : ((64*w+901:ℕ):ℝ)*Real.logb 2 (P:ℝ)≤60000*t*g := by
+    simpa only [←pow_mul,show (55*w+494)*10=550*w+4940 by omega] using hN
+  have he : ((55*w+494:ℕ):ℝ)*Real.logb 2 (P:ℝ)≤50000*t*g := by
     by_cases hone : n=1
     · have hwone : w=240 := by simp [w,hone,mixedWidth_one,Sudoku.Width,Sudoku.q]
       have hPone : P=962 := by simp [P,hwone]
@@ -242,22 +242,22 @@ theorem sharp_channel_cap_real_bound {n N : ℕ} (hn : 0<n)
         rw [Real.logb_mul (by norm_num : (373:ℝ)≠0) (by linarith : t≠0)] at hh
         dsimp [g] at hg' ⊢
         linarith
-      have he' : ((64*w+901:ℕ):ℝ)≤(7040+901*12/31:ℝ)*t := by
+      have he' : ((55*w+494:ℕ):ℝ)≤(6050+494*12/31:ℝ)*t := by
         push_cast
         linarith
       have hpos : 0≤Real.logb 2 (P:ℝ) := Real.logb_nonneg (by norm_num)
         (by exact_mod_cast (by omega : 1≤P))
-      have hh := mul_le_mul he' hlog hpos (by positivity : 0≤(7040+901*12/31:ℝ)*t)
+      have hh := mul_le_mul he' hlog hpos (by positivity : 0≤(6050+494*12/31:ℝ)*t)
       have hc := mul_le_mul_of_nonneg_right
-        (show (7040+901*12/31:ℝ)*(149/20)≤60000 by norm_num) (show 0≤t*g by positivity)
+        (show (6050+494*12/31:ℝ)*(149/20)≤50000 by norm_num) (show 0≤t*g by positivity)
       nlinarith only [hh,hc]
-  have hpow : ((P^(64*w+901):ℕ):ℝ)≤((n:ℝ)+4)^((6*(10:ℝ)^4)*g) := by
+  have hpow : ((P^(55*w+494):ℕ):ℝ)≤((n:ℝ)+4)^((5*(10:ℝ)^4)*g) := by
     rw [Nat.cast_pow]
     apply (Real.logb_le_logb (by norm_num : (1:ℝ)<2) (by positivity) (by positivity)).mp
     rw [Real.logb_pow,Real.logb_rpow_eq_mul_logb_of_pos (by positivity : 0<(n:ℝ)+4)]
-    change _≤(6*(10:ℝ)^4)*g*t
+    change _≤(5*(10:ℝ)^4)*g*t
     nlinarith only [he]
-  exact (show (N:ℝ)≤((P^(64*w+901):ℕ):ℝ) by exact_mod_cast hN').trans hpow
+  exact (show (N:ℝ)≤((P^(55*w+494):ℕ):ℝ) by exact_mod_cast hN').trans hpow
 
 end
 end TranslationTiling.Compiler.Size

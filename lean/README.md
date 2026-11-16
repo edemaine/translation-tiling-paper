@@ -103,12 +103,12 @@ have no unproved mathematical input. No unfinished proof is accepted.
 ## Cube Bound by Wang Tile Count
 
 [Compiler/CleanQuasipolynomialBound.lean](TranslationTiling/Compiler/CleanQuasipolynomialBound.lean)
-gives `(n+4)^(6*10^4*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
+gives `(n+4)^(5*10^4*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
 logarithms. The theorem `Size.exists_connected_tile_clean_quasipolynomial_bound`
 includes nonemptiness, face connectedness, and both tilability directions.
 Here `n` counts distinct input tiles. The one-tile specialization in
 [Compiler/QuasipolynomialBound.lean](TranslationTiling/Compiler/QuasipolynomialBound.lean)
-gives at most `2^161147` cubes.
+gives at most `2^135708` cubes.
 
 [FixedCycleTests.lean](TranslationTiling/FiniteCompiler/FixedCycleTests.lean)
 uses one fixed test per forbidden word or seed-label pair. Each digit subgroup
@@ -180,6 +180,13 @@ Stacking uses `X = max(s,P²) ≤ 3^(w+1)`, giving stacked modulus
 `R^30 ≤ P^(630*w+930)*3^(60*w+60)`.
 [Compiler/SparseGeometryBound.lean](TranslationTiling/Compiler/SparseGeometryBound.lean)
 counts each MSS component by `2^24`, independently of its displacement.
+[MassBounds.lean](TranslationTiling/FiniteCompiler/MassBounds.lean)
+bounds every test tile by `J = D*∏ᵢ(r_i*a_i*b_i) ≤ P^(12*w+20)`, including
+the ordinary and seed activation tiles. Their batch counts compensate for
+the fixed coordinates within each batch.
+[Effective/MassGeometry.lean](TranslationTiling/FiniteCompiler/Effective/MassGeometry.lean)
+carries this count through stacking and geometry: the stacked tile has at
+most `ℓ*J` points, and the MSS output has at most `2^24*ℓ*J` cubes.
 [FourLayer/](TranslationTiling/FourLayer/) replaces the cubic color partition
 by four layers and uses a rectangular boundary with at most `6AB` slots.
 The shell has at most `972*m²` cubes for `m` slots; connectivity, contacts,
@@ -189,8 +196,10 @@ computability, correctness, connectivity, and the `K*H⁴*R³` volume bound,
 where `K = 9*2^24*972*36*8003^4`.
 [SupportBounds.lean](TranslationTiling/FiniteCompiler/SupportBounds.lean)
 uses the exact identity `H(b) = b^6*(b+1)^16+b` to give `H ≤ P^199`.
-The connectedness box uses `max(H,R)`. `FixedBounds.lean` then gives
-`|F|^10 ≤ P^(640*w+9010)`, hence `|F| ≤ P^(64*w+901)`.
+The connectedness box uses `max(H,R)`. Counting the actual points gives
+volume at most `K₀*H²*max(H,R)²*ℓ*J`, where
+`K₀ = 2^24*972*36*8003^4 ≤ P^10`. `MassGeometry.lean` then gives
+`|F| ≤ P^(55*w+494)`.
 Earlier estimates remain in `EconomicalBounds.lean`, `CompactParameters.lean`, `CompactBounds.lean`,
 `TightParameters.lean`, `TightBounds.lean`, and `FourLayer/SizeBound.lean`.
 [Effective/SharpCompiler.lean](TranslationTiling/FiniteCompiler/Effective/SharpCompiler.lean)

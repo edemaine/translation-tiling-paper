@@ -2,6 +2,7 @@ import TranslationTiling.FiniteCompiler.Effective.Correctness
 import TranslationTiling.FiniteCompiler.Effective.SparseGeometry
 import TranslationTiling.FiniteCompiler.TightBounds
 import TranslationTiling.FiniteCompiler.FixedBounds
+import TranslationTiling.FiniteCompiler.Effective.MassGeometry
 import TranslationTiling.FourLayer.MSSBound
 import TranslationTiling.FourLayer.SizeBound
 
@@ -105,16 +106,67 @@ theorem sharpCyclic_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
   · exact stackCodes_horizontal _ _ Fs _ (canonicalFamily_horizontal _ _ _)
   · exact (family_solution_iff (parameters T) Fs (canonicalInputFamily_correct T p hp hpos hS)).trans hiff
 
+theorem sharpCyclic_mass (T : System) (p : Payload) (hp : PayloadCorrect T p)
+    (hpos : ∀ n, 0≤T.slope n) (hS : ∀ n, (T.slope n).natAbs≤Sudoku.Width)
+    (hB : T.alphabet=3) (hC : 6*Sudoku.Width+2 ≤ channelCount T) :
+    (cyclicTileSet (sharpCyclic (parameterData T,p)).1 (sharpCyclic (parameterData T,p)).2).card≤
+      primeBudget T^(12*T.width+23)*3^(2*T.width+2) := by
+  let C := primeBudget T
+  let Fs := canonicalInputFamily (parameterData T,p)
+  let X := max Fs.length (C^2)
+  have hbig : 962≤C := le_max_right _ _
+  have hcp : channelCount T≤C := le_max_left _ _
+  have hw : 16≤T.width := by norm_num [channelCount,Sudoku.Width,Sudoku.q] at hC; omega
+  have hsmall : BudgetPrimes (parameters T) C := parameters_bounded_budget T hB
+  have hcount : Fs.length≤3^(T.width+1) := by
+    rw [canonicalInputFamily_length T p hp hpos hS]
+    exact FixedSize.testTiles_card (parameters T) hB hsmall (by
+      norm_num [channelCount,Sudoku.Width,Sudoku.q] at hC; omega) hS
+  have hpow36 : C^36≤3^T.width := FixedSize.budget_pow_le_three T.width (by
+    norm_num [channelCount,Sudoku.Width,Sudoku.q] at hC; omega)
+  have hX3 : X≤3^(T.width+1) := max_le hcount (by
+    apply (Nat.pow_le_pow_right (by omega : 1≤C) (by decide : 2≤36)).trans
+    exact hpow36.trans (Nat.pow_le_pow_right (by decide) (by omega)))
+  have hXhi : X≤C^(8*C) := by
+    apply hX3.trans
+    apply (Nat.pow_le_pow_left (by omega : 3≤C) _).trans
+    exact Nat.pow_le_pow_right (by omega) (by unfold channelCount at hcp; omega)
+  have hXlo : C^2≤X := le_max_right _ _
+  have hlen : 0<Fs.length := by
+    rw [canonicalInputFamily_length T p hp hpos hS]
+    exact Finset.card_pos.mpr (testTiles_nonempty (parameters T))
+  have hP : C^4≤X^2 := by simpa only [← pow_mul] using Nat.pow_le_pow_left hXlo 2
+  have hpr := BudgetSize.cyclicOrder_primeBound (parameters T) hB hsmall hbig
+  have hraw : sharpCyclic (parameterData T,p) = freshStack (X,(parameters T).cyclicOrder,C^4,Fs) := by
+    unfold sharpCyclic
+    rw [rawOrder_eq]
+    rfl
+  rw [hraw]
+  have hj := freshStack_mass X (parameters T).cyclicOrder (C^4) Fs
+    (parameters T).cyclicOrder_pos hlen (le_max_left _ _) hP hpr _
+    (family_mass T p hp hpos hS)
+  have hell : freshCap X (C^4)≤C^3*3^(2*T.width+2) := by
+    apply (FixedSize.freshCap_le hbig hXlo hXhi).trans
+    apply Nat.mul_le_mul_left
+    convert Nat.pow_le_pow_left hX3 2 using 1 <;> rw [←pow_mul] <;> congr 1 <;> ring
+  calc
+    _ ≤ MassSize.mass (parameters T)*freshCap X (C^4) := hj
+    _ ≤ C^(12*T.width+20)*(C^3*3^(2*T.width+2)) :=
+      Nat.mul_le_mul (MassSize.mass_bound (parameters T) hB hsmall) hell
+    _ = C^(12*T.width+23)*3^(2*T.width+2) := by
+      rw [←mul_assoc,←pow_add,show 12*T.width+20+3=12*T.width+23 by ring]
+
 theorem sharpTile_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
     (hpos : ∀ n, 0≤T.slope n) (hS : ∀ n, (T.slope n).natAbs≤Sudoku.Width)
     (hB : T.alphabet=3) (hC : 6*Sudoku.Width+2 ≤ channelCount T) :
     sharpTile (parameterData T,p)≠[] ∧ FaceConnected (sharpTile (parameterData T,p)) ∧
     ((∃ A : Set (Ambient (parameters T)), Solves (parameters T) A) ↔
       TranslationTiling.Tiles (sharpTile (parameterData T,p))) ∧
-    (sharpTile (parameterData T,p)).length^10≤primeBudget T^(640*T.width+9010) := by
+    (sharpTile (parameterData T,p)).length^10≤primeBudget T^(550*T.width+4940) := by
   obtain ⟨hm,hne,hR30,hxy,hiff⟩ := sharpCyclic_facts T p hp hpos hS hB hC
+  have hcard := sharpCyclic_mass T p hp hpos hS hB hC
   dsimp only [sharpTile]
-  generalize hd : sharpCyclic (parameterData T,p)=d at hm hne hR30 hxy hiff ⊢
+  generalize hd : sharpCyclic (parameterData T,p)=d at hm hne hR30 hxy hiff hcard ⊢
   let H := rawHorizontal (parameterData T)
   let C := primeBudget T
   let M := max H d.1
@@ -130,14 +182,15 @@ theorem sharpTile_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
     exact Size.horizontalCap_channel_nine_le hbig
   have hH1 : 1≤H := by
     exact ((by unfold channelCount; omega : 1≤channelCount T).trans (parameters_rawBudget T hS).2.1).trans (Size.le_horizontalCap _)
-  have hM30 : M^30≤C^(630*T.width+930)*3^(60*T.width+60) := by
-    rcases le_total H d.1 with hh | hh
-    · simpa only [M,max_eq_right hh] using hR30
-    · rw [show M=H from max_eq_left hh]
-      apply (Nat.pow_le_pow_left hH _).trans
-      rw [←pow_mul]
-      apply (Nat.pow_le_pow_right (by omega : 1≤C) (by omega : 199*30≤630*T.width+930)).trans
-      exact Nat.le_mul_of_pos_right _ (by positivity)
+  have hR : d.1≤C^(21*T.width+31)*3^(2*T.width+2) := by
+    apply (Nat.pow_le_pow_iff_left (by decide : 30≠0)).mp
+    simpa only [mul_pow,←pow_mul,show (21*T.width+31)*30=630*T.width+930 by ring,
+      show (2*T.width+2)*30=60*T.width+60 by ring] using hR30
+  have hMc : M≤C^(21*T.width+31)*3^(2*T.width+2) := by
+    apply max_le _ hR
+    apply hH.trans
+    apply (Nat.pow_le_pow_right (by omega : 1≤C) (by omega : 199≤21*T.width+31)).trans
+    exact Nat.le_mul_of_pos_right _ (by positivity)
   have hM : d.1≤M := le_max_right _ _
   have hHM : H≤M := le_max_left _ _
   have hn := Compiler.integerTile_nonempty d hne
@@ -147,14 +200,12 @@ theorem sharpTile_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
     FourLayer.connectedTile_connected _ H M hrect,?_,?_⟩
   · exact hiff.trans ((Compiler.integerTile_correct MSS.rigidity d hm hne).trans
       (FourLayer.connectedTile_correct (Compiler.integerTile d) H M).symm)
-  · have hs : (2*H+1)^2≤9*H^2 := by nlinarith
-    have hvol : Compiler.Size.cubeCount (Compiler.integerTile d)≤9*2^24*H^2*M := by
-      calc
-        _ ≤ 2^24*((2*H+1)^2*d.1) := Compiler.Size.integerTile_cubeCount_sparse d H hm hxy
-        _ ≤ 2^24*(9*H^2*M) := Nat.mul_le_mul_left _ (Nat.mul_le_mul hs hM)
-        _ = _ := by ring
-    exact (Nat.pow_le_pow_left (FourLayer.connectedTile_length_le _ H M hH1 hHM hvol) _).trans
-      (FixedSize.geometry_bound hbig hH hM30)
+  · have hvol := Compiler.Size.integerTile_cubeCount_mass d hm
+    have hlen := FourLayer.connectedTile_length_mass (Compiler.integerTile d) H M hH1 hHM
+    have hb : (FourLayer.connectedTile (Compiler.integerTile d) H M).length≤C^(55*T.width+494) :=
+      hlen.trans ((Nat.mul_le_mul_right _ (Nat.mul_le_mul_right _
+        (Nat.mul_le_mul_right _ hvol))).trans (MassSize.geometry_bound hbig hH hMc hcard))
+    convert Nat.pow_le_pow_left hb 10 using 1 <;> rw [←pow_mul] <;> congr 1 <;> ring
 
 end
 end TranslationTiling.FiniteCompiler.Effective

@@ -127,7 +127,7 @@ theorem exists_connected_tile_mixed_count_bound (T : LeanWang.TileSet) (hn : 0 <
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
       cubeCount P^10 ≤ (max (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card + 2) 962) ^
-        (640 * (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card)+9010) := by
+        (550 * (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card)+4940) := by
   have hn' : 0 < T.dedup.length := by simpa only [List.card_toFinset] using hn
   obtain ⟨hne,hc,ht,hb⟩ := FiniteCompiler.Effective.mixedCompileCore_channel_bound T.dedup hn'
   have hd : LeanWang.TilesPlane T ↔ LeanWang.TilesPlane T.dedup :=
@@ -155,11 +155,11 @@ theorem exists_connected_tile_one_quasipolynomial_bound (T : LeanWang.TileSet)
     (hT : T.toFinset.card = 1) :
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
-      cubeCount P ≤ 2 ^ 161147 := by
+      cubeCount P ≤ 2 ^ 135708 := by
   obtain ⟨P,hP,hconn,hiff,hcubes⟩ := exists_connected_tile_mixed_count_bound T (by omega)
   have hb := channel_power_le_binary (cubeCount P)
     (max (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card + 2) 962)
-    (640*(Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card)+9010) 161147 hcubes
+    (550*(Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card)+4940) 135708 hcubes
     (by norm_num [hT,mixedWidth_one,Sudoku.Width,Sudoku.q])
     (by norm_num [hT,mixedWidth_one,Sudoku.Width,Sudoku.q])
   exact ⟨P,hP,hconn,hiff,hb⟩
