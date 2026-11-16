@@ -66,13 +66,9 @@ theorem optimizedCompile_channel_bound (T : LeanWang.TileSet) :
       unfold bitWidth
       omega
     nlinarith
-  have hc : 1202≤C := by
-    have hw : 61≤Sudoku.Width := by norm_num [Sudoku.Width,Sudoku.q]
-    omega
-  have hcompact := parameters_bounded_compact S hc rfl
-  have hsmall : Size.SmallPrimes (parameters S) := ⟨fun i => ⟨(hcompact.1 i).1.trans (Nat.pow_le_pow_right (by omega) (by decide)),
-    (hcompact.1 i).2.trans (Nat.pow_le_pow_right (by omega) (by decide))⟩,
-    fun i j => (hcompact.2.1 i j).trans (Nat.pow_le_pow_right (by omega) (by decide))⟩
+  have hc : 802≤C := by simpa [Sudoku.Width,Sudoku.q] using hC
+  have hsmall : Size.SmallPrimes (parameters S) := BudgetSize.smallPrimes_of_budget
+    (parameters S) (parameters_bounded_budget S rfl) hc
   have hV := Size.ternary_cyclicOrder_le (parameters S) rfl hsmall hC
   have hcount : (canonicalInputFamily (parameterData S,ternaryPayload T)).length ≤ C ^ (30 * C) := by
     rw [canonicalInputFamily_length S _ hp (ternarySystem_nonnegative T) hslope]
@@ -80,9 +76,10 @@ theorem optimizedCompile_channel_bound (T : LeanWang.TileSet) :
   have hM := (Size.separateModulusCap_mono hV hcount).trans (Size.ternary_modulus_cap_le hC)
   apply (Size.geometryCap_mono (le_refl _) hM).trans
   exact Size.ternary_geometry_bound hC (show rawBudget (parameterData S)≤C^73 from by
-    change (if 962≤S.width+2 ∧ S.alphabet=3 then _ else _)≤_
-    rw [if_pos ⟨(by change 962≤C; omega),rfl⟩]
-    exact Nat.pow_le_pow_right (by omega) (by decide))
+    change (if S.alphabet=3 then primeBudget S^9 else _)≤_
+    rw [if_pos (show S.alphabet=3 from rfl)]
+    exact (BudgetSize.primeBudget_pow (T:=S) (k:=9) (by omega) (by norm_num; omega)).trans
+      (Nat.pow_le_pow_right (by omega) (by decide)))
     (parameters_rawBudget S hslope).1.two
 
 theorem optimizedCompile_exp_bound (T : LeanWang.TileSet) :

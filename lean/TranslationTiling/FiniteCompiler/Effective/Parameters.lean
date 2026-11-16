@@ -66,6 +66,17 @@ def EconomicalTableValid (d : ℕ×ℕ) (c : ParameterCertificate) : Prop :=
     ∀ n∈List.range d.1, ∀ j∈List.range d.2,
       c.1.getD (Nat.pair 2 (Nat.pair (Nat.pair 0 n) j)) 0≤(d.1+2)^3
 
+def BudgetTableValid (d : ℕ×ℕ) (c : ParameterCertificate) : Prop :=
+  d.2≠3 ∨
+    (∀ i∈channelKeys d.1, c.1.getD (Nat.pair 0 i) 0≤(max (d.1+2) 962)^4 ∧
+      c.1.getD (Nat.pair 1 i) 0≤(max (d.1+2) 962)^4) ∧
+    (∀ j∈digitKeys d.1 d.2, c.1.getD (Nat.pair 2 (Nat.pair j.1 j.2)) 0≤(max (d.1+2) 962)^4) ∧
+    (∀ i∈channelKeys d.1, c.1.getD (Nat.pair 0 i) 0*c.1.getD (Nat.pair 1 i) 0≤(max (d.1+2) 962)^4) ∧
+    (∀ n∈List.range d.1, c.1.getD (Nat.pair 0 (Nat.pair 0 n)) 0*
+      c.1.getD (Nat.pair 1 (Nat.pair 0 n)) 0≤(max (d.1+2) 962)^3) ∧
+    ∀ n∈List.range d.1, ∀ j∈List.range d.2,
+      c.1.getD (Nat.pair 2 (Nat.pair (Nat.pair 0 n) j)) 0≤(max (d.1+2) 962)^3
+
 def ParameterValid (d : ℕ × ℕ) (c : ParameterCertificate) : Prop :=
   d.1 = 0 ∨
     ((∀ k ∈ primeKeys d.1 d.2,
@@ -91,10 +102,10 @@ def ParameterValid (d : ℕ × ℕ) (c : ParameterCertificate) : Prop :=
       (∀ j ∈ digitKeys d.1 d.2,
         c.1.getD (Nat.pair 2 (Nat.pair j.1 j.2)) 0 ≤ (d.1+2)^3) ∧
       ∀ i ∈ channelKeys d.1,
-        (c.1.getD (Nat.pair 0 i) 0*c.1.getD (Nat.pair 1 i) 0)^3 ≤ (d.1+2)^8) ∧ CompactTableValid d c ∧ EconomicalTableValid d c)
+        (c.1.getD (Nat.pair 0 i) 0*c.1.getD (Nat.pair 1 i) 0)^3 ≤ (d.1+2)^8) ∧ CompactTableValid d c ∧ EconomicalTableValid d c ∧ BudgetTableValid d c)
 
 noncomputable instance (d : ℕ × ℕ) (c : ParameterCertificate) : Decidable (ParameterValid d c) := by
-  unfold ParameterValid CompactTableValid EconomicalTableValid
+  unfold ParameterValid CompactTableValid EconomicalTableValid BudgetTableValid
   infer_instance
 
 @[local fun_prop] theorem certificatePower {α : Type*} [Primcodable α] {f g : α → ℕ}
@@ -103,7 +114,7 @@ noncomputable instance (d : ℕ × ℕ) (c : ParameterCertificate) : Decidable (
 
 @[fun_prop] theorem parameterValid_primrec :
     PrimrecPred (fun z : (ℕ × ℕ) × ParameterCertificate => ParameterValid z.1 z.2) := by
-  simp only [ParameterValid, CompactTableValid, EconomicalTableValid, usefulPrimeCap, digitPrimeCap, primeThreshold]
+  simp only [ParameterValid, CompactTableValid, EconomicalTableValid, BudgetTableValid, usefulPrimeCap, digitPrimeCap, primeThreshold]
   fun_prop
 
 /-- Natural codes for channels and prime tags, with no arbitrary finite ordering. -/

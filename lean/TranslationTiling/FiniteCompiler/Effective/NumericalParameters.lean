@@ -1,4 +1,5 @@
 import TranslationTiling.FiniteCompiler.Effective.Arithmetic
+import TranslationTiling.FiniteCompiler.BudgetBounds
 import TranslationTiling.FiniteCompiler.SupportBounds
 import TranslationTiling.FiniteCompiler.Effective.BitCode
 import Mathlib.Logic.Equiv.Fin.Basic
@@ -129,11 +130,11 @@ theorem parameters_budget (T : System) (S : ℕ) (hS : ∀ n, (T.slope n).natAbs
 theorem parameters_rawBudget (T : System) (hS : ∀ n, (T.slope n).natAbs≤Sudoku.Width) :
     Size.ParameterBudget (parameters T) (rawBudget (parameterData T)) ∧
       channelCount T≤rawBudget (parameterData T) ∧ T.alphabet+1≤rawBudget (parameterData T) := by
-  by_cases h : 962≤T.width+2 ∧ T.alphabet=3
-  · simpa [rawBudget,parameterData,h,channelCount] using
-      economical_parameterBudget_nine (parameters T) h.1 h.2 (parameters_bounded_economical T h.1 h.2) hS
-  · have h' : ¬ (960≤T.width ∧ T.alphabet=3) := by omega
-    simpa [rawBudget,parameterData,h,h',channelCount] using parameters_budget T Sudoku.Width hS
+  by_cases h : T.alphabet=3
+  · simpa [rawBudget,parameterData,h,primeBudget,channelCount] using
+      BudgetSize.parameterBudget_nine (parameters T) (le_max_right _ _) (le_max_left _ _)
+        h (parameters_bounded_budget T h) hS
+  · simpa [rawBudget,parameterData,h,channelCount] using parameters_budget T Sudoku.Width hS
 
 end
 end TranslationTiling.FiniteCompiler.Effective

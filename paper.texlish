@@ -395,10 +395,13 @@ as summarized in @fig:reduction:
    to enforce matching edge colors.
    We additionally require that neither integer component is constant
    down any column.
-   To optimize the reduction size, we sharpen their soundness proof to reduce
-   the number of columns from $p^2q^2$ to $2q+2$, with the same form of constraints.
-   For the smallest primes $p=53$ and $q=59$ satisfying their requirement
-   $p,q>48$, this reduces the width from $9{,}778{,}129$ to $120$.
+   To optimize the reduction size, our soundness proof uses six-point affine
+   recovery to reduce the prime requirement from $p,q>48$ to $p,q>16$
+   and the number of columns from $p^2q^2$ to $2q+2$,
+   with the same form of constraints.
+   For the original smallest eligible primes $p=53$ and $q=59$,
+   the shorter board reduces the width from $9{,}778{,}129$ to $120$;
+   choosing our smaller primes $p=17$ and $q=19$ reduces it further to $40$.
 2. We adapt OpenAI's cyclic tiling encoding \cite[Sections~3--5]{OpenAI2026}
    to the Sudoku array problem from the previous step.
    (OpenAI originally applied this encoding to a different construction
@@ -470,9 +473,9 @@ closed polynomial constraints and using finite-precision tests
 to recognize infeasibility.
 
 For $n$ Wang tiles, the translation-only reduction uses at most
-$B(n)=(n+4)^{3.5\cdot10^5\lg\lg(n+4)}=n^{O(\log\log n)}$ lattice points / unit cubes
+$B(n)=(n+4)^{10^5\lg\lg(n+4)}=n^{O(\log\log n)}$ lattice points / unit cubes
 in every fixed dimension $d\geq3$, where $\lg=\log_2$.
-For $n=1$, we can improve the upper bound to $2^{960{,}309}$.
+For $n=1$, we can improve the upper bound to $2^{246{,}789}$.
 Allowing rotations and/or reflections gives bounds of $64{,}000B(n)$ in 3D
 and $2^{10(d+1)^2}B(n)$ in $d$D.
 
@@ -549,7 +552,7 @@ In both statements, the proof is a single call to a theorem in
 
 A computable reduction converts a list of $n$ Wang tiles into an
 equivalent nonempty connected prototile $P\subset\Z^d$ using
-at most $B(n) = (n+4)^{3.5\cdot10^5\lg\lg(n+4)}$ unit cubes:
+at most $B(n) = (n+4)^{10^5\lg\lg(n+4)}$ unit cubes:
 the Wang tiles tile the plane if and only if $P$ tiles $\Z^d$ by translations.
 Here `LeanWang.TileSet` is a list of Wang tiles, and `LeanWang.TilesPlane`
 asserts that they tile the whole plane.

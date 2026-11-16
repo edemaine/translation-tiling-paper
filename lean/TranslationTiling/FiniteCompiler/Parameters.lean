@@ -79,9 +79,9 @@ theorem exists_useful_parameters (T : System) : ∃ u : UsefulTag T → ℕ,
           have : 1 ≤ usefulStart + 2 * channelCount T + 1 := by omega
           nlinarith [Nat.mul_le_mul_left 8 this]
         omega
-      · have hp : 48 < Sudoku.p := by decide
+      · have hp : 16 < Sudoku.p := by decide
         omega
-      · have hq : 48 < Sudoku.q := by decide
+      · have hq : 16 < Sudoku.q := by decide
         omega
     | inr j =>
       have hj := hfgt j

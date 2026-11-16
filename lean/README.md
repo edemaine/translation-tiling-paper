@@ -103,12 +103,12 @@ have no unproved mathematical input. No unfinished proof is accepted.
 ## Cube Bound by Wang Tile Count
 
 [Compiler/CleanQuasipolynomialBound.lean](TranslationTiling/Compiler/CleanQuasipolynomialBound.lean)
-gives `(n+4)^(3.5*10^5*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
+gives `(n+4)^(10^5*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
 logarithms. The theorem `Size.exists_connected_tile_clean_quasipolynomial_bound`
 includes nonemptiness, face connectedness, and both tilability directions.
 Here `n` counts distinct input tiles. The one-tile specialization in
 [Compiler/QuasipolynomialBound.lean](TranslationTiling/Compiler/QuasipolynomialBound.lean)
-gives at most `2^960309` cubes.
+gives at most `2^246789` cubes.
 
 [Effective/PackedWords.lean](TranslationTiling/FiniteCompiler/Effective/PackedWords.lean)
 counts and enumerates three disjoint classes of ternary words: words containing
@@ -118,45 +118,54 @@ Their capacities are `2^k-1`, `2^k-1`, and `3^k-2^(k+1)+1`.
 assigns seed-class tile indices and other decorated indices to these words,
 without dedicated prefix positions. The code length is the maximum of the
 binary length of `n` and the ternary length of `2pqn`.
-For one Wang tile, eight positions per column suffice.
+For one Wang tile, six positions per column suffice.
 [TaggedSystem.lean](TranslationTiling/FiniteCompiler/TaggedSystem.lean)
 proves the tiling equivalence for any injective code with the exact seed predicates.
 [Effective/MixedInput.lean](TranslationTiling/FiniteCompiler/Effective/MixedInput.lean)
 implements the code and proves primitive recursiveness and correctness.
-All positions share their column's original slope. The board has `2q+2 = 120`
-columns; coefficient residues use `p²q²`, and seed residues use `5pq = 15,635`.
-The fixed primes are `p = 53` and `q = 59`.
-[TallRectangle.lean](TranslationTiling/SudokuArithmetic/TallRectangle.lean)
-adapts Greenfeld–Tao’s clean-patch count to the shorter board, retaining their
-prime condition `r > 48`. The shorter-board proof also uses three
-prime-spaced columns in rescaling and two prime-multiple samples to identify
-the higher-digit coefficients.
+All positions share their column's original slope. The board has `2q+2 = 40`
+columns; coefficient residues use `p²q²`, and seed residues use `5pq = 1,615`.
+The fixed primes are `p = 17` and `q = 19`.
+[SixPointPattern.lean](TranslationTiling/SudokuArithmetic/SixPointPattern.lean)
+and [SixPointRecovery.lean](TranslationTiling/SudokuArithmetic/SixPointRecovery.lean)
+replace the clean 4×4 patch with six points and three diagonal triples.
+Fifteen incidences suffice to recover three affine rows for every prime
+`r > 16`. Avoiding five roots among seven origins recovers four consecutive
+rows, after which four-line closure propagates the affine approximation.
+The shorter-board proof also uses three prime-spaced columns in rescaling
+and two prime-multiple samples to identify the higher-digit coefficients.
 
 [Compiler/IntervalPrimeCounting.lean](TranslationTiling/Compiler/IntervalPrimeCounting.lean)
 and [EconomicalParameters.lean](TranslationTiling/FiniteCompiler/EconomicalParameters.lean)
 allocate ordinary useful primes asymmetrically: `a_i ≤ 15U/32`, `b_i ≤ U`,
-where `U = C*isqrt(C)`, for `C ≥ 962`. The two pools contain enough primes
+where `U = P*isqrt(P)` and `P = max(w+2,962)` for `w` ordinary channels.
+The two pools contain enough primes
 for distinct choices. Ordinary digit primes lie between the positive
-representation threshold and `C³`; their count follows by subtracting
+representation threshold and `P³`; their count follows by subtracting
 Chebyshev theta bounds. Choosing primes by value avoids the previous loss
 from starting at a prime index exceeding the threshold.
 The explicit auxiliary seed primes remain `244453241` and `244453243`,
-just above `D = 244453225`. Their common representation threshold is
+above the new seed threshold `(5pq)² = 2608225`.
+Their common representation threshold is
 `4*244453243+3`. The two seed digit primes are selected separately and remain
-at most `C⁴`. Ordinary useful-prime pairs satisfy `a_i*b_i ≤ C³`;
-seed pairs satisfy `a_i*b_i ≤ C⁴`. The effective certificate checks the
-ordinary digit-prime bound, reducing the common parameter budget to `C^9`.
+at most `P⁴`. Ordinary useful-prime pairs satisfy `a_i*b_i ≤ P³`;
+seed pairs satisfy `a_i*b_i ≤ P⁴`. The effective certificate checks the
+ordinary digit-prime bound, reducing the common parameter budget to `P^9`.
+[BudgetParameters.lean](TranslationTiling/FiniteCompiler/BudgetParameters.lean)
+separates this prime budget from the actual channel count. For fewer than
+960 ordinary channels it restricts a larger prime allocation; it adds no
+channels to the actual compiler.
 [Proofs/LogDifferenceBound.lean](TranslationTiling/Proofs/LogDifferenceBound.lean)
 keeps the exponential probability estimate, giving a partition modulus
 quadratic times a logarithm in the equation count.
 [Effective/FreshStack.lean](TranslationTiling/FiniteCompiler/Effective/FreshStack.lean)
 implements this bounded partition search and proves coprimality from a bound
 on the prime divisors of the finite factor.
-[RefinedBounds.lean](TranslationTiling/FiniteCompiler/RefinedBounds.lean)
-keeps powers integral: for `w = C-2` ordinary channels, the cyclic order
-satisfies `|V|^10 ≤ C^(210*w+280)`. Stacking uses `X = max(s,C²)` for the
-actual equation count `s`, with `X^60 ≤ C^(370*w+30)`, giving stacked modulus
-`R^30 ≤ C^(1000*w+960)`.
+[BudgetBounds.lean](TranslationTiling/FiniteCompiler/BudgetBounds.lean)
+keeps powers integral and retains the actual ordinary-channel count `w = 40k`:
+the cyclic order satisfies `|V|^10 ≤ P^(210*w+280)`.
+Stacking uses `X = max(s,P²)` for the actual equation count `s`, with
+`X^60 ≤ P^(370*w+30)`, giving stacked modulus `R^30 ≤ P^(1000*w+960)`.
 [Compiler/SparseGeometryBound.lean](TranslationTiling/Compiler/SparseGeometryBound.lean)
 counts each MSS component by `2^24`, independently of its displacement.
 [FourLayer/](TranslationTiling/FourLayer/) replaces the cubic color partition
@@ -167,16 +176,16 @@ and arbitrary-complement rigidity are proved for the concrete shape.
 computability, correctness, connectivity, and the `K*H⁴*R³` volume bound,
 where `K = 9*2^24*972*36*8003^4`.
 [SupportBounds.lean](TranslationTiling/FiniteCompiler/SupportBounds.lean)
-uses the exact identity `H(b) = b^6*(b+1)^16+b` to give `H ≤ C^199`.
-The connectedness box uses `max(H,R)`. `RefinedBounds.lean` then gives
-`|F|^10 ≤ C^(1000*C+7030)`, hence `|F| ≤ C^(101*C)`.
+uses the exact identity `H(b) = b^6*(b+1)^16+b` to give `H ≤ P^199`.
+The connectedness box uses `max(H,R)`. `BudgetBounds.lean` then gives
+`|F|^10 ≤ P^(1000*w+9030)`, hence `|F| ≤ P^(100*w+903)`.
 Earlier estimates remain in `EconomicalBounds.lean`, `CompactParameters.lean`, `CompactBounds.lean`,
 `TightParameters.lean`, `TightBounds.lean`, and `FourLayer/SizeBound.lean`.
 [Effective/SharpCompiler.lean](TranslationTiling/FiniteCompiler/Effective/SharpCompiler.lean)
 combines these bounds with correctness and computability.
 [Compiler/MixedLogBound.lean](TranslationTiling/Compiler/MixedLogBound.lean)
 converts this estimate directly to the clean logarithmic bound, using code
-length at most `(7/2)*log₂(n+4)`.
+length at most `(11/4)*log₂(n+4)`.
 
 [Effective/MixedCompiler.lean](TranslationTiling/FiniteCompiler/Effective/MixedCompiler.lean)
 proves the same bound for one total computable compiler, with input list length
@@ -295,12 +304,12 @@ The earlier one-tile bound `2^(2^(10^29))` remains available as
 proves `Size.exists_connected_tile_closed_bound`: for `n` distinct Wang tiles,
 there is a nonempty, face-connected polycube with the same tileability and at
 most `closedCubeBound n` distinct cubes. All constants in the bound are explicit.
-Set `N = 15635` (the seed modulus), `C = 122` (the channel count), and define:
+Set `N = 1615` (the seed modulus), `C = 42` (the channel count), and define:
 
 ```text
-U = 4^(2C+1) * (N²+116)
-L = 3016n+1
-Q = 4^(CL+1) * (U²+2U+116)
+U = 4^(2C+1) * (N²+40)
+L = 288n+1
+Q = 4^(CL+1) * (U²+2U+40)
 b = Q^L+U+N+2
 c(x) = x²+2x;  J = c(c(c(c(b))))
 H = b*(b^5*(J+1)+1)

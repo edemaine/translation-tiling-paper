@@ -2,7 +2,7 @@
 Adapted from openai/math, commit adc7f1241b42e322a6451854ab7e4b4c146bf78a.
 Copyright and license: see third_party/openai-math.LICENSE (Apache-2.0).
 -/
-import TranslationTiling.SudokuArithmetic.WordAffine
+import TranslationTiling.SudokuArithmetic.SixPointRecovery
 import TranslationTiling.SudokuArithmetic.WordAffineAlgebra
 import Mathlib.Tactic.LinearCombination
 import Mathlib.Tactic.Ring
@@ -15,7 +15,7 @@ noncomputable section
 
 namespace ArithmeticRule
 
-private theorem word_one_ne_two {p : ℕ} (hlarge : 48 < p) :
+private theorem word_one_ne_two {p : ℕ} (hlarge : 16 < p) :
     (1 : ZMod p) ≠ 2 := by
   intro h
   have hv := congrArg (fun x : ZMod p => x.val) h
@@ -24,16 +24,16 @@ private theorem word_one_ne_two {p : ℕ} (hlarge : 48 < p) :
     Nat.mod_eq_of_lt (by omega : 2 < p)] at hv
   omega
 
-private theorem word_two_ne_zero {p : ℕ} (hlarge : 48 < p) :
+private theorem word_two_ne_zero {p : ℕ} (hlarge : 16 < p) :
     (2 : ZMod p) ≠ 0 := by
   intro h
   have hd : p ∣ 2 := (ZMod.natCast_eq_zero_iff 2 p).mp h
   exact Nat.not_dvd_of_pos_of_lt (by decide : 0 < 2) (by omega : 2 < p) hd
 
-private def smallColumn {p : ℕ} (hlarge : 48 < p) (n : Fin p) : Column p :=
+private def smallColumn {p : ℕ} (hlarge : 16 < p) (n : Fin p) : Column p :=
   ⟨n.val, by have := n.isLt; nlinarith⟩
 
-private def fourColumn {p : ℕ} (hlarge : 48 < p) (i : Fin 4) : Column p :=
+private def fourColumn {p : ℕ} (hlarge : 16 < p) (i : Fin 4) : Column p :=
   smallColumn hlarge ⟨i.val, by have := i.isLt; omega⟩
 
 private theorem small_affine_nonzero {p : ℕ} (hp : p.Prime)
@@ -60,7 +60,7 @@ private theorem exists_vertical_value {p : ℕ} (hp : p.Prime)
   ring
 
 theorem nonconstantColumns_iff_vertical_coefficient {p : ℕ} (hp : p.Prime)
-    (hlarge : 48 < p) {W : WordArray p} {A B C : ZMod p}
+    (hlarge : 16 < p) {W : WordArray p} {A B C : ZMod p}
     (hH : AffineApproximation W A B C) : NonconstantColumns W ↔ B ≠ 0 := by
   let : Fact p.Prime := ⟨hp⟩
   constructor
@@ -93,7 +93,7 @@ theorem nonconstantColumns_iff_vertical_coefficient {p : ℕ} (hp : p.Prime)
       (hwm.symm.trans ((congrArg (fun u : Symbol p => (u : ZMod p)) heq).trans hwm'))
 
 theorem prime_dvd_vertical_period {p : ℕ} (hp : p.Prime)
-    (hlarge : 48 < p) {W : WordArray p} {A B C : ZMod p}
+    (hlarge : 16 < p) {W : WordArray p} {A B C : ZMod p}
     (hH : AffineApproximation W A B C) (hB : B ≠ 0) {M : ℤ}
     (hperiod : VerticalPeriod W M) : (p : ℤ) ∣ M := by
   let : Fact p.Prime := ⟨hp⟩
@@ -203,7 +203,7 @@ theorem rescale_lineRule {p : ℕ} {W : WordArray p} (hW : LineRule p W) :
   exact hW ((p : ℤ) * d) ((p : ℤ) * e)
 
 private theorem exists_nonzero_affine_ne {p : ℕ} (hp : p.Prime)
-    (hlarge : 48<p) (a z c : ZMod p) (ha : a≠0) :
+    (hlarge : 16<p) (a z c : ZMod p) (ha : a≠0) :
     ∃ k : Fin 3, z+a*(k.val:ZMod p)≠0 ∧ z+a*(k.val:ZMod p)≠c := by
   classical
   letI : Fact p.Prime := ⟨hp⟩
@@ -234,7 +234,7 @@ private def fiberColumn {p : ℕ} (n₀ : Fin p) (hn₀ : n₀.val≤1) (k : Fin
     nlinarith⟩
 
 theorem rescale_vertical_coefficient_ne_zero {p : ℕ} (hp : p.Prime)
-    (hlarge : 48 < p) {W : WordArray p} (hW : LineRule p W)
+    (hlarge : 16 < p) {W : WordArray p} (hW : LineRule p W)
     {B : ZMod p} (hB : B ≠ 0) (hH : AffineApproximation W 0 B 0)
     {A₁ B₁ C₁ : ZMod p} (hH₁ : AffineApproximation (rescale W) A₁ B₁ C₁) :
     B₁ ≠ 0 := by
@@ -331,7 +331,7 @@ theorem rescale_vertical_coefficient_ne_zero {p : ℕ} (hp : p.Prime)
   simpa only [Int.cast_add, Int.cast_mul, Int.cast_natCast] using hsecond.symm
 
 theorem no_positive_nat_vertical_period {p : ℕ} (hp : p.Prime)
-    (hlarge : 48 < p) :
+    (hlarge : 16 < p) :
     ∀ M : ℕ, ∀ W : WordArray p, LineRule p W → NonconstantColumns W →
       0 < M → VerticalPeriod W (M : ℤ) → False := by
   intro M
@@ -363,7 +363,7 @@ theorem no_positive_nat_vertical_period {p : ℕ} (hp : p.Prime)
     exact ih (M / p) hsmall (rescale W₀) hW₁ hcolumns₁ hpos hperiod₁
 
 theorem no_positive_vertical_period {p : ℕ} (hp : p.Prime)
-    (hlarge : 48 < p) {W : WordArray p} (hW : LineRule p W)
+    (hlarge : 16 < p) {W : WordArray p} (hW : LineRule p W)
     (hcolumns : NonconstantColumns W) {M : ℤ} (hM : 0 < M)
     (hperiod : VerticalPeriod W M) : False := by
   have hpos : 0 < M.toNat := Int.pos_iff_toNat_pos.mp hM

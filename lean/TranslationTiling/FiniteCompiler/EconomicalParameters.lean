@@ -24,7 +24,7 @@ theorem exists_economical_useful (T : System) (hC : 962 ≤ channelCount T) :
             (4*Compiler.Size.seedPrime1+3)) ∧
       ∀ i, u i≤max (Compiler.Size.economicalUsefulCap (channelCount T)) Compiler.Size.seedPrime1 := by
   let C := channelCount T
-  let D := residueModulus^2
+  let D : ℕ := 244453225
   have hD : 2 ≤ D := by norm_num [D,residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]
   let b0 := Compiler.Size.seedPrime0
   let b1 := Compiler.Size.seedPrime1
@@ -139,7 +139,8 @@ theorem exists_economical_useful (T : System) (hC : 962 ≤ channelCount T) :
   · intro t
     rfl
   · intro t
-    change D < if t=0 then b0 else b1
+    change residueModulus^2 < if t=0 then b0 else b1
+    have hd : residueModulus^2≤D := by norm_num [D,residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]
     split_ifs <;> omega
 
   · intro i
@@ -151,7 +152,7 @@ theorem exists_economical_useful (T : System) (hC : 962 ≤ channelCount T) :
         rcases j with j | j <;> fin_cases j <;> simp [seed] <;> omega
       apply hb.trans
       unfold usefulPrimeCap usefulStart
-      change 4*D≤(8*(D+Sudoku.p+Sudoku.q+3+2*C+1))^2
+      norm_num [D,residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]
       nlinarith
   · intro n
     have hd := Nat.mul_div_le (15*U) 32
@@ -222,7 +223,7 @@ theorem exists_economical_parameters (T : System) (hC : 962≤channelCount T) (h
   let F := 15*C^3/32+2*Compiler.Size.economicalUsefulCap C
   let L := Compiler.Size.ordinaryDigitThreshold C
   let Q := C^3
-  have hL : L=F+Sudoku.p+Sudoku.q+5 := by norm_num [L,F,Compiler.Size.ordinaryDigitThreshold,Sudoku.p,Sudoku.q]
+  have hL : L=F+117 := by norm_num [L,F,Compiler.Size.ordinaryDigitThreshold,Sudoku.p,Sudoku.q]
   have hseedF : Compiler.Size.seedPrime1≤F := by
     have hc : 962^3≤C^3 := Nat.pow_le_pow_left hC 3
     have hd := Nat.mod_add_div (15*C^3) 32
@@ -294,7 +295,7 @@ theorem exists_economical_parameters (T : System) (hC : 962≤channelCount T) (h
     cases n with
     | inl n => exact (hgo ⟨n,j⟩).1
     | inr t => change (if t=0 then z0 else z1).Prime; split_ifs <;> assumption
-  have hggt (j) : F+Sudoku.p+Sudoku.q+5<g j := by
+  have hggt (j) : F+117<g j := by
     rw [← hL]
     rcases j with ⟨n,j⟩
     cases n with
@@ -350,7 +351,7 @@ theorem exists_economical_parameters (T : System) (hC : 962≤channelCount T) (h
     | inl n => exact (hgo ⟨n,j⟩).2.2.trans (Nat.pow_le_pow_right (by omega : 1≤C) (by decide))
     | inr t => change (if t=0 then z0 else z1)≤C^4; split_ifs <;> assumption
   obtain ⟨E,he,hd⟩ := exists_parameters_of_pair_bounded_families_exact T F (C^4) u huinj hu' hfive hseed hlarge
-    g hgp hggt hthreshold hginj hgb
+    g hgp (fun j => by have hh := hggt j; norm_num [Sudoku.p,Sudoku.q] at *; omega) hthreshold hginj hgb
   refine ⟨E,?_,?_,?_,?_,?_,?_,?_,?_⟩
   · intro i; rw [(he i).1,(he i).2]; exact ⟨hOld _,hOld _⟩
   · intro i j

@@ -63,12 +63,12 @@ theorem SqCongr.affine {r : ℕ} {a b c d : ℤ}
 identity is evaluated; no Sudoku board or word is enumerated. -/
 theorem exists_twoPrime_residue (x y : ℤ) :
     ∃ a : ℤ, SqCongr p a x ∧ SqCongr q a y := by
-  have hbez : (p : ℤ) ^ 2 * 1870 + (q : ℤ) ^ 2 * (-1509) = 1 := by decide
-  refine ⟨x * (q : ℤ) ^ 2 * (-1509) + y * (p : ℤ) ^ 2 * 1870, ?_, ?_⟩
-  · refine ⟨1870 * (y - x), ?_⟩
+  have hbez : (p : ℤ) ^ 2 * 5 + (q : ℤ) ^ 2 * (-4) = 1 := by decide
+  refine ⟨x * (q : ℤ) ^ 2 * (-4) + y * (p : ℤ) ^ 2 * 5, ?_, ?_⟩
+  · refine ⟨5 * (y - x), ?_⟩
     have hx := congrArg (fun z : ℤ => z * x) hbez
     nlinarith only [hx]
-  · refine ⟨(-1509) * (x - y), ?_⟩
+  · refine ⟨(-4) * (x - y), ?_⟩
     have hy := congrArg (fun z : ℤ => z * y) hbez
     nlinarith only [hy]
 
