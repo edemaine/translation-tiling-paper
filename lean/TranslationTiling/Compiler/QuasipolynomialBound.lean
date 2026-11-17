@@ -1,4 +1,5 @@
 import TranslationTiling.FiniteCompiler.Effective.MixedCompiler
+import TranslationTiling.FiniteCompiler.Effective.JointCompiler
 import TranslationTiling.FiniteCompiler.TernaryConstruction
 import TranslationTiling.FiniteCompiler.ExplicitDegrees
 import TranslationTiling.Compiler.BitChannelSize
@@ -138,21 +139,38 @@ theorem exists_connected_tile_mixed_count_bound (T : LeanWang.TileSet) (hn : 0 <
   simpa only [List.card_toFinset,FiniteCompiler.channelCount,FiniteCompiler.Effective.mixedSystem,
     FiniteCompiler.TaggedSystem.system,FiniteCompiler.primeBudget] using hb
 
-set_option exponentiation.threshold 2000 in
-/-- Evaluate the shorter code's channel count directly for one Wang tile. -/
-theorem exists_connected_tile_one_quasipolynomial_bound (T : LeanWang.TileSet)
-    (hT : T.toFinset.card = 1) :
-    ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
+/-- Full ternary capacity with seed predicates tested on whole codewords. -/
+theorem exists_connected_tile_joint_count_bound (T : LeanWang.TileSet) (hn : 0<T.toFinset.card) :
+    ∃ P : Tile 3, P≠[] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
-      cubeCount P ≤ 2 ^ 21040 := by
-  obtain ⟨P,hP,hconn,hiff,hcubes⟩ := exists_connected_tile_mixed_count_bound T (by omega)
-  have hb := dyadic_channel_product_le_binary (cubeCount P)
-    (max (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card + 2) 256)
-    (33*(Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card)+466)
-    (4*(Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card)+4) 21040 hcubes
-    (by norm_num [hT,mixedWidth_one,Sudoku.Width,Sudoku.q])
-    (by norm_num [hT,mixedWidth_one,Sudoku.Width,Sudoku.q])
-  exact ⟨P,hP,hconn,hiff,hb⟩
+      cubeCount P≤(max (Sudoku.Width*FiniteCompiler.Effective.jointWidth T.toFinset.card+2) 256)^
+        (33*(Sudoku.Width*FiniteCompiler.Effective.jointWidth T.toFinset.card)+466)*
+        3^(4*(Sudoku.Width*FiniteCompiler.Effective.jointWidth T.toFinset.card)+4) := by
+  have hn' : 0<T.dedup.length := by simpa only [List.card_toFinset] using hn
+  obtain ⟨hne,hc,ht,hb⟩ := FiniteCompiler.Effective.jointCompileCore_channel_bound T.dedup hn'
+  have hd : LeanWang.TilesPlane T ↔ LeanWang.TilesPlane T.dedup :=
+    LeanWang.tilesPlane_congr (by intro t; simp)
+  refine ⟨FiniteCompiler.Effective.jointCompileCore T.dedup,hne,hc,hd.trans ht,?_⟩
+  apply (List.toFinset_card_le _).trans
+  simpa only [List.card_toFinset,FiniteCompiler.Effective.jointSystem,
+    FiniteCompiler.JointSystem.system,FiniteCompiler.primeBudget,FiniteCompiler.channelCount] using hb
+
+set_option exponentiation.threshold 2000 in
+/-- Three ternary channels per original column suffice for one Wang tile. -/
+theorem exists_connected_tile_one_quasipolynomial_bound (T : LeanWang.TileSet)
+    (hT : T.toFinset.card=1) :
+    ∃ P : Tile 3, P≠[] ∧ FaceConnected P ∧
+      (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧ cubeCount P≤2^16711 := by
+  obtain ⟨P,hP,hconn,hiff,hcubes⟩ := exists_connected_tile_joint_count_bound T (by omega)
+  rw [hT,FiniteCompiler.Effective.jointWidth_one] at hcubes
+  change cubeCount P≤256^2050*3^196 at hcubes
+  have hsmall : (3:ℕ)^196≤2^311 := by norm_num
+  have hb : (256:ℕ)^2050*3^196≤2^16711 := by
+    calc
+      _ = ((2:ℕ)^8)^2050*3^196 := by rw [show (256:ℕ)=2^8 by norm_num]
+      _ ≤ ((2:ℕ)^8)^2050*2^311 := Nat.mul_le_mul_left _ hsmall
+      _ = _ := by rw [←pow_mul,←pow_add]
+  exact ⟨P,hP,hconn,hiff,hcubes.trans hb⟩
 
 end
 end TranslationTiling.Compiler.Size

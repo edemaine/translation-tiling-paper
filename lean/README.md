@@ -103,15 +103,15 @@ have no unproved mathematical input. No unfinished proof is accepted.
 ## Cube Bound by Wang Tile Count
 
 [Compiler/CleanQuasipolynomialBound.lean](TranslationTiling/Compiler/CleanQuasipolynomialBound.lean)
-gives `(n+4)^(8000*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
+gives `(n+4)^(6000*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
 logarithms. The theorem `Size.exists_connected_tile_clean_quasipolynomial_bound`
 includes nonemptiness, face connectedness, and both tilability directions.
 Here `n` counts distinct input tiles. The one-tile specialization in
 [Compiler/QuasipolynomialBound.lean](TranslationTiling/Compiler/QuasipolynomialBound.lean)
-gives at most `2^21040` cubes.
+gives at most `2^16711` cubes.
 
 [FixedCycleTests.lean](TranslationTiling/FiniteCompiler/FixedCycleTests.lean)
-uses one fixed test per forbidden word or seed-label pair. Each digit subgroup
+uses one fixed test per forbidden combination of labels. Each digit subgroup
 is cyclic, so activity has a witness separated by its fixed generator
 `r_i/r_ij`. The response is zero at zero and this generator at every nonzero
 input; the witnesses give a collision whenever all selected labels are active.
@@ -120,19 +120,22 @@ implements these response tables and proves primitive recursiveness;
 [Effective/FixedCorrect.lean](TranslationTiling/FiniteCompiler/Effective/FixedCorrect.lean)
 proves that the numerical gadget is exactly the fixed semantic test.
 
-[Effective/PackedWords.lean](TranslationTiling/FiniteCompiler/Effective/PackedWords.lean)
-counts and enumerates three disjoint classes of ternary words: words containing
-0 but no 1, words containing 1 but no 0, and words containing both.
-Their capacities are `2^k-1`, `2^k-1`, and `3^k-2^(k+1)+1`.
-[Effective/MixedCode.lean](TranslationTiling/FiniteCompiler/Effective/MixedCode.lean)
-assigns seed-class tile indices and other decorated indices to these words,
-without dedicated prefix positions. The code length is the maximum of the
-binary length of `n` and the ternary length of `2pqn`.
-For one Wang tile, six positions per column suffice.
-[TaggedSystem.lean](TranslationTiling/FiniteCompiler/TaggedSystem.lean)
-proves the tiling equivalence for any injective code with the exact seed predicates.
-[Effective/MixedInput.lean](TranslationTiling/FiniteCompiler/Effective/MixedInput.lean)
-implements the code and proves primitive recursiveness and correctness.
+[Effective/JointCode.lean](TranslationTiling/FiniteCompiler/Effective/JointCode.lean)
+encodes the `24n` Sudoku symbols injectively by base-three integers. The code
+length `k` is the least integer with `24n < 3^k`; three positions per column
+suffice for one Wang tile.
+[JointSystem.lean](TranslationTiling/FiniteCompiler/JointSystem.lean)
+tests seed membership on whole codewords: each test cycles through one seed
+channel and all `k` ternary channels of one original column. Forbidden symbols
+are excluded whenever the seed activates. The proof establishes both tiling
+directions, including soundness when several trits are active in a channel.
+[Effective/JointInput.lean](TranslationTiling/FiniteCompiler/Effective/JointInput.lean)
+implements the encoded word rule;
+[Effective/CycleSpec.lean](TranslationTiling/FiniteCompiler/Effective/CycleSpec.lean)
+serializes arbitrary injective cycles, and
+[Effective/JointFamily.lean](TranslationTiling/FiniteCompiler/Effective/JointFamily.lean)
+proves correctness and computability of the numerical family. Unused codewords
+need no seed tests because the word rule already excludes them.
 All positions share their column's original slope. The board has `2q+2 = 16`
 columns; coefficient residues use `p²q²`, and seed residues use `5pq = 175`.
 The fixed primes are `p = 5` and `q = 7`.
@@ -193,8 +196,12 @@ keeps powers integral and retains the actual ordinary-channel count `w = 16k`:
 the cyclic order satisfies `|V|^10 ≤ P^(210*w+280)`.
 [FixedBounds.lean](TranslationTiling/FiniteCompiler/FixedBounds.lean)
 counts the dependence indices directly, giving at most `(w+2)^2+w+4` tests.
-Thus `s ≤ 3^w+w^2+12*w+11 ≤ 3^(w+1)` for `w ≥ 4`.
-For the actual minimum `w = 64`, it also proves `P² ≤ 3^(w+1)`.
+[JointBounds.lean](TranslationTiling/FiniteCompiler/JointBounds.lean)
+adds at most `32*3^k` joint seed tests. Thus
+`s ≤ 3^w+32*3^k+w^2+6*w+11 ≤ 3^(w+1)` for `w = 16k`, `k ≥ 3`.
+For the actual minimum `w = 48`,
+[Effective/FamilyCompiler.lean](TranslationTiling/FiniteCompiler/Effective/FamilyCompiler.lean)
+also proves `P² ≤ 3^(w+1)`.
 Stacking uses `X = max(s,P²) ≤ 3^(w+1)`, giving stacked modulus
 `R^30 ≤ P^(630*w+930)*3^(60*w+60)`.
 [Compiler/SparseGeometryBound.lean](TranslationTiling/Compiler/SparseGeometryBound.lean)
@@ -225,19 +232,26 @@ volume at most `K₀*H²*max(H²,R)*ℓ*J`, where
 `|F| ≤ P^(33*w+466)*3^(4*w+4) ≤ P^(34*w+467)`.
 Earlier estimates remain in `EconomicalBounds.lean`, `CompactParameters.lean`, `CompactBounds.lean`,
 `TightParameters.lean`, `TightBounds.lean`, and `FourLayer/SizeBound.lean`.
-[Effective/SharpCompiler.lean](TranslationTiling/FiniteCompiler/Effective/SharpCompiler.lean)
-combines these bounds with correctness and computability.
-[Compiler/MixedLogBound.lean](TranslationTiling/Compiler/MixedLogBound.lean)
-converts this estimate directly to the clean logarithmic bound, using code
-length at most `2*log₂(n+4)`.
+[Effective/FamilyCompiler.lean](TranslationTiling/FiniteCompiler/Effective/FamilyCompiler.lean)
+combines these bounds for any family meeting the count, mass, and support budgets.
+[Compiler/JointLogBound.lean](TranslationTiling/Compiler/JointLogBound.lean)
+converts the resulting estimate to the clean logarithmic bound, using
+`k ≤ (2/3)*log₂(n+4)+4`. It checks `n = 1,...,11` directly and uses
+coefficient `12281/3 < 6000` for `n ≥ 12`.
 
-[Effective/MixedCompiler.lean](TranslationTiling/FiniteCompiler/Effective/MixedCompiler.lean)
+[Effective/JointCompiler.lean](TranslationTiling/FiniteCompiler/Effective/JointCompiler.lean)
 proves the same bound for one total computable compiler, with input list length
 in place of distinct tile count. For empty input it uses a fixed connected
 nontile with at most `2^250` cubes, constructed and verified in
 [Compiler/EmptyInputBound.lean](TranslationTiling/Compiler/EmptyInputBound.lean).
 The public abstract and motion wrappers use this compiler. All dependencies
 are included in the axiom audit.
+
+The earlier seed-class code remains in
+[Effective/PackedWords.lean](TranslationTiling/FiniteCompiler/Effective/PackedWords.lean),
+[Effective/MixedCode.lean](TranslationTiling/FiniteCompiler/Effective/MixedCode.lean), and
+[Effective/MixedCompiler.lean](TranslationTiling/FiniteCompiler/Effective/MixedCompiler.lean),
+with its coefficient `8000`.
 
 The earlier binary-payload ternary encoding remains in
 [TernarySystem.lean](TranslationTiling/FiniteCompiler/TernarySystem.lean),
@@ -530,13 +544,14 @@ cyclic stacking, MSS lattice assembly, and Kim shell conversion. It constructs
 arbitrary-tiling soundness and completeness, and face-connectivity. The algorithm
 does not depend on proofs of the mathematical inputs.
 
-The optimized compiler is in `FiniteCompiler/Effective/Compiler.lean`.
-It computes the ternary-channel input and bounded prime parameters, emits one
-fixed cycle test per forbidden tuple, removes duplicate canonical tile descriptions, and searches
-for a full-difference partition with the polynomial modulus bound.
-`FiniteCompiler/Effective/Correctness.lean` proves answer preservation;
-`FiniteCompiler/Effective/SizeBound.lean` proves the closed quasipolynomial bound
-for this same computable function. The public reduction theorems combine these
+The quantitative compiler is in `FiniteCompiler/Effective/JointCompiler.lean`.
+It computes the ternary-channel input and bounded prime parameters, emits fixed
+cycle tests for forbidden words and joint seed combinations, removes duplicate
+canonical tile descriptions, and searches for a full-difference partition with
+the polynomial modulus bound. `FiniteCompiler/Effective/JointFamily.lean` proves
+that the numerical tests express the intended constraints;
+`FiniteCompiler/Effective/FamilyCompiler.lean` carries their size and correctness
+through stacking and geometry. The public reduction theorems combine these
 properties, including the six-key replacement for arbitrary Euclidean motions.
 
 The `Computable` proofs establish total recursion on the canonical encodings.
