@@ -1,4 +1,4 @@
-import TranslationTiling.FiniteCompiler.EconomicalParameters
+import TranslationTiling.FiniteCompiler.SmallBudgetParameters
 import TranslationTiling.FiniteCompiler.TernaryBounds
 import TranslationTiling.FiniteCompiler.SupportBounds
 import TranslationTiling.FiniteCompiler.Effective.FreshStack
@@ -12,8 +12,8 @@ set_option maxRecDepth 10000
 set_option maxHeartbeats 2000000
 variable {T : System} (E : EncodingParameters T)
 
-theorem seedModulus_le_square {C : ℕ} (hC : 962≤C) : residueModulus≤C^2 := by
-  apply (show residueModulus≤962^2 by norm_num [residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]).trans
+theorem seedModulus_le_square {C : ℕ} (hC : 256≤C) : residueModulus≤C^2 := by
+  apply (show residueModulus≤256^2 by norm_num [residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]).trans
   exact Nat.pow_le_pow_left hC 2
 
 theorem cyclicOrder_le (hB : T.alphabet=3) (hp : EconomicalPrimes E) (hC : 962≤channelCount T) :
@@ -34,7 +34,7 @@ theorem cyclicOrder_le (hB : T.alphabet=3) (hp : EconomicalPrimes E) (hC : 962�
   rw [Fintype.prod_sum_type]
   calc
     _ ≤ (C^2)^2*((∏ _n : Column T, C^27)*(∏ _t : Fin 2, C^12)) :=
-      Nat.mul_le_mul (Nat.pow_le_pow_left (seedModulus_le_square hC) 2)
+      Nat.mul_le_mul (Nat.pow_le_pow_left (seedModulus_le_square (by omega)) 2)
         (Nat.mul_le_mul (Finset.prod_le_prod (fun n _ => ho n)) (Finset.prod_le_prod (fun t _ => hs t)))
     _ = C^(27*T.width+28) := by simp [Column,← pow_mul,← pow_add]; congr 1; ring
     _ ≤ _ := Nat.pow_le_pow_right h1 (by unfold channelCount; omega)
@@ -172,7 +172,7 @@ theorem cyclicOrder_primeBound (hB : T.alphabet=3) (hp : EconomicalPrimes E)
         have := Nat.le_of_dvd ha hh
         omega
       have hR : Nat.Coprime q residueModulus := hcop _ (by rw [residueModulus_eq]; decide)
-        ((seedModulus_le_square hC).trans (Nat.pow_le_pow_right (by omega) (by decide : 2≤4)))
+        ((seedModulus_le_square (by omega)).trans (Nat.pow_le_pow_right (by omega) (by decide : 2≤4)))
       have hi (i : Channel T) : Nat.Coprime q (E.blockModulus i) := by
         have hr : Nat.Coprime q (E.r i) := by
           rw [E.r_eq_prod]
@@ -188,15 +188,15 @@ theorem cyclicOrder_primeBound (hB : T.alphabet=3) (hp : EconomicalPrimes E)
     · exact Or.inl hd
   · exact Or.inl hprime
 
-theorem differenceLog_channel_le {C : ℕ} (hC : 962 ≤ C) :
+theorem differenceLog_channel_le {C : ℕ} (hC : 256 ≤ C) :
     Stacking.differenceLog (C^(8*C)) ≤ C^2 := by
-  have hcr : (768:ℝ) ≤ C := by exact_mod_cast (by omega : 768 ≤ C)
-  have hl := Compiler.Size.log_le_div_sixtyfour (by omega : 768 ≤ C)
+  have hcr : (256:ℝ) ≤ C := by exact_mod_cast (by omega : 256 ≤ C)
+  have hl := Compiler.Size.small_budget_log_bound (by omega : 256 ≤ C)
   have htwo : (1/2:ℝ) ≤ Real.log 2 := by
     have h := Real.one_sub_inv_le_log_of_pos (by norm_num : (0:ℝ)<2)
     norm_num at h ⊢
     exact h
-  have hlg : Real.logb 2 (C:ℝ) ≤ C/32 := by
+  have hlg : Real.logb 2 (C:ℝ) ≤ C/20 := by
     rw [Real.logb]
     apply (div_le_iff₀ (Real.log_pos (by norm_num : (1:ℝ)<2))).mpr
     nlinarith [mul_le_mul_of_nonneg_left htwo (show (0:ℝ)≤C by positivity)]
@@ -215,7 +215,7 @@ theorem freshCap_channel_le {C : ℕ} (hC : 962 ≤ C) :
     Effective.freshCap (C^(8*C)) (C^4) ≤ C^(17*C) := by
   have hc : 962 ≤ C := by simpa [Sudoku.Width,Sudoku.q] using hC
   have h1 : 1 ≤ C := by omega
-  have hL := differenceLog_channel_le hc
+  have hL := differenceLog_channel_le (C:=C) (by omega)
   have hLp : 1 ≤ Stacking.differenceLog (C^(8*C)) := by unfold Stacking.differenceLog; omega
   have hP : C^4 ≤ (C^(8*C))^2 := by
     rw [← pow_mul]

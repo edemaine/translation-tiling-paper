@@ -2182,10 +2182,10 @@ and its agreement with this code are checked in
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    (n+4)^{2.15\cdot10^4\lg\lg(n+4)}=n^{O(\log\log n)}
+    (n+4)^{1.75\cdot10^4\lg\lg(n+4)}=n^{O(\log\log n)}
   $$
   unit cubes.
-  For $n=1$, we also have the explicit bound $2^{60{,}602}$ unit cubes.
+  For $n=1$, we also have the explicit bound $2^{49{,}162}$ unit cubes.
 
 : proof
   For $n=0$, consolidate the two contradictory equations with prototiles
@@ -2252,25 +2252,34 @@ and its agreement with this code are checked in
   Since $k=O(\lg(n+2))$, this gives the quasipolynomial dependence.
 
   For the numerical coefficient, write $w=Nk=28k$ for the number of
-  ordinary channels and use the prime budget $P=\max\{w+2,962\}$.
-  When $w+2<962$, restrict a prime allocation for $960$ ordinary channels
+  ordinary channels and use the prime budget $P=\max\{w+2,256\}$.
+  When $w+2<256$, restrict a prime allocation for $254$ ordinary channels
   to the actual channels; the construction itself gains no extra channels.
   This is checked in \leanfile{FiniteCompiler/BudgetParameters.lean}.
   The two auxiliary seed primes must exceed $D=(5pq)^2=511{,}225$.
-  We retain the explicit choices
+  One admissible allocation uses the explicit choices
   $$
-    b_0=244{,}453{,}241,\qquad b_1=244{,}453{,}243,
+    b_0=511{,}237,\qquad b_1=511{,}243,
   $$
   whose common positive-representation threshold is at most $4b_1+3$.
   Reserve these primes and the fixed primes $2,3,5,p,q$.
   Choose the integer $h$ with $h^2\leq P<(h+1)^2$ and put $U=Ph$.
-  Then $h\geq31$, $U^2\leq P^3$, and $U\leq P^2$.
+  Then $h\geq16$, $U^2\leq P^3$, and $2U\leq P^2$.
   To optimize the prime allocation, choose integers $S,J$ satisfying
   $$
     32S\leq15U<32S+32,\qquad 32J\leq15P^3<32J+32.
   $$
-  Chebyshev's elementary prime-counting bound gives
+  For $P\geq962$, Chebyshev's elementary prime-counting bound gives
   $\pi(S)\geq P+7$ and $\pi(U)\geq2P+7$.
+  To optimize the minimum prime budget from $962$ to $256$, we also
+  verify these bounds on $256\leq P<962$ using seventeen monotone
+  intervals. The first is $[256,278]$, where $S\geq1920$, $U\geq4096$,
+  $\pi(1920)\geq285$, and $\pi(4096)\geq563$.
+  The remaining intervals are checked in
+  \leanfile{Compiler/SmallBudgetCounting.lean}. Their prime certificates
+  use a strictly increasing list of primes at most $29{,}791$,
+  with primality and ordering checked in
+  \leanfile{Compiler/SmallBudgetPrimeList.lean}.
   Thus we can choose the ordinary $a_i$ primes at most $S$ and then
   distinct $b_i$ primes at most $U$, excluding the reserved primes.
   Each ordinary pair satisfies $a_ib_i\leq J\leq P^3$ and
@@ -2282,25 +2291,25 @@ and its agreement with this code are checked in
   Writing $\theta(x)=\sum_{r\leq x,\ r\text{ prime}}\ln r$,
   Chebyshev's upper and lower bounds give
   $$
-    \theta(Q)-\theta(L)\geq P^3/50>3P\ln Q,
+    \theta(Q)-\theta(L)\geq P^3/80>3P\ln Q,
     \qquad \pi(Q)-\pi(L)\geq3P+1.
   $$
-  Here the first estimate uses $\ln P\leq P/64$ and
-  $\sqrt{P^3}\leq P^2/31$.
+  Here the first estimate uses $\ln P\leq P/40$ and
+  $\sqrt{P^3}\leq P^2/16$.
   Hence all ordinary digit primes can exceed $L$ and be at most $P^3$.
   This replaces choosing primes by indices exceeding $L$, which unnecessarily
   skipped the first $L$ primes, with choosing primes by their values.
   For the two seed digit primes, put
   $$
-    B=\max\{P^3,\max\{P^3+2U,4b_1+3\}+41\}\leq2P^3.
+    B=\max\{P^3,\max\{P^3+2U,4b_1+3\}+117\}\leq2P^3.
   $$
   Two applications of Bertrand's postulate give distinct primes
   $B<z_0\leq2B<2z_0$ and $z_0<z_1\leq2z_0$.
   Both exceed the ordinary digit primes and the seed representation thresholds,
   and are at most $8P^3\leq P^4$.
   These prime counts and choices are checked in
-  \leanfile{Compiler/IntervalPrimeCounting.lean} and
-  \leanfile{FiniteCompiler/EconomicalParameters.lean}.
+  \leanfile{Compiler/SmallBudgetInterval.lean} and
+  \leanfile{FiniteCompiler/SmallBudgetParameters.lean}.
   The effective certificate checks the ordinary digit-prime bound $r_{ij}\leq P^3$
   as well as the seed bound $r_{ij}\leq P^4$, so the remaining estimates apply
   to any certified parameters.
@@ -2321,7 +2330,7 @@ and its agreement with this code are checked in
     s\leq3^w+(w+2)^2+8w+7\leq3^{w+1}.
   $$
   Since $w\geq168$, we also have $P^2\leq3^{w+1}$:
-  the base case is $962^2\leq3^{169}$, and the induction step uses
+  the base case is $256^2\leq3^{169}$, and the induction step uses
   $(P+1)^2\leq3P^2$. Thus
   $$
     X=\max\{s,P^2\}\leq3^{w+1}\leq P^{8P}.
@@ -2352,7 +2361,7 @@ and its agreement with this code are checked in
   The common parameter budget improves from $P^{12}$ to $b=P^9$.
   Sharpening the horizontal estimate from degree~$211$ to degree~$22$ gives
   $$
-    H=b^6(b+1)^{16}+b\leq658b^{22}\leq P^{199}.
+    H=b^6(b+1)^{16}+b\leq658b^{22}\leq P^{200}.
   $$
   The identity and estimate are checked in
   \leanfile{FiniteCompiler/SupportBounds.lean}.
@@ -2432,12 +2441,12 @@ and its agreement with this code are checked in
   $$
     2^{24}\ell J\cdot549{,}072A^2B
       \leq K H^2\widehat R\ell J,\qquad
-    K=2^{24}\cdot549{,}072\cdot8003^4\leq P^{10}.
+    K=2^{24}\cdot549{,}072\cdot8003^4\leq P^{12}.
   $$
   Substituting the bounds on $H$, $\widehat R$, $\ell$, and $J$,
   and using $3^4\leq P$, gives
   $$
-    |F|\leq P^{33w+462}3^{4w+4}\leq P^{34w+463}.
+    |F|\leq P^{33w+466}3^{4w+4}\leq P^{34w+467}.
   $$
   The partition, contacts, connectivity, arbitrary-tiling rigidity, and
   computable shell assembly are checked in `Rails/`; the compiler and its
@@ -2452,32 +2461,32 @@ and its agreement with this code are checked in
   For $n\geq2$, the inequalities $2^{31}\leq6^{12}$ and
   $2^4\leq(31/12)^3$ give $t\geq31/12$ and $g\geq4/3$. Thus
   $$
-    w\leq77t,\qquad P\leq373t,\qquad 373^5\leq2^{43},\qquad
-    \lg P\leq43/5+g\leq(149/20)g.
+    w\leq77t,\qquad P\leq100t,\qquad 100^3\leq2^{20},\qquad
+    \lg P\leq20/3+g\leq6g.
   $$
   Hence
   $$
-    \lg|F|\leq(34w+463)\lg P
-      \leq\left(2618+\frac{463\cdot12}{31}\right)
-           \frac{149}{20}\,tg,
+    \lg|F|\leq(34w+467)\lg P
+      \leq\left(2618+\frac{467\cdot12}{31}\right)
+           6\,tg,
   $$
   and
   $$
-    \left(2618+\frac{463\cdot12}{31}\right)\frac{149}{20}
-      =\frac{6{,}460{,}193}{310}<2.15\cdot10^4
+    \left(2618+\frac{467\cdot12}{31}\right)6
+      =\frac{520{,}572}{31}<1.75\cdot10^4
   $$
   gives the displayed bound.
   The conversion is checked in \leanfile{Compiler/MixedLogBound.lean}.
-  For $n=1$, six code positions per column give $w=168$ and $P=962$.
-  Retaining the factor $3^{4w+4}$ gives $|F|\leq962^{6006}3^{676}$.
-  Since $962^{100}\leq2^{991}$ and $3^5\leq2^8$,
+  For $n=1$, six code positions per column give $w=168$ and $P=256$.
+  Retaining the factor $3^{4w+4}$ gives $|F|\leq256^{6010}3^{676}$.
+  Since $256=2^8$ and $3^5\leq2^8$,
   $$
-    |F|^{100}\leq2^{991\cdot6006+160\cdot676}
-      =2^{6{,}060{,}106}\leq2^{100\cdot60{,}602},
+    |F|^5\leq2^{40\cdot6010+8\cdot676}
+      =2^{245{,}808}\leq2^{5\cdot49{,}162},
   $$
-  so $|F|\leq2^{60{,}602}$. This also fits the displayed general bound:
+  so $|F|\leq2^{49{,}162}$. This also fits the displayed general bound:
   $2^{65}\leq5^{28}$ and $2^{243}\leq(65/28)^{200}$ give
-  $t\geq65/28$ and $g\geq243/200$, so $2.15\cdot10^4tg>60{,}602$.
+  $t\geq65/28$ and $g\geq243/200$, so $1.75\cdot10^4tg>49{,}162$.
 
 The ternary-channel variant is formalized end to end in
 \leanfile{Compiler/CleanQuasipolynomialBound.lean} by
@@ -3025,8 +3034,8 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, these bounds are $(n+4)^{2.15\cdot10^4\lg\lg(n+4)}$ for translations and
-$64{,}000(n+4)^{2.15\cdot10^4\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+function. In dimension three, these bounds are $(n+4)^{1.75\cdot10^4\lg\lg(n+4)}$ for translations and
+$64{,}000(n+4)^{1.75\cdot10^4\lg\lg(n+4)}$ for arbitrary Euclidean motions.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[

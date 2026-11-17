@@ -15,7 +15,7 @@ theorem seed_r_le (hp : BudgetPrimes E C) (t : Fin 2) : E.r (.inr t)≤C^4 := by
     _ ≤ ∏ _j : Label T (.inr t), C^4 := Finset.prod_le_prod (fun j _ => hp.2.1 (.inr t) j)
     _ = _ := by simp [Label]
 
-theorem r_le_nine (hC : 962≤C) (hB : T.alphabet=3) (hp : BudgetPrimes E C) (i : Channel T) : E.r i≤C^9 := by
+theorem r_le_nine (hC : 256≤C) (hB : T.alphabet=3) (hp : BudgetPrimes E C) (i : Channel T) : E.r i≤C^9 := by
   cases i with
   | inl n =>
     rw [E.r_eq_prod]
@@ -24,14 +24,14 @@ theorem r_le_nine (hC : 962≤C) (hB : T.alphabet=3) (hp : BudgetPrimes E C) (i 
       _ = _ := by simp [Label,Symbol,hB,← pow_mul]
   | inr t => exact (seed_r_le E hp t).trans (Nat.pow_le_pow_right (by omega) (by decide))
 
-theorem parameterBudget_nine (hC : 962≤C) (hc : channelCount T≤C)
+theorem parameterBudget_nine (hC : 256≤C) (hc : channelCount T≤C)
     (hB : T.alphabet=3) (hp : BudgetPrimes E C) (hS : ∀ n, (T.slope n).natAbs≤Sudoku.Width) :
     Size.ParameterBudget E (C^9) ∧ channelCount T≤C^9 ∧ T.alphabet+1≤C^9 := by
   have h1 : 1≤C := by omega
   have hh : C≤C^9 := Nat.le_self_pow (by decide) _
   have hseed := EconomicalSize.seedModulus_le_square hC
   have hwidth : Sudoku.Width≤C^2 := by
-    apply (show Sudoku.Width≤962^2 by norm_num [Sudoku.Width,Sudoku.q]).trans
+    apply (show Sudoku.Width≤256^2 by norm_num [Sudoku.Width,Sudoku.q]).trans
     exact Nat.pow_le_pow_left hC 2
   refine ⟨⟨(by omega : 2≤C).trans hh,
     hseed.trans (Nat.pow_le_pow_right h1 (by decide)),r_le_nine E hC hB hp,
@@ -73,12 +73,12 @@ theorem seed_card_le (hB : T.alphabet=3) (hp : BudgetPrimes E C) (hC : 962≤C) 
     _ ≤ C^2*C^15 := Nat.mul_le_mul_right _ hi
     _ = _ := by ring
 
-theorem ordinary_r_pow (hB : T.alphabet=3) (hp : BudgetPrimes E C) (hC : 962≤C) (n : Column T) :
+theorem ordinary_r_pow (hB : T.alphabet=3) (hp : BudgetPrimes E C) (hC : 256≤C) (n : Column T) :
     E.r (.inl n)^20≤C^180 := by
   have hr := r_le_nine E hC hB hp (.inl n)
   simpa only [← pow_mul] using Nat.pow_le_pow_left hr 20
 
-theorem cyclicOrder_pow (hB : T.alphabet=3) (hp : BudgetPrimes E C) (hC : 962≤C) :
+theorem cyclicOrder_pow (hB : T.alphabet=3) (hp : BudgetPrimes E C) (hC : 256≤C) :
     E.cyclicOrder^10≤C^(210*T.width+280) := by
   have ho (n : Column T) : E.blockModulus (.inl n)^10≤C^210 := by
     calc
@@ -134,7 +134,7 @@ theorem testTiles_card (hB : T.alphabet=3) (hp : BudgetPrimes E C)
   have h1 : 1≤C := by omega
   have hw3 : 48≤3*T.width := by omega
   have hself : C≤C^12 := Nat.le_self_pow (by decide) _
-  have hb9 := (parameterBudget_nine E hC hc hB hp hS).1
+  have hb9 := (parameterBudget_nine E (by omega) hc hB hp hS).1
   have hb : Size.ParameterBudget E (C^12) := by
     rcases hb9 with ⟨h1',h2',h3',h4',h5',h6'⟩
     have hh : C^9≤C^12 := Nat.pow_le_pow_right h1 (by decide)
@@ -196,7 +196,7 @@ theorem testBudget_pow (hB : T.alphabet=3) (hp : BudgetPrimes E C)
     _ ≤ _ := Nat.le_mul_of_pos_left _ (by decide : 0<6)
 
 theorem cyclicOrder_primeBound (hB : T.alphabet=3) (hp : BudgetPrimes E C)
-    (hC : 962≤C) :
+    (hC : 256≤C) :
     Effective.PrimeBound E.cyclicOrder (C^4) := by
   intro q hq
   by_cases hprime : q.Prime
@@ -244,7 +244,7 @@ theorem geometry_pow {C w H M : ℕ} (hC : 962≤C)
 
 theorem primeBudget_pow {k : ℕ} (hc : 962≤2*channelCount T) (hk : 2^k≤channelCount T) :
     primeBudget T^k≤channelCount T^(k+1) := by
-  have hh : primeBudget T≤2*channelCount T := max_le (by omega) hc
+  have hh : primeBudget T≤2*channelCount T := max_le (by omega) (by omega)
   calc
     _ ≤ (2*channelCount T)^k := Nat.pow_le_pow_left hh _
     _ = 2^k*channelCount T^k := mul_pow _ _ _

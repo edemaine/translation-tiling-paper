@@ -103,12 +103,12 @@ have no unproved mathematical input. No unfinished proof is accepted.
 ## Cube Bound by Wang Tile Count
 
 [Compiler/CleanQuasipolynomialBound.lean](TranslationTiling/Compiler/CleanQuasipolynomialBound.lean)
-gives `(n+4)^(2.15*10^4*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
+gives `(n+4)^(1.75*10^4*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
 logarithms. The theorem `Size.exists_connected_tile_clean_quasipolynomial_bound`
 includes nonemptiness, face connectedness, and both tilability directions.
 Here `n` counts distinct input tiles. The one-tile specialization in
 [Compiler/QuasipolynomialBound.lean](TranslationTiling/Compiler/QuasipolynomialBound.lean)
-gives at most `2^60602` cubes.
+gives at most `2^49162` cubes.
 
 [FixedCycleTests.lean](TranslationTiling/FiniteCompiler/FixedCycleTests.lean)
 uses one fixed test per forbidden word or seed-label pair. Each digit subgroup
@@ -150,25 +150,29 @@ approximation.
 The shorter-board proof also uses three prime-spaced columns in rescaling
 and two prime-multiple samples to identify the higher-digit coefficients.
 
-[Compiler/IntervalPrimeCounting.lean](TranslationTiling/Compiler/IntervalPrimeCounting.lean)
-and [EconomicalParameters.lean](TranslationTiling/FiniteCompiler/EconomicalParameters.lean)
-allocate ordinary useful primes asymmetrically: `a_i ≤ 15U/32`, `b_i ≤ U`,
-where `U = P*isqrt(P)` and `P = max(w+2,962)` for `w` ordinary channels.
-The two pools contain enough primes
-for distinct choices. Ordinary digit primes lie between the positive
-representation threshold and `P³`; their count follows by subtracting
-Chebyshev theta bounds. Choosing primes by value avoids the previous loss
-from starting at a prime index exceeding the threshold.
-The explicit auxiliary seed primes remain `244453241` and `244453243`,
-above the new seed threshold `(5pq)² = 2608225`.
-Their common representation threshold is
-`4*244453243+3`. The two seed digit primes are selected separately and remain
-at most `P⁴`. Ordinary useful-prime pairs satisfy `a_i*b_i ≤ P³`;
-seed pairs satisfy `a_i*b_i ≤ P⁴`. The effective certificate checks the
-ordinary digit-prime bound, reducing the common parameter budget to `P^9`.
+[Compiler/SmallBudgetCounting.lean](TranslationTiling/Compiler/SmallBudgetCounting.lean)
+extends the useful-prime pools down to budget 256 using seventeen monotone
+interval certificates. Their primality and increasing-order certificates are in
+[Compiler/SmallBudgetPrimeList.lean](TranslationTiling/Compiler/SmallBudgetPrimeList.lean);
+the largest listed prime is 29,791. Above budget 962, the existing Chebyshev
+estimate supplies the same bounds.
+[SmallBudgetParameters.lean](TranslationTiling/FiniteCompiler/SmallBudgetParameters.lean)
+allocates ordinary useful primes asymmetrically: `a_i ≤ 15U/32`, `b_i ≤ U`,
+where `U = P*isqrt(P)` and `P = max(w+2,256)` for `w` ordinary channels.
+The auxiliary seed primes can be `511237` and `511243`,
+above the seed threshold `(5pq)² = 511225`; their common representation
+threshold is `4*511243+3`.
+[Compiler/SmallBudgetInterval.lean](TranslationTiling/Compiler/SmallBudgetInterval.lean)
+bounds ordinary digit primes by `P³` using Chebyshev theta bounds, with
+`ln P ≤ P/40` and `sqrt(P³) ≤ P²/16`.
+The two seed digit primes remain at most `P⁴`.
+Ordinary useful-prime pairs satisfy `a_i*b_i ≤ P³`;
+seed pairs satisfy `a_i*b_i ≤ P⁴`.
+The effective certificate checks these bounds, giving the common parameter
+budget `P^9`.
 [BudgetParameters.lean](TranslationTiling/FiniteCompiler/BudgetParameters.lean)
 separates this prime budget from the actual channel count. For fewer than
-960 ordinary channels it restricts a larger prime allocation; it adds no
+254 ordinary channels it restricts a larger prime allocation; it adds no
 channels to the actual compiler.
 [Proofs/LogDifferenceBound.lean](TranslationTiling/Proofs/LogDifferenceBound.lean)
 keeps the exponential probability estimate, giving a partition modulus
@@ -205,12 +209,12 @@ to at least `A²`. The earlier four-layer variant uses `O(A²B²)` cubes.
 computability, correctness, connectivity, and the volume bound for the concrete
 compiler output.
 [SupportBounds.lean](TranslationTiling/FiniteCompiler/SupportBounds.lean)
-uses the exact identity `H(b) = b^6*(b+1)^16+b` to give `H ≤ P^199`.
+uses the exact identity `H(b) = b^6*(b+1)^16+b` to give `H ≤ P^200`.
 The connectedness box uses `max(H²,R)`. Counting the actual points gives
 volume at most `K₀*H²*max(H²,R)*ℓ*J`, where
-`K₀ = 2^24*549072*8003^4 ≤ P^10`.
+`K₀ = 2^24*549072*8003^4 ≤ P^12`.
 [Rails/SizeBound.lean](TranslationTiling/Rails/SizeBound.lean) gives
-`|F| ≤ P^(33*w+462)*3^(4*w+4) ≤ P^(34*w+463)`.
+`|F| ≤ P^(33*w+466)*3^(4*w+4) ≤ P^(34*w+467)`.
 Earlier estimates remain in `EconomicalBounds.lean`, `CompactParameters.lean`, `CompactBounds.lean`,
 `TightParameters.lean`, `TightBounds.lean`, and `FourLayer/SizeBound.lean`.
 [Effective/SharpCompiler.lean](TranslationTiling/FiniteCompiler/Effective/SharpCompiler.lean)

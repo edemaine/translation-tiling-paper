@@ -141,7 +141,7 @@ theorem test_card (F : Finset (Ambient E)) (hF : F∈testTiles E) : F.card≤mas
 theorem mass_bound (hB : T.alphabet=3) (hp : BudgetPrimes E (primeBudget T)) :
     mass E≤(primeBudget T)^(12*T.width+20) := by
   let P := primeBudget T
-  have hP : 962≤P := le_max_right _ _
+  have hP : 256≤P := le_max_right _ _
   have ho (n : Column T) : E.r (.inl n)*(E.a (.inl n)*E.b (.inl n))≤P^12 := by
     calc
       _ ≤ P^9*P^3 := Nat.mul_le_mul (BudgetSize.r_le_nine E hP hB hp _) (hp.2.2.2.1 n)

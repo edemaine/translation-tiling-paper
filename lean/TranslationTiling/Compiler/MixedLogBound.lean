@@ -186,14 +186,27 @@ theorem channel_product_le_binary (N C e f k : ℕ) (hN : N≤C^e*3^f)
     _ = (2^k)^100 := pow_mul _ _ _
 
 set_option exponentiation.threshold 2000 in
+theorem dyadic_channel_product_le_binary (N C e f k : ℕ) (hN : N≤C^e*3^f)
+    (hbase : C≤2^8) (hexp : 40*e+8*f≤5*k) : N≤2^k := by
+  apply (Nat.pow_le_pow_iff_left (by decide : 5≠0)).mp
+  calc
+    N^5 ≤ (C^e*3^f)^5 := Nat.pow_le_pow_left hN _
+    _ = C^(5*e)*(3^5)^f := by simp only [mul_pow,←pow_mul]; congr 1 <;> ring
+    _ ≤ (2^8)^(5*e)*(2^8)^f := Nat.mul_le_mul
+      (Nat.pow_le_pow_left hbase _) (Nat.pow_le_pow_left (by norm_num : 3^5≤2^8) _)
+    _ = 2^(40*e+8*f) := by simp only [←pow_mul,←pow_add]; congr 1; ring
+    _ ≤ 2^(k*5) := Nat.pow_le_pow_right (by decide) (by omega)
+    _ = (2^k)^5 := pow_mul _ _ _
+
+set_option exponentiation.threshold 2000 in
 theorem sharp_channel_cap_real_bound {n N : ℕ} (hn : 0<n)
-    (hN : N≤(max (Sudoku.Width*mixedWidth n+2) 962)^(33*(Sudoku.Width*mixedWidth n)+462)*3^(4*(Sudoku.Width*mixedWidth n)+4)) :
-    (N:ℝ)≤((n:ℝ)+4)^((2.15*(10:ℝ)^4)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
+    (hN : N≤(max (Sudoku.Width*mixedWidth n+2) 256)^(33*(Sudoku.Width*mixedWidth n)+466)*3^(4*(Sudoku.Width*mixedWidth n)+4)) :
+    (N:ℝ)≤((n:ℝ)+4)^((1.75*(10:ℝ)^4)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
   let w := Sudoku.Width*mixedWidth n
-  let P := max (w+2) 962
+  let P := max (w+2) 256
   let t := Real.logb 2 ((n:ℝ)+4)
   let g := Real.logb 2 t
-  have hP : 962≤P := le_max_right _ _
+  have hP : 256≤P := le_max_right _ _
   have ht : (65/28:ℝ)≤t := by
     have h5 := pow_le_log_bound (by norm_num : (0:ℝ)<5) 65 28 (by norm_num : (2:ℝ)^65≤5^28)
     have hh := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2) (by norm_num : (0:ℝ)<5)
@@ -213,17 +226,15 @@ theorem sharp_channel_cap_real_bound {n N : ℕ} (hn : 0<n)
     norm_num only [Sudoku.Width,Sudoku.q,Nat.cast_mul,Nat.cast_ofNat]
     nlinarith
   have hPpos : (0:ℝ)<P := by exact_mod_cast (by omega : 0<P)
-  have he : ((33*w+462:ℕ):ℝ)*Real.logb 2 (P:ℝ)+((4*w+4:ℕ):ℝ)*Real.logb 2 3≤21500*t*g := by
+  have he : ((33*w+466:ℕ):ℝ)*Real.logb 2 (P:ℝ)+((4*w+4:ℕ):ℝ)*Real.logb 2 3≤17500*t*g := by
     by_cases hone : n=1
     · have hwone : w=168 := by simp [w,hone,mixedWidth_one,Sudoku.Width,Sudoku.q]
-      have hPone : P=962 := by simp [P,hwone]
-      have hl : Real.logb 2 (P:ℝ)≤991/100 := by
-        have hh := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2)
-          (by positivity : (0:ℝ)<(P:ℝ)^100)
-          (show (P:ℝ)^100≤(2:ℝ)^991 by norm_num [hPone])
-        rw [Real.logb_pow,logb_two_pow] at hh
-        norm_num at hh
-        linarith
+      have hPone : P=256 := by simp [P,hwone]
+      have hl : Real.logb 2 (P:ℝ)≤8 := by
+        rw [hPone]
+        have hh := logb_two_pow 8
+        norm_num at hh ⊢
+        exact hh.le
       have hl3 : Real.logb 2 3≤8/5 := by
         have hh := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2) (by norm_num : (0:ℝ)<3^5) (show (3:ℝ)^5≤(2:ℝ)^8 by norm_num)
         rw [Real.logb_pow,logb_two_pow] at hh
@@ -246,29 +257,29 @@ theorem sharp_channel_cap_real_bound {n N : ℕ} (hn : 0<n)
         dsimp [g]
         norm_num at hh
         linarith
-      have hPreal : (P:ℝ)≤373*t := by
+      have hPreal : (P:ℝ)≤100*t := by
         dsimp [P]
         push_cast
         exact max_le (by push_cast; linarith) (by linarith)
-      have hl373 : Real.logb 2 (373:ℝ)≤43/5 := by
+      have hl100 : Real.logb 2 (100:ℝ)≤20/3 := by
         have hh := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2)
-          (by norm_num : (0:ℝ)<373^5) (show (373:ℝ)^5≤(2:ℝ)^43 by norm_num)
+          (by norm_num : (0:ℝ)<100^3) (show (100:ℝ)^3≤(2:ℝ)^20 by norm_num)
         rw [Real.logb_pow,logb_two_pow] at hh
         norm_num at hh
         linarith
-      have hlog : Real.logb 2 (P:ℝ)≤(149/20:ℝ)*g := by
+      have hlog : Real.logb 2 (P:ℝ)≤(6:ℝ)*g := by
         have hh := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2) hPpos hPreal
-        rw [Real.logb_mul (by norm_num : (373:ℝ)≠0) (by linarith : t≠0)] at hh
+        rw [Real.logb_mul (by norm_num : (100:ℝ)≠0) (by linarith : t≠0)] at hh
         dsimp [g] at hg' ⊢
         linarith
-      have he' : ((34*w+463:ℕ):ℝ)≤(2618+463*12/31:ℝ)*t := by
+      have he' : ((34*w+467:ℕ):ℝ)≤(2618+467*12/31:ℝ)*t := by
         push_cast
         linarith
       have hpos : 0≤Real.logb 2 (P:ℝ) := Real.logb_nonneg (by norm_num)
         (by exact_mod_cast (by omega : 1≤P))
-      have hh := mul_le_mul he' hlog hpos (by positivity : 0≤(2618+463*12/31:ℝ)*t)
+      have hh := mul_le_mul he' hlog hpos (by positivity : 0≤(2618+467*12/31:ℝ)*t)
       have hc := mul_le_mul_of_nonneg_right
-        (show (2618+463*12/31:ℝ)*(149/20)≤21500 by norm_num) (show 0≤t*g by positivity)
+        (show (2618+467*12/31:ℝ)*6≤17500 by norm_num) (show 0≤t*g by positivity)
       have hthree : 4*Real.logb 2 3≤Real.logb 2 (P:ℝ) := by
         have hbase : (3:ℝ)^4≤(P:ℝ) := by norm_num; exact_mod_cast (by omega : 81≤P)
         have hl := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2) (by norm_num : (0:ℝ)<3^4) hbase
@@ -276,14 +287,14 @@ theorem sharp_channel_cap_real_bound {n N : ℕ} (hn : 0<n)
       have hmul := mul_le_mul_of_nonneg_right hthree (show (0:ℝ)≤w+1 by positivity)
       push_cast at hh ⊢
       nlinarith only [hh,hc,hmul]
-  have hpow : ((P^(33*w+462)*3^(4*w+4):ℕ):ℝ)≤((n:ℝ)+4)^((2.15*(10:ℝ)^4)*g) := by
+  have hpow : ((P^(33*w+466)*3^(4*w+4):ℕ):ℝ)≤((n:ℝ)+4)^((1.75*(10:ℝ)^4)*g) := by
     push_cast
     apply (Real.logb_le_logb (by norm_num : (1:ℝ)<2) (by positivity) (by positivity)).mp
     rw [Real.logb_mul (by positivity) (by positivity),Real.logb_pow,Real.logb_pow,
       Real.logb_rpow_eq_mul_logb_of_pos (by positivity : 0<(n:ℝ)+4)]
-    change _≤(2.15*(10:ℝ)^4)*g*t
+    change _≤(1.75*(10:ℝ)^4)*g*t
     nlinarith only [he]
-  exact (show (N:ℝ)≤((P^(33*w+462)*3^(4*w+4):ℕ):ℝ) by exact_mod_cast hN).trans hpow
+  exact (show (N:ℝ)≤((P^(33*w+466)*3^(4*w+4):ℕ):ℝ) by exact_mod_cast hN).trans hpow
 
 end
 end TranslationTiling.Compiler.Size

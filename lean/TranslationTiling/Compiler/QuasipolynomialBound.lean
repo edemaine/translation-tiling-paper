@@ -126,8 +126,8 @@ theorem exists_connected_tile_quasipolynomial_bound :
 theorem exists_connected_tile_mixed_count_bound (T : LeanWang.TileSet) (hn : 0 < T.toFinset.card) :
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
-      cubeCount P ≤ (max (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card + 2) 962) ^
-        (33 * (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card)+462)*
+      cubeCount P ≤ (max (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card + 2) 256) ^
+        (33 * (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card)+466)*
         3^(4*(Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card)+4) := by
   have hn' : 0 < T.dedup.length := by simpa only [List.card_toFinset] using hn
   obtain ⟨hne,hc,ht,hb⟩ := FiniteCompiler.Effective.mixedCompileCore_channel_bound T.dedup hn'
@@ -144,12 +144,12 @@ theorem exists_connected_tile_one_quasipolynomial_bound (T : LeanWang.TileSet)
     (hT : T.toFinset.card = 1) :
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
-      cubeCount P ≤ 2 ^ 60602 := by
+      cubeCount P ≤ 2 ^ 49162 := by
   obtain ⟨P,hP,hconn,hiff,hcubes⟩ := exists_connected_tile_mixed_count_bound T (by omega)
-  have hb := channel_product_le_binary (cubeCount P)
-    (max (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card + 2) 962)
-    (33*(Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card)+462)
-    (4*(Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card)+4) 60602 hcubes
+  have hb := dyadic_channel_product_le_binary (cubeCount P)
+    (max (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card + 2) 256)
+    (33*(Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card)+466)
+    (4*(Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card)+4) 49162 hcubes
     (by norm_num [hT,mixedWidth_one,Sudoku.Width,Sudoku.q])
     (by norm_num [hT,mixedWidth_one,Sudoku.Width,Sudoku.q])
   exact ⟨P,hP,hconn,hiff,hb⟩

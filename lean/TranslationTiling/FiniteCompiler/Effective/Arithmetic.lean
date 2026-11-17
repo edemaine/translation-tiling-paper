@@ -12,7 +12,7 @@ noncomputable section
 abbrev ParameterData := ℕ × ℕ × ParameterCertificate
 
 def rawBudget (d : ParameterData) : ℕ :=
-  if d.2.1=3 then (max (d.1+2) 962)^9
+  if d.2.1=3 then (max (d.1+2) 256)^9
   else Size.parameterBase d.2.1 Sudoku.Width (d.1+2)
 
 def rawPrime (d : ParameterData) (k : ℕ) : ℕ := d.2.2.1.getD k 0

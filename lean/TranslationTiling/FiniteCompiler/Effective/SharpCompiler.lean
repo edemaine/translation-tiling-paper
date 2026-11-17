@@ -15,16 +15,16 @@ set_option maxRecDepth 10000
 set_option maxHeartbeats 2000000
 
 def sharpCyclic (d : InputData) : CyclicTileData :=
-  let C := max (d.1.1+2) 962
+  let C := max (d.1.1+2) 256
   let Fs := canonicalInputFamily d
   freshStack (max Fs.length (C^2),rawOrder d.1,C^4,Fs)
 
 theorem sharpCyclic_computable : Computable sharpCyclic := by
   have hlen := Primrec.list_length.to_comp.comp canonicalInputFamily_computable
-  have hC2 : Primrec (fun d : InputData => (max (d.1.1+2) 962)^2) := by fun_prop
+  have hC2 : Primrec (fun d : InputData => (max (d.1.1+2) 256)^2) := by fun_prop
   have hmax : Primrec (fun z : ℕ×ℕ => max z.1 z.2) := by fun_prop
   have hX := hmax.to_comp.comp (hlen.pair hC2.to_comp)
-  have hP : Primrec (fun d : InputData => (max (d.1.1+2) 962)^4) := by fun_prop
+  have hP : Primrec (fun d : InputData => (max (d.1.1+2) 256)^4) := by fun_prop
   exact freshStack_computable.comp (hX.pair
     ((rawOrder_primrec.to_comp.comp Computable.fst).pair (hP.to_comp.pair canonicalInputFamily_computable)))
 
@@ -56,7 +56,7 @@ theorem sharpCyclic_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
   let C := primeBudget T
   let Fs := canonicalInputFamily (parameterData T,p)
   let X := max Fs.length (C^2)
-  have hbig : 962≤C := le_max_right _ _
+  have hbig : 256≤C := le_max_right _ _
   have hcp : channelCount T≤C := le_max_left _ _
   have hw : 16≤T.width := by norm_num [channelCount,Sudoku.Width,Sudoku.q] at hC; omega
   have hsmall : BudgetPrimes (parameters T) C := parameters_bounded_budget T hB
@@ -113,7 +113,7 @@ theorem sharpCyclic_mass (T : System) (p : Payload) (hp : PayloadCorrect T p)
   let C := primeBudget T
   let Fs := canonicalInputFamily (parameterData T,p)
   let X := max Fs.length (C^2)
-  have hbig : 962≤C := le_max_right _ _
+  have hbig : 256≤C := le_max_right _ _
   have hcp : channelCount T≤C := le_max_left _ _
   have hw : 16≤T.width := by norm_num [channelCount,Sudoku.Width,Sudoku.q] at hC; omega
   have hsmall : BudgetPrimes (parameters T) C := parameters_bounded_budget T hB
@@ -159,7 +159,7 @@ theorem sharpTile_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
     sharpTile (parameterData T,p)≠[] ∧ FaceConnected (sharpTile (parameterData T,p)) ∧
     ((∃ A : Set (Ambient (parameters T)), Solves (parameters T) A) ↔
       TranslationTiling.Tiles (sharpTile (parameterData T,p))) ∧
-    (sharpTile (parameterData T,p)).length≤primeBudget T^(33*T.width+462)*3^(4*T.width+4) := by
+    (sharpTile (parameterData T,p)).length≤primeBudget T^(33*T.width+466)*3^(4*T.width+4) := by
   obtain ⟨hm,hne,hR30,hxy,hiff⟩ := sharpCyclic_facts T p hp hpos hS hB hC
   have hcard := sharpCyclic_mass T p hp hpos hS hB hC
   dsimp only [sharpTile]
@@ -167,13 +167,13 @@ theorem sharpTile_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
   let H := rawHorizontal (parameterData T)
   let C := primeBudget T
   let M := max (H^2) d.1
-  have hbig : 962≤C := le_max_right _ _
+  have hbig : 256≤C := le_max_right _ _
   have hw : 168≤T.width := by norm_num [channelCount,Sudoku.Width,Sudoku.q] at hC; omega
   have heq : rawBudget (parameterData T)=C^9 := by
-    change (if T.alphabet=3 then (max (T.width+2) 962)^9 else _)=C^9
+    change (if T.alphabet=3 then (max (T.width+2) 256)^9 else _)=C^9
     rw [if_pos hB]
     rfl
-  have hH : H≤C^199 := by
+  have hH : H≤C^200 := by
     change Size.horizontalCap (rawBudget (parameterData T))≤_
     rw [heq]
     exact Size.horizontalCap_channel_nine_le hbig
@@ -187,7 +187,7 @@ theorem sharpTile_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
     apply max_le _ hR
     apply (Nat.pow_le_pow_left hH 2).trans
     rw [←pow_mul]
-    apply (Nat.pow_le_pow_right (by omega : 1≤C) (by omega : 199*2≤21*T.width+31)).trans
+    apply (Nat.pow_le_pow_right (by omega : 1≤C) (by omega : 200*2≤21*T.width+31)).trans
     exact Nat.le_mul_of_pos_right _ (by positivity)
   have hM : d.1≤M := le_max_right _ _
   have hHM : H^2≤M := le_max_left _ _

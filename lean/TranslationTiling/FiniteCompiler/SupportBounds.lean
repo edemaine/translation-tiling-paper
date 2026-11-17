@@ -47,10 +47,10 @@ theorem horizontalCap_channel_le {C : ℕ} (hC : 962≤C) : horizontalCap (C^12)
     _ ≤ C*(C^12)^22 := Nat.mul_le_mul_right _ (by omega)
     _ = _ := by ring
 
-theorem horizontalCap_channel_nine_le {C : ℕ} (hC : 962≤C) : horizontalCap (C^9)≤C^199 := by
+theorem horizontalCap_channel_nine_le {C : ℕ} (hC : 256≤C) : horizontalCap (C^9)≤C^200 := by
   calc
     _ ≤ 658*(C^9)^22 := horizontalCap_le_factor ((by omega : 2≤C).trans (Nat.le_self_pow (by decide) _))
-    _ ≤ C*(C^9)^22 := Nat.mul_le_mul_right _ (by omega)
+    _ ≤ C^2*(C^9)^22 := Nat.mul_le_mul_right _ (by nlinarith)
     _ = _ := by ring
 
 theorem le_horizontalCap (b : ℕ) : b ≤ horizontalCap b := by

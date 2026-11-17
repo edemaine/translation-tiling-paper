@@ -31,15 +31,15 @@ theorem budget_pow_le_three (w : ℕ) (hw : 240≤w) :
 
 /-- Only a quadratic budget needs to be dominated by the word count. -/
 theorem budget_square_le_three (w : ℕ) (hw : 168≤w) :
-    (max (w+2) 962)^2≤3^(w+1) := by
+    (max (w+2) 256)^2≤3^(w+1) := by
   induction w,hw using Nat.le_induction with
   | base => norm_num
   | succ w hw ih =>
-    have hh : max (w+1+2) 962≤max (w+2) 962+1 := by omega
-    have hp : 2≤max (w+2) 962 := by omega
+    have hh : max (w+1+2) 256≤max (w+2) 256+1 := by omega
+    have hp : 2≤max (w+2) 256 := by omega
     calc
-      _ ≤ (max (w+2) 962+1)^2 := Nat.pow_le_pow_left hh _
-      _ ≤ 3*(max (w+2) 962)^2 := by nlinarith
+      _ ≤ (max (w+2) 256+1)^2 := Nat.pow_le_pow_left hh _
+      _ ≤ 3*(max (w+2) 256)^2 := by nlinarith
       _ ≤ 3*3^(w+1) := Nat.mul_le_mul_left _ ih
       _ = _ := (pow_succ' _ _).symm
 
@@ -70,10 +70,6 @@ theorem dependence_card : (dependenceTiles E).card≤(T.width+2)^2+T.width+4 := 
 theorem testTiles_card (hB : T.alphabet=3) (hp : BudgetPrimes E (primeBudget T))
     (hw : 4≤T.width) (hS : ∀ n, (T.slope n).natAbs≤Sudoku.Width) :
     (testTiles E).card≤3^(T.width+1) := by
-  let P := primeBudget T
-  have hP : 962≤P := le_max_right _ _
-  have hCP : channelCount T≤P := le_max_left _ _
-  have hb := BudgetSize.parameterBudget_nine E hP hCP hB hp hS
   have hdep := dependence_card E
   have hword : (wordConstraintTiles E).card≤3^T.width := by
     unfold wordConstraintTiles
@@ -114,7 +110,7 @@ theorem testTiles_card (hB : T.alphabet=3) (hp : BudgetPrimes E (primeBudget T))
   rw [pow_succ']
   omega
 
-theorem freshCap_le {P X : ℕ} (hP : 962≤P) (hXlo : P^2≤X) (hXhi : X≤P^(8*P)) :
+theorem freshCap_le {P X : ℕ} (hP : 256≤P) (hXlo : P^2≤X) (hXhi : X≤P^(8*P)) :
     Effective.freshCap X (P^4)≤P^3*X^2 := by
   have hL : Stacking.differenceLog X≤P^2 := by
     apply (show Stacking.differenceLog X≤Stacking.differenceLog (P^(8*P)) from by

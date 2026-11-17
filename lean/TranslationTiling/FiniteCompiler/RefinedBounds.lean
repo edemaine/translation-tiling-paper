@@ -33,7 +33,7 @@ theorem cyclicOrder_pow (hB : T.alphabet=3) (hp : EconomicalPrimes E) (hC : 962�
         (∏ t : Fin 2, E.blockModulus (.inr t)^10)) := by
       simp only [EncodingParameters.cyclicOrder,Fintype.prod_sum_type,mul_pow,Finset.prod_pow]
     _ ≤ ((C^2)^2)^10*((∏ _n : Column T, C^210)*(∏ _t : Fin 2, C^120)) :=
-      Nat.mul_le_mul (Nat.pow_le_pow_left (Nat.pow_le_pow_left (EconomicalSize.seedModulus_le_square hC) 2) 10)
+      Nat.mul_le_mul (Nat.pow_le_pow_left (Nat.pow_le_pow_left (EconomicalSize.seedModulus_le_square (by omega)) 2) 10)
         (Nat.mul_le_mul (Finset.prod_le_prod (fun n _ => ho n)) (Finset.prod_le_prod (fun t _ => hs t)))
     _ = _ := by simp [C,Column,← pow_mul,← pow_add]; congr 1; ring
 
@@ -160,7 +160,7 @@ theorem freshCap_pow {C w X : ℕ} (hC : 962≤C) (hXlo : C^2≤X) (hXhi : X≤C
     apply (show Stacking.differenceLog X≤Stacking.differenceLog (C^(8*C)) from by
       unfold Stacking.differenceLog
       exact Nat.add_le_add_right (Nat.log_mono_right (Nat.mul_le_mul_left 2 hXhi)) 1).trans
-    exact EconomicalSize.differenceLog_channel_le hC
+    exact EconomicalSize.differenceLog_channel_le (C:=C) (by omega)
   have hLp : 1≤Stacking.differenceLog X := by unfold Stacking.differenceLog; omega
   have hP : C^4≤X^2 := by
     calc

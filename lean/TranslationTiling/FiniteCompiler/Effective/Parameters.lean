@@ -68,14 +68,14 @@ def EconomicalTableValid (d : ℕ×ℕ) (c : ParameterCertificate) : Prop :=
 
 def BudgetTableValid (d : ℕ×ℕ) (c : ParameterCertificate) : Prop :=
   d.2≠3 ∨
-    (∀ i∈channelKeys d.1, c.1.getD (Nat.pair 0 i) 0≤(max (d.1+2) 962)^4 ∧
-      c.1.getD (Nat.pair 1 i) 0≤(max (d.1+2) 962)^4) ∧
-    (∀ j∈digitKeys d.1 d.2, c.1.getD (Nat.pair 2 (Nat.pair j.1 j.2)) 0≤(max (d.1+2) 962)^4) ∧
-    (∀ i∈channelKeys d.1, c.1.getD (Nat.pair 0 i) 0*c.1.getD (Nat.pair 1 i) 0≤(max (d.1+2) 962)^4) ∧
+    (∀ i∈channelKeys d.1, c.1.getD (Nat.pair 0 i) 0≤(max (d.1+2) 256)^4 ∧
+      c.1.getD (Nat.pair 1 i) 0≤(max (d.1+2) 256)^4) ∧
+    (∀ j∈digitKeys d.1 d.2, c.1.getD (Nat.pair 2 (Nat.pair j.1 j.2)) 0≤(max (d.1+2) 256)^4) ∧
+    (∀ i∈channelKeys d.1, c.1.getD (Nat.pair 0 i) 0*c.1.getD (Nat.pair 1 i) 0≤(max (d.1+2) 256)^4) ∧
     (∀ n∈List.range d.1, c.1.getD (Nat.pair 0 (Nat.pair 0 n)) 0*
-      c.1.getD (Nat.pair 1 (Nat.pair 0 n)) 0≤(max (d.1+2) 962)^3) ∧
+      c.1.getD (Nat.pair 1 (Nat.pair 0 n)) 0≤(max (d.1+2) 256)^3) ∧
     ∀ n∈List.range d.1, ∀ j∈List.range d.2,
-      c.1.getD (Nat.pair 2 (Nat.pair (Nat.pair 0 n) j)) 0≤(max (d.1+2) 962)^3
+      c.1.getD (Nat.pair 2 (Nat.pair (Nat.pair 0 n) j)) 0≤(max (d.1+2) 256)^3
 
 def ParameterValid (d : ℕ × ℕ) (c : ParameterCertificate) : Prop :=
   d.1 = 0 ∨
