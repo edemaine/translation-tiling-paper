@@ -251,7 +251,7 @@ theorem primeBudget_pow {k : ℕ} (hc : 962≤2*channelCount T) (hk : 2^k≤chan
     _ ≤ channelCount T*channelCount T^k := Nat.mul_le_mul_right _ hk
     _ = _ := (pow_succ' _ _).symm
 
-theorem smallPrimes_of_budget (hp : BudgetPrimes E (primeBudget T)) (hc : 802≤channelCount T) :
+theorem smallPrimes_of_budget (hp : BudgetPrimes E (primeBudget T)) (hc : 562≤channelCount T) :
     Size.SmallPrimes E := by
   have hh : primeBudget T^4≤channelCount T^5 := primeBudget_pow (by omega) (by norm_num; omega)
   exact ⟨fun i => ⟨(hp.1 i).1.trans hh,(hp.1 i).2.trans hh⟩,

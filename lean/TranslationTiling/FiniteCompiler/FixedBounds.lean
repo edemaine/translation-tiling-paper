@@ -29,17 +29,52 @@ theorem budget_pow_le_three (w : ℕ) (hw : 240≤w) :
       _ ≤ 3*3^w := Nat.mul_le_mul_left _ ih
       _ = _ := (pow_succ' _ _).symm
 
+/-- Only a quadratic budget needs to be dominated by the word count. -/
+theorem budget_square_le_three (w : ℕ) (hw : 168≤w) :
+    (max (w+2) 962)^2≤3^(w+1) := by
+  induction w,hw using Nat.le_induction with
+  | base => norm_num
+  | succ w hw ih =>
+    have hh : max (w+1+2) 962≤max (w+2) 962+1 := by omega
+    have hp : 2≤max (w+2) 962 := by omega
+    calc
+      _ ≤ (max (w+2) 962+1)^2 := Nat.pow_le_pow_left hh _
+      _ ≤ 3*(max (w+2) 962)^2 := by nlinarith
+      _ ≤ 3*3^(w+1) := Nat.mul_le_mul_left _ ih
+      _ = _ := (pow_succ' _ _).symm
+
+theorem quadratic_le_three (w : ℕ) (hw : 4≤w) : w^2+12*w+11≤3^w := by
+  induction w,hw using Nat.le_induction with
+  | base => norm_num
+  | succ w hw ih =>
+    rw [show 3^(w+1)=3^w*3 by exact pow_succ 3 w]
+    nlinarith
+
 variable {T : System} (E : EncodingParameters T)
 
+/-- Count the dependence indices directly, independently of prime sizes. -/
+theorem dependence_card : (dependenceTiles E).card≤(T.width+2)^2+T.width+4 := by
+  have hsub (i : Channel T) : Fintype.card {j : Channel T // j≠i}≤T.width+2 := by
+    simpa only [channel_card,channelCount] using
+      Fintype.card_le_of_injective Subtype.val (Subtype.val_injective (p:=fun j : Channel T => j≠i))
+  have hpair : Fintype.card (Σ i : Channel T, {j : Channel T // j≠i})≤(T.width+2)^2 := by
+    rw [Fintype.card_sigma]
+    calc
+      _ ≤ ∑ _i : Channel T, (T.width+2) := Finset.sum_le_sum (fun i _ => hsub i)
+      _ = _ := by simp [channel_card,channelCount,pow_two]
+  unfold dependenceTiles
+  apply (Finset.card_image_le.trans (le_of_eq Finset.card_univ)).trans
+  simp only [DependenceIndex,Fintype.card_sum,Fintype.card_prod,Fintype.card_fin,Fintype.card_bool]
+  simpa [Column,Nat.add_assoc] using Nat.add_le_add_right hpair (T.width+2*2)
+
 theorem testTiles_card (hB : T.alphabet=3) (hp : BudgetPrimes E (primeBudget T))
-    (hw : 240≤T.width) (hS : ∀ n, (T.slope n).natAbs≤Sudoku.Width) :
+    (hw : 4≤T.width) (hS : ∀ n, (T.slope n).natAbs≤Sudoku.Width) :
     (testTiles E).card≤3^(T.width+1) := by
   let P := primeBudget T
   have hP : 962≤P := le_max_right _ _
   have hCP : channelCount T≤P := le_max_left _ _
   have hb := BudgetSize.parameterBudget_nine E hP hCP hB hp hS
-  have hdep : (dependenceTiles E).card≤P^36 := by
-    simpa only [←pow_mul] using dependenceTiles_card_le hb.1 hb.2.1
+  have hdep := dependence_card E
   have hword : (wordConstraintTiles E).card≤3^T.width := by
     unfold wordConstraintTiles
     apply Finset.card_biUnion_le.trans
@@ -61,10 +96,8 @@ theorem testTiles_card (hB : T.alphabet=3) (hp : BudgetPrimes E (primeBudget T))
     calc
       _ ≤ (Finset.univ : Finset (Fin 2)).card := Finset.card_image_le
       _ = _ := by simp
-  have hp36 : P^36≤3^T.width := budget_pow_le_three T.width hw
-  have hlin : 7*T.width+3≤3^T.width := by
-    apply le_trans (b:=P^2) _ ((Nat.pow_le_pow_right (by omega) (by decide : 2≤36)).trans hp36)
-    unfold channelCount at hCP
+  have hlin : (T.width+2)^2+8*T.width+7≤3^T.width := by
+    have hh := quadratic_le_three T.width hw
     nlinarith
   unfold testTiles
   have h := Finset.card_union_le

@@ -64,11 +64,9 @@ theorem sharpCyclic_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
     rw [canonicalInputFamily_length T p hp hpos hS]
     exact FixedSize.testTiles_card (parameters T) hB hsmall (by
       norm_num [channelCount,Sudoku.Width,Sudoku.q] at hC; omega) hS
-  have hpow36 : C^36≤3^T.width := FixedSize.budget_pow_le_three T.width (by
-    norm_num [channelCount,Sudoku.Width,Sudoku.q] at hC; omega)
-  have hX3 : X≤3^(T.width+1) := max_le hcount (by
-    apply (Nat.pow_le_pow_right (by omega : 1≤C) (by decide : 2≤36)).trans
-    exact hpow36.trans (Nat.pow_le_pow_right (by decide) (by omega)))
+  have hX3 : X≤3^(T.width+1) := max_le hcount
+    (FixedSize.budget_square_le_three T.width (by
+      norm_num [channelCount,Sudoku.Width,Sudoku.q] at hC; omega))
   have hXhi : X≤C^(8*C) := by
     apply hX3.trans
     apply (Nat.pow_le_pow_left (by omega : 3≤C) _).trans
@@ -123,11 +121,9 @@ theorem sharpCyclic_mass (T : System) (p : Payload) (hp : PayloadCorrect T p)
     rw [canonicalInputFamily_length T p hp hpos hS]
     exact FixedSize.testTiles_card (parameters T) hB hsmall (by
       norm_num [channelCount,Sudoku.Width,Sudoku.q] at hC; omega) hS
-  have hpow36 : C^36≤3^T.width := FixedSize.budget_pow_le_three T.width (by
-    norm_num [channelCount,Sudoku.Width,Sudoku.q] at hC; omega)
-  have hX3 : X≤3^(T.width+1) := max_le hcount (by
-    apply (Nat.pow_le_pow_right (by omega : 1≤C) (by decide : 2≤36)).trans
-    exact hpow36.trans (Nat.pow_le_pow_right (by decide) (by omega)))
+  have hX3 : X≤3^(T.width+1) := max_le hcount
+    (FixedSize.budget_square_le_three T.width (by
+      norm_num [channelCount,Sudoku.Width,Sudoku.q] at hC; omega))
   have hXhi : X≤C^(8*C) := by
     apply hX3.trans
     apply (Nat.pow_le_pow_left (by omega : 3≤C) _).trans
@@ -172,7 +168,7 @@ theorem sharpTile_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
   let C := primeBudget T
   let M := max (H^2) d.1
   have hbig : 962≤C := le_max_right _ _
-  have hw : 240≤T.width := by norm_num [channelCount,Sudoku.Width,Sudoku.q] at hC; omega
+  have hw : 168≤T.width := by norm_num [channelCount,Sudoku.Width,Sudoku.q] at hC; omega
   have heq : rawBudget (parameterData T)=C^9 := by
     change (if T.alphabet=3 then (max (T.width+2) 962)^9 else _)=C^9
     rw [if_pos hB]

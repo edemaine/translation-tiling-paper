@@ -17,7 +17,7 @@ private theorem int_residues_injective {p k : ℕ} (hk : k≤p) :
   exact Fin.ext hv
 
 /-- Recover the intervening rows before applying four-row propagation. -/
-theorem three_spaced_rows_four {p : ℕ} (hp : p.Prime) (hlarge : 16<p)
+theorem three_spaced_rows_four {p : ℕ} (hp : p.Prime) (hlarge : 10<p)
     {W : WordArray p} (hW : LineRule p W) (A B C : ZMod p) (q : ℤ)
     (hknown : ∀ j : Fin 3, ∀ n : ℤ, 0≤n → n<(wordWidth p:ℕ) →
       A*(n:ZMod p)+B*((q+6*j.val:ℤ):ZMod p)+C≠0 →
@@ -136,7 +136,7 @@ theorem three_spaced_rows_four {p : ℕ} (hp : p.Prime) (hlarge : 16<p)
     simpa only [ha,hb,F,add_assoc] using hh
 
 /-- The six-point argument lowers the prime requirement to 17. -/
-theorem global_affine_approximation {p : ℕ} (hp : p.Prime) (hlarge : 16<p)
+theorem global_affine_approximation_six {p : ℕ} (hp : p.Prime) (hlarge : 16<p)
     {W : WordArray p} (hW : LineRule p W) :
     ∃ A B C : ZMod p, AffineApproximation W A B C := by
   classical
@@ -256,10 +256,10 @@ theorem global_affine_approximation {p : ℕ} (hp : p.Prime) (hlarge : 16<p)
       rw [form]
       simpa only [hj,zero_mul,zero_add] using hb
     · exact Or.inl ha
-  have hrows := three_spaced_rows_four hp hlarge hW A B C q hknown hnz
+  have hrows := three_spaced_rows_four hp (by omega) hW A B C q hknown hnz
   have hglobal := good_everywhere_of_four_square (wordWidth p:ℕ) (by dsimp [wordWidth]; omega)
     (fun n m => A*(n:ZMod p)+B*(m:ZMod p)+C=0 ∨ rawArray W n m=A*(n:ZMod p)+B*(m:ZMod p)+C)
-    (affine_four_line_closure hp hlarge hW A B C) 0 q (by omega) (by dsimp [wordWidth]; omega)
+    (affine_four_line_closure hp (by omega) hW A B C) 0 q (by omega) (by dsimp [wordWidth]; omega)
     (fun i j => by simpa only [zero_add] using hrows (q+j.val) (by omega) (by have := j.isLt; omega) i.val (by omega) (by have := i.isLt; dsimp [wordWidth]; omega))
   have hnonzero : A≠0 ∨ B≠0 ∨ C≠0 := by
     by_cases ha : A=0

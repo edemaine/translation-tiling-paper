@@ -118,7 +118,7 @@ private theorem clean_second_difference {p : ℕ} {W : WordArray p}
   push_cast
   linear_combination (chooseLine hW d e).a * hx'
 
-theorem affine_four_line_closure {p : ℕ} (hp : p.Prime) (hlarge : 16 < p)
+theorem affine_four_line_closure {p : ℕ} (hp : p.Prime) (hlarge : 10 < p)
     {W : WordArray p} (hW : LineRule p W) (A B C : ZMod p) :
     FourLineClosure (wordWidth p : ℕ)
       (fun n m => A * (n : ZMod p) + B * (m : ZMod p) + C = 0 ∨

@@ -144,12 +144,12 @@ theorem exists_connected_tile_one_quasipolynomial_bound (T : LeanWang.TileSet)
     (hT : T.toFinset.card = 1) :
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
-      cubeCount P ≤ 2 ^ 84609 := by
+      cubeCount P ≤ 2 ^ 60602 := by
   obtain ⟨P,hP,hconn,hiff,hcubes⟩ := exists_connected_tile_mixed_count_bound T (by omega)
   have hb := channel_product_le_binary (cubeCount P)
     (max (Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card + 2) 962)
     (33*(Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card)+462)
-    (4*(Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card)+4) 84609 hcubes
+    (4*(Sudoku.Width * FiniteCompiler.Effective.mixedWidth T.toFinset.card)+4) 60602 hcubes
     (by norm_num [hT,mixedWidth_one,Sudoku.Width,Sudoku.q])
     (by norm_num [hT,mixedWidth_one,Sudoku.Width,Sudoku.q])
   exact ⟨P,hP,hconn,hiff,hb⟩

@@ -85,7 +85,7 @@ theorem mixedCompile_facts (T : LeanWang.TileSet) :
     mixedCompile T ≠ [] ∧ FaceConnected (mixedCompile T) ∧
     (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles (mixedCompile T)) ∧
     ((mixedCompile T).length : ℝ) ≤ ((T.length:ℝ)+4) ^
-      ((3*(10:ℝ)^4) * Real.logb 2 (Real.logb 2 ((T.length:ℝ)+4))) := by
+      ((2.15*(10:ℝ)^4) * Real.logb 2 (Real.logb 2 ((T.length:ℝ)+4))) := by
   by_cases ht : T = []
   · subst T
     simp only [mixedCompile,if_pos rfl,List.length_nil,Nat.cast_zero,zero_add]
@@ -111,7 +111,7 @@ theorem mixedCompile_facts (T : LeanWang.TileSet) :
 
 theorem mixedCompile_real_bound (T : LeanWang.TileSet) :
     ((mixedCompile T).length:ℝ) ≤ ((T.length:ℝ)+4) ^
-      ((3*(10:ℝ)^4) * Real.logb 2 (Real.logb 2 ((T.length:ℝ)+4))) := (mixedCompile_facts T).2.2.2
+      ((2.15*(10:ℝ)^4) * Real.logb 2 (Real.logb 2 ((T.length:ℝ)+4))) := (mixedCompile_facts T).2.2.2
 
 end
 end TranslationTiling.FiniteCompiler.Effective

@@ -224,9 +224,9 @@ We use the classical co-RE-completeness of this domino problem [[Berger,GTUndeci
 
 For a prime $r$, write $\F_r=\Z/r\Z$ for its field of residues and
 $\F_r^\times$ for the nonzero residues.
-Fix the primes $p=17$ and $q=19$ once and for all, and set
+Fix the primes $p=11$ and $q=13$ once and for all, and set
 $$
- N=2q+2=40,\qquad I=\{0,\ldots,N-1\},\qquad
+ N=2q+2=28,\qquad I=\{0,\ldots,N-1\},\qquad
  \Sigma=\F_p^\times\times\F_q^\times\times\calT.
 $$
 The board width $N$ and coefficient period $p^2q^2$ are fixed independently
@@ -336,36 +336,66 @@ Part \textup{(i)} is a shorter-board refinement of
 Greenfeld--Tao assume primes greater than $48$, and use decorated
 board width $p^2q^2$ \cite[Theorem~4.6 and Definition~5.1]{GTUndecidable}.
 To optimize the reduction size, our refinement reduces the prime requirement
-from $r>48$ to $r>16$ and needs only $M=2r+2$ arithmetic columns.
+from $r>48$ to $r>10$ and needs only $M=2r+2$ arithmetic columns.
 We replace their clean-patch argument \cite[Lemma~4.8]{GTUndecidable}
-by a six-point affine-recovery argument.
-For a prime $r\geq17$, seek a translate of
+by a five-point affine-recovery argument.
+For a prime $r\geq11$, seek a translate of
 $$
- (0,0),(2,0),(3,6),(4,6),(4,12),(6,12)
+ (0,0),(2,0),(2,6),(3,6),(4,12)
 $$
-whose six horizontal checks and three diagonal triples avoid exceptional
-residues. The diagonal triples have slopes $2,3,6$.
+whose four horizontal checks at the first four points and two diagonal
+triples avoid exceptional residues. The triples have slopes $3,6$.
 Restrict horizontal origins to $0,\ldots,r-1$ and vertical origins to
 $0,\ldots,T-13$, where $T=100r$.
-For each of the fifteen incidences, a fixed line's exceptional residue
+For each of the ten incidences, a fixed line's exceptional residue
 blocks at most one horizontal origin, which determines the vertical origin.
-The total number of blocked origins is at most $15T+33(r+6)$, and
+The total number of blocked origins is at most $10T+27(r+4)$, and
 $$
- r(T-12)-15T-33(r+6)
-   =(r-17)(100r+155)+2437>0.
+ r(T-12)-10T-27(r+4)
+   =(r-11)(100r+61)+563>0.
 $$
 Thus a clean configuration exists.
-Write the three horizontal affine forms as $U_jx+V_j$, for $j=0,1,2$,
-in coordinates relative to the chosen origin. The diagonal checks give
+Write the first two horizontal affine forms as $U_jx+V_j$, for $j=0,1$,
+in coordinates relative to the chosen origin, and let $T_0\ne0$ be the
+actual value at the fifth point. The diagonal checks give
 $$
- \begin{aligned}
-  2U_0+V_0-2(4U_1+V_1)+6U_2+V_2&=0,\\
-  2U_0+V_0-2(3U_1+V_1)+4U_2+V_2&=0,\\
-  V_0-2(3U_1+V_1)+6U_2+V_2&=0.
- \end{aligned}
+ T_0=2(2U_1+V_1)-V_0
+    =2(3U_1+V_1)-(2U_0+V_0).
 $$
-These force $U_0=U_1=U_2$ and $V_2-2V_1+V_0=0$, so one affine form
-$F(n,m)=An+Bm+C$ agrees with all three rows wherever it is nonzero.
+These force $U_0=U_1=A$. There is an affine form $F(n,m)=An+Bm+C$
+agreeing with the first two rows wherever it is nonzero, whose value
+at the fifth point is $T_0$.
+
+To recover the third row, write its horizontal form as $H(x)=Ux+V$
+in absolute coordinates. Let $D_0,D_1$ be the intercepts of $F$ on
+the first two rows, and put $D_2=2D_1-D_0$.
+For each step $s=1,2$, use a slope-$6/s$ line through columns
+$x-2s,x-s,x$ on the three rows, and set
+$$
+ f_0(x)=A(x-2s)+D_0,\qquad
+ f_1(x)=A(x-s)+D_1,\qquad
+ f_2(x)=Ax+D_2.
+$$
+When $f_0,f_1,f_2,H$ are nonzero, the diagonal rule gives
+$H(x)\in\{f_2(x),2f_1(x),-f_0(x)\}$, allowing for its own exceptional
+residue at the first or second intersection. An exceptional residue at the
+third intersection would force $f_2(x)=0$.
+If $H$ were identically equal to none of these three forms, each of
+$$
+ f_0,\ f_1,\ f_2,\ H,\ H-f_2,\ H-2f_1,\ H+f_0
+$$
+would have at most one root. One of the eight distinct residues
+represented by $x=4,\ldots,11$ would avoid all seven roots, a contradiction.
+Thus $(U,V)$ is one of
+$$
+ (A,D_2),\qquad (2A,2D_1-2As),\qquad (-A,2As-D_0).
+$$
+If $A\ne0$, intersecting the lists for $s=1,2$ leaves only $(A,D_2)$:
+the three slopes are distinct, and the other matching intercepts differ
+by $2A$. If $A=0$, the lists force $H$ to be constant; agreement at the
+fifth point gives its value $D_2$. Hence $F$ agrees with all three
+spaced rows wherever it is nonzero.
+
 To recover an intervening row at offset $t\in\{0,1,2,3\}$,
 consider slope-one lines through the known rows at offsets $0,6,12$.
 Among seven horizontal origins, avoid the roots of five affine forms:
@@ -379,7 +409,8 @@ it with $F$. The two target intersections then identify the horizontal form.
 We obtain four consecutive good rows, and four-line closure propagates
 the affine approximation throughout the board.
 The count and propagation are checked in
-\leanfile{SudokuArithmetic/SixPointPattern.lean} and
+\leanfile{SudokuArithmetic/FivePointPattern.lean},
+\leanfile{SudokuArithmetic/FivePointRecovery.lean}, and
 \leanfile{SudokuArithmetic/SixPointRecovery.lean}.
 The rescaling obstruction uses
 three columns $n_0+rk$, with $n_0\in\{0,1\}$ and $k=0,1,2$.
@@ -428,7 +459,7 @@ tiling in the canonical array. For readability, the figure uses the
 toy primes $p=3,q=5$, as in the arithmetic illustration of
 \cite[Figure~5.1]{GTUndecidable}. The canonical formula and its
 line-rule verification above apply to these primes, but we make no
-soundness claim for them: @thm:GT uses $p,q>16$.
+soundness claim for them: @thm:GT uses $p,q>10$.
 Every displayed height has the same symbol in every column $n$.
 For example, height $45$ gives the full symbol $(2,4,B)$, because
 $f_3(45)=2$, $f_5(45)=4$, and $(\nu_3(45),\nu_5(45))=(2,1)$.
@@ -2151,10 +2182,10 @@ and its agreement with this code are checked in
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    (n+4)^{3\cdot10^4\lg\lg(n+4)}=n^{O(\log\log n)}
+    (n+4)^{2.15\cdot10^4\lg\lg(n+4)}=n^{O(\log\log n)}
   $$
   unit cubes.
-  For $n=1$, we also have the explicit bound $2^{84{,}609}$ unit cubes.
+  For $n=1$, we also have the explicit bound $2^{60{,}602}$ unit cubes.
 
 : proof
   For $n=0$, consolidate the two contradictory equations with prototiles
@@ -2220,12 +2251,12 @@ and its agreement with this code are checked in
   and $\ell|V|$. The final cube count is therefore $C^{O(C)}$.
   Since $k=O(\lg(n+2))$, this gives the quasipolynomial dependence.
 
-  For the numerical coefficient, write $w=Nk=40k$ for the number of
+  For the numerical coefficient, write $w=Nk=28k$ for the number of
   ordinary channels and use the prime budget $P=\max\{w+2,962\}$.
   When $w+2<962$, restrict a prime allocation for $960$ ordinary channels
   to the actual channels; the construction itself gains no extra channels.
   This is checked in \leanfile{FiniteCompiler/BudgetParameters.lean}.
-  The two auxiliary seed primes must exceed $D=(5pq)^2=2{,}608{,}225$.
+  The two auxiliary seed primes must exceed $D=(5pq)^2=511{,}225$.
   We retain the explicit choices
   $$
     b_0=244{,}453{,}241,\qquad b_1=244{,}453{,}243,
@@ -2283,14 +2314,16 @@ and its agreement with this code are checked in
 
   Each forbidden word or seed-label pair needs one fixed cycle test.
   There are at most $3^w$ forbidden words and $6w$ seed-label pairs.
-  The dependence equations have count at most $b^4=P^{36}$;
-  the kernel and activation equations contribute at most $w+3$.
-  Since $w\geq240$, we have $P^{36}\leq3^w$:
-  the base case is $962^{36}\leq3^{240}$, and the induction step uses
-  $963^{36}\leq3\cdot962^{36}$ to give $(P+1)^{36}\leq3P^{36}$.
-  Also $7w+3\leq P^{36}$. Thus
+  Counting the dependence indices directly gives at most $(w+2)^2+w+4$
+  equations; the kernel and activation equations contribute at most $w+3$.
+  For $w\geq4$, induction gives $w^2+12w+11\leq3^w$, so
   $$
-    s\leq3^w+P^{36}+7w+3\leq3^{w+1},\qquad
+    s\leq3^w+(w+2)^2+8w+7\leq3^{w+1}.
+  $$
+  Since $w\geq168$, we also have $P^2\leq3^{w+1}$:
+  the base case is $962^2\leq3^{169}$, and the induction step uses
+  $(P+1)^2\leq3P^2$. Thus
+  $$
     X=\max\{s,P^2\}\leq3^{w+1}\leq P^{8P}.
   $$
   These counts are checked in \leanfile{FiniteCompiler/FixedBounds.lean}.
@@ -2350,7 +2383,7 @@ and its agreement with this code are checked in
   coordinates have absolute value at most $1000(2H+1)$, and its vertical
   coordinates at most $1000(2R+1)$.
   Use $\widehat R=\max\{H^2,R\}$ to size the connectedness construction.
-  Since $w\geq240$, this still satisfies
+  Since $w\geq168$, this still satisfies
   $\widehat R\leq P^{21w+31}3^{2w+2}$.
   Translate the lattice tile into an $A\times A\times B$ box with
   $A^2\leq B$, $A\leq8003H$, and $B\leq8003^2\widehat R$.
@@ -2414,37 +2447,37 @@ and its agreement with this code are checked in
 
   Put $t=\lg(n+4)$ and $g=\lg t$. Direct estimates on the binary and
   ternary lengths give $k\leq(11/4)t$, treating $n=1,\ldots,6$ directly.
-  For larger $n$, use $t\geq10/3$, $646^8\leq2^{75}$, and
+  For larger $n$, use $t\geq10/3$, $286^8\leq2^{75}$, and
   $2^{19}\leq3^{12}$ in the ternary-length estimate.
   For $n\geq2$, the inequalities $2^{31}\leq6^{12}$ and
   $2^4\leq(31/12)^3$ give $t\geq31/12$ and $g\geq4/3$. Thus
   $$
-    w\leq110t,\qquad P\leq373t,\qquad 373^5\leq2^{43},\qquad
+    w\leq77t,\qquad P\leq373t,\qquad 373^5\leq2^{43},\qquad
     \lg P\leq43/5+g\leq(149/20)g.
   $$
   Hence
   $$
     \lg|F|\leq(34w+463)\lg P
-      \leq\left(3740+\frac{463\cdot12}{31}\right)
+      \leq\left(2618+\frac{463\cdot12}{31}\right)
            \frac{149}{20}\,tg,
   $$
   and
   $$
-    \left(3740+\frac{463\cdot12}{31}\right)\frac{149}{20}
-      =\frac{4{,}525{,}726}{155}<3\cdot10^4
+    \left(2618+\frac{463\cdot12}{31}\right)\frac{149}{20}
+      =\frac{6{,}460{,}193}{310}<2.15\cdot10^4
   $$
   gives the displayed bound.
   The conversion is checked in \leanfile{Compiler/MixedLogBound.lean}.
-  For $n=1$, six code positions per column give $w=240$ and $P=962$.
-  Retaining the factor $3^{4w+4}$ gives $|F|\leq962^{8382}3^{964}$.
+  For $n=1$, six code positions per column give $w=168$ and $P=962$.
+  Retaining the factor $3^{4w+4}$ gives $|F|\leq962^{6006}3^{676}$.
   Since $962^{100}\leq2^{991}$ and $3^5\leq2^8$,
   $$
-    |F|^{100}\leq2^{991\cdot8382+160\cdot964}
-      =2^{8{,}460{,}802}\leq2^{100\cdot84{,}609},
+    |F|^{100}\leq2^{991\cdot6006+160\cdot676}
+      =2^{6{,}060{,}106}\leq2^{100\cdot60{,}602},
   $$
-  so $|F|\leq2^{84{,}609}$. This also fits the displayed general bound:
+  so $|F|\leq2^{60{,}602}$. This also fits the displayed general bound:
   $2^{65}\leq5^{28}$ and $2^{243}\leq(65/28)^{200}$ give
-  $t\geq65/28$ and $g\geq243/200$, so $3\cdot10^4tg>84{,}609$.
+  $t\geq65/28$ and $g\geq243/200$, so $2.15\cdot10^4tg>60{,}602$.
 
 The ternary-channel variant is formalized end to end in
 \leanfile{Compiler/CleanQuasipolynomialBound.lean} by
@@ -2992,8 +3025,8 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, these bounds are $(n+4)^{3\cdot10^4\lg\lg(n+4)}$ for translations and
-$64{,}000(n+4)^{3\cdot10^4\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+function. In dimension three, these bounds are $(n+4)^{2.15\cdot10^4\lg\lg(n+4)}$ for translations and
+$64{,}000(n+4)^{2.15\cdot10^4\lg\lg(n+4)}$ for arbitrary Euclidean motions.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[

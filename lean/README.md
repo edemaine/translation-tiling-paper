@@ -103,12 +103,12 @@ have no unproved mathematical input. No unfinished proof is accepted.
 ## Cube Bound by Wang Tile Count
 
 [Compiler/CleanQuasipolynomialBound.lean](TranslationTiling/Compiler/CleanQuasipolynomialBound.lean)
-gives `(n+4)^(3*10^4*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
+gives `(n+4)^(2.15*10^4*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
 logarithms. The theorem `Size.exists_connected_tile_clean_quasipolynomial_bound`
 includes nonemptiness, face connectedness, and both tilability directions.
 Here `n` counts distinct input tiles. The one-tile specialization in
 [Compiler/QuasipolynomialBound.lean](TranslationTiling/Compiler/QuasipolynomialBound.lean)
-gives at most `2^84609` cubes.
+gives at most `2^60602` cubes.
 
 [FixedCycleTests.lean](TranslationTiling/FiniteCompiler/FixedCycleTests.lean)
 uses one fixed test per forbidden word or seed-label pair. Each digit subgroup
@@ -133,15 +133,20 @@ For one Wang tile, six positions per column suffice.
 proves the tiling equivalence for any injective code with the exact seed predicates.
 [Effective/MixedInput.lean](TranslationTiling/FiniteCompiler/Effective/MixedInput.lean)
 implements the code and proves primitive recursiveness and correctness.
-All positions share their column's original slope. The board has `2q+2 = 40`
-columns; coefficient residues use `p²q²`, and seed residues use `5pq = 1,615`.
-The fixed primes are `p = 17` and `q = 19`.
-[SixPointPattern.lean](TranslationTiling/SudokuArithmetic/SixPointPattern.lean)
-and [SixPointRecovery.lean](TranslationTiling/SudokuArithmetic/SixPointRecovery.lean)
-replace the clean 4×4 patch with six points and three diagonal triples.
-Fifteen incidences suffice to recover three affine rows for every prime
-`r > 16`. Avoiding five roots among seven origins recovers four consecutive
-rows, after which four-line closure propagates the affine approximation.
+All positions share their column's original slope. The board has `2q+2 = 28`
+columns; coefficient residues use `p²q²`, and seed residues use `5pq = 715`.
+The fixed primes are `p = 11` and `q = 13`.
+[FivePointPattern.lean](TranslationTiling/SudokuArithmetic/FivePointPattern.lean)
+and [FivePointRecovery.lean](TranslationTiling/SudokuArithmetic/FivePointRecovery.lean)
+replace the clean 4×4 patch with five points and two diagonal triples.
+Ten incidences recover two affine rows and one point for every prime
+`r > 10`. Seven affine root exclusions at eight columns then recover the
+third row, using the two step sizes in
+[FivePointRows.lean](TranslationTiling/SudokuArithmetic/FivePointRows.lean).
+The intervening-row lemma in
+[SixPointRecovery.lean](TranslationTiling/SudokuArithmetic/SixPointRecovery.lean)
+gives four consecutive good rows, after which four-line closure propagates the
+approximation.
 The shorter-board proof also uses three prime-spaced columns in rescaling
 and two prime-multiple samples to identify the higher-digit coefficients.
 
@@ -172,10 +177,12 @@ quadratic times a logarithm in the equation count.
 implements this bounded partition search and proves coprimality from a bound
 on the prime divisors of the finite factor.
 [BudgetBounds.lean](TranslationTiling/FiniteCompiler/BudgetBounds.lean)
-keeps powers integral and retains the actual ordinary-channel count `w = 40k`:
+keeps powers integral and retains the actual ordinary-channel count `w = 28k`:
 the cyclic order satisfies `|V|^10 ≤ P^(210*w+280)`.
 [FixedBounds.lean](TranslationTiling/FiniteCompiler/FixedBounds.lean)
-counts the fixed tests: `s ≤ 3^w + P^36 + 7*w+3 ≤ 3^(w+1)` for `w ≥ 240`.
+counts the dependence indices directly, giving at most `(w+2)^2+w+4` tests.
+Thus `s ≤ 3^w+w^2+12*w+11 ≤ 3^(w+1)` for `w ≥ 4`.
+For the actual minimum `w = 168`, it also proves `P² ≤ 3^(w+1)`.
 Stacking uses `X = max(s,P²) ≤ 3^(w+1)`, giving stacked modulus
 `R^30 ≤ P^(630*w+930)*3^(60*w+60)`.
 [Compiler/SparseGeometryBound.lean](TranslationTiling/Compiler/SparseGeometryBound.lean)
@@ -329,12 +336,12 @@ The earlier one-tile bound `2^(2^(10^29))` remains available as
 proves `Size.exists_connected_tile_closed_bound`: for `n` distinct Wang tiles,
 there is a nonempty, face-connected polycube with the same tileability and at
 most `closedCubeBound n` distinct cubes. All constants in the bound are explicit.
-Set `N = 1615` (the seed modulus), `C = 42` (the channel count), and define:
+Set `N = 715` (the seed modulus), `C = 30` (the channel count), and define:
 
 ```text
-U = 4^(2C+1) * (N²+40)
-L = 288n+1
-Q = 4^(CL+1) * (U²+2U+40)
+U = 4^(2C+1) * (N²+28)
+L = 120n+1
+Q = 4^(CL+1) * (U²+2U+28)
 b = Q^L+U+N+2
 c(x) = x²+2x;  J = c(c(c(c(b))))
 H = b*(b^5*(J+1)+1)

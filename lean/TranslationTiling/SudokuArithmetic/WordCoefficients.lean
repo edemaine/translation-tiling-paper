@@ -24,16 +24,16 @@ def sample (k : Fin 4) : Column :=
 
 def primeIndex (k : Fin 2) : Fin 4 := ⟨k.val,by have := k.isLt; omega⟩
 
-def primeSample (r : ℕ) (hr : ArithmeticRule.wordWidth r ≤ Width) (hlarge : 16 < r) (k : Fin 2) : Column :=
+def primeSample (r : ℕ) (hr : ArithmeticRule.wordWidth r ≤ Width) (hlarge : 10 < r) (k : Fin 2) : Column :=
   ⟨r * (k.val + 1), by have := k.isLt; nlinarith⟩
 
-theorem sample_injective_mod (r : ℕ) (hlarge : 16 < r) :
+theorem sample_injective_mod (r : ℕ) (hlarge : 10 < r) :
     Function.Injective (fun k : Fin 4 => ((sample k).val : ZMod r)) := by
   simpa only [sample, Nat.cast_add, Nat.cast_one, Int.cast_add, Int.cast_natCast, Int.cast_one,
     add_comm (1 : ZMod r)] using
     (ArithmeticRule.four_residues_injective (p := r) (by omega) 1)
 
-theorem word_coefficients_from_four (r : ℕ) (hp : r.Prime) (hlarge : 16 < r)
+theorem word_coefficients_from_four (r : ℕ) (hp : r.Prime) (hlarge : 10 < r)
     (V : Column → (ZMod r)ˣ) (a b : ℤ)
     (hab : ¬ (r : ℤ) ∣ a ∨ ¬ (r : ℤ) ∣ b)
     (ht : ∀ n, ¬ (r : ℤ) ∣ a * n.val + b →
@@ -56,7 +56,7 @@ theorem word_coefficients_from_four (r : ℕ) (hp : r.Prime) (hlarge : 16 < r)
   simpa only [Int.cast_add, Int.cast_mul, Int.cast_natCast] using ht (sample k) hn
 
 /-- The valuation-one samples force the intercept to vanish modulo `r²`. -/
-theorem scaled_word_coefficients (r : ℕ) (hp : r.Prime) (hlarge : 16 < r)
+theorem scaled_word_coefficients (r : ℕ) (hp : r.Prime) (hlarge : 10 < r)
     (hr : ArithmeticRule.wordWidth r ≤ Width) (V : Column → (ZMod r)ˣ) (a b : ℤ)
     (hab : ¬ (r : ℤ) ∣ a ∨ ¬ (r : ℤ) ∣ b)
     (ht : ∀ n u, lowValuation r (a * n.val + b) = some u → u ≤ threshold r a →

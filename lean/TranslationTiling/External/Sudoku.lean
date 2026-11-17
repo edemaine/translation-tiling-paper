@@ -7,8 +7,8 @@ unbounded integer valuation. Soundness is proved in `SudokuArithmetic/Soundness`
 
 namespace TranslationTiling.Sudoku
 
-abbrev p : ℕ := 17
-abbrev q : ℕ := 19
+abbrev p : ℕ := 11
+abbrev q : ℕ := 13
 /-- Board columns, coefficient period, and seed reference size have separate roles. -/
 abbrev Width : ℕ := 2 * q + 2
 abbrev CoefficientModulus : ℕ := p ^ 2 * q ^ 2

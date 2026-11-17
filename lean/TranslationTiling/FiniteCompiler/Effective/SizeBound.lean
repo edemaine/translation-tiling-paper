@@ -66,7 +66,7 @@ theorem optimizedCompile_channel_bound (T : LeanWang.TileSet) :
       unfold bitWidth
       omega
     nlinarith
-  have hc : 802≤C := by simpa [Sudoku.Width,Sudoku.q] using hC
+  have hc : 562≤C := by simpa [Sudoku.Width,Sudoku.q] using hC
   have hsmall : Size.SmallPrimes (parameters S) := BudgetSize.smallPrimes_of_budget
     (parameters S) (parameters_bounded_budget S rfl) hc
   have hV := Size.ternary_cyclicOrder_le (parameters S) rfl hsmall hC
