@@ -39,11 +39,11 @@ theorem arithmeticLineRule_affine (r : ℕ) (V : Column → ℤ → (ZMod r)ˣ)
 /-- The affine approximation obtained on the first `2r+2` columns extends along
 rows to the whole board. -/
 theorem arithmetic_initial_affine (r : ℕ) (hr : ArithmeticRule.wordWidth r ≤ Width)
-    (hp : r.Prime) (hlarge : 10 < r) (V : Column → ℤ → (ZMod r)ˣ)
+    (hp : r.Prime) (hlarge : 4 < r) (V : Column → ℤ → (ZMod r)ˣ)
     (hV : ArithmeticLineRule r V) :
     ∃ A B C : ZMod r, FullAffineApproximation V A B C := by
   let : Fact r.Prime := ⟨hp⟩
-  obtain ⟨A, B, C, hH⟩ := ArithmeticRule.global_affine_approximation hp hlarge
+  obtain ⟨A, B, C, hH⟩ := ArithmeticRule.global_affine_approximation_improved hp hlarge
     (arithmeticRestriction_lineRule r hr V hV)
   refine ⟨A, B, C, hH.1, ?_⟩
   intro n m hn
@@ -83,7 +83,7 @@ theorem arithmetic_initial_affine (r : ℕ) (hr : ArithmeticRule.wordWidth r ≤
   simpa only [zero_mul, zero_add, ← ha, ← hb, D, add_assoc] using hh
 
 theorem arithmetic_initial_structure (r : ℕ) (hr : ArithmeticRule.wordWidth r ≤ Width)
-    (hp : r.Prime) (hlarge : 10 < r) (V : Column → ℤ → (ZMod r)ˣ)
+    (hp : r.Prime) (hlarge : 4 < r) (V : Column → ℤ → (ZMod r)ˣ)
     (hV : ArithmeticLineRule r V) (hcols : ∀ n, ∃ m m', V n m ≠ V n m') :
     ∃ A B C : ZMod r, B ≠ 0 ∧ ∀ (n : Column) (m : ℤ),
       A * (n.val : ZMod r) + B * (m : ZMod r) + C ≠ 0 →

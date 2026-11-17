@@ -81,8 +81,8 @@ theorem mixedWidth_pos (n : ℕ) : 0 < mixedWidth n := by
   unfold mixedWidth mixedPayloadWidth
   omega
 
-theorem mixedWidth_six {n : ℕ} (hn : 0<n) : 6 ≤ mixedWidth n := by
-  have hp : 3^5 ≤ 2*Sudoku.p*Sudoku.q*n := by
+theorem mixedWidth_four {n : ℕ} (hn : 0<n) : 4 ≤ mixedWidth n := by
+  have hp : 3^3 ≤ 2*Sudoku.p*Sudoku.q*n := by
     have h := Nat.mul_le_mul_left (2*Sudoku.p*Sudoku.q) hn
     norm_num [Sudoku.p,Sudoku.q] at *
     omega
@@ -108,7 +108,7 @@ theorem mixedClass_capacity {n : ℕ} (hn : 0<n) :
   have h3 : 2*Sudoku.p*Sudoku.q*n < 3 ^ mixedWidth n :=
     (Nat.lt_pow_succ_log_self (by decide : 1<3) _).trans_le
       (Nat.pow_le_pow_right (by decide) (le_max_right _ _))
-  have hm := binary_quarter_ternary (show 4≤mixedWidth n by have := mixedWidth_six hn; omega)
+  have hm := binary_quarter_ternary (show 4≤mixedWidth n by have := mixedWidth_four hn; omega)
   have hc := wordClassSet_card (mixedWidth n)
   simp only [← packedCandidates_length] at hc
   constructor

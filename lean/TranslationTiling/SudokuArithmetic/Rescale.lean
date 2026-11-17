@@ -7,7 +7,7 @@ set_option maxRecDepth 2000
 namespace TranslationTiling.Sudoku
 
 theorem FullAffineApproximation.nonconstant {r : ℕ} (hp : r.Prime)
-    (hlarge : 10 < r) {V : Column → ℤ → (ZMod r)ˣ} {A B C : ZMod r}
+    (hlarge : 4 < r) {V : Column → ℤ → (ZMod r)ˣ} {A B C : ZMod r}
     (hH : FullAffineApproximation V A B C) (hB : B ≠ 0) :
     ∀ n, ∃ m m', V n m ≠ V n m' := by
   let : Fact r.Prime := ⟨hp⟩
@@ -37,7 +37,7 @@ theorem FullAffineApproximation.nonconstant {r : ℕ} (hp : r.Prime)
     hH.2 n m' (by rw [hm']; exact h2), hm'] at hval
   exact h12 hval
 
-theorem normalized_line_coefficients {r : ℕ} (hp : r.Prime) (hlarge : 10 < r)
+theorem normalized_line_coefficients {r : ℕ} (hp : r.Prime) (hlarge : 4 < r)
     {V : Column → ℤ → (ZMod r)ˣ} {B : ZMod r}
     (hH : FullAffineApproximation V 0 B 0) (hB : B ≠ 0)
     (d e a b : ℤ) (hab : ¬ (r : ℤ) ∣ a ∨ ¬ (r : ℤ) ∣ b)
@@ -83,7 +83,7 @@ theorem normalized_line_coefficients {r : ℕ} (hp : r.Prime) (hlarge : 10 < r)
     (agrees i hi hi') (agrees j hj hj')
 
 /-- The vertical coefficient is unchanged when one prime factor is removed. -/
-theorem rescale_vertical_coefficient {r : ℕ} (hp : r.Prime) (hlarge : 10 < r)
+theorem rescale_vertical_coefficient {r : ℕ} (hp : r.Prime) (hlarge : 4 < r)
     (hr : ArithmeticRule.wordWidth r ≤ Width) {V : Column → ℤ → (ZMod r)ˣ} (hV : ArithmeticLineRule r V)
     {B A₁ B₁ C₁ : ZMod r} (hB : B ≠ 0) (hH : FullAffineApproximation V 0 B 0)
     (hH₁ : FullAffineApproximation (arithmeticReparametrize V r 0 0) A₁ B₁ C₁) :
@@ -98,26 +98,24 @@ theorem rescale_vertical_coefficient {r : ℕ} (hp : r.Prime) (hlarge : 10 < r)
     intro h
     have hd := (ZMod.natCast_eq_zero_iff 2 r).mp h
     exact Nat.not_dvd_of_pos_of_lt (by decide) (by omega) hd
-  have hinj : Function.Injective (fun k : Fin 6 => B₁*(k.val:ZMod r)+C₁) := by
-    intro i j he
-    have hh := mul_left_cancel₀ hB₁ (add_right_cancel he)
-    have hv := congrArg ZMod.val hh
-    rw [ZMod.val_natCast_of_lt (by have := i.isLt; omega),
-      ZMod.val_natCast_of_lt (by have := j.isLt; omega)] at hv
-    exact Fin.ext hv
   have hshift : ∃ t : ℤ, ∀ k : Fin 3, B₁*((t+k.val:ℤ):ZMod r)+C₁≠0 := by
-    by_cases h0 : ∀ k : Fin 3, B₁*(k.val:ZMod r)+C₁≠0
-    · exact ⟨0,by simpa using h0⟩
-    · push_neg at h0
-      obtain ⟨j,hj⟩ := h0
-      refine ⟨3,fun k hk => ?_⟩
-      have hh : B₁*((3+k.val:ℕ):ZMod r)+C₁=B₁*(j.val:ZMod r)+C₁ := by
-        simpa using hk.trans hj.symm
-      have he := hinj (a₁:=⟨3+k.val,by have := k.isLt; omega⟩) (a₂:=⟨j.val,by have := j.isLt; omega⟩) hh
-      have hev := congrArg Fin.val he
-      change 3+k.val=j.val at hev
-      have := j.isLt
+    obtain ⟨t,ht⟩ := ZMod.intCast_surjective (1-B₁⁻¹*C₁)
+    have hbase : B₁*(t:ZMod r)+C₁=B₁ := by
+      rw [ht]
+      calc
+        _ = B₁-(B₁*B₁⁻¹)*C₁+C₁ := by ring
+        _ = B₁ := by rw [mul_inv_cancel₀ hB₁]; ring
+    refine ⟨t,fun k => ?_⟩
+    have hk : ((k.val+1:ℕ):ZMod r)≠0 := by
+      intro hz
+      have hv := congrArg ZMod.val hz
+      rw [ZMod.val_natCast_of_lt (by have := k.isLt; omega),ZMod.val_zero] at hv
       omega
+    have he : B₁*((t+k.val:ℤ):ZMod r)+C₁=B₁*((k.val+1:ℕ):ZMod r) := by
+      push_cast
+      linear_combination hbase
+    rw [he]
+    exact mul_ne_zero hB₁ hk
   obtain ⟨t,htnonzero⟩ := hshift
   obtain ⟨a,b,hab,ht⟩ := hV 1 ((r:ℤ)*t)
   obtain ⟨ha,hb⟩ := normalized_line_coefficients hp hlarge hH hB 1 ((r:ℤ)*t) a b hab ht (Or.inl (by simp))

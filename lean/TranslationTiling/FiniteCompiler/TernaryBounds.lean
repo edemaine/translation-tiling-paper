@@ -278,7 +278,7 @@ theorem separateModulusCap_mono {V V' s s' : ℕ} (hV : V ≤ V') (hs : s ≤ s'
 theorem ternary_modulus_cap_le {C : ℕ} (hC : 20 * Sudoku.Width + 2 ≤ C) :
     separateModulusCap (C ^ (119 * C)) (C ^ (30 * C)) ≤ C ^ (270 * C) := by
   have hbig : 24 ≤ C := by
-    have : 24 ≤ Sudoku.Width := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
+    norm_num [Sudoku.Width,Sudoku.q] at hC
     omega
   have h1 : 1 ≤ C := by omega
   have hV : C ^ (119 * C) ≤ C ^ (150 * C) := Nat.pow_le_pow_right h1 (by omega)

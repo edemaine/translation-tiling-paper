@@ -218,9 +218,7 @@ theorem bit_geometry_channel_bound {C : ℕ} (hC : 2 ^ 31 ≤ C) :
       C ^ ((12 * 2000000 * 100) * C) := by
   have hbase := bit_parameterBase_le_of_width hC
   have hb : 2 ≤ parameterBase BitSystem.alphabet Sudoku.Width C := by unfold parameterBase; omega
-  have h18 : 18 ≤ C := by
-    have : 18 ≤ Sudoku.Width := by norm_num [Sudoku.Width, Sudoku.p, Sudoku.q]
-    omega
+  have h18 : 18 ≤ C := by omega
   calc
     _ ≤ commonCap (parameterBase BitSystem.alphabet Sudoku.Width C) C ^ 100 :=
       geometryCap_commonCap_le hb h18

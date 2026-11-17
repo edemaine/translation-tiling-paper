@@ -74,7 +74,7 @@ theorem exists_connected_tile_ternary_channel_bound (T : System) (W : LeanWang.T
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane W ↔ TranslationTiling.Tiles P) ∧
       cubeCount P ≤ channelCount T ^ (3510 * channelCount T) := by
-  have hc : 562≤channelCount T := by simpa [Sudoku.Width,Sudoku.q] using hC
+  have hc : 256≤channelCount T := by norm_num [Sudoku.Width,Sudoku.q] at hC; omega
   obtain ⟨E,_,_,_,_,_,hbudget⟩ := exists_bounded_parameters_budget T
   have hp : SmallPrimes E := BudgetSize.smallPrimes_of_budget E (hbudget hB) hc
   have hb := smallPrimes_budget E hB hp hC hS

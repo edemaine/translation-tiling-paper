@@ -130,9 +130,9 @@ private theorem final_cost_exp {H V W p : ℕ} (hp : 1024 ≤ p)
 
 /-- The initial arithmetic parameter budget, separated from stacking and geometry. -/
 noncomputable def arithmeticParameterCap (N C A n : ℕ) : ℕ :=
-  let U := 4 ^ (2 * C + 1) * (N ^ 2 + 28)
+  let U := 4 ^ (2 * C + 1) * (N ^ 2 + 16)
   let L := A * n + 1
-  let Q := 4 ^ (C * L + 1) * (U ^ 2 + 2 * U + 28)
+  let Q := 4 ^ (C * L + 1) * (U ^ 2 + 2 * U + 16)
   Q ^ L + U + N + 2
 
 /-- Retain the channel count explicitly when converting an initial parameter
@@ -179,12 +179,12 @@ The hypotheses cover the fixed constants used by the Wang construction. -/
 private theorem arithmeticCubeBound_le_doubleExp (N C A n t : ℕ)
     (ht : 1 ≤ t) (hnt : n + 1 ≤ t)
     (hN : N ≤ 10 ^ 10) (hC : C ≤ 10 ^ 10) (hA : A ≤ 10 ^ 5)
-    (hNsq : N ^ 2 + 28 ≤ 2 ^ 64) :
+    (hNsq : N ^ 2 + 16 ≤ 2 ^ 64) :
     arithmeticCubeBound N C A n ≤ 2 ^ (2 ^ (10 ^ 40 * t ^ 2)) := by
   let u := 4 * C + 66
-  let U := 4 ^ (2 * C + 1) * (N ^ 2 + 28)
+  let U := 4 ^ (2 * C + 1) * (N ^ 2 + 16)
   let L := A * n + 1
-  let Q := 4 ^ (C * L + 1) * (U ^ 2 + 2 * U + 28)
+  let Q := 4 ^ (C * L + 1) * (U ^ 2 + 2 * U + 16)
   let b := Q ^ L + U + N + 2
   let k := 10 ^ 22 * t ^ 2
   let H := horizontalCap b
@@ -206,7 +206,7 @@ private theorem arithmeticCubeBound_le_doubleExp (N C A n t : ℕ)
       _ = _ := by congr 1; dsimp [u]; omega
   have hU40 : 40 ≤ 2 ^ u :=
     (by decide : 40 ≤ 2 ^ 9).trans (exp_mono (by dsimp [u]; omega))
-  have hprefactor : U ^ 2 + 2 * U + 28 ≤ 2 ^ (2 * u + 2) := by
+  have hprefactor : U ^ 2 + 2 * U + 16 ≤ 2 ^ (2 * u + 2) := by
     have hsq := Nat.pow_le_pow_left hU 2
     have hself := Nat.le_mul_self (2 ^ u)
     have he : 2 ^ (2 * u + 2) = 4 * (2 ^ u) ^ 2 := by
@@ -284,7 +284,7 @@ private theorem arithmeticCubeBound_le_doubleExp (N C A n t : ℕ)
 
 theorem arithmeticCubeBound_le_simple (N C A n : ℕ)
     (hN : N ≤ 10 ^ 10) (hC : C ≤ 10 ^ 10) (hA : A ≤ 10 ^ 5)
-    (hNsq : N ^ 2 + 28 ≤ 2 ^ 64) :
+    (hNsq : N ^ 2 + 16 ≤ 2 ^ 64) :
     arithmeticCubeBound N C A n ≤ 2 ^ (2 ^ (10 ^ 40 * (n + 1) ^ 2)) :=
   arithmeticCubeBound_le_doubleExp N C A n (n + 1) (by omega) le_rfl hN hC hA hNsq
 
@@ -296,12 +296,12 @@ theorem explicitCubeBound_le_simple (n : ℕ) : explicitCubeBound n ≤ simpleCu
 
 private theorem one_parameter_budget (N C A k : ℕ) (hk : 10 ^ 19 ≤ k)
     (hN : N ≤ 2213984809) (hC : C ≤ 2213984811) (hA : A ≤ 46620)
-    (hNsq : N ^ 2 + 28 ≤ 2 ^ 64) :
+    (hNsq : N ^ 2 + 16 ≤ 2 ^ 64) :
     arithmeticParameterCap N C A 1 ≤ 2 ^ k := by
   let u := 4 * C + 66
-  let U := 4 ^ (2 * C + 1) * (N ^ 2 + 28)
+  let U := 4 ^ (2 * C + 1) * (N ^ 2 + 16)
   let L := A * 1 + 1
-  let Q := 4 ^ (C * L + 1) * (U ^ 2 + 2 * U + 28)
+  let Q := 4 ^ (C * L + 1) * (U ^ 2 + 2 * U + 16)
   let q := 2 * (C * L + 1) + (2 * u + 2)
   let e := q * L
   have hLpos : 1 ≤ L := by dsimp [L]; omega
@@ -315,7 +315,7 @@ private theorem one_parameter_budget (N C A k : ℕ) (hk : 10 ^ 19 ≤ k)
       _ = _ := by congr 1; dsimp [u]; omega
   have hU40 : 40 ≤ 2 ^ u :=
     (by decide : 40 ≤ 2 ^ 9).trans (exp_mono (by omega))
-  have hprefactor : U ^ 2 + 2 * U + 28 ≤ 2 ^ (2 * u + 2) := by
+  have hprefactor : U ^ 2 + 2 * U + 16 ≤ 2 ^ (2 * u + 2) := by
     have hsq := Nat.pow_le_pow_left hU 2
     have hself := Nat.le_mul_self (2 ^ u)
     have he : 2 ^ (2 * u + 2) = 4 * (2 ^ u) ^ 2 := by
@@ -353,7 +353,7 @@ private theorem one_parameter_budget (N C A k : ℕ) (hk : 10 ^ 19 ≤ k)
 
 private theorem arithmetic_one_bound (N C A k e : ℕ) (hk : 10 ^ 19 ≤ k)
     (hN : N ≤ 2213984809) (hC : C ≤ 2213984811) (hA : A ≤ 46620)
-    (hNsq : N ^ 2 + 28 ≤ 2 ^ 64) (he : (4 * C + 210) * k + 9 ≤ e) :
+    (hNsq : N ^ 2 + 16 ≤ 2 ^ 64) (he : (4 * C + 210) * k + 9 ≤ e) :
     arithmeticCubeBound N C A 1 ≤ 2 ^ (2 ^ e) :=
   (arithmeticCubeBound_le_of_budget N C A 1 k (by omega)
     (one_parameter_budget N C A k hk hN hC hA hNsq)).trans (exp_mono (exp_mono he))
@@ -361,7 +361,7 @@ private theorem arithmetic_one_bound (N C A k e : ℕ) (hk : 10 ^ 19 ≤ k)
 /-- Sharper numerical specialization of the construction's arithmetic bound
 for one Wang tile. No test of that tile's tilability is used. -/
 theorem explicitCubeBound_one_le : explicitCubeBound 1 ≤ 2 ^ (2 ^ (10 ^ 29)) :=
-  arithmetic_one_bound 715 30 120 (10 ^ 19) (10 ^ 29)
+  arithmetic_one_bound 175 18 24 (10 ^ 19) (10 ^ 29)
     le_rfl (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
 
 /-- One distinct input Wang tile has an equivalent connected polycube with

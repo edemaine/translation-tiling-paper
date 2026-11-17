@@ -25,7 +25,7 @@ theorem exists_sharp_useful (T : System) (hC : 596750 ≤ channelCount T) :
     norm_num [Sudoku.SeedModulus,Sudoku.p,Sudoku.q]
     have h := Nat.pow_le_pow_left hC 2
     norm_num at h
-    exact (by norm_num : 2044900 ≤ 596750^2).trans h
+    exact (by norm_num : 122500 ≤ 596750^2).trans h
   let banned : Finset ℕ := {2,3,5,Sudoku.p,Sudoku.q,b0,b1}
   let pool := Nat.primesLE (C^2) \ banned
   have hban : banned.card ≤ 7 := by

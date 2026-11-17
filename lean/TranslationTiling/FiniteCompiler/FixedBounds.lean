@@ -30,7 +30,7 @@ theorem budget_pow_le_three (w : ℕ) (hw : 240≤w) :
       _ = _ := (pow_succ' _ _).symm
 
 /-- Only a quadratic budget needs to be dominated by the word count. -/
-theorem budget_square_le_three (w : ℕ) (hw : 168≤w) :
+theorem budget_square_le_three (w : ℕ) (hw : 64≤w) :
     (max (w+2) 256)^2≤3^(w+1) := by
   induction w,hw using Nat.le_induction with
   | base => norm_num

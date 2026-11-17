@@ -242,7 +242,7 @@ theorem geometry_pow {C w H M : ℕ} (hC : 962≤C)
       (Nat.mul_le_mul (Nat.pow_le_pow_left hk _) (Nat.pow_le_pow_left hH _)) hM
     _ = C^(1000*w+9030) := by simp only [← pow_mul,← pow_add]; congr 1; omega
 
-theorem primeBudget_pow {k : ℕ} (hc : 962≤2*channelCount T) (hk : 2^k≤channelCount T) :
+theorem primeBudget_pow {k : ℕ} (hc : 256≤2*channelCount T) (hk : 2^k≤channelCount T) :
     primeBudget T^k≤channelCount T^(k+1) := by
   have hh : primeBudget T≤2*channelCount T := max_le (by omega) (by omega)
   calc
@@ -251,7 +251,7 @@ theorem primeBudget_pow {k : ℕ} (hc : 962≤2*channelCount T) (hk : 2^k≤chan
     _ ≤ channelCount T*channelCount T^k := Nat.mul_le_mul_right _ hk
     _ = _ := (pow_succ' _ _).symm
 
-theorem smallPrimes_of_budget (hp : BudgetPrimes E (primeBudget T)) (hc : 562≤channelCount T) :
+theorem smallPrimes_of_budget (hp : BudgetPrimes E (primeBudget T)) (hc : 256≤channelCount T) :
     Size.SmallPrimes E := by
   have hh : primeBudget T^4≤channelCount T^5 := primeBudget_pow (by omega) (by norm_num; omega)
   exact ⟨fun i => ⟨(hp.1 i).1.trans hh,(hp.1 i).2.trans hh⟩,

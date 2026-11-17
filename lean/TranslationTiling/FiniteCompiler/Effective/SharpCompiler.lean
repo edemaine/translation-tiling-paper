@@ -45,7 +45,7 @@ theorem sharpTile_computable : Computable sharpTile := by
 
 theorem sharpCyclic_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
     (hpos : ∀ n, 0≤T.slope n) (hS : ∀ n, (T.slope n).natAbs≤Sudoku.Width)
-    (hB : T.alphabet=3) (hC : 6*Sudoku.Width+2 ≤ channelCount T) :
+    (hB : T.alphabet=3) (hC : 4*Sudoku.Width+2 ≤ channelCount T) :
     0<(sharpCyclic (parameterData T,p)).1 ∧ (sharpCyclic (parameterData T,p)).2≠[] ∧
     (sharpCyclic (parameterData T,p)).1^30≤primeBudget T^(630*T.width+930)*3^(60*T.width+60) ∧
     (∀ f ∈ (sharpCyclic (parameterData T,p)).2,
@@ -107,7 +107,7 @@ theorem sharpCyclic_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
 
 theorem sharpCyclic_mass (T : System) (p : Payload) (hp : PayloadCorrect T p)
     (hpos : ∀ n, 0≤T.slope n) (hS : ∀ n, (T.slope n).natAbs≤Sudoku.Width)
-    (hB : T.alphabet=3) (hC : 6*Sudoku.Width+2 ≤ channelCount T) :
+    (hB : T.alphabet=3) (hC : 4*Sudoku.Width+2 ≤ channelCount T) :
     (cyclicTileSet (sharpCyclic (parameterData T,p)).1 (sharpCyclic (parameterData T,p)).2).card≤
       primeBudget T^(12*T.width+23)*3^(2*T.width+2) := by
   let C := primeBudget T
@@ -155,7 +155,7 @@ theorem sharpCyclic_mass (T : System) (p : Payload) (hp : PayloadCorrect T p)
 
 theorem sharpTile_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
     (hpos : ∀ n, 0≤T.slope n) (hS : ∀ n, (T.slope n).natAbs≤Sudoku.Width)
-    (hB : T.alphabet=3) (hC : 6*Sudoku.Width+2 ≤ channelCount T) :
+    (hB : T.alphabet=3) (hC : 4*Sudoku.Width+2 ≤ channelCount T) :
     sharpTile (parameterData T,p)≠[] ∧ FaceConnected (sharpTile (parameterData T,p)) ∧
     ((∃ A : Set (Ambient (parameters T)), Solves (parameters T) A) ↔
       TranslationTiling.Tiles (sharpTile (parameterData T,p))) ∧
@@ -168,7 +168,7 @@ theorem sharpTile_facts (T : System) (p : Payload) (hp : PayloadCorrect T p)
   let C := primeBudget T
   let M := max (H^2) d.1
   have hbig : 256≤C := le_max_right _ _
-  have hw : 168≤T.width := by norm_num [channelCount,Sudoku.Width,Sudoku.q] at hC; omega
+  have hw : 64≤T.width := by norm_num [channelCount,Sudoku.Width,Sudoku.q] at hC; omega
   have heq : rawBudget (parameterData T)=C^9 := by
     change (if T.alphabet=3 then (max (T.width+2) 256)^9 else _)=C^9
     rw [if_pos hB]

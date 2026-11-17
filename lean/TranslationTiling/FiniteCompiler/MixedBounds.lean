@@ -269,9 +269,7 @@ theorem mixed_testTiles_card_le (hB : T.alphabet = 3) (hp : SmallPrimes E)
 
 theorem mixed_modulus_cap_le {C : ℕ} (hC : 596750 ≤ C) :
     separateModulusCap (C ^ (112*C)) (C ^ (28*C)) ≤ C ^ (253*C) := by
-  have hbig : 24 ≤ C := by
-    have hw : 24 ≤ Sudoku.Width := by decide
-    omega
+  have hbig : 24 ≤ C := by omega
   have h1 : 1 ≤ C := by omega
   have hV : C ^ (112*C) ≤ C ^ (140*C) := Nat.pow_le_pow_right h1 (by omega)
   have hp : 1 ≤ C ^ (140*C) := Nat.one_le_pow _ _ h1

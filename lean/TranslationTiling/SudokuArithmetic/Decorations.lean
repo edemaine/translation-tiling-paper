@@ -4,7 +4,7 @@ import TranslationTiling.SudokuArithmetic.WordCoefficients
 
 namespace TranslationTiling.Sudoku
 
-theorem constant_word_coefficients (r : ℕ) (hp : r.Prime) (hlarge : 10 < r)
+theorem constant_word_coefficients (r : ℕ) (hp : r.Prime) (hlarge : 4 < r)
     (V : Column → (ZMod r)ˣ) (a b : ℤ)
     (hab : ¬ (r : ℤ) ∣ a ∨ ¬ (r : ℤ) ∣ b)
     (ht : ∀ n u, lowValuation r (a * n.val + b) = some u → u ≤ threshold r a →

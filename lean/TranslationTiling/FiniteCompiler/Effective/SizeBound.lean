@@ -66,7 +66,7 @@ theorem optimizedCompile_channel_bound (T : LeanWang.TileSet) :
       unfold bitWidth
       omega
     nlinarith
-  have hc : 562≤C := by simpa [Sudoku.Width,Sudoku.q] using hC
+  have hc : 256≤C := by norm_num [Sudoku.Width,Sudoku.q] at hC; omega
   have hsmall : Size.SmallPrimes (parameters S) := BudgetSize.smallPrimes_of_budget
     (parameters S) (parameters_bounded_budget S rfl) hc
   have hV := Size.ternary_cyclicOrder_le (parameters S) rfl hsmall hC
@@ -78,8 +78,8 @@ theorem optimizedCompile_channel_bound (T : LeanWang.TileSet) :
   exact Size.ternary_geometry_bound hC (show rawBudget (parameterData S)≤C^73 from by
     change (if S.alphabet=3 then primeBudget S^9 else _)≤_
     rw [if_pos (show S.alphabet=3 from rfl)]
-    exact (BudgetSize.primeBudget_pow (T:=S) (k:=9) (by omega) (by norm_num; omega)).trans
-      (Nat.pow_le_pow_right (by omega) (by decide)))
+    rw [primeBudget,max_eq_left hc]
+    exact Nat.pow_le_pow_right (by omega) (by decide))
     (parameters_rawBudget S hslope).1.two
 
 theorem optimizedCompile_exp_bound (T : LeanWang.TileSet) :
