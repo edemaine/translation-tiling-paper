@@ -144,7 +144,7 @@ theorem exists_connected_tile_joint_count_bound (T : LeanWang.TileSet) (hn : 0<T
     ∃ P : Tile 3, P≠[] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
       cubeCount P≤(max (Sudoku.Width*FiniteCompiler.Effective.jointWidth T.toFinset.card+2) 256)^
-        (33*(Sudoku.Width*FiniteCompiler.Effective.jointWidth T.toFinset.card)+466)*
+        (33*(Sudoku.Width*FiniteCompiler.Effective.jointWidth T.toFinset.card)+116)*
         3^(4*(Sudoku.Width*FiniteCompiler.Effective.jointWidth T.toFinset.card)+4) := by
   have hn' : 0<T.dedup.length := by simpa only [List.card_toFinset] using hn
   obtain ⟨hne,hc,ht,hb⟩ := FiniteCompiler.Effective.jointCompileCore_channel_bound T.dedup hn'
@@ -155,22 +155,20 @@ theorem exists_connected_tile_joint_count_bound (T : LeanWang.TileSet) (hn : 0<T
   simpa only [List.card_toFinset,FiniteCompiler.Effective.jointSystem,
     FiniteCompiler.JointSystem.system,FiniteCompiler.primeBudget,FiniteCompiler.channelCount] using hb
 
-set_option exponentiation.threshold 2000 in
 /-- Three ternary channels per original column suffice for one Wang tile. -/
 theorem exists_connected_tile_one_quasipolynomial_bound (T : LeanWang.TileSet)
     (hT : T.toFinset.card=1) :
     ∃ P : Tile 3, P≠[] ∧ FaceConnected P ∧
-      (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧ cubeCount P≤2^16711 := by
-  obtain ⟨P,hP,hconn,hiff,hcubes⟩ := exists_connected_tile_joint_count_bound T (by omega)
-  rw [hT,FiniteCompiler.Effective.jointWidth_one] at hcubes
-  change cubeCount P≤256^2050*3^196 at hcubes
-  have hsmall : (3:ℕ)^196≤2^311 := by norm_num
-  have hb : (256:ℕ)^2050*3^196≤2^16711 := by
-    calc
-      _ = ((2:ℕ)^8)^2050*3^196 := by rw [show (256:ℕ)=2^8 by norm_num]
-      _ ≤ ((2:ℕ)^8)^2050*2^311 := Nat.mul_le_mul_left _ hsmall
-      _ = _ := by rw [←pow_mul,←pow_add]
-  exact ⟨P,hP,hconn,hiff,hcubes.trans hb⟩
+      (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧ cubeCount P≤2^6690 := by
+  have hlen : T.dedup.length=1 := by simpa only [List.card_toFinset] using hT
+  have hn : 0<T.dedup.length := by omega
+  obtain ⟨hne,hc,ht,_⟩ := FiniteCompiler.Effective.jointCompileCore_channel_bound T.dedup hn
+  have hd : LeanWang.TilesPlane T ↔ LeanWang.TilesPlane T.dedup :=
+    LeanWang.tilesPlane_congr (by intro t; simp)
+  have hk : FiniteCompiler.Effective.jointWidth T.dedup.length=3+(0:Fin 5).val := by
+    rw [←List.card_toFinset,hT,FiniteCompiler.Effective.jointWidth_one]; rfl
+  have hb := FiniteCompiler.Effective.jointCompileCore_small_bound T.dedup hn 0 hk
+  exact ⟨_,hne,hc,hd.trans ht,(List.toFinset_card_le _).trans hb⟩
 
 end
 end TranslationTiling.Compiler.Size

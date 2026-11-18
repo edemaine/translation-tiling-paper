@@ -1,4 +1,5 @@
 import TranslationTiling.FiniteCompiler.Effective.JointCode
+import TranslationTiling.FiniteCompiler.Effective.SmallParameters
 import Mathlib.Analysis.SpecialFunctions.Log.Base
 
 namespace TranslationTiling.Compiler.Size
@@ -167,6 +168,167 @@ theorem joint_channel_cap_real_bound {n N : ℕ} (hn : 0<n)
     change _≤6000*g*t
     nlinarith only [he]
   exact (show (N:ℝ)≤((P^(33*w+466)*3^(4*w+4):ℕ):ℝ) by exact_mod_cast hN).trans hpow
+
+theorem dyadic_compact_real_bound {n N e : ℕ} (hN : N≤2^e)
+    (he : (e:ℝ)≤2600*Real.logb 2 ((n:ℝ)+4)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) :
+    (N:ℝ)≤((n:ℝ)+4)^(2600*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
+  apply (show (N:ℝ)≤(2:ℝ)^e by exact_mod_cast hN).trans
+  apply (Real.logb_le_logb (by norm_num : (1:ℝ)<2) (by positivity) (by positivity)).mp
+  rw [logb_two_pow,Real.logb_rpow_eq_mul_logb_of_pos (by positivity : 0<(n:ℝ)+4)]
+  nlinarith only [he]
+
+theorem joint_compact_bulk_real_bound {n N : ℕ} (hn : 92≤n)
+    (hN : N≤(max (Sudoku.Width*jointWidth n+2) 256)^(33*(Sudoku.Width*jointWidth n)+116)*
+      3^(4*(Sudoku.Width*jointWidth n)+4)) :
+    (N:ℝ)≤((n:ℝ)+4)^(2600*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
+  let w := Sudoku.Width*jointWidth n
+  let P := max (w+2) 256
+  let t := Real.logb 2 ((n:ℝ)+4)
+  let g := Real.logb 2 t
+  have hP : 256≤P := le_max_right _ _
+  have hPpos : (0:ℝ)<P := by exact_mod_cast (by omega : 0<P)
+  have ht : (6:ℝ)≤t := by
+    have hh := t_lower (n:=n) (a:=6) (b:=1) (by decide)
+      (by norm_num; exact_mod_cast (by omega : 64≤n+4))
+    simpa using hh
+  have hg : (5/2:ℝ)≤g := g_lower (by norm_num) ht 5 2 (by decide) (by norm_num)
+  have hw : (w:ℝ)≤(64/3:ℝ)*t := by
+    have hh := jointWidth_le_log (by omega : 0<n)
+    dsimp [w]
+    norm_num only [Sudoku.Width,Sudoku.q,Nat.cast_mul,Nat.cast_ofNat]
+    dsimp [t] at ht ⊢
+    nlinarith
+  have hp : (P:ℝ)≤(128/3:ℝ)*t := by
+    dsimp [P]; push_cast
+    exact max_le (by push_cast; linarith) (by linarith)
+  have hconst : Real.logb 2 (128/3:ℝ)≤(11/2:ℝ) := by
+    have hh := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2)
+      (by norm_num : (0:ℝ)<(128/3:ℝ)^2) (show (128/3:ℝ)^2≤(2:ℝ)^11 by norm_num)
+    rw [Real.logb_pow,logb_two_pow] at hh
+    norm_num at hh
+    linarith
+  have hlog : Real.logb 2 (P:ℝ)≤(16/5:ℝ)*g := by
+    have hh := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2) hPpos hp
+    rw [Real.logb_mul (by norm_num : (128/3:ℝ)≠0) (by linarith : t≠0)] at hh
+    change Real.logb 2 (P:ℝ)≤_ at hh
+    dsimp [g] at hg ⊢
+    linarith
+  have hloglo : (8:ℝ)≤Real.logb 2 (P:ℝ) := by
+    have hh := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2) (by norm_num : (0:ℝ)<256)
+      (show (256:ℝ)≤P by exact_mod_cast hP)
+    have heq : Real.logb 2 (256:ℝ)=8 := by have hh := logb_two_pow 8; norm_num at hh ⊢; exact hh
+    rwa [heq] at hh
+  have hthree : 4*Real.logb 2 3≤Real.logb 2 (P:ℝ) := by linarith [lg_three_upper]
+  have hextra := mul_le_mul_of_nonneg_right hthree (show (0:ℝ)≤w+1 by positivity)
+  have ha : ((34*w+117:ℕ):ℝ)≤(34*(64/3)+117/6:ℝ)*t := by push_cast; linarith
+  have hh := mul_le_mul ha hlog (by linarith : 0≤Real.logb 2 (P:ℝ))
+    (by positivity : 0≤(34*(64/3)+117/6:ℝ)*t)
+  have hc := mul_le_mul_of_nonneg_right
+    (show (34*(64/3)+117/6:ℝ)*(16/5)≤2600 by norm_num) (show 0≤t*g by positivity)
+  have he : ((33*w+116:ℕ):ℝ)*Real.logb 2 (P:ℝ)+((4*w+4:ℕ):ℝ)*Real.logb 2 3≤2600*t*g := by
+    push_cast at hh ⊢
+    nlinarith only [hh,hc,hextra]
+  apply (show (N:ℝ)≤((P^(33*w+116)*3^(4*w+4):ℕ):ℝ) by exact_mod_cast hN).trans
+  push_cast
+  apply (Real.logb_le_logb (by norm_num : (1:ℝ)<2) (by positivity) (by positivity)).mp
+  rw [Real.logb_mul (by positivity) (by positivity),Real.logb_pow,Real.logb_pow,
+    Real.logb_rpow_eq_mul_logb_of_pos (by positivity : 0<(n:ℝ)+4)]
+  change _≤2600*g*t
+  nlinarith only [he]
+
+theorem joint_compact_small_exponent {n : ℕ} (hn : 0<n) (i : Fin 5)
+    (hi : jointWidth n=3+i.val) :
+    (SmallProfiles.exponent i:ℝ)≤2600*Real.logb 2 ((n:ℝ)+4)*
+      Real.logb 2 (Real.logb 2 ((n:ℝ)+4)) := by
+  let t := Real.logb 2 ((n:ℝ)+4)
+  let g := Real.logb 2 t
+  have htpos : 0<t := Real.logb_pos (by norm_num) (by have := Nat.cast_nonneg (α:=ℝ) n; linarith)
+  fin_cases i
+  · change jointWidth n=3+0 at hi
+    have hn' : 1≤n := by
+      by_contra h
+      have hm : jointWidth n≤jointWidth (1-1) :=
+        Nat.add_le_add_right (Nat.log_mono_right
+          (Nat.mul_le_mul_left 24 (show n≤1-1 by omega))) 1
+      have hc : jointWidth (1-1)<3+0 := by decide
+      omega
+    have ht : (65/28:ℝ)≤t := by
+      have hh := t_lower (n:=n) (a:=65) (b:=28) (by decide)
+        ((by norm_num : (2:ℝ)^65≤(1+4)^28).trans
+          (pow_le_pow_left₀ (by norm_num) (show (1+4:ℝ)≤(n:ℝ)+4 by exact_mod_cast Nat.add_le_add_right hn' 4) 28))
+      simpa [t] using hh
+    have hg : (243/200:ℝ)≤g := g_lower (by norm_num) ht 243 200 (by decide) (by norm_num)
+    have hh := mul_le_mul ht hg (by norm_num : (0:ℝ)≤243/200) htpos.le
+    norm_num [SmallProfiles.exponent] at *
+    nlinarith only [hh]
+  · change jointWidth n=3+1 at hi
+    have hn' : 2≤n := by
+      by_contra h
+      have hm : jointWidth n≤jointWidth (2-1) :=
+        Nat.add_le_add_right (Nat.log_mono_right
+          (Nat.mul_le_mul_left 24 (show n≤2-1 by omega))) 1
+      have hc : jointWidth (2-1)<3+1 := by decide
+      omega
+    have ht : (137/53:ℝ)≤t := by
+      have hh := t_lower (n:=n) (a:=137) (b:=53) (by decide)
+        ((by norm_num : (2:ℝ)^137≤(2+4)^53).trans
+          (pow_le_pow_left₀ (by norm_num) (show (2+4:ℝ)≤(n:ℝ)+4 by exact_mod_cast Nat.add_le_add_right hn' 4) 53))
+      simpa [t] using hh
+    have hg : (63/46:ℝ)≤g := g_lower (by norm_num) ht 63 46 (by decide) (by norm_num)
+    have hh := mul_le_mul ht hg (by norm_num : (0:ℝ)≤63/46) htpos.le
+    norm_num [SmallProfiles.exponent] at *
+    nlinarith only [hh]
+  · change jointWidth n=3+2 at hi
+    have hn' : 4≤n := by
+      by_contra h
+      have hm : jointWidth n≤jointWidth (4-1) :=
+        Nat.add_le_add_right (Nat.log_mono_right
+          (Nat.mul_le_mul_left 24 (show n≤4-1 by omega))) 1
+      have hc : jointWidth (4-1)<3+2 := by decide
+      omega
+    have ht : (3/1:ℝ)≤t := by
+      have hh := t_lower (n:=n) (a:=3) (b:=1) (by decide)
+        ((by norm_num : (2:ℝ)^3≤(4+4)^1).trans
+          (pow_le_pow_left₀ (by norm_num) (show (4+4:ℝ)≤(n:ℝ)+4 by exact_mod_cast Nat.add_le_add_right hn' 4) 1))
+      simpa [t] using hh
+    have hg : (19/12:ℝ)≤g := g_lower (by norm_num) ht 19 12 (by decide) (by norm_num)
+    have hh := mul_le_mul ht hg (by norm_num : (0:ℝ)≤19/12) htpos.le
+    norm_num [SmallProfiles.exponent] at *
+    nlinarith only [hh]
+  · change jointWidth n=3+3 at hi
+    have hn' : 11≤n := by
+      by_contra h
+      have hm : jointWidth n≤jointWidth (11-1) :=
+        Nat.add_le_add_right (Nat.log_mono_right
+          (Nat.mul_le_mul_left 24 (show n≤11-1 by omega))) 1
+      have hc : jointWidth (11-1)<3+3 := by decide
+      omega
+    have ht : (39/10:ℝ)≤t := by
+      have hh := t_lower (n:=n) (a:=39) (b:=10) (by decide)
+        ((by norm_num : (2:ℝ)^39≤(11+4)^10).trans
+          (pow_le_pow_left₀ (by norm_num) (show (11+4:ℝ)≤(n:ℝ)+4 by exact_mod_cast Nat.add_le_add_right hn' 4) 10))
+      simpa [t] using hh
+    have hg : (49/25:ℝ)≤g := g_lower (by norm_num) ht 49 25 (by decide) (by norm_num)
+    have hh := mul_le_mul ht hg (by norm_num : (0:ℝ)≤49/25) htpos.le
+    norm_num [SmallProfiles.exponent] at *
+    nlinarith only [hh]
+  · change jointWidth n=3+4 at hi
+    have hn' : 31≤n := by
+      by_contra h
+      have hm : jointWidth n≤jointWidth (31-1) :=
+        Nat.add_le_add_right (Nat.log_mono_right
+          (Nat.mul_le_mul_left 24 (show n≤31-1 by omega))) 1
+      have hc : jointWidth (31-1)<3+4 := by decide
+      omega
+    have ht : (5/1:ℝ)≤t := by
+      have hh := t_lower (n:=n) (a:=5) (b:=1) (by decide)
+        ((by norm_num : (2:ℝ)^5≤(31+4)^1).trans
+          (pow_le_pow_left₀ (by norm_num) (show (31+4:ℝ)≤(n:ℝ)+4 by exact_mod_cast Nat.add_le_add_right hn' 4) 1))
+      simpa [t] using hh
+    have hg : (23/10:ℝ)≤g := g_lower (by norm_num) ht 23 10 (by decide) (by norm_num)
+    have hh := mul_le_mul ht hg (by norm_num : (0:ℝ)≤23/10) htpos.le
+    norm_num [SmallProfiles.exponent] at *
+    nlinarith only [hh]
 
 end
 end TranslationTiling.Compiler.Size

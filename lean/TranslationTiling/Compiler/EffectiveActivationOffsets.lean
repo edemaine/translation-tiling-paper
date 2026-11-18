@@ -8,8 +8,8 @@ namespace TranslationTiling.Compiler.Effective
 
 abbrev ActivationNumbers := (ℕ × ℕ × ℕ) × (ℕ × ℕ × ℕ × ℕ)
 
-def numericalActivationCode (j : ℕ × ℕ × ℕ × ℕ) : ℕ :=
-  Nat.pair j.1 (Nat.pair j.2.1 (Nat.pair j.2.2.1 j.2.2.2))
+def numericalActivationCode (a b : ℕ) (j : ℕ × ℕ × ℕ × ℕ) : ℕ :=
+  CompactIndex.pack 2 (CompactIndex.pack b (CompactIndex.pack a j.1 j.2.1) j.2.2.1) j.2.2.2
 
 def numericalActivationFirst (z : ActivationNumbers) : ℤ :=
   let a := z.1.1
@@ -23,7 +23,7 @@ def numericalActivationFirst (z : ActivationNumbers) : ℤ :=
   let ρa := differenceResidue a (numericalRank α ξ d) α
   let ρb := differenceResidue b (numericalRank ξ α d) ξ
   (residueSearch M [(r, k), (a, ρa), (b, ρb)] : ℤ) +
-    (M : ℤ) * (numericalActivationCode z.2 : ℤ)
+    (M : ℤ) * (numericalActivationCode z.1.1 z.1.2.1 z.2 : ℤ)
 
 theorem numericalRank_primrec :
     Primrec (fun z : ℕ × ℕ × ℕ => numericalRank z.1 z.2.1 z.2.2) := by
@@ -68,8 +68,8 @@ theorem numericalActivationFirst_primrec : Primrec numericalActivationFirst := b
     (consList ((Primrec.fst.comp Primrec.fst).pair hA)
       (consList ((Primrec.fst.comp (Primrec.snd.comp Primrec.fst)).pair hB) (Primrec.const [])))
   have hsearch := residueSearch_primrec.comp (hM.pair hcs)
-  have hcode : Primrec (fun z : ActivationNumbers => numericalActivationCode z.2) := by
-    unfold numericalActivationCode
+  have hcode : Primrec (fun z : ActivationNumbers => numericalActivationCode z.1.1 z.1.2.1 z.2) := by
+    unfold numericalActivationCode CompactIndex.pack
     fun_prop
   have hresult := intPlus (intCast hsearch) (intTimes (intCast hM) (intCast hcode))
   exact hresult

@@ -103,12 +103,12 @@ have no unproved mathematical input. No unfinished proof is accepted.
 ## Cube Bound by Wang Tile Count
 
 [Compiler/CleanQuasipolynomialBound.lean](TranslationTiling/Compiler/CleanQuasipolynomialBound.lean)
-gives `(n+4)^(6000*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
+gives `(n+4)^(2600*log₂(log₂(n+4))) = n^O(log log n)` with ordinary real
 logarithms. The theorem `Size.exists_connected_tile_clean_quasipolynomial_bound`
 includes nonemptiness, face connectedness, and both tilability directions.
 Here `n` counts distinct input tiles. The one-tile specialization in
 [Compiler/QuasipolynomialBound.lean](TranslationTiling/Compiler/QuasipolynomialBound.lean)
-gives at most `2^16711` cubes.
+gives at most `2^6690` cubes.
 
 [FixedCycleTests.lean](TranslationTiling/FiniteCompiler/FixedCycleTests.lean)
 uses one fixed test per forbidden combination of labels. Each digit subgroup
@@ -223,21 +223,32 @@ to at least `A²`. The earlier four-layer variant uses `O(A²B²)` cubes.
 [Rails/Compiler.lean](TranslationTiling/Rails/Compiler.lean) proves total
 computability, correctness, connectivity, and the volume bound for the concrete
 compiler output.
-[SupportBounds.lean](TranslationTiling/FiniteCompiler/SupportBounds.lean)
-uses the exact identity `H(b) = b^6*(b+1)^16+b` to give `H ≤ P^200`.
-The connectedness box uses `max(H²,R)`. Counting the actual points gives
-volume at most `K₀*H²*max(H²,R)*ℓ*J`, where
-`K₀ = 2^24*549072*8003^4 ≤ P^12`.
-[Rails/SizeBound.lean](TranslationTiling/Rails/SizeBound.lean) gives
-`|F| ≤ P^(33*w+466)*3^(4*w+4) ≤ P^(34*w+467)`.
-Earlier estimates remain in `EconomicalBounds.lean`, `CompactParameters.lean`, `CompactBounds.lean`,
-`TightParameters.lean`, `TightBounds.lean`, and `FourLayer/SizeBound.lean`.
-[Effective/FamilyCompiler.lean](TranslationTiling/FiniteCompiler/Effective/FamilyCompiler.lean)
-combines these bounds for any family meeting the count, mass, and support budgets.
+[CompactIndex.lean](TranslationTiling/CompactIndex.lean) packs activation indices
+with mixed radices, giving an injective code below `2*r*a*b` and a seed code
+below `2*r*a*b*175²`. The CRT displacements retain their congruences and injectivity.
+[CompactSupport.lean](TranslationTiling/FiniteCompiler/CompactSupport.lean)
+proves `H ≤ P^25`, replacing the earlier `P^200` bound. The connectedness box uses
+`max(H²,R)`. Counting actual points gives volume at most
+`K₀*H²*max(H²,R)*ℓ*J`, where `K₀ = 2^24*549072*8003^4 ≤ P^12`.
+[Rails/SizeBound.lean](TranslationTiling/Rails/SizeBound.lean) and
+[Effective/CompactFamilyBounds.lean](TranslationTiling/FiniteCompiler/Effective/CompactFamilyBounds.lean)
+give `|F| ≤ P^(33*w+116)*3^(4*w+4) ≤ P^(34*w+117)`.
+Earlier estimates remain in `SupportBounds.lean`, `EconomicalBounds.lean`,
+`CompactBounds.lean`, `TightBounds.lean`, and `FourLayer/SizeBound.lean`.
+
+[Effective/SmallProfiles.lean](TranslationTiling/FiniteCompiler/Effective/SmallProfiles.lean)
+certifies explicit primes and positive block coefficients for widths `48,64,80,96,112`.
+The primality, distinctness, support, and exact integer volume checks run in the kernel.
+[Effective/SmallCertificates.lean](TranslationTiling/FiniteCompiler/Effective/SmallCertificates.lean)
+and `ParameterSelection.lean` select these profiles computably;
+[Effective/SmallMetrics.lean](TranslationTiling/FiniteCompiler/Effective/SmallMetrics.lean)
+identifies the actual cyclic order, mass, and support bounds with the certified values.
+The five output bounds are `2^6690`, `2^9195`, `2^11750`, `2^14376`, and `2^17078`.
+[Effective/CompactFamilyCompiler.lean](TranslationTiling/FiniteCompiler/Effective/CompactFamilyCompiler.lean)
+uses the smaller support bound in the actual connected tile.
 [Compiler/JointLogBound.lean](TranslationTiling/Compiler/JointLogBound.lean)
-converts the resulting estimate to the clean logarithmic bound, using
-`k ≤ (2/3)*log₂(n+4)+4`. It checks `n = 1,...,11` directly and uses
-coefficient `12281/3 < 6000` for `n ≥ 12`.
+converts these estimates to the clean coefficient `2600`: it uses the finite
+profiles for `1 ≤ n ≤ 91` and coefficient `35752/15 < 2600` for `n ≥ 92`.
 
 [Effective/JointCompiler.lean](TranslationTiling/FiniteCompiler/Effective/JointCompiler.lean)
 proves the same bound for one total computable compiler, with input list length

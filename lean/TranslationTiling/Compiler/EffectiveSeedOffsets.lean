@@ -25,7 +25,7 @@ def numericalSeedFirst (z : SeedNumbers) : ℤ :=
   let ρa := differenceResidue a (numericalRank α ξ d) α
   let ρb := differenceResidue b (numericalRank ξ α d) ξ
   (residueSearch M [(r, k), (a, ρa), (b, ρb), (W, x), (other, 0)] : ℤ) +
-    (M : ℤ) * (Nat.pair (numericalActivationCode z.1.2) (Nat.pair x y) : ℤ)
+    (M : ℤ) * (CompactIndex.pack W (CompactIndex.pack W (numericalActivationCode a b z.1.2) x) y : ℤ)
 
 theorem numericalSeedFirst_primrec : Primrec numericalSeedFirst := by
   have hAdata : Primrec (fun z : SeedNumbers =>
@@ -57,8 +57,9 @@ theorem numericalSeedFirst_primrec : Primrec numericalSeedFirst := by
         (consList (pairValue (by fun_prop) hB) (by fun_prop)))
   have hs := residueSearch_primrec.comp (hM.pair hcs)
   have hcode : Primrec (fun z : SeedNumbers =>
-      Nat.pair (numericalActivationCode z.1.2) (Nat.pair z.2.2.2.1 z.2.2.2.2)) := by
-    unfold numericalActivationCode
+      CompactIndex.pack z.2.1 (CompactIndex.pack z.2.1
+        (numericalActivationCode z.1.1.1 z.1.1.2.1 z.1.2) z.2.2.2.1) z.2.2.2.2) := by
+    unfold numericalActivationCode CompactIndex.pack
     fun_prop
   exact intPlus (intCast hs) (intTimes (intCast hM) (intCast hcode))
 

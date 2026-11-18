@@ -4,6 +4,7 @@ third_party/openai-math.LICENSE. Decorated alphabet and two-prime residue size;
 namespace and imports changed for Lean 4.31. -/
 import TranslationTiling.Compiler.CyclicCoordinates
 import TranslationTiling.Compiler.ShiftMultiplicity
+import TranslationTiling.CompactIndex
 import Mathlib.Tactic.FinCases
 import Mathlib.Tactic.Linarith
 import Lean.Elab.Tactic.Omega
@@ -55,34 +56,59 @@ abbrev ActivationIndex (i : Channel T) :=
 
 abbrev SeedActivationIndex (t : Fin 2) := ActivationIndex E (.inr t) × Residues T
 
-/-- Numerical index of a batch, independent of arbitrary finite enumerations. -/
+/-- Mixed-radix batch index, with two slots for the shift multiplicity. -/
 def activationIndexCode (i : Channel T) (j : ActivationIndex E i) : ℕ :=
-  Nat.pair j.1.val (Nat.pair j.2.1.1.val (Nat.pair j.2.1.2.val j.2.2.val))
+  CompactIndex.pack 2
+    (CompactIndex.pack (E.b i) (CompactIndex.pack (E.a i) j.1.val j.2.1.1.val) j.2.1.2.val) j.2.2.val
+
+theorem activation_multiplicity_lt (i : Channel T) (j : ActivationIndex E i) : j.2.2.val<2 := by
+  have hm : shiftMultiplicity (E.a i) (E.b i) j.2.1≤2 := by
+    unfold shiftMultiplicity
+    split_ifs <;> omega
+  exact lt_of_lt_of_le j.2.2.isLt hm
 
 theorem activationIndexCode_injective (i : Channel T) :
     Function.Injective (activationIndexCode E i) := by
-  rintro ⟨k, ⟨⟨α, ξ⟩, d⟩⟩ ⟨l, ⟨⟨β, η⟩, e⟩⟩ h
-  obtain ⟨hk, hrest⟩ := Nat.pair_eq_pair.mp h
-  obtain ⟨hα, hrest⟩ := Nat.pair_eq_pair.mp hrest
-  obtain ⟨hξ, hd⟩ := Nat.pair_eq_pair.mp hrest
-  have hkl : k = l := ZMod.val_injective (E.r i) hk
-  have hαβ : α = β := ZMod.val_injective (E.a i) hα
-  have hξη : ξ = η := ZMod.val_injective (E.b i) hξ
+  rintro ⟨k,⟨⟨α,ξ⟩,d⟩⟩ ⟨l,⟨⟨β,η⟩,e⟩⟩ h
+  obtain ⟨hrest,hd⟩ := CompactIndex.pack_injective (by decide)
+    (activation_multiplicity_lt E i (k,⟨(α,ξ),d⟩))
+    (activation_multiplicity_lt E i (l,⟨(β,η),e⟩)) h
+  obtain ⟨hrest,hξ⟩ := CompactIndex.pack_injective (E.b_pos i) (ZMod.val_lt ξ) (ZMod.val_lt η) hrest
+  obtain ⟨hk,hα⟩ := CompactIndex.pack_injective (E.a_pos i) (ZMod.val_lt α) (ZMod.val_lt β) hrest
+  have hkl : k=l := ZMod.val_injective (E.r i) hk
+  have hαβ : α=β := ZMod.val_injective (E.a i) hα
+  have hξη : ξ=η := ZMod.val_injective (E.b i) hξ
   subst l β η
-  have hde : d = e := Fin.ext hd
+  have hde : d=e := Fin.ext hd
   subst e
   rfl
 
+theorem activationIndexCode_lt (i : Channel T) (j : ActivationIndex E i) :
+    activationIndexCode E i j<2*(E.r i*E.a i*E.b i) := by
+  have h1 := CompactIndex.pack_lt (ZMod.val_lt j.1) (ZMod.val_lt j.2.1.1)
+  have h2 := CompactIndex.pack_lt h1 (ZMod.val_lt j.2.1.2)
+  have h3 := CompactIndex.pack_lt h2 (activation_multiplicity_lt E i j)
+  simpa only [activationIndexCode,Nat.mul_comm,Nat.mul_left_comm,Nat.mul_assoc] using h3
+
 def seedActivationIndexCode (t : Fin 2) (j : SeedActivationIndex E t) : ℕ :=
-  Nat.pair (activationIndexCode E (.inr t) j.1) (Nat.pair j.2.1.val j.2.2.val)
+  CompactIndex.pack residueModulus
+    (CompactIndex.pack residueModulus (activationIndexCode E (.inr t) j.1) j.2.1.val) j.2.2.val
 
 theorem seedActivationIndexCode_injective (t : Fin 2) :
     Function.Injective (seedActivationIndexCode E t) := by
   intro j k h
-  obtain ⟨ha, hr⟩ := Nat.pair_eq_pair.mp h
-  obtain ⟨hx, hy⟩ := Nat.pair_eq_pair.mp hr
+  obtain ⟨hrest,hy⟩ := CompactIndex.pack_injective (NeZero.pos residueModulus)
+    (ZMod.val_lt j.2.2) (ZMod.val_lt k.2.2) h
+  obtain ⟨ha,hx⟩ := CompactIndex.pack_injective (NeZero.pos residueModulus)
+    (ZMod.val_lt j.2.1) (ZMod.val_lt k.2.1) hrest
   exact Prod.ext (activationIndexCode_injective E (.inr t) ha)
     (Prod.ext (ZMod.val_injective _ hx) (ZMod.val_injective _ hy))
+
+theorem seedActivationIndexCode_lt (t : Fin 2) (j : SeedActivationIndex E t) :
+    seedActivationIndexCode E t j<2*(E.r (.inr t)*E.a (.inr t)*E.b (.inr t))*residueModulus^2 := by
+  have h1 := CompactIndex.pack_lt (activationIndexCode_lt E (.inr t) j.1) (ZMod.val_lt j.2.1)
+  have h2 := CompactIndex.pack_lt h1 (ZMod.val_lt j.2.2)
+  simpa only [seedActivationIndexCode,pow_two,Nat.mul_comm,Nat.mul_left_comm,Nat.mul_assoc] using h2
 
 def otherSeed (t : Fin 2) : Fin 2 := ⟨1 - t.val, by omega⟩
 

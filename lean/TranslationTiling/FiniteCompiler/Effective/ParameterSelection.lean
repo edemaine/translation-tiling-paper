@@ -1,6 +1,7 @@
 import TranslationTiling.FiniteCompiler.BudgetParameters
 import TranslationTiling.FiniteCompiler.Effective.Parameters
-import TranslationTiling.FiniteCompiler.Effective.Tables
+import TranslationTiling.FiniteCompiler.Effective.CertificateConstruction
+import TranslationTiling.FiniteCompiler.Effective.SmallCertificates
 
 namespace TranslationTiling.FiniteCompiler.Effective
 
@@ -12,151 +13,12 @@ noncomputable section
 
 private theorem exists_parameterCertificate (d : ℕ × ℕ) :
     ∃ c : ParameterCertificate, ParameterValid d c := by
-  classical
-  by_cases hw : d.1 = 0
-  · exact ⟨([],[],[]), Or.inl hw⟩
-  let T : System := ⟨d.1, Nat.pos_of_ne_zero hw, d.2, fun _ => 0, ∅, fun _ _ => False⟩
-  obtain ⟨E, hu, hd, hsharp, hcompact, heconomical, hbudget⟩ := exists_bounded_parameters_budget T
-  obtain ⟨ps, hp⟩ := exists_finite_table (primeKey (T := T)) (primeKey_injective T) E.primeAt 0
-  let key (j : Σ i : Channel T, Label T i) := primeKey (.inr (.inr j))
-  have hkey : Function.Injective key := by
-    intro i j h
-    exact Sum.inr.inj (Sum.inr.inj (primeKey_injective T h))
-  obtain ⟨as, ha⟩ := exists_finite_table key hkey (fun j => E.blockA j.1 j.2) 0
-  obtain ⟨bs, hb⟩ := exists_finite_table key hkey (fun j => E.blockB j.1 j.2) 0
-  refine ⟨(ps,as,bs), Or.inr ⟨?_,?_,?_,?_,?_,?_⟩⟩
-  · intro k hk
-    obtain ⟨i,rfl⟩ := (mem_primeKeys T k).mp hk
-    dsimp only [Prod.fst]
-    rw [hp]
-    exact ⟨E.prime_isPrime i, E.prime_ne_p i, E.prime_ne_q i, E.prime_ne_five i⟩
-  · intro k hk l hl
-    obtain ⟨i,rfl⟩ := (mem_primeKeys T k).mp hk
-    obtain ⟨j,rfl⟩ := (mem_primeKeys T l).mp hl
-    dsimp only [Prod.fst]
-    rw [hp, hp]
-    by_cases hij : E.primeAt i = E.primeAt j
-    · exact Or.inl (congrArg primeKey (E.prime_injective hij))
-    · exact Or.inr hij
-  · intro k hk
-    obtain ⟨i,rfl⟩ := (mem_channelKeys T k).mp hk
-    change ps.getD (primeKey (.inl i)) 0 ≤ _ ∧ ps.getD (primeKey (.inr (.inl i))) 0 ≤ _
-    rw [hp, hp]
-    exact hu i
-  · intro t ht
-    have ht' : t < 2 := List.mem_range.mp ht
-    let t' : Fin 2 := ⟨t,ht'⟩
-    change ps.getD (primeKey (T := T) (.inl (.inr t'))) 0 = _ ∧
-      _ < ps.getD (primeKey (T := T) (.inr (.inl (.inr t')))) 0
-    rw [hp, hp]
-    exact ⟨E.seed_a_eq t', E.seed_b_large t'⟩
-  · intro k hk
-    obtain ⟨⟨i,j⟩,rfl⟩ := (mem_digitKeys T k).mp hk
-    change 0 < as.getD (key ⟨i,j⟩) 0 ∧ 0 < bs.getD (key ⟨i,j⟩) 0 ∧
-      ps.getD (primeKey (.inr (.inr ⟨i,j⟩))) 0 =
-        as.getD (key ⟨i,j⟩) 0 * ps.getD (primeKey (.inl i)) 0 +
-        bs.getD (key ⟨i,j⟩) 0 * ps.getD (primeKey (.inr (.inl i))) 0 ∧ _
-    change _ ∧ _ ∧ _ ∧ ps.getD (primeKey (.inr (.inr ⟨i,j⟩))) 0 ≤ _
-    rw [ha, hb, hp, hp, hp]
-    exact ⟨E.blockA_pos i j, E.blockB_pos i j, E.digit_representation i j, hd i j⟩
-  · constructor
-    · by_cases hr : 596750 ≤ d.1+2 ∧ d.2=3
-      · right
-        have hs := hsharp hr
-        constructor
-        · intro k hk
-          obtain ⟨i,rfl⟩ := (mem_channelKeys T k).mp hk
-          change ps.getD (primeKey (.inl i)) 0 ≤ _ ∧ ps.getD (primeKey (.inr (.inl i))) 0 ≤ _
-          rw [hp,hp]
-          exact hs.1 i
-        · constructor
-          · intro k hk
-            obtain ⟨⟨i,j⟩,rfl⟩ := (mem_digitKeys T k).mp hk
-            change ps.getD (primeKey (.inr (.inr ⟨i,j⟩))) 0 ≤ _
-            rw [hp]
-            exact hs.2.1 i j
-          · intro k hk
-            obtain ⟨i,rfl⟩ := (mem_channelKeys T k).mp hk
-            change (ps.getD (primeKey (.inl i)) 0*ps.getD (primeKey (.inr (.inl i))) 0)^3 ≤ _
-            rw [hp,hp]
-            exact hs.2.2 i
-      · exact Or.inl hr
-    · constructor
-      · by_cases hr : 1202≤d.1+2 ∧ d.2=3
-        · right
-          have hs := hcompact hr
-          refine ⟨?_,?_,?_⟩
-          · intro k hk
-            obtain ⟨i,rfl⟩ := (mem_channelKeys T k).mp hk
-            change ps.getD (primeKey (.inl i)) 0≤_ ∧ ps.getD (primeKey (.inr (.inl i))) 0≤_
-            rw [hp,hp]; exact hs.1 i
-          · intro k hk
-            obtain ⟨⟨i,j⟩,rfl⟩ := (mem_digitKeys T k).mp hk
-            change ps.getD (primeKey (.inr (.inr ⟨i,j⟩))) 0≤_
-            rw [hp]; exact hs.2.1 i j
-          · intro k hk
-            obtain ⟨i,rfl⟩ := (mem_channelKeys T k).mp hk
-            change ps.getD (primeKey (.inl i)) 0*ps.getD (primeKey (.inr (.inl i))) 0≤_
-            rw [hp,hp]; exact hs.2.2 i
-        · exact Or.inl hr
-      · constructor
-        · by_cases hr : 962≤d.1+2 ∧ d.2=3
-          · right
-            have hs := heconomical hr
-            refine ⟨?_,?_,?_,?_,?_,?_⟩
-            · intro k hk
-              obtain ⟨i,rfl⟩ := (mem_channelKeys T k).mp hk
-              change ps.getD (primeKey (.inl i)) 0≤_ ∧ ps.getD (primeKey (.inr (.inl i))) 0≤_
-              rw [hp,hp]; exact hs.1 i
-            · intro k hk
-              obtain ⟨⟨i,j⟩,rfl⟩ := (mem_digitKeys T k).mp hk
-              change ps.getD (primeKey (.inr (.inr ⟨i,j⟩))) 0≤_
-              rw [hp]; exact hs.2.1 i j
-            · intro k hk
-              obtain ⟨i,rfl⟩ := (mem_channelKeys T k).mp hk
-              change ps.getD (primeKey (.inl i)) 0*ps.getD (primeKey (.inr (.inl i))) 0≤_
-              rw [hp,hp]; exact hs.2.2.1 i
-            · intro n hn
-              let n' : Column T := ⟨n,List.mem_range.mp hn⟩
-              change ps.getD (primeKey (.inl (.inl n'))) 0*ps.getD (primeKey (.inr (.inl (.inl n')))) 0≤_
-              rw [hp,hp]; exact hs.2.2.2.1 n'
-            · intro k hk
-              obtain ⟨⟨i,j⟩,rfl⟩ := (mem_digitKeys T k).mp hk
-              change (ps.getD (primeKey (.inr (.inr ⟨i,j⟩))) 0)^20≤_
-              rw [hp]; exact hs.2.2.2.2.1 i j
-            · intro n hn j hj
-              let n' : Column T := ⟨n,List.mem_range.mp hn⟩
-              let j' : Label T (.inl n') := ⟨j,List.mem_range.mp hj⟩
-              change ps.getD (primeKey (.inr (.inr ⟨.inl n',j'⟩))) 0≤_
-              rw [hp]
-              exact hs.2.2.2.2.2 n' j'
-          · exact Or.inl hr
-        · by_cases hr : d.2=3
-          · right
-            have hs := hbudget hr
-            refine ⟨?_,?_,?_,?_,?_⟩
-            · intro k hk
-              obtain ⟨i,rfl⟩ := (mem_channelKeys T k).mp hk
-              change ps.getD (primeKey (.inl i)) 0≤_ ∧ ps.getD (primeKey (.inr (.inl i))) 0≤_
-              rw [hp,hp]; exact hs.1 i
-            · intro k hk
-              obtain ⟨⟨i,j⟩,rfl⟩ := (mem_digitKeys T k).mp hk
-              change ps.getD (primeKey (.inr (.inr ⟨i,j⟩))) 0≤_
-              rw [hp]; exact hs.2.1 i j
-            · intro k hk
-              obtain ⟨i,rfl⟩ := (mem_channelKeys T k).mp hk
-              change ps.getD (primeKey (.inl i)) 0*ps.getD (primeKey (.inr (.inl i))) 0≤_
-              rw [hp,hp]; exact hs.2.2.1 i
-            · intro n hn
-              let n' : Column T := ⟨n,List.mem_range.mp hn⟩
-              change ps.getD (primeKey (.inl (.inl n'))) 0*ps.getD (primeKey (.inr (.inl (.inl n')))) 0≤_
-              rw [hp,hp]; exact hs.2.2.2.1 n'
-            · intro n hn j hj
-              let n' : Column T := ⟨n,List.mem_range.mp hn⟩
-              let j' : Label T (.inl n') := ⟨j,List.mem_range.mp hj⟩
-              change ps.getD (primeKey (.inr (.inr ⟨.inl n',j'⟩))) 0≤_
-              rw [hp]; exact hs.2.2.2.2 n' j'
-          · exact Or.inl hr
+  by_cases hw : d.1=0
+  · exact ⟨([],[],[]),Or.inl hw⟩
+  let T : System := ⟨d.1,Nat.pos_of_ne_zero hw,d.2,fun _ => 0,∅,fun _ _ => False⟩
+  obtain ⟨E,hu,hd,hs,hc,he,hb⟩ := exists_bounded_parameters_budget T
+  obtain ⟨c,hc,_,_,_⟩ := certificate_of_parameters T E hu hd hs hc he hb
+  exact ⟨c,hc⟩
 
 def decodeParameterCertificate (n : ℕ) : ParameterCertificate :=
   (Encodable.decode n).getD ([],[],[])
@@ -178,16 +40,47 @@ theorem parameterCode_computable : Computable parameterCode :=
     ((parameterValid_primrec.comp
       (Primrec.fst.pair (decodeParameterCertificate_primrec.comp Primrec.snd))).computablePred) _
 
-def parameterCertificate (d : ℕ × ℕ) : ParameterCertificate :=
+def searchedParameterCertificate (d : ℕ × ℕ) : ParameterCertificate :=
   decodeParameterCertificate (parameterCode d)
 
-theorem parameterCertificate_computable : Computable parameterCertificate :=
+theorem searchedParameterCertificate_computable : Computable searchedParameterCertificate :=
   decodeParameterCertificate_primrec.to_comp.comp parameterCode_computable
 
-theorem parameterCertificate_valid (d : ℕ × ℕ) : ParameterValid d (parameterCertificate d) := by
-  unfold parameterCertificate parameterCode leastWitness
+theorem searchedParameterCertificate_valid (d : ℕ × ℕ) : ParameterValid d (searchedParameterCertificate d) := by
+  unfold searchedParameterCertificate parameterCode leastWitness
   exact @Nat.find_spec (fun n => ParameterValid d (decodeParameterCertificate n))
     (Classical.decPred _) (exists_parameterCode d)
+
+def parameterCertificate (d : ℕ×ℕ) : ParameterCertificate :=
+  if d.1=48 ∧ d.2=3 then SmallProfiles.certificate 0 else
+  if d.1=64 ∧ d.2=3 then SmallProfiles.certificate 1 else
+  if d.1=80 ∧ d.2=3 then SmallProfiles.certificate 2 else
+  if d.1=96 ∧ d.2=3 then SmallProfiles.certificate 3 else
+  if d.1=112 ∧ d.2=3 then SmallProfiles.certificate 4 else
+  searchedParameterCertificate d
+
+theorem parameterCertificate_computable : Computable parameterCertificate := by
+  have h0 : Primrec (fun d : ℕ×ℕ => decide (d.1=48 ∧ d.2=3)) := by fun_prop
+  have h1 : Primrec (fun d : ℕ×ℕ => decide (d.1=64 ∧ d.2=3)) := by fun_prop
+  have h2 : Primrec (fun d : ℕ×ℕ => decide (d.1=80 ∧ d.2=3)) := by fun_prop
+  have h3 : Primrec (fun d : ℕ×ℕ => decide (d.1=96 ∧ d.2=3)) := by fun_prop
+  have h4 : Primrec (fun d : ℕ×ℕ => decide (d.1=112 ∧ d.2=3)) := by fun_prop
+  exact (h0.to_comp.cond (Computable.const (SmallProfiles.certificate 0)) (h1.to_comp.cond (Computable.const (SmallProfiles.certificate 1)) (h2.to_comp.cond (Computable.const (SmallProfiles.certificate 2)) (h3.to_comp.cond (Computable.const (SmallProfiles.certificate 3)) (h4.to_comp.cond (Computable.const (SmallProfiles.certificate 4)) searchedParameterCertificate_computable))))).of_eq (fun d => by simp only [parameterCertificate,Bool.cond_decide])
+
+theorem parameterCertificate_valid (d : ℕ×ℕ) : ParameterValid d (parameterCertificate d) := by
+  rcases d with ⟨w,B⟩
+  unfold parameterCertificate
+  split_ifs with h0 h1 h2 h3 h4
+  · obtain ⟨rfl,rfl⟩ := h0; exact SmallProfiles.certificate_valid 0
+  · obtain ⟨rfl,rfl⟩ := h1; exact SmallProfiles.certificate_valid 1
+  · obtain ⟨rfl,rfl⟩ := h2; exact SmallProfiles.certificate_valid 2
+  · obtain ⟨rfl,rfl⟩ := h3; exact SmallProfiles.certificate_valid 3
+  · obtain ⟨rfl,rfl⟩ := h4; exact SmallProfiles.certificate_valid 4
+  · exact searchedParameterCertificate_valid (w,B)
+
+theorem parameterCertificate_small (i : Fin 5) :
+    parameterCertificate (SmallProfiles.width i,3)=SmallProfiles.certificate i := by
+  fin_cases i <;> simp [parameterCertificate,SmallProfiles.width]
 
 /-- Reconstruct the typed encoding parameters from a checked numerical table. -/
 def parametersOfCertificate (T : System) (c : ParameterCertificate)
@@ -285,6 +178,60 @@ theorem parameters_bounded_budget (T : System) (hB : T.alphabet=3) :
   intro n j
   rw [parameters_digitPrime_eq]
   exact hs.2.2.2.2 n.val (List.mem_range.mpr n.isLt) j.val (List.mem_range.mpr j.isLt)
+
+end
+end TranslationTiling.FiniteCompiler.Effective
+
+namespace TranslationTiling.FiniteCompiler.Effective
+open scoped Classical BigOperators
+noncomputable section
+set_option maxRecDepth 10000
+set_option maxHeartbeats 2000000
+
+theorem parameters_small_prime (T : System) (i : Fin 5)
+    (hw : T.width=SmallProfiles.width i) (hB : T.alphabet=3) (j : PrimeTag T) :
+    (parameters T).primeAt j=(SmallProfiles.profile i).entry (SmallProfiles.tagIndex j) := by
+  rcases T with ⟨w,hpos,B,s,a,se⟩
+  dsimp only at hw hB
+  subst w B
+  change (parameterCertificate (SmallProfiles.width i,3)).1.getD (primeKey j) 0 = _
+  rw [parameterCertificate_small]
+  rcases j with c | (c | ⟨c,l⟩)
+  · cases c with
+    | inl n => exact SmallProfiles.certificate_lookup i (.inl (.inl n))
+    | inr t => exact SmallProfiles.certificate_lookup i (.inl (.inr t))
+  · cases c with
+    | inl n => exact SmallProfiles.certificate_lookup i (.inr (.inl (.inl n)))
+    | inr t => exact SmallProfiles.certificate_lookup i (.inr (.inl (.inr t)))
+  · cases c with
+    | inl n => exact SmallProfiles.certificate_lookup i (.inr (.inr ⟨.inl n,l⟩))
+    | inr t => exact SmallProfiles.certificate_lookup i (.inr (.inr ⟨.inr t,l⟩))
+
+theorem parameters_small_r (T : System) (i : Fin 5)
+    (hw : T.width=SmallProfiles.width i) (hB : T.alphabet=3) (c : Channel T) :
+    (parameters T).r c=(SmallProfiles.profile i).rAt T.width (SmallProfiles.channelIndex c) := by
+  rcases T with ⟨w,hpos,B,s,a,se⟩
+  dsimp only at hw hB
+  subst B
+  have hprime := parameters_small_prime (System.mk w hpos 3 s a se) i hw rfl
+  rw [(parameters _).r_eq_prod]
+  cases c with
+  | inl n =>
+    change (∏ j : Fin 3, (parameters (System.mk w hpos 3 s a se)).primeAt
+      (.inr (.inr ⟨.inl n,j⟩))) = _
+    simp only [Fin.prod_univ_succ,Fin.prod_univ_zero,mul_one]
+    rw [hprime _,hprime _,hprime _]
+    change _ = (SmallProfiles.profile i).rAt w n.val
+    rw [SmallProfiles.Profile.rAt,if_pos (show n.val<w from n.isLt)]
+    simp only [SmallProfiles.tagIndex,SmallProfiles.digitIndex,Fin.val_zero,Fin.val_succ,
+      Nat.add_zero,Nat.add_assoc,Nat.mul_assoc]
+  | inr t =>
+    haveI : Unique (Label (System.mk w hpos 3 s a se) (.inr t)) := by change Unique Unit; infer_instance
+    rw [Fintype.prod_unique]
+    change (parameters (System.mk w hpos 3 s a se)).primeAt (.inr (.inr ⟨.inr t,default⟩)) = _
+    rw [hprime _]
+    simp only [SmallProfiles.tagIndex,SmallProfiles.digitIndex,SmallProfiles.channelIndex,
+      SmallProfiles.Profile.rAt,if_neg (by omega : ¬ w+t.val<w),Nat.add_sub_cancel_left,Nat.add_assoc]
 
 end
 end TranslationTiling.FiniteCompiler.Effective

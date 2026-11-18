@@ -16,7 +16,7 @@ structure FamilyBudget (T : System) (Fs : List CyclicTile) : Prop where
     f.1.1.natAbs≤rawHorizontal (parameterData T) ∧ f.1.2.natAbs≤rawHorizontal (parameterData T)
   mass : ∀ F∈Fs, (cyclicTileSet (parameters T).cyclicOrder F).card≤MassSize.mass (parameters T)
 
-private theorem budget_square_le_three_48 (w : ℕ) (hw : 48≤w) :
+theorem budget_square_le_three_48 (w : ℕ) (hw : 48≤w) :
     (max (w+2) 256)^2≤3^(w+1) := by
   induction w,hw using Nat.le_induction with
   | base => norm_num

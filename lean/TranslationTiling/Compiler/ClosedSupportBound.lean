@@ -60,17 +60,34 @@ theorem activation_code_le (hb : ParameterBudget E b) (i : Channel T)
   have hk := (ZMod.val_lt j.1).le.trans (hb.r i)
   have ha := (ZMod.val_lt j.2.1.1).le.trans (hb.a i)
   have hc := (ZMod.val_lt j.2.1.2).le.trans (hb.usefulB i)
-  unfold activationIndexCode
-  exact pair_le_cap (hk.trans ((le_pairCap b).trans (le_pairCap _)))
-    (pair_le_cap (ha.trans (le_pairCap b)) (pair_le_cap hc hd))
+  have hp {base u x c : ℕ} (hbase : base≤c) (hu : u≤c) (hx : x≤c) :
+      CompactIndex.pack base u x≤pairCap c := by
+    have hm := Nat.mul_le_mul hbase hu
+    unfold CompactIndex.pack pairCap
+    nlinarith
+  have h1 := hp (hb.a i) hk ha
+  have h2 := hp ((hb.usefulB i).trans (le_pairCap b)) h1 (hc.trans (le_pairCap b))
+  exact hp ((hb.two.trans (le_pairCap b)).trans (le_pairCap _)) h2
+    ((hd.trans (le_pairCap b)).trans (le_pairCap _))
 
 theorem seed_code_le (hb : ParameterBudget E b) (t : Fin 2)
     (j : SeedActivationIndex E t) : seedActivationIndexCode E t j ≤ indexCap b := by
-  have hx := (ZMod.val_lt j.2.1).le.trans hb.width
-  have hy := (ZMod.val_lt j.2.2).le.trans hb.width
-  unfold seedActivationIndexCode indexCap
-  exact pair_le_cap (activation_code_le hb _ j.1)
-    ((pair_le_cap hx hy).trans ((le_pairCap _).trans (le_pairCap _)))
+  have hprod : E.r (.inr t)*E.a (.inr t)*E.b (.inr t)*residueModulus^2≤b^5 := by
+    calc
+      _ ≤ b*b*b*b^2 := by gcongr <;> first | exact hb.r _ | exact hb.a _ | exact hb.usefulB _ | exact hb.width
+      _ = _ := by ring
+  have hcode : seedActivationIndexCode E t j≤2*b^5 := by
+    have hc := seedActivationIndexCode_lt E t j
+    nlinarith only [hc,hprod]
+  have hcap : b ^ 16 ≤ indexCap b := by
+    unfold indexCap pairCap
+    ring_nf
+    omega
+  apply hcode.trans
+  apply (show 2*b^5≤b^6 from ?_).trans
+    ((Nat.pow_le_pow_right (by have := hb.two; omega) (by decide : 6≤16)).trans hcap)
+  have hh := Nat.mul_le_mul_right (b^5) hb.two
+  nlinarith only [hh]
 
 theorem modulus_le (hb : ParameterBudget E b) (i : Channel T) :
     activationModulus E i ≤ b ^ 3 := by
