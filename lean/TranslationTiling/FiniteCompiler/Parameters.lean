@@ -22,7 +22,7 @@ theorem channel_card (T : System) : Fintype.card (Channel T) = channelCount T :=
 
 theorem label_card_le (T : System) (i : Channel T) :
     Fintype.card (Label T i) ≤ T.alphabet + 1 := by
-  cases i <;> simp [Label, Symbol]
+  cases i <;> simp [Label, Letter, uniformAlphabetFamily, Symbol]
 
 theorem exists_useful_parameters (T : System) : ∃ u : UsefulTag T → ℕ,
     Function.Injective u ∧

@@ -61,25 +61,25 @@ theorem parameters_small_support (T : System) (i : Fin 5)
   have hm : residueModulus≤SmallProfiles.horizontal i := by rw [hmod]; exact hv.1
   refine ⟨hm,fun n => (hS n).trans ((by norm_num [residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q] : 16≤residueModulus).trans hm),?_,?_⟩
   · intro n
-    unfold CompactSupport.A
+    unfold CompactSupport.B
     rw [parameters_small_r T i hw hB]
     unfold EncodingParameters.a EncodingParameters.b
     rw [parameters_small_prime T i hw hB,parameters_small_prime T i hw hB]
     simp only [SmallProfiles.tagIndex,SmallProfiles.channelIndex]
     have hn : n.val<SmallProfiles.width i := by simpa only [hw] using n.isLt
-    simpa only [←hw] using hv.2.1 n.val (List.mem_range.mpr hn)
+    simpa only [←hw,Nat.mul_assoc] using hv.2.1 n.val (List.mem_range.mpr hn)
   · intro t
     have ho : (otherSeed t).val+2=3-t.val := by
       dsimp [otherSeed]
       have ht := t.isLt
       omega
-    unfold CompactSupport.A
+    unfold CompactSupport.B
     rw [(parameters T).seed_a,ho,parameters_small_r T i hw hB]
     unfold EncodingParameters.a EncodingParameters.b
     rw [parameters_small_prime T i hw hB,parameters_small_prime T i hw hB]
     simp only [SmallProfiles.tagIndex,SmallProfiles.channelIndex]
     rw [hmod,show T.width+2+(T.width+t.val)=2*T.width+2+t.val by omega,hw]
-    exact hv.2.2 t.val (List.mem_range.mpr t.isLt)
+    simpa only [Nat.mul_assoc] using hv.2.2 t.val (List.mem_range.mpr t.isLt)
 
 end
 end TranslationTiling.FiniteCompiler.Effective

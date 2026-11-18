@@ -17,7 +17,7 @@ namespace FiniteCompiler
 
 noncomputable section
 
-variable {T : System} (E : EncodingParameters T)
+variable {T : System} [AlphabetFamily T] (E : EncodingParameters T)
 
 def activationBatch (i : Channel T) (h : Plane) (e : P E i)
     (freeZ : Bool) : Finset (Ambient E) := by

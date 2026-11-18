@@ -6,10 +6,10 @@ namespace TranslationTiling.FiniteCompiler
 noncomputable section
 
 /-- Every common tiling yields a line-rule array meeting both seed predicates. -/
-theorem array_of_solves {T : System} (E : EncodingParameters T)
+theorem array_of_solves {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     {A : Set (Ambient E)} (hA : Solves E A) :
     ∃ W : WordArray T, LineRule T W ∧
-      ∀ t : Fin 2, ∃ x : Plane, ∀ n, SeedSet T t (W n (lineValue T n x)) := by
+      ∀ t : Fin 2, ∃ x : Plane, ∀ n, LetterSeedSet T t n (W n (lineValue T n x)) := by
   classical
   obtain ⟨o, rfl⟩ := exists_graph_of_solves E hA
   obtain ⟨_, hd, hw, hs, ha, hb⟩ := (solves_iff E (graph o)).mp hA

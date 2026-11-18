@@ -165,7 +165,7 @@ theorem exists_compact_parameters (T : System) (hC : 1202≤channelCount T) (hB 
       have hcard : Fintype.card Tags≤3*C := by
         rw [Fintype.card_sigma]
         calc
-          _ ≤ ∑ _i : Channel T, 3 := Finset.sum_le_sum (fun i _ => by cases i <;> simp [Label,Symbol,hB])
+          _ ≤ ∑ _i : Channel T, 3 := Finset.sum_le_sum (fun i _ => by cases i <;> simp [Label,Letter,uniformAlphabetFamily,Symbol,hB])
           _ = _ := by simp [C,channelCount,Nat.mul_comm]
       have hpi := Compiler.Size.primeCounting_fifth_medium (C:=C) (by omega)
       have hcount : L+3*C+1≤3*C^4 := by
@@ -220,7 +220,7 @@ theorem compact_r_le {T : System} (E : EncodingParameters T) (hB : T.alphabet=3)
     _ ≤ ∏ _j : Label T i, channelCount T^5 := Finset.prod_le_prod (fun j _ => hp.2.1 i j)
     _ = channelCount T^(5*Fintype.card (Label T i)) := by simp [← pow_mul]
     _ ≤ _ := Nat.pow_le_pow_right (by unfold channelCount; omega)
-      (by cases i <;> simp [Label,Symbol,hB])
+      (by cases i <;> simp [Label,Letter,uniformAlphabetFamily,Symbol,hB])
 
 theorem compact_parameterBudget {T : System} (E : EncodingParameters T) (hC : 1202≤channelCount T)
     (hB : T.alphabet=3) (hp : CompactPrimes E) (hS : ∀ n, (T.slope n).natAbs≤Sudoku.Width) :

@@ -11,7 +11,7 @@ noncomputable section
 
 namespace FiniteCompiler.CommonModel
 
-variable {T : System} (E : EncodingParameters T) (W : WordArray T)
+variable {T : System} [AlphabetFamily T] (E : EncodingParameters T) (W : WordArray T)
 
 theorem ordinaryActivationMap_outputs (n : Column T) (b : Base E) :
     ordinaryActivationMap E n (outputs E W) b =
@@ -25,7 +25,7 @@ theorem seedActivationMap_outputs (t : Fin 2) (b : Base E) :
 
 theorem common_solution (hrule : LineRule T W)
     (hseedW : ∀ t n x, SharedSeed.residue T x ∈ seedActiveRegion T t →
-      SeedSet T t (W n (lineValue T n x))) : Solves E (commonGraph E W) := by
+      LetterSeedSet T t n (W n (lineValue T n x))) : Solves E (commonGraph E W) := by
   apply (solves_iff E (commonGraph E W)).mpr
   refine ⟨commonGraph_tiles_kernel E W, ?_, ?_, ?_, ?_, ?_⟩
   · exact (dependenceTiles_iff E (outputs E W)).mpr (outputs_hasDependence E W)

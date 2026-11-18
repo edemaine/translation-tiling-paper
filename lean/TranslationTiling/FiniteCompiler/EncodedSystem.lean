@@ -14,7 +14,7 @@ noncomputable section
 namespace FiniteCompiler
 
 
-variable {T : System} (E : EncodingParameters T)
+variable {T : System} [AlphabetFamily T] (E : EncodingParameters T)
 
 def testTiles : Finset (Finset (Ambient E)) := by
   classical

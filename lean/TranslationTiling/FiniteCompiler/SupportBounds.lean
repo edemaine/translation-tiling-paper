@@ -106,10 +106,9 @@ theorem activation_code_le (hb : ParameterBudget E b) (i : Channel T)
     have hm := Nat.mul_le_mul hbase hu
     unfold CompactIndex.pack pairCap
     nlinarith
-  have h1 := hp (hb.a i) hk ha
-  have h2 := hp ((hb.usefulB i).trans (le_pairCap b)) h1 (hc.trans (le_pairCap b))
-  exact hp ((hb.two.trans (le_pairCap b)).trans (le_pairCap _)) h2
-    ((hd.trans (le_pairCap b)).trans (le_pairCap _))
+  have h1 := hp (hb.usefulB i) ha hc
+  have h2 := hp (hb.two.trans (le_pairCap b)) h1 (hd.trans (le_pairCap b))
+  exact h2.trans (le_pairCap _)
 
 theorem seed_code_le (hb : ParameterBudget E b) (t : Fin 2)
     (j : SeedActivationIndex E t) : seedActivationIndexCode E t j ≤ indexCap b := by

@@ -180,8 +180,8 @@ def horizontal (i : Fin 5) : ℕ :=
   else if i=3 then horizontal96 else horizontal112
 
 def exponent (i : Fin 5) : ℕ :=
-  if i=0 then 6690 else if i=1 then 9195 else if i=2 then 11750
-  else if i=3 then 14376 else 17078
+  if i=0 then 6629 else if i=1 then 9124 else if i=2 then 11678
+  else if i=3 then 14302 else 17001
 
 theorem support (i : Fin 5) : SupportValid (profile i) (width i) (horizontal i) := by
   fin_cases i

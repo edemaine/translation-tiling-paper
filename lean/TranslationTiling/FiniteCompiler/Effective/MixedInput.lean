@@ -102,7 +102,9 @@ private theorem mixedEncodedWord_match (T : LeanWang.TileSet) (w : Compiler.Word
     funext k
     have hk : TaggedSystem.flat (finProdFinEquiv.symm k).1 (finProdFinEquiv.symm k).2 = k :=
       finProdFinEquiv.apply_symm_apply k
-    simpa only [hk] using congrArg Fin.val (h (finProdFinEquiv.symm k).1 (finProdFinEquiv.symm k).2).symm
+    have he := h (finProdFinEquiv.symm k).1 (finProdFinEquiv.symm k).2
+    rw [hk] at he
+    exact congrArg Fin.val he.symm
 
 theorem mixedPayload_correct (T : LeanWang.TileSet) :
     PayloadCorrect (mixedSystem T) (mixedPayload T) := by

@@ -114,7 +114,8 @@ theorem tight_testTiles_card_le (hB : T.alphabet=3) (hp : TightPrimes E)
       _ ≤ _ := Nat.pow_le_pow_left (by omega : B≤3*B) C
   have hword : (wordConstraintTiles E).card≤L := by
     have hw : Fintype.card (Word T)≤3^C := by
-      simp only [Word,Symbol,Fintype.card_fun,Fintype.card_fin,hB]
+      change Fintype.card (Column T → Symbol T) ≤ _
+      simp only [Symbol,Fintype.card_fun,Fintype.card_fin,hB]
       exact Nat.pow_le_pow_right (by decide) (by unfold C channelCount; omega)
     unfold wordConstraintTiles
     apply Finset.card_biUnion_le.trans
@@ -127,18 +128,18 @@ theorem tight_testTiles_card_le (hB : T.alphabet=3) (hp : TightPrimes E)
       _ ≤ 3^C*B^C := Nat.mul_le_mul_right _ hw
       _ = _ := by unfold L; rw [mul_pow]
   have hseed : (seedConstraintTiles E).card≤L := by
-    have hi : Fintype.card (Fin 2×Column T×Symbol T)≤3^C := by
-      have hh : Fintype.card (Fin 2×Column T×Symbol T)≤6*C := by
-        simp only [Fintype.card_prod,Fintype.card_fin,Column,Symbol,hB]
+    have hi : Fintype.card (Fin 2×(Σ n : Column T, Symbol T))≤3^C := by
+      have hh : Fintype.card (Fin 2×(Σ n : Column T, Symbol T))≤6*C := by
+        simp only [Fintype.card_prod,Fintype.card_sigma,Fintype.card_fin,Column,Symbol,hB,Finset.sum_const,Finset.card_univ,smul_eq_mul]
         unfold C channelCount
         omega
       exact hh.trans (six_mul_le_three_pow (by omega))
     unfold seedConstraintTiles
     apply Finset.card_biUnion_le.trans
     calc
-      _ ≤ ∑ _w ∈ (Finset.univ.filter (fun w : Fin 2×Column T×Symbol T => ¬SeedSet T w.1 w.2.2)), B^C :=
+      _ ≤ ∑ _w ∈ (Finset.univ.filter (fun w : Fin 2×(Σ n : Column T, Symbol T) => ¬LetterSeedSet T w.1 w.2.1 w.2.2)), B^C :=
         Finset.sum_le_sum (fun _ _ => tight_cycleTiles_card_le E hp hC _ _)
-      _ ≤ Fintype.card (Fin 2×Column T×Symbol T)*B^C := by
+      _ ≤ Fintype.card (Fin 2×(Σ n : Column T, Symbol T))*B^C := by
         simp only [Finset.sum_const,smul_eq_mul]
         exact Nat.mul_le_mul_right _ (Finset.card_filter_le _ _)
       _ ≤ 3^C*B^C := Nat.mul_le_mul_right _ hi

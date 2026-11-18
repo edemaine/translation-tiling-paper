@@ -165,7 +165,7 @@ theorem exists_tight_parameters (T : System) (hC : 596750≤channelCount T) (hB 
       have hcard : Fintype.card Tags≤3*C := by
         rw [Fintype.card_sigma]
         calc
-          _ ≤ ∑ _i : Channel T, 3 := Finset.sum_le_sum (fun i _ => by cases i <;> simp [Label,Symbol,hB])
+          _ ≤ ∑ _i : Channel T, 3 := Finset.sum_le_sum (fun i _ => by cases i <;> simp [Label,Letter,uniformAlphabetFamily,Symbol,hB])
           _ = _ := by simp [C,channelCount,Nat.mul_comm]
       have hp := (Compiler.Size.tight_caps C hC).2.2.2.2
       have hk := (ix j).isLt

@@ -16,7 +16,7 @@ namespace FiniteCompiler
 
 open scoped BigOperators
 
-variable {T : System} (E : EncodingParameters T)
+variable {T : System} [AlphabetFamily T] (E : EncodingParameters T)
 
 def digitEquivRing (i : Channel T) :
     ZMod (E.r i) ≃+* (∀ j : Label T i, ZMod (E.digitPrime i j)) := by

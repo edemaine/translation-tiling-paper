@@ -9,7 +9,7 @@ namespace TranslationTiling.Compiler.Effective
 abbrev ActivationNumbers := (ℕ × ℕ × ℕ) × (ℕ × ℕ × ℕ × ℕ)
 
 def numericalActivationCode (a b : ℕ) (j : ℕ × ℕ × ℕ × ℕ) : ℕ :=
-  CompactIndex.pack 2 (CompactIndex.pack b (CompactIndex.pack a j.1 j.2.1) j.2.2.1) j.2.2.2
+  CompactIndex.pack 2 (CompactIndex.pack b j.2.1 j.2.2.1) j.2.2.2
 
 def numericalActivationFirst (z : ActivationNumbers) : ℤ :=
   let a := z.1.1

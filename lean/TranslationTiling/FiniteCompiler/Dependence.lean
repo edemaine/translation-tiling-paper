@@ -68,7 +68,7 @@ theorem not_digitActive_iff (g : A → B) (U : AddSubgroup A) :
 
 end Activity
 
-variable {T : System} (E : EncodingParameters T)
+variable {T : System} [AlphabetFamily T] (E : EncodingParameters T)
 
 def seedResidue (T : System) (x : Plane) : Residues T :=
   ((x.1 : ZMod (residueModulus)), (x.2 : ZMod (residueModulus)))
@@ -257,7 +257,7 @@ private theorem usefulAt_factor_of_generators (o : Outputs E)
   · simp
 
 @[simp] theorem seedResidue_sub_step
-    {T : System}
+    {T : System} [AlphabetFamily T]
     (x : Plane) (axis : Bool) :
     seedResidue T (x - seedStep T axis) = seedResidue T x := by
   have hp2 : (residueModulus : ZMod residueModulus) = 0 := ZMod.natCast_self _

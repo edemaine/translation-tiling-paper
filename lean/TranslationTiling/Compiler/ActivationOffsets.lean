@@ -49,6 +49,21 @@ theorem separatedResidueLift_injective {J : Type uJ}
     have hj := ZMod.val_lt (v j)
     nlinarith
 
+theorem separatedResidueLift_code_eq {J : Type uJ}
+    (M : ℕ) [NeZero M] (v : J → ZMod M) (code : J → ℕ) {i j : J}
+    (h : separatedResidueLift M v code i=separatedResidueLift M v code j) : code i=code j := by
+  have he : (v i).val+M*code i=(v j).val+M*code j := by
+    unfold separatedResidueLift at h
+    exact_mod_cast h
+  by_contra hne
+  rcases lt_or_gt_of_ne hne with hlt | hgt
+  · have hm := Nat.mul_le_mul_left M (Nat.succ_le_of_lt hlt)
+    have hi := ZMod.val_lt (v i)
+    nlinarith
+  · have hm := Nat.mul_le_mul_left M (Nat.succ_le_of_lt hgt)
+    have hj := ZMod.val_lt (v j)
+    nlinarith
+
 variable {T : LeanWang.TileSet} (E : EncodingParameters T)
 
 abbrev ActivationIndex (i : Channel T) :=
@@ -59,7 +74,7 @@ abbrev SeedActivationIndex (t : Fin 2) := ActivationIndex E (.inr t) × Residues
 /-- Mixed-radix batch index, with two slots for the shift multiplicity. -/
 def activationIndexCode (i : Channel T) (j : ActivationIndex E i) : ℕ :=
   CompactIndex.pack 2
-    (CompactIndex.pack (E.b i) (CompactIndex.pack (E.a i) j.1.val j.2.1.1.val) j.2.1.2.val) j.2.2.val
+    (CompactIndex.pack (E.b i) j.2.1.1.val j.2.1.2.val) j.2.2.val
 
 theorem activation_multiplicity_lt (i : Channel T) (j : ActivationIndex E i) : j.2.2.val<2 := by
   have hm : shiftMultiplicity (E.a i) (E.b i) j.2.1≤2 := by
@@ -68,41 +83,51 @@ theorem activation_multiplicity_lt (i : Channel T) (j : ActivationIndex E i) : j
   exact lt_of_lt_of_le j.2.2.isLt hm
 
 theorem activationIndexCode_injective (i : Channel T) :
-    Function.Injective (activationIndexCode E i) := by
-  rintro ⟨k,⟨⟨α,ξ⟩,d⟩⟩ ⟨l,⟨⟨β,η⟩,e⟩⟩ h
+    ∀ {j k : ActivationIndex E i}, j.1=k.1 → activationIndexCode E i j=activationIndexCode E i k → j=k := by
+  rintro ⟨k,⟨⟨α,ξ⟩,d⟩⟩ ⟨l,⟨⟨β,η⟩,e⟩⟩ hkl h
   obtain ⟨hrest,hd⟩ := CompactIndex.pack_injective (by decide)
     (activation_multiplicity_lt E i (k,⟨(α,ξ),d⟩))
     (activation_multiplicity_lt E i (l,⟨(β,η),e⟩)) h
-  obtain ⟨hrest,hξ⟩ := CompactIndex.pack_injective (E.b_pos i) (ZMod.val_lt ξ) (ZMod.val_lt η) hrest
-  obtain ⟨hk,hα⟩ := CompactIndex.pack_injective (E.a_pos i) (ZMod.val_lt α) (ZMod.val_lt β) hrest
-  have hkl : k=l := ZMod.val_injective (E.r i) hk
+  obtain ⟨hα,hξ⟩ := CompactIndex.pack_injective (E.b_pos i) (ZMod.val_lt ξ) (ZMod.val_lt η) hrest
   have hαβ : α=β := ZMod.val_injective (E.a i) hα
   have hξη : ξ=η := ZMod.val_injective (E.b i) hξ
+  change k=l at hkl
   subst l β η
   have hde : d=e := Fin.ext hd
   subst e
   rfl
 
+theorem activationIndexCode_sharp_lt (i : Channel T) (j : ActivationIndex E i) :
+    activationIndexCode E i j<2*(E.a i*E.b i) := by
+  have h1 := CompactIndex.pack_lt (ZMod.val_lt j.2.1.1) (ZMod.val_lt j.2.1.2)
+  have h2 := CompactIndex.pack_lt h1 (activation_multiplicity_lt E i j)
+  simpa only [activationIndexCode,Nat.mul_comm,Nat.mul_left_comm,Nat.mul_assoc] using h2
+
 theorem activationIndexCode_lt (i : Channel T) (j : ActivationIndex E i) :
     activationIndexCode E i j<2*(E.r i*E.a i*E.b i) := by
-  have h1 := CompactIndex.pack_lt (ZMod.val_lt j.1) (ZMod.val_lt j.2.1.1)
-  have h2 := CompactIndex.pack_lt h1 (ZMod.val_lt j.2.1.2)
-  have h3 := CompactIndex.pack_lt h2 (activation_multiplicity_lt E i j)
-  simpa only [activationIndexCode,Nat.mul_comm,Nat.mul_left_comm,Nat.mul_assoc] using h3
+  have hc := activationIndexCode_sharp_lt E i j
+  have hm := Nat.mul_le_mul_right (2*(E.a i*E.b i)) (Nat.succ_le_of_lt (E.r_pos i))
+  nlinarith only [hc,hm]
 
 def seedActivationIndexCode (t : Fin 2) (j : SeedActivationIndex E t) : ℕ :=
   CompactIndex.pack residueModulus
     (CompactIndex.pack residueModulus (activationIndexCode E (.inr t) j.1) j.2.1.val) j.2.2.val
 
 theorem seedActivationIndexCode_injective (t : Fin 2) :
-    Function.Injective (seedActivationIndexCode E t) := by
-  intro j k h
+    ∀ {j k : SeedActivationIndex E t}, j.1.1=k.1.1 → seedActivationIndexCode E t j=seedActivationIndexCode E t k → j=k := by
+  intro j k hlow h
   obtain ⟨hrest,hy⟩ := CompactIndex.pack_injective (NeZero.pos residueModulus)
     (ZMod.val_lt j.2.2) (ZMod.val_lt k.2.2) h
   obtain ⟨ha,hx⟩ := CompactIndex.pack_injective (NeZero.pos residueModulus)
     (ZMod.val_lt j.2.1) (ZMod.val_lt k.2.1) hrest
-  exact Prod.ext (activationIndexCode_injective E (.inr t) ha)
+  exact Prod.ext (activationIndexCode_injective E (.inr t) hlow ha)
     (Prod.ext (ZMod.val_injective _ hx) (ZMod.val_injective _ hy))
+
+theorem seedActivationIndexCode_sharp_lt (t : Fin 2) (j : SeedActivationIndex E t) :
+    seedActivationIndexCode E t j<2*(E.a (.inr t)*E.b (.inr t))*residueModulus^2 := by
+  have h1 := CompactIndex.pack_lt (activationIndexCode_sharp_lt E (.inr t) j.1) (ZMod.val_lt j.2.1)
+  have h2 := CompactIndex.pack_lt h1 (ZMod.val_lt j.2.2)
+  simpa only [seedActivationIndexCode,pow_two,Nat.mul_comm,Nat.mul_left_comm,Nat.mul_assoc] using h2
 
 theorem seedActivationIndexCode_lt (t : Fin 2) (j : SeedActivationIndex E t) :
     seedActivationIndexCode E t j<2*(E.r (.inr t)*E.a (.inr t)*E.b (.inr t))*residueModulus^2 := by
@@ -185,8 +210,10 @@ theorem ordinaryFirst_residues (n : Column T) (j : ActivationIndex E (.inl n)) :
 
 theorem ordinaryOffset_injective (n : Column T) : Function.Injective (ordinaryOffset E n) := by
   intro i j hij
-  exact separatedResidueLift_injective _ _ _ (activationIndexCode_injective E (.inl n))
-    (congrArg Prod.fst hij)
+  have hl : i.1=j.1 := by
+    simpa only [ordinaryOffset_low] using congrArg (fun p : Plane => (p.1 : K E (.inl n))) hij
+  exact activationIndexCode_injective E (.inl n) hl
+    (separatedResidueLift_code_eq _ _ _ (congrArg Prod.fst hij))
 
 def seedModulus (t : Fin 2) : ℕ :=
   (activationModulus E (.inr t) * residueModulus) * E.a (.inr (otherSeed t))
@@ -286,8 +313,10 @@ theorem seedFirst_residues (t : Fin 2) (j : SeedActivationIndex E t) :
 
 theorem seedOffset_injective (t : Fin 2) : Function.Injective (seedOffset E t) := by
   intro i j hij
-  exact separatedResidueLift_injective _ _ _ (seedActivationIndexCode_injective E t)
-    (congrArg Prod.fst hij)
+  have hl : i.1.1=j.1.1 := by
+    simpa only [seedOffset_low] using congrArg (fun p : Plane => (p.1 : K E (.inr t))) hij
+  exact seedActivationIndexCode_injective E t hl
+    (separatedResidueLift_code_eq _ _ _ (congrArg Prod.fst hij))
 
 end
 

@@ -114,7 +114,7 @@ end Combinatorics
 
 section Tiles
 
-variable {T : System} (E : EncodingParameters T) {t : ℕ} [NeZero t]
+variable {T : System} [AlphabetFamily T] (E : EncodingParameters T) {t : ℕ} [NeZero t]
 
 def sparseCycleTiles (cycle : ZMod t ↪ Channel T) (labels : ∀ j, Label T (cycle j)) :
     Finset (Finset (Ambient E)) :=

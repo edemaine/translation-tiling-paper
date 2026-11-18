@@ -170,7 +170,7 @@ theorem rawSeedConstraint_correct (T : System) (p : Payload) (hp : PayloadCorrec
     Finset.mem_filter,Finset.mem_univ,true_and]
   constructor
   · rintro ⟨xs,⟨q,⟨⟨t,n,j⟩,rfl,hq⟩,hxs⟩,hF⟩
-    refine ⟨(t,n,j),hq,?_⟩
+    refine ⟨(t,⟨n,j⟩),hq,?_⟩
     rw [← hg t n j]
     exact List.mem_toFinset.mpr (List.mem_map.mpr ⟨xs,hxs,hF⟩)
   · rintro ⟨⟨t,n,j⟩,hq,hF⟩

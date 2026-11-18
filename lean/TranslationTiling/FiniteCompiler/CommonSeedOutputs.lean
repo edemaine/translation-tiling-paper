@@ -15,15 +15,15 @@ namespace FiniteCompiler
 
 open SharedSeed
 
-variable {T : System} (E : EncodingParameters T)
+variable {T : System} [AlphabetFamily T] (E : EncodingParameters T)
 
 theorem seedOneSize
-    {T : System} (E : EncodingParameters T)
+    {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     : E.a (.inr (0 : Fin 2)) = 2 := by
   simpa using E.seed_a (0 : Fin 2)
 
 theorem seedTwoSize
-    {T : System} (E : EncodingParameters T)
+    {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     : E.a (.inr (1 : Fin 2)) = 3 := by
   simpa using E.seed_a (1 : Fin 2)
 

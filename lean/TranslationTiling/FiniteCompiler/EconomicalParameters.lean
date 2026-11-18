@@ -251,7 +251,7 @@ theorem exists_economical_parameters (T : System) (hC : 962≤channelCount T) (h
     omega
   let Ordinary := Σ n : Column T, Label T (.inl n)
   have hcard : Fintype.card Ordinary≤Fintype.card ↥pool := by
-    have hh : Fintype.card Ordinary=3*T.width := by simp [Ordinary,Label,Symbol,hB,Column,Nat.mul_comm]
+    have hh : Fintype.card Ordinary=3*T.width := by simp [Ordinary,Label,Letter,uniform_size,Symbol,hB,Column,Nat.mul_comm]
     simp only [Fintype.card_coe,hh]
     unfold C channelCount at hpool
     omega
@@ -420,7 +420,7 @@ theorem economical_r_le {T : System} (E : EncodingParameters T) (hB : T.alphabet
     _ ≤ ∏ _j : Label T i, channelCount T^4 := Finset.prod_le_prod (fun j _ => hp.2.1 i j)
     _ = channelCount T^(4*Fintype.card (Label T i)) := by simp [← pow_mul]
     _ ≤ _ := Nat.pow_le_pow_right (by unfold channelCount; omega)
-      (by cases i <;> simp [Label,Symbol,hB])
+      (by cases i <;> simp [Label,Letter,uniformAlphabetFamily,Symbol,hB])
 
 theorem economical_seed_r_le {T : System} (E : EncodingParameters T)
     (hp : EconomicalPrimes E) (t : Fin 2) : E.r (.inr t)≤channelCount T^4 := by
@@ -457,7 +457,7 @@ theorem economical_r_le_nine {T : System} (E : EncodingParameters T) (hB : T.alp
     rw [E.r_eq_prod]
     calc
       _ ≤ ∏ _j : Label T (.inl n), channelCount T^3 := Finset.prod_le_prod (fun j _ => hp.2.2.2.2.2 n j)
-      _ = _ := by simp [Label,Symbol,hB,← pow_mul]
+      _ = _ := by simp [Label,Letter,uniformAlphabetFamily,Symbol,hB,← pow_mul]
   | inr t => exact (economical_seed_r_le E hp t).trans (Nat.pow_le_pow_right (by unfold channelCount; omega) (by decide))
 
 theorem economical_parameterBudget_nine {T : System} (E : EncodingParameters T) (hC : 962≤channelCount T)

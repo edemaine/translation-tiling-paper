@@ -21,7 +21,7 @@ theorem r_le_nine (hC : 256≤C) (hB : T.alphabet=3) (hp : BudgetPrimes E C) (i 
     rw [E.r_eq_prod]
     calc
       _ ≤ ∏ _j : Label T (.inl n), C^3 := Finset.prod_le_prod (fun j _ => hp.2.2.2.2 n j)
-      _ = _ := by simp [Label,Symbol,hB,← pow_mul]
+      _ = _ := by simp [Label,Letter,uniformAlphabetFamily,Symbol,hB,← pow_mul]
   | inr t => exact (seed_r_le E hp t).trans (Nat.pow_le_pow_right (by omega) (by decide))
 
 theorem parameterBudget_nine (hC : 256≤C) (hc : channelCount T≤C)
@@ -59,15 +59,15 @@ theorem seed_cycle_card_le (hp : BudgetPrimes E C) (t : Fin 2) (n : Column T) (j
 
 theorem seed_card_le (hB : T.alphabet=3) (hp : BudgetPrimes E C) (hC : 962≤C) (hc : channelCount T≤C) :
     (seedConstraintTiles E).card≤C^17 := by
-  have hi : Fintype.card (Fin 2×Column T×Symbol T)≤C^2 := by
-    simp only [Fintype.card_prod,Fintype.card_fin,Column,Symbol,hB]
+  have hi : Fintype.card (Fin 2×(Σ n : Column T, Symbol T))≤C^2 := by
+    simp only [Fintype.card_prod,Fintype.card_sigma,Fintype.card_fin,Column,Symbol,hB,Finset.sum_const,Finset.card_univ,smul_eq_mul]
     unfold channelCount at hc
     nlinarith
   unfold seedConstraintTiles
   calc
-    _ ≤ ∑ _q ∈ Finset.univ.filter (fun q : Fin 2×Column T×Symbol T => ¬ SeedSet T q.1 q.2.2), C^15 :=
+    _ ≤ ∑ _q ∈ Finset.univ.filter (fun q : Fin 2×(Σ n : Column T, Symbol T) => ¬ LetterSeedSet T q.1 q.2.1 q.2.2), C^15 :=
       Finset.card_biUnion_le.trans (Finset.sum_le_sum (fun q _ => seed_cycle_card_le E hp q.1 q.2.1 q.2.2))
-    _ ≤ Fintype.card (Fin 2×Column T×Symbol T)*C^15 := by
+    _ ≤ Fintype.card (Fin 2×(Σ n : Column T, Symbol T))*C^15 := by
       simp only [Finset.sum_const,smul_eq_mul]
       exact Nat.mul_le_mul_right _ (Finset.card_filter_le _ _)
     _ ≤ C^2*C^15 := Nat.mul_le_mul_right _ hi
@@ -116,7 +116,7 @@ theorem ordinary_cycle_card (hp : BudgetPrimes E C) (Q : ℕ)
 theorem word_card (hB : T.alphabet=3) (hp : BudgetPrimes E C) (Q : ℕ)
     (hq : ∀ n j, E.digitPrime (.inl n) j≤Q) :
     (wordConstraintTiles E).card≤(3*C^3*Q)^T.width := by
-  have hw : Fintype.card (Word T)=3^T.width := by simp [Word,Symbol,hB]
+  have hw : Fintype.card (Word T)=3^T.width := by simp [Word,Letter,uniform_size,Symbol,hB]
   unfold wordConstraintTiles
   calc
     _ ≤ ∑ _w ∈ Finset.univ.filter (fun w : Word T => w∉allowedWords T), (C^3*Q)^T.width :=

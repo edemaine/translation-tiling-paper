@@ -165,7 +165,9 @@ private theorem ternaryEncodedWord_match (T : LeanWang.TileSet) (w : Compiler.Wo
     funext k
     have hk : TernarySystem.flat (finProdFinEquiv.symm k).1 (finProdFinEquiv.symm k).2 = k :=
       finProdFinEquiv.apply_symm_apply k
-    simpa only [hk] using congrArg Fin.val (h (finProdFinEquiv.symm k).1 (finProdFinEquiv.symm k).2).symm
+    have he := h (finProdFinEquiv.symm k).1 (finProdFinEquiv.symm k).2
+    rw [hk] at he
+    exact congrArg Fin.val he.symm
 
 theorem ternaryPayload_correct (T : LeanWang.TileSet) :
     PayloadCorrect (ternarySystem T) (ternaryPayload T) := by

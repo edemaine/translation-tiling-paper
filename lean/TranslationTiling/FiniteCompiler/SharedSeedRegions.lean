@@ -61,7 +61,7 @@ private theorem nat_multiple_cast_injective {u v : ℕ}
   rw [ZMod.val_natCast_of_lt hu', ZMod.val_natCast_of_lt hv'] at hh
   exact Nat.eq_of_mul_eq_mul_left (by decide : 0 < Sudoku.p * Sudoku.q) hh
 
-theorem firstPoint_injective {T : System} :
+theorem firstPoint_injective {T : System} [AlphabetFamily T] :
     Function.Injective (firstPoint T) := by
   intro y y' h
   apply ZMod.val_injective 3
@@ -70,7 +70,7 @@ theorem firstPoint_injective {T : System} :
       (lt_trans (ZMod.val_lt y') (by decide : 3 < 4))
   simpa only [firstPoint, Nat.cast_mul] using congrArg Prod.fst h
 
-theorem secondPoint_injective {T : System} :
+theorem secondPoint_injective {T : System} [AlphabetFamily T] :
     Function.Injective (secondPoint T) := by
   rintro ⟨c,y⟩ ⟨c',y'⟩ h
   have hc := c.isLt
@@ -85,7 +85,7 @@ theorem secondPoint_injective {T : System} :
   have hyy : y.val = y'.val := by omega
   exact Prod.ext (Fin.ext hcc) (ZMod.val_injective 2 hyy)
 
-theorem firstPoint_ne_secondPoint {T : System}
+theorem firstPoint_ne_secondPoint {T : System} [AlphabetFamily T]
     (y : ZMod 3) (u : Fin 2 × ZMod 2) : firstPoint T y ≠ secondPoint T u := by
   intro h
   have hp2 : 2 < residueModulus := by rw [residueModulus_eq]; decide
@@ -98,7 +98,7 @@ theorem firstPoint_ne_secondPoint {T : System}
   have h12 : (1 : ℕ) = 2 := h1.symm.trans (hh.trans h2)
   omega
 
-theorem activePoint_injective {T : System} :
+theorem activePoint_injective {T : System} [AlphabetFamily T] :
     Function.Injective (activePoint T) := by
   intro a b h
   cases a with
@@ -111,7 +111,7 @@ theorem activePoint_injective {T : System} :
     | inl y => exact (firstPoint_ne_secondPoint y u h.symm).elim
     | inr u' => exact congrArg Sum.inr (secondPoint_injective h)
 
-theorem first_second_disjoint {T : System} :
+theorem first_second_disjoint {T : System} [AlphabetFamily T] :
     Disjoint (firstRegion T) (secondRegion T) := by
   rw [Set.disjoint_left]
   rintro s ⟨y, rfl⟩ ⟨u, hu⟩

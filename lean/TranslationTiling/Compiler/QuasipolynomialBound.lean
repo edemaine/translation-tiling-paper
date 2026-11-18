@@ -144,7 +144,7 @@ theorem exists_connected_tile_joint_count_bound (T : LeanWang.TileSet) (hn : 0<T
     ∃ P : Tile 3, P≠[] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
       cubeCount P≤(max (Sudoku.Width*FiniteCompiler.Effective.jointWidth T.toFinset.card+2) 256)^
-        (33*(Sudoku.Width*FiniteCompiler.Effective.jointWidth T.toFinset.card)+116)*
+        (33*(Sudoku.Width*FiniteCompiler.Effective.jointWidth T.toFinset.card)+98)*
         3^(4*(Sudoku.Width*FiniteCompiler.Effective.jointWidth T.toFinset.card)+4) := by
   have hn' : 0<T.dedup.length := by simpa only [List.card_toFinset] using hn
   obtain ⟨hne,hc,ht,hb⟩ := FiniteCompiler.Effective.jointCompileCore_channel_bound T.dedup hn'
@@ -155,19 +155,16 @@ theorem exists_connected_tile_joint_count_bound (T : LeanWang.TileSet) (hn : 0<T
   simpa only [List.card_toFinset,FiniteCompiler.Effective.jointSystem,
     FiniteCompiler.JointSystem.system,FiniteCompiler.primeBudget,FiniteCompiler.channelCount] using hb
 
-/-- Three ternary channels per original column suffice for one Wang tile. -/
+/-- The explicit opposite-edge test handles one distinct Wang tile. -/
 theorem exists_connected_tile_one_quasipolynomial_bound (T : LeanWang.TileSet)
     (hT : T.toFinset.card=1) :
     ∃ P : Tile 3, P≠[] ∧ FaceConnected P ∧
-      (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧ cubeCount P≤2^6690 := by
+      (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧ cubeCount P≤2^250 := by
   have hlen : T.dedup.length=1 := by simpa only [List.card_toFinset] using hT
-  have hn : 0<T.dedup.length := by omega
-  obtain ⟨hne,hc,ht,_⟩ := FiniteCompiler.Effective.jointCompileCore_channel_bound T.dedup hn
+  obtain ⟨hne,hc,ht,_⟩ := FiniteCompiler.Effective.jointCompile_facts T.dedup
   have hd : LeanWang.TilesPlane T ↔ LeanWang.TilesPlane T.dedup :=
     LeanWang.tilesPlane_congr (by intro t; simp)
-  have hk : FiniteCompiler.Effective.jointWidth T.dedup.length=3+(0:Fin 5).val := by
-    rw [←List.card_toFinset,hT,FiniteCompiler.Effective.jointWidth_one]; rfl
-  have hb := FiniteCompiler.Effective.jointCompileCore_small_bound T.dedup hn 0 hk
+  have hb := FiniteCompiler.Effective.jointCompile_single_bound T.dedup hlen
   exact ⟨_,hne,hc,hd.trans ht,(List.toFinset_card_le _).trans hb⟩
 
 end

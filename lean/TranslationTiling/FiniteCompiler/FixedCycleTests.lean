@@ -6,7 +6,7 @@ noncomputable section
 set_option maxRecDepth 10000
 set_option maxHeartbeats 2000000
 
-variable {T : System} (E : EncodingParameters T)
+variable {T : System} [AlphabetFamily T] (E : EncodingParameters T)
 
 def digitGenerator (i : Channel T) (j : Label T i) : K E i :=
   (E.r i / E.digitPrime i j : ℕ)

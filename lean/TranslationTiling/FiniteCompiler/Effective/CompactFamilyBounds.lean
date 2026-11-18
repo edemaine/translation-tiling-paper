@@ -27,9 +27,9 @@ theorem family_freshCap_bound (T : System) (G : List CyclicTile) (hf : FamilyBud
 
 theorem family_compact_bound (T : System) (G : List CyclicTile) (hf : FamilyBudget T G)
     (hS : ∀ n, (T.slope n).natAbs≤Sudoku.Width) (hB : T.alphabet=3) (hw : 48≤T.width)
-    (H : ℕ) (hH : 1≤H) (hHcap : H≤primeBudget T^25)
+    (H : ℕ) (hH : 1≤H) (hHcap : H≤primeBudget T^16)
     (hxy : ∀ F∈G, ∀ f∈F, f.1.1.natAbs≤H ∧ f.1.2.natAbs≤H) :
-    (familyTileAt ((parameterData T,G),H)).length≤primeBudget T^(33*T.width+116)*3^(4*T.width+4) := by
+    (familyTileAt ((parameterData T,G),H)).length≤primeBudget T^(33*T.width+98)*3^(4*T.width+4) := by
   have hlen := (familyTileAt_facts T G hf hS hB hw H hH hxy).2.2.2
   let C := primeBudget T
   let L := freshCap (max G.length (C^2)) (C^4)
@@ -44,7 +44,7 @@ theorem family_compact_bound (T : System) (G : List CyclicTile) (hf : FamilyBudg
     apply max_le
     · apply (Nat.pow_le_pow_left hHcap 2).trans
       rw [←pow_mul]
-      apply (Nat.pow_le_pow_right (by omega : 1≤C) (by omega : 25*2≤21*T.width+31)).trans
+      apply (Nat.pow_le_pow_right (by omega : 1≤C) (by omega : 16*2≤21*T.width+31)).trans
       exact Nat.le_mul_of_pos_right _ (by positivity)
     · calc
         _ ≤ C^(21*T.width+28)*(C^3*3^(2*T.width+2)) := Nat.mul_le_mul hv hell

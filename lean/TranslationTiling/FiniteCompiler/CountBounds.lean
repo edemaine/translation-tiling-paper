@@ -40,6 +40,7 @@ theorem wordConstraintTiles_card_le (hb : ParameterBudget E b)
     (hL : T.alphabet + 1 ≤ b) :
     (wordConstraintTiles E).card ≤ b ^ ((cycleCountExponent T) + channelCount T) := by
   have hwords : Fintype.card (Word T) ≤ b ^ channelCount T := by
+    change Fintype.card (Column T → Symbol T) ≤ _
     rw [Fintype.card_fun]
     have hs := (label_card_le T (.inl (0 : Column T))).trans hL
     change Fintype.card (Symbol T) ≤ b at hs
@@ -70,19 +71,19 @@ theorem seedConstraintTiles_card_le (hb : ParameterBudget E b)
     omega
   have hs := (label_card_le T (.inl (0 : Column T))).trans hL
   change Fintype.card (Symbol T) ≤ b at hs
-  have hindex : Fintype.card (Fin 2 × Column T × Symbol T) ≤ b ^ 3 := by
+  have hindex : Fintype.card (Fin 2 × (Σ n : Column T, Symbol T)) ≤ b ^ 3 := by
     calc
       _ = 2 * (Fintype.card (Column T) * Fintype.card (Symbol T)) := by
-        rw [Fintype.card_prod, Fintype.card_fin, Fintype.card_prod]
+        simp only [Fintype.card_prod,Fintype.card_fin,Fintype.card_sigma,Finset.sum_const,Finset.card_univ,smul_eq_mul]
       _ ≤ b * (b * b) := Nat.mul_le_mul hb.two (Nat.mul_le_mul hN hs)
       _ = _ := by ring
   unfold seedConstraintTiles
   apply Finset.card_biUnion_le.trans
   calc
-    _ ≤ ∑ _q ∈ (Finset.univ.filter (fun q : Fin 2 × Column T × Symbol T =>
-        ¬ SeedSet T q.1 q.2.2)), b ^ (cycleCountExponent T) :=
+    _ ≤ ∑ _q ∈ (Finset.univ.filter (fun q : Fin 2 × (Σ n : Column T, Symbol T) =>
+        ¬ LetterSeedSet T q.1 q.2.1 q.2.2)), b ^ (cycleCountExponent T) :=
       Finset.sum_le_sum (fun _ _ => cycleTiles_card_le hb _ _)
-    _ ≤ Fintype.card (Fin 2 × Column T × Symbol T) * b ^ (cycleCountExponent T) := by
+    _ ≤ Fintype.card (Fin 2 × (Σ n : Column T, Symbol T)) * b ^ (cycleCountExponent T) := by
       simp only [Finset.sum_const, smul_eq_mul]
       exact Nat.mul_le_mul_right _ (Finset.card_filter_le _ _)
     _ ≤ b ^ 3 * b ^ (cycleCountExponent T) := Nat.mul_le_mul_right _ hindex

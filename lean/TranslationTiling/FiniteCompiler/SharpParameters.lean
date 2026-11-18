@@ -117,7 +117,7 @@ theorem exists_sharp_parameters (T : System) (hC : 596750 ≤ channelCount T) (h
     have hcard : Fintype.card Tags ≤ 3*C := by
       rw [Fintype.card_sigma]
       calc
-        _ ≤ ∑ _i : Channel T, 3 := Finset.sum_le_sum (fun i _ => by cases i <;> simp [Label,Symbol,hB])
+        _ ≤ ∑ _i : Channel T, 3 := Finset.sum_le_sum (fun i _ => by cases i <;> simp [Label,Letter,uniformAlphabetFamily,Symbol,hB])
         _ = _ := by simp [C,channelCount,Nat.mul_comm]
     have hp := Compiler.Size.primeCounting_fifth_large hC
     have hc : primeThreshold (C^2)+3*C+1 ≤ 3*C^4 := by

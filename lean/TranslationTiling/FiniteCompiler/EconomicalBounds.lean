@@ -72,7 +72,7 @@ theorem word_card_le (hB : T.alphabet=3) (hp : EconomicalPrimes E) :
     (wordConstraintTiles E).card≤(3*channelCount T^7)^(channelCount T) := by
   let C := channelCount T
   have hc : 0<C := by unfold C channelCount; omega
-  have hw : Fintype.card (Word T)=3^T.width := by simp [Word,Symbol,hB]
+  have hw : Fintype.card (Word T)=3^T.width := by simp [Word,Letter,uniform_size,Symbol,hB]
   unfold wordConstraintTiles
   calc
     _ ≤ ∑ _w ∈ Finset.univ.filter (fun w : Word T => w∉allowedWords T), C^(7*T.width) :=
@@ -86,16 +86,16 @@ theorem word_card_le (hB : T.alphabet=3) (hp : EconomicalPrimes E) :
 theorem seed_card_le (hB : T.alphabet=3) (hp : EconomicalPrimes E) (hC : 962≤channelCount T) :
     (seedConstraintTiles E).card≤channelCount T^17 := by
   let C := channelCount T
-  have hi : Fintype.card (Fin 2×Column T×Symbol T)≤C^2 := by
-    simp only [Fintype.card_prod,Fintype.card_fin,Column,Symbol,hB]
+  have hi : Fintype.card (Fin 2×(Σ n : Column T, Symbol T))≤C^2 := by
+    simp only [Fintype.card_prod,Fintype.card_sigma,Fintype.card_fin,Column,Symbol,hB,Finset.sum_const,Finset.card_univ,smul_eq_mul]
     dsimp [C] at *
     unfold channelCount at *
     nlinarith
   unfold seedConstraintTiles
   calc
-    _ ≤ ∑ _q ∈ Finset.univ.filter (fun q : Fin 2×Column T×Symbol T => ¬ SeedSet T q.1 q.2.2), C^15 :=
+    _ ≤ ∑ _q ∈ Finset.univ.filter (fun q : Fin 2×(Σ n : Column T, Symbol T) => ¬ LetterSeedSet T q.1 q.2.1 q.2.2), C^15 :=
       Finset.card_biUnion_le.trans (Finset.sum_le_sum (fun q _ => seed_cycle_card_le E hp q.1 q.2.1 q.2.2))
-    _ ≤ Fintype.card (Fin 2×Column T×Symbol T)*C^15 := by
+    _ ≤ Fintype.card (Fin 2×(Σ n : Column T, Symbol T))*C^15 := by
       simp only [Finset.sum_const,smul_eq_mul]
       exact Nat.mul_le_mul_right _ (Finset.card_filter_le _ _)
     _ ≤ C^2*C^15 := Nat.mul_le_mul_right _ hi

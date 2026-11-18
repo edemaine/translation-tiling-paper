@@ -11,7 +11,7 @@ noncomputable section
 
 namespace FiniteCompiler.CommonModel
 
-variable {T : System} (E : EncodingParameters T) (W : WordArray T)
+variable {T : System} [AlphabetFamily T] (E : EncodingParameters T) (W : WordArray T)
 
 def ordinaryForward (n : Column T) (x : Plane) (k : K E (.inl n))
     (j : ActivationIndex E (.inl n)) : P E (.inl n) × K E (.inl n) :=

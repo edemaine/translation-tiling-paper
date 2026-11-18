@@ -15,10 +15,10 @@ namespace FiniteCompiler
 
 open scoped BigOperators
 
-abbrev PrimeTag (T : System) :=
+abbrev PrimeTag (T : System) [AlphabetFamily T] :=
   Channel T ⊕ (Channel T ⊕ (Σ i : Channel T, Label T i))
 
-structure EncodingParameters (T : System) where
+structure EncodingParameters (T : System) [AlphabetFamily T] where
   primeAt : PrimeTag T → ℕ
   prime_isPrime : ∀ t, Nat.Prime (primeAt t)
   prime_injective : Function.Injective primeAt
@@ -40,7 +40,7 @@ structure EncodingParameters (T : System) where
 
 namespace EncodingParameters
 
-variable {T : System} (E : EncodingParameters T)
+variable {T : System} [AlphabetFamily T] (E : EncodingParameters T)
 
 def a (i : Channel T) : ℕ := E.primeAt (.inl i)
 def b (i : Channel T) : ℕ := E.primeAt (.inr (.inl i))

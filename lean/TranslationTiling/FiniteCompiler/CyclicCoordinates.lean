@@ -14,7 +14,7 @@ namespace FiniteCompiler
 
 noncomputable section
 
-variable {T : System} (E : EncodingParameters T)
+variable {T : System} [AlphabetFamily T] (E : EncodingParameters T)
 
 abbrev low (i : Channel T) : ZMod ((E.r i) ^ 2) →+ K E i :=
   CyclicShear.low (E.r i)

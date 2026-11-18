@@ -97,51 +97,51 @@ def Profile.mass (p : Profile) (w : ℕ) : ℕ :=
 
 def SupportValid (p : Profile) (w H : ℕ) : Prop :=
   175≤H ∧
-  (∀ c∈List.range w, 32*(p.rAt w c*p.entry c*p.entry (w+2+c))^2≤H) ∧
-  ∀ t∈List.range 2, 2*(3-t)*(p.rAt w (w+t)*p.entry (w+t)*p.entry (2*w+2+t))^2*175^3≤H
+  (∀ c∈List.range w, 32*p.rAt w c*(p.entry c*p.entry (w+2+c))^2≤H) ∧
+  ∀ t∈List.range 2, 2*(3-t)*p.rAt w (w+t)*(p.entry (w+t)*p.entry (2*w+2+t))^2*175^3≤H
 
 instance (p : Profile) (w H : ℕ) : Decidable (SupportValid p w H) := by
   unfold SupportValid
   infer_instance
 
-def horizontal48 : ℕ := 9303481683377877403130060871968
+def horizontal48 : ℕ := 5549328077477164312500
 
 theorem support48 : SupportValid profile48 48 horizontal48 := by decide +kernel
 
 theorem volume48 :
     horizontal48^2≤(2^15*3^(2*48+2))*profile48.order 48 ∧
-    (2^24*549072*8003^4)*horizontal48^2*profile48.order 48*profile48.mass 48*(2^15*3^(2*48+2))^2≤2^6690 := by decide +kernel
+    (2^24*549072*8003^4)*horizontal48^2*profile48.order 48*profile48.mass 48*(2^15*3^(2*48+2))^2≤2^6629 := by decide +kernel
 
-def horizontal64 : ℕ := 708788077458072803818575405693728
+def horizontal64 : ℕ := 15545075591467925275616
 
 theorem support64 : SupportValid profile64 64 horizontal64 := by decide +kernel
 
 theorem volume64 :
     horizontal64^2≤(2^15*3^(2*64+2))*profile64.order 64 ∧
-    (2^24*549072*8003^4)*horizontal64^2*profile64.order 64*profile64.mass 64*(2^15*3^(2*64+2))^2≤2^9195 := by decide +kernel
+    (2^24*549072*8003^4)*horizontal64^2*profile64.order 64*profile64.mass 64*(2^15*3^(2*64+2))^2≤2^9124 := by decide +kernel
 
-def horizontal80 : ℕ := 5344897214369115811260173096971808
+def horizontal80 : ℕ := 76236314905252451265376
 
 theorem support80 : SupportValid profile80 80 horizontal80 := by decide +kernel
 
 theorem volume80 :
     horizontal80^2≤(2^15*3^(2*80+2))*profile80.order 80 ∧
-    (2^24*549072*8003^4)*horizontal80^2*profile80.order 80*profile80.mass 80*(2^15*3^(2*80+2))^2≤2^11750 := by decide +kernel
+    (2^24*549072*8003^4)*horizontal80^2*profile80.order 80*profile80.mass 80*(2^15*3^(2*80+2))^2≤2^11678 := by decide +kernel
 
-def horizontal96 : ℕ := 60290116328567265728234218211087648
+def horizontal96 : ℕ := 386720254927118030565664
 
 theorem support96 : SupportValid profile96 96 horizontal96 := by decide +kernel
 
 theorem volume96 :
     horizontal96^2≤(2^15*3^(2*96+2))*profile96.order 96 ∧
-    (2^24*549072*8003^4)*horizontal96^2*profile96.order 96*profile96.mass 96*(2^15*3^(2*96+2))^2≤2^14376 := by decide +kernel
+    (2^24*549072*8003^4)*horizontal96^2*profile96.order 96*profile96.mass 96*(2^15*3^(2*96+2))^2≤2^14302 := by decide +kernel
 
-def horizontal112 : ℕ := 517125293484082178759452577741629472
+def horizontal112 : ℕ := 1652761095740357395611232
 
 theorem support112 : SupportValid profile112 112 horizontal112 := by decide +kernel
 
 theorem volume112 :
     horizontal112^2≤(2^15*3^(2*112+2))*profile112.order 112 ∧
-    (2^24*549072*8003^4)*horizontal112^2*profile112.order 112*profile112.mass 112*(2^15*3^(2*112+2))^2≤2^17078 := by decide +kernel
+    (2^24*549072*8003^4)*horizontal112^2*profile112.order 112*profile112.mass 112*(2^15*3^(2*112+2))^2≤2^17001 := by decide +kernel
 
 end TranslationTiling.FiniteCompiler.Effective.SmallProfiles

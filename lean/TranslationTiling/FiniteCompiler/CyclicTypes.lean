@@ -11,7 +11,7 @@ namespace TranslationTiling
 namespace FiniteCompiler
 
 
-variable {T : System}
+variable {T : System} [AlphabetFamily T]
 
 
 abbrev K (E : EncodingParameters T) (i : Channel T) := ZMod (E.r i)

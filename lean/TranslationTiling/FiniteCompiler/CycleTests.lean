@@ -272,7 +272,7 @@ theorem tiles_offset_iff_permutation
 
 section ConcreteTiles
 
-variable {T : System} (E : EncodingParameters T)
+variable {T : System} [AlphabetFamily T] (E : EncodingParameters T)
 
 def usefulProjection : Ambient E →+ Useful E where
   toFun v := fun i => (v.2.2 i).2

@@ -1,3 +1,4 @@
+import TranslationTiling.FiniteCompiler.MixedCompiler
 import TranslationTiling.FiniteCompiler.Effective.JointCode
 import TranslationTiling.FiniteCompiler.Effective.SmallParameters
 import Mathlib.Analysis.SpecialFunctions.Log.Base
@@ -170,46 +171,47 @@ theorem joint_channel_cap_real_bound {n N : ℕ} (hn : 0<n)
   exact (show (N:ℝ)≤((P^(33*w+466)*3^(4*w+4):ℕ):ℝ) by exact_mod_cast hN).trans hpow
 
 theorem dyadic_compact_real_bound {n N e : ℕ} (hN : N≤2^e)
-    (he : (e:ℝ)≤2600*Real.logb 2 ((n:ℝ)+4)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) :
-    (N:ℝ)≤((n:ℝ)+4)^(2600*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
+    (he : (e:ℝ)≤2200*Real.logb 2 ((n:ℝ)+4)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) :
+    (N:ℝ)≤((n:ℝ)+4)^(2200*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
   apply (show (N:ℝ)≤(2:ℝ)^e by exact_mod_cast hN).trans
   apply (Real.logb_le_logb (by norm_num : (1:ℝ)<2) (by positivity) (by positivity)).mp
   rw [logb_two_pow,Real.logb_rpow_eq_mul_logb_of_pos (by positivity : 0<(n:ℝ)+4)]
   nlinarith only [he]
 
 theorem joint_compact_bulk_real_bound {n N : ℕ} (hn : 92≤n)
-    (hN : N≤(max (Sudoku.Width*jointWidth n+2) 256)^(33*(Sudoku.Width*jointWidth n)+116)*
+    (hN : N≤(max (Sudoku.Width*jointWidth n+2) 256)^(33*(Sudoku.Width*jointWidth n)+98)*
       3^(4*(Sudoku.Width*jointWidth n)+4)) :
-    (N:ℝ)≤((n:ℝ)+4)^(2600*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
+    (N:ℝ)≤((n:ℝ)+4)^(2200*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
   let w := Sudoku.Width*jointWidth n
   let P := max (w+2) 256
   let t := Real.logb 2 ((n:ℝ)+4)
   let g := Real.logb 2 t
   have hP : 256≤P := le_max_right _ _
   have hPpos : (0:ℝ)<P := by exact_mod_cast (by omega : 0<P)
-  have ht : (6:ℝ)≤t := by
-    have hh := t_lower (n:=n) (a:=6) (b:=1) (by decide)
-      (by norm_num; exact_mod_cast (by omega : 64≤n+4))
+  have ht : (13/2:ℝ)≤t := by
+    have hh := t_lower (n:=n) (a:=13) (b:=2) (by decide)
+      ((by norm_num : (2:ℝ)^13≤96^2).trans
+        (pow_le_pow_left₀ (by norm_num) (show (96:ℝ)≤(n:ℝ)+4 by exact_mod_cast (by omega : 96≤n+4)) 2))
     simpa using hh
-  have hg : (5/2:ℝ)≤g := g_lower (by norm_num) ht 5 2 (by decide) (by norm_num)
-  have hw : (w:ℝ)≤(64/3:ℝ)*t := by
+  have hg : (8/3:ℝ)≤g := g_lower (by norm_num) ht 8 3 (by decide) (by norm_num)
+  have hw : (w:ℝ)≤(800/39:ℝ)*t := by
     have hh := jointWidth_le_log (by omega : 0<n)
     dsimp [w]
     norm_num only [Sudoku.Width,Sudoku.q,Nat.cast_mul,Nat.cast_ofNat]
     dsimp [t] at ht ⊢
     nlinarith
-  have hp : (P:ℝ)≤(128/3:ℝ)*t := by
+  have hp : (P:ℝ)≤(512/13:ℝ)*t := by
     dsimp [P]; push_cast
     exact max_le (by push_cast; linarith) (by linarith)
-  have hconst : Real.logb 2 (128/3:ℝ)≤(11/2:ℝ) := by
+  have hconst : Real.logb 2 (512/13:ℝ)≤(16/3:ℝ) := by
     have hh := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2)
-      (by norm_num : (0:ℝ)<(128/3:ℝ)^2) (show (128/3:ℝ)^2≤(2:ℝ)^11 by norm_num)
+      (by norm_num : (0:ℝ)<(512/13:ℝ)^3) (show (512/13:ℝ)^3≤(2:ℝ)^16 by norm_num)
     rw [Real.logb_pow,logb_two_pow] at hh
     norm_num at hh
     linarith
-  have hlog : Real.logb 2 (P:ℝ)≤(16/5:ℝ)*g := by
+  have hlog : Real.logb 2 (P:ℝ)≤(3:ℝ)*g := by
     have hh := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2) hPpos hp
-    rw [Real.logb_mul (by norm_num : (128/3:ℝ)≠0) (by linarith : t≠0)] at hh
+    rw [Real.logb_mul (by norm_num : (512/13:ℝ)≠0) (by linarith : t≠0)] at hh
     change Real.logb 2 (P:ℝ)≤_ at hh
     dsimp [g] at hg ⊢
     linarith
@@ -220,62 +222,44 @@ theorem joint_compact_bulk_real_bound {n N : ℕ} (hn : 92≤n)
     rwa [heq] at hh
   have hthree : 4*Real.logb 2 3≤Real.logb 2 (P:ℝ) := by linarith [lg_three_upper]
   have hextra := mul_le_mul_of_nonneg_right hthree (show (0:ℝ)≤w+1 by positivity)
-  have ha : ((34*w+117:ℕ):ℝ)≤(34*(64/3)+117/6:ℝ)*t := by push_cast; linarith
+  have ha : ((34*w+99:ℕ):ℝ)≤(34*(800/39)+198/13:ℝ)*t := by push_cast; linarith
   have hh := mul_le_mul ha hlog (by linarith : 0≤Real.logb 2 (P:ℝ))
-    (by positivity : 0≤(34*(64/3)+117/6:ℝ)*t)
+    (by positivity : 0≤(34*(800/39)+198/13:ℝ)*t)
   have hc := mul_le_mul_of_nonneg_right
-    (show (34*(64/3)+117/6:ℝ)*(16/5)≤2600 by norm_num) (show 0≤t*g by positivity)
-  have he : ((33*w+116:ℕ):ℝ)*Real.logb 2 (P:ℝ)+((4*w+4:ℕ):ℝ)*Real.logb 2 3≤2600*t*g := by
+    (show (34*(800/39)+198/13:ℝ)*3≤2200 by norm_num) (show 0≤t*g by positivity)
+  have he : ((33*w+98:ℕ):ℝ)*Real.logb 2 (P:ℝ)+((4*w+4:ℕ):ℝ)*Real.logb 2 3≤2200*t*g := by
     push_cast at hh ⊢
     nlinarith only [hh,hc,hextra]
-  apply (show (N:ℝ)≤((P^(33*w+116)*3^(4*w+4):ℕ):ℝ) by exact_mod_cast hN).trans
+  apply (show (N:ℝ)≤((P^(33*w+98)*3^(4*w+4):ℕ):ℝ) by exact_mod_cast hN).trans
   push_cast
   apply (Real.logb_le_logb (by norm_num : (1:ℝ)<2) (by positivity) (by positivity)).mp
   rw [Real.logb_mul (by positivity) (by positivity),Real.logb_pow,Real.logb_pow,
     Real.logb_rpow_eq_mul_logb_of_pos (by positivity : 0<(n:ℝ)+4)]
-  change _≤2600*g*t
+  change _≤2200*g*t
   nlinarith only [he]
 
-theorem joint_compact_small_exponent {n : ℕ} (hn : 0<n) (i : Fin 5)
+theorem joint_compact_small_exponent {n : ℕ} (hn : 3≤n) (hn4 : n≠4) (hn5 : n≠5) (i : Fin 5)
     (hi : jointWidth n=3+i.val) :
-    (SmallProfiles.exponent i:ℝ)≤2600*Real.logb 2 ((n:ℝ)+4)*
+    (SmallProfiles.exponent i:ℝ)≤2200*Real.logb 2 ((n:ℝ)+4)*
       Real.logb 2 (Real.logb 2 ((n:ℝ)+4)) := by
   let t := Real.logb 2 ((n:ℝ)+4)
   let g := Real.logb 2 t
   have htpos : 0<t := Real.logb_pos (by norm_num) (by have := Nat.cast_nonneg (α:=ℝ) n; linarith)
   fin_cases i
   · change jointWidth n=3+0 at hi
-    have hn' : 1≤n := by
-      by_contra h
-      have hm : jointWidth n≤jointWidth (1-1) :=
-        Nat.add_le_add_right (Nat.log_mono_right
-          (Nat.mul_le_mul_left 24 (show n≤1-1 by omega))) 1
-      have hc : jointWidth (1-1)<3+0 := by decide
-      omega
-    have ht : (65/28:ℝ)≤t := by
-      have hh := t_lower (n:=n) (a:=65) (b:=28) (by decide)
-        ((by norm_num : (2:ℝ)^65≤(1+4)^28).trans
-          (pow_le_pow_left₀ (by norm_num) (show (1+4:ℝ)≤(n:ℝ)+4 by exact_mod_cast Nat.add_le_add_right hn' 4) 28))
-      simpa [t] using hh
-    have hg : (243/200:ℝ)≤g := g_lower (by norm_num) ht 243 200 (by decide) (by norm_num)
-    have hh := mul_le_mul ht hg (by norm_num : (0:ℝ)≤243/200) htpos.le
-    norm_num [SmallProfiles.exponent] at *
-    nlinarith only [hh]
+    have hm : jointWidth 3≤jointWidth n :=
+      Nat.add_le_add_right (Nat.log_mono_right (Nat.mul_le_mul_left 24 hn)) 1
+    have hc : jointWidth 3=4 := by decide
+    omega
   · change jointWidth n=3+1 at hi
-    have hn' : 2≤n := by
-      by_contra h
-      have hm : jointWidth n≤jointWidth (2-1) :=
-        Nat.add_le_add_right (Nat.log_mono_right
-          (Nat.mul_le_mul_left 24 (show n≤2-1 by omega))) 1
-      have hc : jointWidth (2-1)<3+1 := by decide
-      omega
-    have ht : (137/53:ℝ)≤t := by
-      have hh := t_lower (n:=n) (a:=137) (b:=53) (by decide)
-        ((by norm_num : (2:ℝ)^137≤(2+4)^53).trans
-          (pow_le_pow_left₀ (by norm_num) (show (2+4:ℝ)≤(n:ℝ)+4 by exact_mod_cast Nat.add_le_add_right hn' 4) 53))
+    have hn' : 3≤n := hn
+    have ht : (14/5:ℝ)≤t := by
+      have hh := t_lower (n:=n) (a:=14) (b:=5) (by decide)
+        ((by norm_num : (2:ℝ)^14≤(3+4)^5).trans
+          (pow_le_pow_left₀ (by norm_num) (show (3+4:ℝ)≤(n:ℝ)+4 by exact_mod_cast Nat.add_le_add_right hn' 4) 5))
       simpa [t] using hh
-    have hg : (63/46:ℝ)≤g := g_lower (by norm_num) ht 63 46 (by decide) (by norm_num)
-    have hh := mul_le_mul ht hg (by norm_num : (0:ℝ)≤63/46) htpos.le
+    have hg : (297/200:ℝ)≤g := g_lower (by norm_num) ht 297 200 (by decide) (by norm_num)
+    have hh := mul_le_mul ht hg (by norm_num : (0:ℝ)≤297/200) htpos.le
     norm_num [SmallProfiles.exponent] at *
     nlinarith only [hh]
   · change jointWidth n=3+2 at hi
@@ -286,13 +270,14 @@ theorem joint_compact_small_exponent {n : ℕ} (hn : 0<n) (i : Fin 5)
           (Nat.mul_le_mul_left 24 (show n≤4-1 by omega))) 1
       have hc : jointWidth (4-1)<3+2 := by decide
       omega
-    have ht : (3/1:ℝ)≤t := by
-      have hh := t_lower (n:=n) (a:=3) (b:=1) (by decide)
-        ((by norm_num : (2:ℝ)^3≤(4+4)^1).trans
-          (pow_le_pow_left₀ (by norm_num) (show (4+4:ℝ)≤(n:ℝ)+4 by exact_mod_cast Nat.add_le_add_right hn' 4) 1))
+    have hn6 : 6≤n := by omega
+    have ht : (33/10:ℝ)≤t := by
+      have hh := t_lower (n:=n) (a:=33) (b:=10) (by decide)
+        ((by norm_num : (2:ℝ)^33≤(6+4)^10).trans
+          (pow_le_pow_left₀ (by norm_num) (show (6+4:ℝ)≤(n:ℝ)+4 by exact_mod_cast Nat.add_le_add_right hn6 4) 10))
       simpa [t] using hh
-    have hg : (19/12:ℝ)≤g := g_lower (by norm_num) ht 19 12 (by decide) (by norm_num)
-    have hh := mul_le_mul ht hg (by norm_num : (0:ℝ)≤19/12) htpos.le
+    have hg : (17/10:ℝ)≤g := g_lower (by norm_num) ht 17 10 (by decide) (by norm_num)
+    have hh := mul_le_mul ht hg (by norm_num : (0:ℝ)≤17/10) htpos.le
     norm_num [SmallProfiles.exponent] at *
     nlinarith only [hh]
   · change jointWidth n=3+3 at hi
@@ -328,6 +313,49 @@ theorem joint_compact_small_exponent {n : ℕ} (hn : 0<n) (i : Fin 5)
     have hg : (23/10:ℝ)≤g := g_lower (by norm_num) ht 23 10 (by decide) (by norm_num)
     have hh := mul_le_mul ht hg (by norm_num : (0:ℝ)≤23/10) htpos.le
     norm_num [SmallProfiles.exponent] at *
+    nlinarith only [hh]
+
+
+theorem single_compact_exponent : (250:ℝ)≤2200*Real.logb 2 ((1:ℝ)+4)*Real.logb 2 (Real.logb 2 ((1:ℝ)+4)) := by
+  have ht : (2:ℝ)≤Real.logb 2 ((1:ℝ)+4) := by
+    have hh := t_lower (n:=1) (a:=2) (b:=1) (by decide) (by norm_num)
+    simpa using hh
+  have hg : (1:ℝ)≤Real.logb 2 (Real.logb 2 ((1:ℝ)+4)) := by
+    have ht' : (2:ℝ)≤Real.logb 2 (((1:ℕ):ℝ)+4) := by simpa only [Nat.cast_one] using ht
+    have hh := g_lower (n:=1) (by norm_num : (0:ℝ)<2) ht' 1 1 (by decide) (by norm_num)
+    simpa only [Nat.cast_one,Nat.cast_ofNat,div_one] using hh
+  have hh := mul_le_mul ht hg (by norm_num : (0:ℝ)≤1) (by linarith : (0:ℝ)≤Real.logb 2 ((1:ℝ)+4))
+  nlinarith only [hh]
+
+theorem mixed_compact_exponent (k : Fin 3) {n : ℕ}
+    (hn : n=FiniteCompiler.MixedCompiler.Profiles.count k) :
+    (FiniteCompiler.MixedCompiler.Profiles.exponent k:ℝ)≤2200*Real.logb 2 ((n:ℝ)+4)*
+      Real.logb 2 (Real.logb 2 ((n:ℝ)+4)) := by
+  subst n
+  fin_cases k
+  · change (7736:ℝ)≤2200*Real.logb 2 ((2:ℝ)+4)*Real.logb 2 (Real.logb 2 ((2:ℝ)+4))
+    have ht : (137/53:ℝ)≤Real.logb 2 ((2:ℝ)+4) := by
+      simpa only [Nat.cast_ofNat,Nat.cast_one,div_one] using (t_lower (n:=2) (a:=137) (b:=53) (by decide) (by norm_num))
+    have hg : (63/46:ℝ)≤Real.logb 2 (Real.logb 2 ((2:ℝ)+4)) :=
+      g_lower (n:=2) (by norm_num) ht 63 46 (by decide) (by norm_num)
+    have hh := mul_le_mul ht hg (by norm_num : (0:ℝ)≤63/46) (le_trans (by norm_num : (0:ℝ)≤137/53) ht)
+    norm_num at hh ⊢
+    nlinarith only [hh]
+  · change (9460:ℝ)≤2200*Real.logb 2 ((4:ℝ)+4)*Real.logb 2 (Real.logb 2 ((4:ℝ)+4))
+    have ht : (3/1:ℝ)≤Real.logb 2 ((4:ℝ)+4) := by
+      simpa only [Nat.cast_ofNat,Nat.cast_one,div_one] using (t_lower (n:=4) (a:=3) (b:=1) (by decide) (by norm_num))
+    have hg : (19/12:ℝ)≤Real.logb 2 (Real.logb 2 ((4:ℝ)+4)) :=
+      g_lower (n:=4) (by norm_num) ht 19 12 (by decide) (by norm_num)
+    have hh := mul_le_mul ht hg (by norm_num : (0:ℝ)≤19/12) (le_trans (by norm_num : (0:ℝ)≤3/1) ht)
+    norm_num at hh ⊢
+    nlinarith only [hh]
+  · change (10019:ℝ)≤2200*Real.logb 2 ((5:ℝ)+4)*Real.logb 2 (Real.logb 2 ((5:ℝ)+4))
+    have ht : (31/10:ℝ)≤Real.logb 2 ((5:ℝ)+4) := by
+      simpa only [Nat.cast_ofNat,Nat.cast_one,div_one] using (t_lower (n:=5) (a:=31) (b:=10) (by decide) (by norm_num))
+    have hg : (8/5:ℝ)≤Real.logb 2 (Real.logb 2 ((5:ℝ)+4)) :=
+      g_lower (n:=5) (by norm_num) ht 8 5 (by decide) (by norm_num)
+    have hh := mul_le_mul ht hg (by norm_num : (0:ℝ)≤8/5) (le_trans (by norm_num : (0:ℝ)≤31/10) ht)
+    norm_num at hh ⊢
     nlinarith only [hh]
 
 end

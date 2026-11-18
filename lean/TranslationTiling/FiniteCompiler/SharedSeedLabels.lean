@@ -123,7 +123,7 @@ def sharedOutput {S : Type uS} {m D : ℕ}
     e (code.symm (sharedOutput e code t s)) = rotate t (e s) := by
   simp only [sharedOutput, Equiv.symm_apply_apply, label_rotation]
 
-def sharedZ {T : System} {m : ℕ} {K : Type uK}
+def sharedZ {T : System} [AlphabetFamily T] {m : ℕ} {K : Type uK}
     (e : Residues T ≃ LabelledResidue m) (code : Residues T ≃ ZMod ((residueModulus ^ 2)))
     (x : Plane) (_k : K) : ZMod ((residueModulus ^ 2)) :=
   sharedOutput e code x.1 ((x.1 : ZMod (residueModulus)), (x.2 : ZMod (residueModulus)))

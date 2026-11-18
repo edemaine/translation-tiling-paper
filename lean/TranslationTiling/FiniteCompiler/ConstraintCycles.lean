@@ -16,7 +16,7 @@ noncomputable section
 namespace FiniteCompiler
 
 
-variable {T : System}
+variable {T : System} [AlphabetFamily T]
 
 noncomputable def columnResidueEquiv (T : System) : Column T ≃ ZMod T.width :=
   (ZMod.finEquiv T.width)
@@ -42,28 +42,28 @@ def seedCycle (t : Fin 2) (n : Column T) : ZMod 2 ↪ Channel T where
     · rfl
 
 @[simp] theorem seedCycle_zero
-    {T : System}
+    {T : System} [AlphabetFamily T]
     (t : Fin 2) (n : Column T) :
     seedCycle t n 0 = .inr t := rfl
 
 @[simp] theorem seedCycle_one
-    {T : System}
+    {T : System} [AlphabetFamily T]
     (t : Fin 2) (n : Column T) :
     seedCycle t n 1 = .inl n := rfl
 
-def seedCycleLabels (t : Fin 2) (n : Column T) (j : Symbol T) (z : ZMod 2) :
+def seedCycleLabels (t : Fin 2) (n : Column T) (j : Letter T n) (z : ZMod 2) :
     Label T (seedCycle t n z) :=
   Fin.cases (motive := fun z : Fin 2 => Label T (seedCycle t n z))
     () (fun _ => j) z
 
 @[simp] theorem seedCycleLabels_zero
-    {T : System}
-    (t : Fin 2) (n : Column T) (j : Symbol T) :
+    {T : System} [AlphabetFamily T]
+    (t : Fin 2) (n : Column T) (j : Letter T n) :
     seedCycleLabels t n j 0 = () := rfl
 
 @[simp] theorem seedCycleLabels_one
-    {T : System}
-    (t : Fin 2) (n : Column T) (j : Symbol T) :
+    {T : System} [AlphabetFamily T]
+    (t : Fin 2) (n : Column T) (j : Letter T n) :
     seedCycleLabels t n j 1 = j := rfl
 
 variable (E : EncodingParameters T)
@@ -86,7 +86,7 @@ theorem ordinaryCycle_exclusion_iff (w : Word T) (o : GraphOutputs E)
       (congrArg (fun m : Column T => ¬ Active E o (.inl m) x (w m))
         ((columnResidueEquiv T).symm_apply_apply n)) hn
 
-theorem seedCycle_exclusion_iff (t : Fin 2) (n : Column T) (j : Symbol T)
+theorem seedCycle_exclusion_iff (t : Fin 2) (n : Column T) (j : Letter T n)
     (o : GraphOutputs E) (hdep : HasDependence E o) :
     (∀ F ∈ fixedCycleTiles E (seedCycle t n) (seedCycleLabels t n j),
       Tiles F (graph o)) ↔
@@ -114,8 +114,8 @@ def wordConstraintTiles : Finset (Finset (Ambient E)) := by
 
 def seedConstraintTiles : Finset (Finset (Ambient E)) := by
   classical
-  exact (Finset.univ.filter (fun q : Fin 2 × Column T × Symbol T =>
-      ¬ SeedSet T q.1 q.2.2)).biUnion
+  exact (Finset.univ.filter (fun q : Fin 2 × (Σ n : Column T, Letter T n) =>
+      ¬ LetterSeedSet T q.1 q.2.1 q.2.2)).biUnion
     (fun q => fixedCycleTiles E (seedCycle q.1 q.2.1) (seedCycleLabels q.1 q.2.1 q.2.2))
 
 theorem nonempty_of_mem_wordConstraintTiles {F : Finset (Ambient E)}
@@ -155,7 +155,7 @@ theorem wordConstraintTiles_iff (o : GraphOutputs E) (hdep : HasDependence E o) 
 theorem seedConstraintTiles_iff (o : GraphOutputs E) (hdep : HasDependence E o) :
     (∀ F ∈ seedConstraintTiles E, Tiles F (graph o)) ↔
       ∀ t n x j, Active E o (.inr t) x () → Active E o (.inl n) x j →
-        SeedSet T t j := by
+        LetterSeedSet T t n j := by
   classical
   constructor
   · intro h t n x j hseed hord
@@ -165,11 +165,11 @@ theorem seedConstraintTiles_iff (o : GraphOutputs E) (hdep : HasDependence E o) 
       intro F hF
       apply h F
       apply Finset.mem_biUnion.mpr
-      exact ⟨(t, n, j), Finset.mem_filter.mpr ⟨Finset.mem_univ _, hj⟩, hF⟩
+      exact ⟨(t, ⟨n, j⟩), Finset.mem_filter.mpr ⟨Finset.mem_univ _, hj⟩, hF⟩
     exact (seedCycle_exclusion_iff E t n j o hdep).mp hcycle x ⟨hseed, hord⟩
   · intro h F hF
     obtain ⟨⟨t, n, j⟩, hq, hF⟩ := Finset.mem_biUnion.mp hF
-    have hj : ¬ SeedSet T t j := (Finset.mem_filter.mp hq).2
+    have hj : ¬ LetterSeedSet T t n j := (Finset.mem_filter.mp hq).2
     apply (seedCycle_exclusion_iff E t n j o hdep).mpr ?_ F hF
     intro x hx
     exact hj (h t n x j hx.1 hx.2)

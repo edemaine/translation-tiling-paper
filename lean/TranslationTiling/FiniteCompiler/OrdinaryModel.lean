@@ -13,9 +13,9 @@ noncomputable section
 
 namespace FiniteCompiler.CommonModel
 
-variable {T : System} (E : EncodingParameters T) (W : WordArray T)
+variable {T : System} [AlphabetFamily T] (E : EncodingParameters T) (W : WordArray T)
 
-def ordinarySymbol (n : Column T) (x : Plane) : Symbol T :=
+def ordinarySymbol (n : Column T) (x : Plane) : Letter T n :=
   W n (lineValue T n x)
 
 def ordinaryUseful (n : Column T) (x : Plane) (w : K E (.inl n)) : P E (.inl n) :=
@@ -35,7 +35,7 @@ theorem ordinaryUseful_eq_of_lineValue_eq (n : Column T) {x y : Plane}
   exact congrArg
     (fun t : ℤ => (channelDigitBlocks E (.inl n) (W n t)).C w) hxy
 
-theorem ordinaryUseful_active_iff (n : Column T) (x : Plane) (j : Symbol T) :
+theorem ordinaryUseful_active_iff (n : Column T) (x : Plane) (j : Letter T n) :
     (∃ w w' : K E (.inl n), w - w' ∈ digitSubgroup E (.inl n) j ∧
       ordinaryUseful E W n x w ≠ ordinaryUseful E W n x w') ↔
         j = ordinarySymbol W n x :=
@@ -52,7 +52,7 @@ theorem ordinarySymbol_offset (n : Column T) (x : Plane)
 theorem ordinaryUseful_offset (n : Column T) (x : Plane)
     (j : ActivationIndex E (.inl n)) (w : K E (.inl n)) :
     ordinaryUseful E W n (x - ordinaryOffset E n j) w = ordinaryUseful E W n x w := by
-  exact congrArg (fun s : Symbol T => (channelDigitBlocks E (.inl n) s).C w)
+  exact congrArg (fun s : Letter T n => (channelDigitBlocks E (.inl n) s).C w)
     (ordinarySymbol_offset E W n x j)
 
 theorem ordinaryHigh_offset (n : Column T) (x : Plane)
@@ -60,7 +60,7 @@ theorem ordinaryHigh_offset (n : Column T) (x : Plane)
     ordinaryHigh E W n (x - ordinaryOffset E n j) w =
       (channelDigitBlocks E (.inl n) (ordinarySymbol W n x)).T
         (x.1 - (ordinaryOffset E n j).1) w := by
-  exact congrArg (fun s : Symbol T => (channelDigitBlocks E (.inl n) s).T
+  exact congrArg (fun s : Letter T n => (channelDigitBlocks E (.inl n) s).T
     (x.1 - (ordinaryOffset E n j).1) w) (ordinarySymbol_offset E W n x j)
 
 end FiniteCompiler.CommonModel

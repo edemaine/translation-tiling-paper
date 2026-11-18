@@ -55,7 +55,8 @@ theorem base_card : (FiniteCompiler.testTiles E).card≤3^(system code).width+
     simp only [fixedCycleTiles,Finset.card_singleton,Finset.sum_const,smul_eq_mul,mul_one]
     apply (Finset.card_filter_le _ _).trans
     have hb : (system code).alphabet=3 := rfl
-    simpa only [Finset.card_univ,Word,Fintype.card_fun,Symbol,Fintype.card_fin,hb,Column] using (le_refl (3^(system code).width))
+    change Fintype.card (Column (system code) → Fin 3)≤3^(system code).width
+    simp [Column]
   have hseed : seedConstraintTiles E=∅ := by
     ext F
     constructor

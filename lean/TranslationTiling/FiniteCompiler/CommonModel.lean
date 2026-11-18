@@ -12,7 +12,7 @@ noncomputable section
 
 namespace FiniteCompiler.CommonModel
 
-variable {T : System} (E : EncodingParameters T) (W : WordArray T)
+variable {T : System} [AlphabetFamily T] (E : EncodingParameters T) (W : WordArray T)
 
 def outputs : GraphOutputs E where
   c b i := match i with
@@ -62,7 +62,7 @@ theorem outputs_hasDependence : HasDependence E (outputs E W) := by
       seedResidue_representative (T := T) (seedResidue T x)
     rw [hr]
 
-theorem active_ordinary_iff (n : Column T) (x : Plane) (j : Symbol T) :
+theorem active_ordinary_iff (n : Column T) (x : Plane) (j : Letter T n) :
     Active E (outputs E W) (.inl n) x j ↔ j = ordinarySymbol W n x := by
   simpa only [Active, DigitActive, usefulAt_ordinary] using
     ordinaryUseful_active_iff E W n x j
@@ -82,10 +82,10 @@ theorem active_word_allowed (hrule : LineRule T W) (x : Plane) (w : Word T)
 
 theorem active_seed_forces_symbol
     (hseedW : ∀ t n x, SharedSeed.residue T x ∈ seedActiveRegion T t →
-      SeedSet T t (W n (lineValue T n x)))
+      LetterSeedSet T t n (W n (lineValue T n x)))
     (t : Fin 2) (n : Column T) (x : Plane)
-    (j : Symbol T) (ht : Active E (outputs E W) (.inr t) x ())
-    (hj : Active E (outputs E W) (.inl n) x j) : SeedSet T t j := by
+    (j : Letter T n) (ht : Active E (outputs E W) (.inr t) x ())
+    (hj : Active E (outputs E W) (.inl n) x j) : LetterSeedSet T t n j := by
   rw [(active_ordinary_iff E W n x j).mp hj]
   exact hseedW t n x ((active_seed_iff E W t x).mp ht)
 

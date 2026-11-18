@@ -153,7 +153,7 @@ end RepresentationFibres
 
 noncomputable section Concrete
 
-variable {T : System} (E : EncodingParameters T)
+variable {T : System} [AlphabetFamily T] (E : EncodingParameters T)
 
 local instance : DecidableEq (Ambient E) := Classical.decEq _
 

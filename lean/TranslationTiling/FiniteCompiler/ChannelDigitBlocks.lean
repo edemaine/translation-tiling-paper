@@ -16,7 +16,7 @@ noncomputable section
 namespace FiniteCompiler
 
 
-variable {T : System} (E : EncodingParameters T)
+variable {T : System} [AlphabetFamily T] (E : EncodingParameters T)
 
 abbrev ChannelOtherDigits (i : Channel T) (j : Label T i) :=
   ∀ q : {q : Label T i // q ≠ j}, ZMod (E.digitPrime i q)

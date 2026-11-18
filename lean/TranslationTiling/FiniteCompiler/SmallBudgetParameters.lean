@@ -243,7 +243,7 @@ theorem exists_small_budget_parameters (T : System) (hC : 256≤channelCount T) 
     omega
   let Ordinary := Σ n : Column T, Label T (.inl n)
   have hcard : Fintype.card Ordinary≤Fintype.card ↥pool := by
-    have hh : Fintype.card Ordinary=3*T.width := by simp [Ordinary,Label,Symbol,hB,Column,Nat.mul_comm]
+    have hh : Fintype.card Ordinary=3*T.width := by simp [Ordinary,Label,Letter,uniformAlphabetFamily,Symbol,hB,Column,Nat.mul_comm]
     simp only [Fintype.card_coe,hh]
     unfold C channelCount at hpool
     omega

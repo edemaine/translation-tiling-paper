@@ -180,7 +180,8 @@ theorem mixed_wordConstraintTiles_card_le (hB : T.alphabet = 3) (hp : SmallPrime
     (wordConstraintTiles E).card ≤ channelCount T ^ (27 * channelCount T) := by
   let C := channelCount T
   have hwords : Fintype.card (Word T) ≤ C ^ C := by
-    simp only [Word, Symbol, Fintype.card_fun, Fintype.card_fin, hB]
+    change Fintype.card (Column T → Symbol T)≤_
+    simp only [Symbol,Fintype.card_fun,Fintype.card_fin,hB]
     exact (Nat.pow_le_pow_left (by unfold C channelCount; have := T.width_pos; omega) _).trans
       (Nat.pow_le_pow_right (by unfold C channelCount; omega) (by unfold C channelCount; omega))
   unfold wordConstraintTiles
@@ -198,17 +199,17 @@ theorem mixed_seedConstraintTiles_card_le (hB : T.alphabet = 3) (hp : SmallPrime
     (hbig : 6 ≤ channelCount T) (hC : 596750 ≤ channelCount T) :
     (seedConstraintTiles E).card ≤ channelCount T ^ (27 * channelCount T) := by
   let C := channelCount T
-  have hindex : Fintype.card (Fin 2 × Column T × Symbol T) ≤ C ^ 2 := by
-    simp only [Fintype.card_prod, Fintype.card_fin, Column, Symbol, hB]
+  have hindex : Fintype.card (Fin 2 × (Σ n : Column T, Symbol T)) ≤ C ^ 2 := by
+    simp only [Fintype.card_prod,Fintype.card_sigma,Fintype.card_fin,Column,Symbol,hB,Finset.sum_const,Finset.card_univ,smul_eq_mul]
     unfold C channelCount at *
     nlinarith [T.width_pos]
   unfold seedConstraintTiles
   apply Finset.card_biUnion_le.trans
   calc
-    _ ≤ ∑ _q ∈ (Finset.univ.filter (fun q : Fin 2 × Column T × Symbol T =>
-        ¬ SeedSet T q.1 q.2.2)), C ^ (26 * C) :=
+    _ ≤ ∑ _q ∈ (Finset.univ.filter (fun q : Fin 2 × (Σ n : Column T, Symbol T) =>
+        ¬ LetterSeedSet T q.1 q.2.1 q.2.2)), C ^ (26 * C) :=
       Finset.sum_le_sum (fun _ _ => mixed_cycleTiles_card_le E hp hC _ _)
-    _ ≤ Fintype.card (Fin 2 × Column T × Symbol T) * C ^ (26 * C) := by
+    _ ≤ Fintype.card (Fin 2 × (Σ n : Column T, Symbol T)) * C ^ (26 * C) := by
       simp only [Finset.sum_const, smul_eq_mul]
       exact Nat.mul_le_mul_right _ (Finset.card_filter_le _ _)
     _ ≤ C ^ 2 * C ^ (26 * C) := Nat.mul_le_mul_right _ hindex

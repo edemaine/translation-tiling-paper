@@ -223,17 +223,17 @@ theorem card_firstFirstCoordinate_of_bijective
   simpa only [Fintype.card_subtype, Finset.card_filter] using
     sum_firstFirstCoordinate_of_bijective f hf c
 
-def seedHistogram {T : System} {C : Type uC}
+def seedHistogram {T : System} [AlphabetFamily T] {C : Type uC}
     (q : Residues T → C) (c : C) : ℕ := by
   classical
   exact Fintype.card {s : Residues T // q s = c}
 
-theorem seedHistogram_eq_sum {T : System} {C : Type uC} [DecidableEq C]
+theorem seedHistogram_eq_sum {T : System} [AlphabetFamily T] {C : Type uC} [DecidableEq C]
     (q : Residues T → C) (c : C) :
     seedHistogram q c = ∑ s : Residues T, if q s = c then (1 : ℕ) else 0 := by
   simp only [seedHistogram, Fintype.card_subtype, Finset.card_filter]
 
-theorem sum_seedHistogram {T : System} {C : Type uC} [Fintype C]
+theorem sum_seedHistogram {T : System} [AlphabetFamily T] {C : Type uC} [Fintype C]
     (q : Residues T → C) : (∑ c, seedHistogram q c) = (residueModulus ^ 2) := by
   classical
   calc
@@ -245,7 +245,7 @@ theorem sum_seedHistogram {T : System} {C : Type uC} [Fintype C]
       simp only [Residues, Fintype.card_prod, ZMod.card]
       ring
 
-theorem sum_seedHistogram_translate {T : System}
+theorem sum_seedHistogram_translate {T : System} [AlphabetFamily T]
     {C : Type uC} [AddCommGroup C] [DecidableEq C]
     (q : Residues T → C) (s : Residues T) (e c : C) :
     (∑ τ : Residues T, if q (s - τ) + e = c then (1 : ℕ) else 0) =
@@ -256,7 +256,7 @@ theorem sum_seedHistogram_translate {T : System}
   simpa only [eq_sub_iff_add_eq] using
     hinv.bijective.sum_comp (fun τ => if q τ + e = c then (1 : ℕ) else 0)
 
-variable {T : System} (E : EncodingParameters T)
+variable {T : System} [AlphabetFamily T] (E : EncodingParameters T)
 
 theorem ordinary_active_of_tile (o : Outputs E) (hdep : HasDependence E o)
     (n : Column T) (htile : Tiles (ordinaryActivationTile E n) (graph o)) :

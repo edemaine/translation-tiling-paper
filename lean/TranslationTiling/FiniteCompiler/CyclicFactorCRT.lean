@@ -15,7 +15,7 @@ namespace FiniteCompiler
 
 open scoped BigOperators
 
-variable {T : System}
+variable {T : System} [AlphabetFamily T]
 
 namespace EncodingParameters
 
@@ -36,20 +36,20 @@ instance blockModulus_neZero (i : Channel T) : NeZero (E.blockModulus i) :=
 instance cyclicOrder_neZero : NeZero E.cyclicOrder := ⟨E.cyclicOrder_pos.ne'⟩
 
 theorem a_coprime_b_all
-    {T : System} (E : EncodingParameters T)
+    {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     (i j : Channel T) : Nat.Coprime (E.a i) (E.b j) := by
   apply E.prime_coprime
   simp
 
 theorem a_pairwise_coprime
-    {T : System} (E : EncodingParameters T)
+    {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     : Pairwise (fun i j : Channel T => Nat.Coprime (E.a i) (E.a j)) := by
   intro i j hij
   apply E.prime_coprime
   simpa using hij
 
 theorem b_pairwise_coprime
-    {T : System} (E : EncodingParameters T)
+    {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     : Pairwise (fun i j : Channel T => Nat.Coprime (E.b i) (E.b j)) := by
   intro i j hij
   apply E.prime_coprime
