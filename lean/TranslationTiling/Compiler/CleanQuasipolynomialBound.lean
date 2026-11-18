@@ -1,3 +1,4 @@
+import TranslationTiling.FiniteCompiler.Effective.SparseCompiler
 import TranslationTiling.Compiler.QuasipolynomialBound
 import Mathlib.Analysis.SpecialFunctions.Log.Base
 
@@ -117,14 +118,14 @@ theorem exists_connected_tile_clean_quasipolynomial_bound (T : LeanWang.TileSet)
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
       (cubeCount P : ℝ) ≤ ((T.toFinset.card : ℝ) + 4) ^
-        ((2000 : ℝ) * Real.logb 2 (Real.logb 2 ((T.toFinset.card : ℝ) + 4))) := by
-  obtain ⟨hn,hc,ht,hb⟩ := FiniteCompiler.Effective.jointCompile_facts T.dedup
+        ((1350 : ℝ) * Real.logb 2 (Real.logb 2 ((T.toFinset.card : ℝ) + 4))) := by
+  obtain ⟨hn,hc,ht,hb⟩ := FiniteCompiler.Effective.sparseCompile_facts T.dedup
   have hd : LeanWang.TilesPlane T ↔ LeanWang.TilesPlane T.dedup :=
     LeanWang.tilesPlane_congr (by intro t; simp)
-  refine ⟨FiniteCompiler.Effective.jointCompile T.dedup,hn,hc,hd.trans ht,?_⟩
-  have hcard : (cubeCount (FiniteCompiler.Effective.jointCompile T.dedup):ℝ) ≤
-      ((FiniteCompiler.Effective.jointCompile T.dedup).length:ℝ) := by
-    exact_mod_cast List.toFinset_card_le (FiniteCompiler.Effective.jointCompile T.dedup)
+  refine ⟨FiniteCompiler.Effective.sparseCompile T.dedup,hn,hc,hd.trans ht,?_⟩
+  have hcard : (cubeCount (FiniteCompiler.Effective.sparseCompile T.dedup):ℝ) ≤
+      ((FiniteCompiler.Effective.sparseCompile T.dedup).length:ℝ) := by
+    exact_mod_cast List.toFinset_card_le (FiniteCompiler.Effective.sparseCompile T.dedup)
   apply hcard.trans
   simpa only [List.card_toFinset] using hb
 
