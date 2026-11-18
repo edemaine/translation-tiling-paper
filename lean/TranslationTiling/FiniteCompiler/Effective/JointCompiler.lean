@@ -1,7 +1,7 @@
 import TranslationTiling.FiniteCompiler.Effective.JointFamily
 import TranslationTiling.FiniteCompiler.Effective.CompactFamilyBounds
 import TranslationTiling.Compiler.JointLogBound
-import TranslationTiling.Compiler.SingleInputBound
+import TranslationTiling.Compiler.SmallInputBound
 
 namespace TranslationTiling.FiniteCompiler.Effective
 open Compiler Compiler.Effective
@@ -74,9 +74,11 @@ theorem jointCompileCore_small_bound (T : LeanWang.TileSet) (hn : 0<T.length)
 def jointCompile (T : LeanWang.TileSet) : Tile 3 :=
   if T=[] then Compiler.Size.emptyTile else
   if T.length=1 then Compiler.Size.singleTile (T.getD 0 ⟨0,0,0,0⟩) else
-  if T.length=2 then MixedCompiler.compile 0 T else
+  if T.length=2 then Compiler.SmallTile.compile 2 (by decide) T else
+  if T.length=3 then Compiler.SmallTile.compile 3 (by decide) T else
   if T.length=4 then MixedCompiler.compile 1 T else
-  if T.length=5 then MixedCompiler.compile 2 T else jointCompileCore T
+  if T.length=5 then MixedCompiler.compile 2 T else
+  if T.length=6 then MixedCompiler.compile 0 T else jointCompileCore T
 
 theorem jointCompile_computable : Computable jointCompile := by
   have hs : Computable (fun T : LeanWang.TileSet => Compiler.Size.singleTile (T.getD 0 ⟨0,0,0,0⟩)) :=
@@ -85,9 +87,11 @@ theorem jointCompile_computable : Computable jointCompile := by
   have hd : Primrec (fun T : LeanWang.TileSet => decide (T=[])) := by fun_prop
   exact (hd.to_comp.cond (Computable.const Compiler.Size.emptyTile)
     ((hlen 1).to_comp.cond hs
-      ((hlen 2).to_comp.cond (MixedCompiler.compile_computable 0)
-        ((hlen 4).to_comp.cond (MixedCompiler.compile_computable 1)
-          ((hlen 5).to_comp.cond (MixedCompiler.compile_computable 2) jointCompileCore_computable))))).of_eq
+      ((hlen 2).to_comp.cond (Compiler.SmallTile.compile_computable 2 (by decide))
+        ((hlen 3).to_comp.cond (Compiler.SmallTile.compile_computable 3 (by decide))
+          ((hlen 4).to_comp.cond (MixedCompiler.compile_computable 1)
+            ((hlen 5).to_comp.cond (MixedCompiler.compile_computable 2)
+              ((hlen 6).to_comp.cond (MixedCompiler.compile_computable 0) jointCompileCore_computable))))))).of_eq
     (fun T => by simp only [jointCompile,Bool.cond_decide])
 
 private theorem list_of_length_one {α : Type*} (xs : List α) (h : xs.length=1) : ∃ x, xs=[x] := by
@@ -104,11 +108,26 @@ theorem jointCompile_single_bound (T : LeanWang.TileSet) (hn : T.length=1) :
   simpa only [jointCompile,List.cons_ne_self,List.cons_ne_nil,if_false,List.length_singleton,
     if_true,List.getD_cons_zero] using (Compiler.Size.singleTile_facts t).2.2.2
 
+theorem jointCompile_small_bound (T : LeanWang.TileSet) (hsmall : T.length≤3) :
+    (jointCompile T).length≤2^250 := by
+  by_cases hz : T=[]
+  · subst T
+    rw [jointCompile,if_pos rfl]
+    exact Compiler.Size.emptyTile_facts.2.2.2
+  · by_cases h1 : T.length=1
+    · exact jointCompile_single_bound T h1
+    · by_cases h2 : T.length=2
+      · simpa only [jointCompile,if_neg hz,if_neg h1,if_pos h2] using
+          (Compiler.SmallTile.compile_facts 2 (by decide) (by decide) T h2).2.2.2
+      · have h3 : T.length=3 := by have := List.length_pos_iff_ne_nil.mpr hz; omega
+        simpa only [jointCompile,if_neg hz,if_neg h1,if_neg h2,if_pos h3] using
+          (Compiler.SmallTile.compile_facts 3 (by decide) (by decide) T h3).2.2.2
+
 theorem jointCompile_facts (T : LeanWang.TileSet) :
     jointCompile T ≠ [] ∧ FaceConnected (jointCompile T) ∧
     (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles (jointCompile T)) ∧
     ((jointCompile T).length : ℝ) ≤ ((T.length:ℝ)+4) ^
-      (2200 * Real.logb 2 (Real.logb 2 ((T.length:ℝ)+4))) := by
+      (2000 * Real.logb 2 (Real.logb 2 ((T.length:ℝ)+4))) := by
   by_cases ht : T=[]
   · subst T
     simp only [jointCompile,if_pos rfl,List.length_nil,Nat.cast_zero,zero_add]
@@ -124,44 +143,54 @@ theorem jointCompile_facts (T : LeanWang.TileSet) :
       (2:ℝ)^250 ≤ (4:ℝ)^250 := by norm_num
       _ = (4:ℝ)^(250:ℝ) := (Real.rpow_natCast (4:ℝ) 250).symm
       _ ≤ _ := Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
-  · by_cases h1 : T.length=1
+  · have hn : 0<T.length := List.length_pos_iff_ne_nil.mpr ht
+    by_cases h1 : T.length=1
     · obtain ⟨t,rfl⟩ := list_of_length_one T h1
       simp only [jointCompile,if_neg ht,List.length_singleton,if_pos rfl,List.getD_cons_zero]
-      obtain ⟨hn,hc,hi,hb⟩ := Compiler.Size.singleTile_facts t
-      exact ⟨hn,hc,hi,Compiler.Size.dyadic_compact_real_bound hb
+      obtain ⟨h0,hc,hi,hb⟩ := Compiler.Size.singleTile_facts t
+      exact ⟨h0,hc,hi,Compiler.Size.dyadic_compact_real_bound hb
         (by simpa only [Nat.cast_ofNat,Nat.cast_one] using Compiler.Size.single_compact_exponent)⟩
     · by_cases h2 : T.length=2
       · simp only [jointCompile,if_neg ht,if_neg h1,if_pos h2]
-        obtain ⟨hn,hc,hi,hb⟩ := MixedCompiler.compile_facts 0 T h2
-        exact ⟨hn,hc,hi,Compiler.Size.dyadic_compact_real_bound hb (Compiler.Size.mixed_compact_exponent 0 h2)⟩
-      · by_cases h4 : T.length=4
-        · simp only [jointCompile,if_neg ht,if_neg h1,if_neg h2,if_pos h4]
-          obtain ⟨hn,hc,hi,hb⟩ := MixedCompiler.compile_facts 1 T h4
-          exact ⟨hn,hc,hi,Compiler.Size.dyadic_compact_real_bound hb (Compiler.Size.mixed_compact_exponent 1 h4)⟩
-        · by_cases h5 : T.length=5
-          · simp only [jointCompile,if_neg ht,if_neg h1,if_neg h2,if_neg h4,if_pos h5]
-            obtain ⟨hn,hc,hi,hb⟩ := MixedCompiler.compile_facts 2 T h5
-            exact ⟨hn,hc,hi,Compiler.Size.dyadic_compact_real_bound hb (Compiler.Size.mixed_compact_exponent 2 h5)⟩
-          · have hn : 0<T.length := List.length_pos_iff_ne_nil.mpr ht
-            have hn3 : 3≤T.length := by omega
-            obtain ⟨hne,hconn,hiff,hbound⟩ := jointCompileCore_channel_bound T hn
-            simp only [jointCompile,if_neg ht,if_neg h1,if_neg h2,if_neg h4,if_neg h5]
-            refine ⟨hne,hconn,hiff,?_⟩
-            by_cases hsmall : T.length<92
-            · have hklo := jointWidth_three hn
-              have hkhi : jointWidth T.length≤7 := by
-                have hh := Nat.add_le_add_right (Nat.log_mono_right (b:=3)
-                  (Nat.mul_le_mul_left 24 (show T.length≤91 by omega))) 1
-                exact hh.trans (by decide : Nat.log 3 (24*91)+1≤7)
-              let i : Fin 5 := ⟨jointWidth T.length-3,by omega⟩
-              have hi : jointWidth T.length=3+i.val := by dsimp [i]; omega
-              exact Compiler.Size.dyadic_compact_real_bound (jointCompileCore_small_bound T hn i hi)
-                (Compiler.Size.joint_compact_small_exponent hn3 h4 h5 i hi)
-            · exact Compiler.Size.joint_compact_bulk_real_bound (by omega) hbound
+        obtain ⟨h0,hc,hi,hb⟩ := Compiler.SmallTile.compile_facts 2 (by decide) (by decide) T h2
+        exact ⟨h0,hc,hi,Compiler.Size.dyadic_compact_real_bound hb (Compiler.Size.small_compact_exponent hn)⟩
+      · by_cases h3 : T.length=3
+        · simp only [jointCompile,if_neg ht,if_neg h1,if_neg h2,if_pos h3]
+          obtain ⟨h0,hc,hi,hb⟩ := Compiler.SmallTile.compile_facts 3 (by decide) (by decide) T h3
+          exact ⟨h0,hc,hi,Compiler.Size.dyadic_compact_real_bound hb (Compiler.Size.small_compact_exponent hn)⟩
+        · by_cases h4 : T.length=4
+          · simp only [jointCompile,if_neg ht,if_neg h1,if_neg h2,if_neg h3,if_pos h4]
+            obtain ⟨h0,hc,hi,hb⟩ := MixedCompiler.compile_facts 1 T h4
+            exact ⟨h0,hc,hi,Compiler.Size.dyadic_compact_real_bound hb (Compiler.Size.mixed_compact_exponent 1 h4)⟩
+          · by_cases h5 : T.length=5
+            · simp only [jointCompile,if_neg ht,if_neg h1,if_neg h2,if_neg h3,if_neg h4,if_pos h5]
+              obtain ⟨h0,hc,hi,hb⟩ := MixedCompiler.compile_facts 2 T h5
+              exact ⟨h0,hc,hi,Compiler.Size.dyadic_compact_real_bound hb (Compiler.Size.mixed_compact_exponent 2 h5)⟩
+            · by_cases h6 : T.length=6
+              · simp only [jointCompile,if_neg ht,if_neg h1,if_neg h2,if_neg h3,if_neg h4,if_neg h5,if_pos h6]
+                obtain ⟨h0,hc,hi,hb⟩ := MixedCompiler.compile_facts 0 T h6
+                exact ⟨h0,hc,hi,Compiler.Size.dyadic_compact_real_bound hb (Compiler.Size.mixed_compact_exponent 0 h6)⟩
+              · have hn7 : 7≤T.length := by omega
+                obtain ⟨hne,hconn,hiff,hbound⟩ := jointCompileCore_channel_bound T hn
+                simp only [jointCompile,if_neg ht,if_neg h1,if_neg h2,if_neg h3,if_neg h4,if_neg h5,if_neg h6]
+                refine ⟨hne,hconn,hiff,?_⟩
+                by_cases hsmall : T.length<92
+                · have hklo := jointWidth_three hn
+                  have hkhi : jointWidth T.length≤7 := by
+                    have hh := Nat.add_le_add_right (Nat.log_mono_right (b:=3)
+                      (Nat.mul_le_mul_left 24 (show T.length≤91 by omega))) 1
+                    exact hh.trans (by decide : Nat.log 3 (24*91)+1≤7)
+                  let i : Fin 5 := ⟨jointWidth T.length-3,by omega⟩
+                  have hi : jointWidth T.length=3+i.val := by dsimp [i]; omega
+                  exact Compiler.Size.dyadic_compact_real_bound (jointCompileCore_small_bound T hn i hi)
+                    (Compiler.Size.joint_compact_small_exponent hn7 h4 h5 i hi)
+                · by_cases hmid : T.length≤251
+                  · exact Compiler.Size.joint_compact_middle_real_bound (by omega) hmid hbound
+                  · exact Compiler.Size.joint_compact_bulk_real_bound (by omega) hbound
 
 theorem jointCompile_real_bound (T : LeanWang.TileSet) :
     ((jointCompile T).length:ℝ)≤((T.length:ℝ)+4)^
-      (2200*Real.logb 2 (Real.logb 2 ((T.length:ℝ)+4))) := (jointCompile_facts T).2.2.2
+      (2000*Real.logb 2 (Real.logb 2 ((T.length:ℝ)+4))) := (jointCompile_facts T).2.2.2
 
 end
 end TranslationTiling.FiniteCompiler.Effective

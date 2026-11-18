@@ -2200,10 +2200,10 @@ numerical family are checked in
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    (n+4)^{2200\lg\lg(n+4)}=n^{O(\log\log n)}
+    (n+4)^{2000\lg\lg(n+4)}=n^{O(\log\log n)}
   $$
   unit cubes.
-  For $n=1$, we also have the explicit bound $2^{250}$ unit cubes.
+  For $n\leq3$, we also have the explicit bound $2^{250}$ unit cubes.
 
 : proof
   For $n=0$, consolidate the two contradictory equations with prototiles
@@ -2213,12 +2213,37 @@ numerical family are checked in
   $2^{250}$ cubes. This fixed output is checked in
   \leanfile{Compiler/EmptyInputBound.lean}.
 
-  For $n=1$, the single Wang tile tiles the plane exactly when its two
-  pairs of opposite edge colors agree. Test these two equalities and return
-  one cube when they hold, or the fixed connected nontile otherwise.
-  This gives at most $2^{250}$ cubes, below the stated uniform bound.
-  The edge test and its computability are checked in
-  \leanfile{Compiler/SingleInputBound.lean}. Henceforth assume $n\geq2$.
+  For $1\leq n\leq3$, test periodic assignments on the $2\times2$ and
+  $3\times3$ tori. This suffices by a finite local-to-periodic argument.
+  Label the input tiles using three symbols, repeating a tile when necessary.
+  Let $H(i,j)$ and $V(i,j)$ be the horizontal and vertical matching relations.
+  Because matching is equality of edge colors, two rows of either relation
+  have equal or disjoint supports. The $128$ encoded matrices with this
+  property cover all possible matching relations.
+
+  For each of the $128^2$ pairs $(H,V)$, a kernel-checked certificate gives
+  either a valid $2\times2$ or $3\times3$ torus, or an obstruction to a
+  valid $4\times4$ patch. The obstruction assigns a rank in $\{0,1,2\}$
+  to every horizontally valid word of length four, with strictly increasing
+  ranks across every allowed vertical transition. Four consecutive rows
+  would require three strict increases, which is impossible.
+  A plane tiling supplies a $4\times4$ patch, so it forces a periodic
+  certificate; conversely, repeating a certified torus gives a plane tiling.
+  This argument is checked in
+  \leanfile{Compiler/SmallTileCertificate.lean},
+  \leanfile{Compiler/SmallTileMasks.lean},
+  \leanfile{Compiler/SmallTileChecked.lean}, and
+  \leanfile{Compiler/SmallTilePeriodicity.lean}.
+  The certificate data is split across the sixteen files
+  \path{Compiler/SmallTileData0.lean} through \path{Compiler/SmallTileData15.lean};
+  the Python generator is not trusted by these kernel checks.
+
+  Return one cube when the test succeeds and the fixed connected nontile
+  otherwise. This gives at most $2^{250}$ cubes for $n\leq3$, below the
+  uniform bound. The Wang-tiling bridge and computability are checked in
+  \leanfile{Compiler/SmallInputBound.lean}. For $n=1$, the test reduces to
+  equality of opposite edge colors, as checked separately in
+  \leanfile{Compiler/SingleInputBound.lean}. Henceforth assume $n\geq4$.
 
   First check correctness of the expanded channel system. Activation
   gives a nonempty active set in every ordinary ternary channel. Choose
@@ -2510,17 +2535,23 @@ numerical family are checked in
   $$
     k\leq\tfrac23\lg n+4\leq\tfrac23t+4.
   $$
-  For $n\geq92$, we have $t\geq13/2$ and $g\geq8/3$, so
+  For $n\geq252$, we have $t\geq8$ and $g\geq3$, so
   $$
-    w\leq\tfrac{800}{39}t,\qquad P\leq\tfrac{512}{13}t,\qquad
-    \lg P\leq\tfrac{16}{3}+g\leq3g.
+    w\leq\tfrac{56}{3}t,\qquad P\leq32t,\qquad
+    \lg P\leq5+g\leq\tfrac83g.
   $$
-  Here $2^{13}\leq96^2$, $2^8\leq(13/2)^3$, and
-  $(512/13)^3\leq2^{16}$ prove the logarithm estimates. Hence
+  Hence
   $$
     \lg|F|\leq(34w+99)\lg P
-      \leq3\left(34\cdot\frac{800}{39}+\frac{198}{13}\right)tg
-      =2138tg<2200tg.
+      \leq\frac83\left(34\cdot\frac{56}{3}+\frac{99}{8}\right)tg
+      =\frac{15{,}529}{9}tg<2000tg.
+  $$
+  For $92\leq n\leq251$, the ternary code has $w\leq128$ and $P=256$,
+  because $24\cdot251<3^8$. The same raw volume estimate gives
+  $|F|\leq2^{35{,}402}$. Also $t\geq79/12$ and $g\geq27/10$,
+  by $2^{79}\leq96^{12}$ and $2^{27}\leq(79/12)^{10}$. Therefore
+  $$
+    \lg|F|\leq35{,}402<35{,}550\leq2000tg.
   $$
 
   To optimize the smaller cases, use explicit prime parameters for
@@ -2539,9 +2570,9 @@ numerical family are checked in
   checked in \leanfile{FiniteCompiler/Effective/SmallProfiles.lean}.
   The computable parameter selector uses these tables at these five widths.
 
-  For $n=2,4,5$, further optimize the code alphabets:
-  use three positions with radices $(4,4,3)$, $(4,4,6)$, and $(4,5,6)$,
-  respectively. Their capacities $48,96,120$ are at least the $24n$
+  For $n=4,5,6$, further optimize the code alphabets:
+  use three positions with radices $(4,4,6)$, $(4,5,6)$, and $(4,6,6)$,
+  respectively. Their capacities $96,120,144$ are at least the $24n$
   decorated Sudoku symbols. The graph, dependence, cycle, and activation
   arguments allow a different finite alphabet in each channel.
   Whole-codeword decoding and seed tests therefore give the same
@@ -2550,9 +2581,9 @@ numerical family are checked in
   correctness is checked in \leanfile{FiniteCompiler/MixedAlphabetSystem.lean}.
   The three additional prime tables and their support and volume
   certificates are checked in
-  \leanfile{FiniteCompiler/MixedProfile2.lean},
-  \leanfile{FiniteCompiler/MixedProfile4.lean}, and
-  \leanfile{FiniteCompiler/MixedProfile5.lean}.
+  \leanfile{FiniteCompiler/MixedProfile4.lean},
+  \leanfile{FiniteCompiler/MixedProfile5.lean}, and
+  \leanfile{FiniteCompiler/MixedProfile6.lean}.
 
   Retain the actual values of $|V|$, $J$, and the maximum support bound $H$
   for each table. Let $W$ be the product of the ordinary channel alphabet
@@ -2570,25 +2601,24 @@ numerical family are checked in
     |F|\leq K H^2|V|J\bigl(2^{15}(3W)^2\bigr)^2.
   $$
   The following upper bounds $|F|\leq2^e$ and lower bounds for $t,g$
-  imply $\lg|F|\leq2200tg$ for the remaining inputs.
-  Here $k$ counts code positions per original column; the rows $n=2,4,5$
+  imply $\lg|F|\leq2000tg$ for the remaining inputs.
+  Here $k$ counts code positions per original column; the rows $n=4,5,6$
   use the mixed alphabets above.
   $$
     \begin{array}{c|c|r|c|c}
       n & k & e & \text{lower }t & \text{lower }g\\
       \hline
-      2 & 3 & 7736 & 137/53 & 63/46\\
-      3 & 4 & 9124 & 14/5 & 297/200\\
       4 & 3 & 9460 & 3 & 19/12\\
-      5 & 3 & 10{,}019 & 31/10 & 8/5\\
-      6,\ldots,10 & 5 & 11{,}678 & 33/10 & 17/10\\
+      5 & 3 & 10{,}019 & 31/10 & 163/100\\
+      6 & 3 & 10{,}580 & 33/10 & 17/10\\
+      7,\ldots,10 & 5 & 11{,}678 & 17/5 & 7/4\\
       11,\ldots,30 & 6 & 14{,}302 & 39/10 & 49/25\\
       31,\ldots,91 & 7 & 17{,}001 & 5 & 23/10
     \end{array}
   $$
   Each rational logarithm bound is checked by an exact power comparison:
-  for example, $2^{14}\leq7^5$ and $2^{297}\leq(14/5)^{200}$
-  give the row $n=3$.
+  for example, $2^{31}\leq9^{10}$ and $2^{163}\leq(31/10)^{100}$
+  give the row $n=5$.
   The ternary parameter identities and geometric estimates are checked in
   \leanfile{FiniteCompiler/Effective/SmallMetrics.lean} and
   \leanfile{FiniteCompiler/Effective/CompactFamilyBounds.lean}.
@@ -2596,7 +2626,7 @@ numerical family are checked in
   bounds are checked in \leanfile{FiniteCompiler/MixedAlphabetBounds.lean},
   \leanfile{FiniteCompiler/MixedGeometry.lean}, and
   \leanfile{FiniteCompiler/MixedCompiler.lean}.
-  For each of the three fixed input sizes, color normalization leaves a
+  For each exceptional positive input size, color normalization leaves a
   fixed finite input domain. Applying the proved construction on this
   domain gives a fixed finite table, whose computability is checked by
   \leanfile{Compiler/FiniteNormalizedInput.lean} and
@@ -2618,8 +2648,8 @@ both tilability directions, and the numerical coefficient uniformly for
 every finite Wang tile set, including the empty set. Duplicate input
 entries have no cost in the existence bound. The explicit bounds in
 @cor:size-bound remain available.
-\leandecl{Compiler.Size.exists_connected_tile_one_quasipolynomial_bound}
-gives the explicit bound for $n=1$. The earlier binary-payload
+\leandecl{Compiler.Size.exists_connected_tile_small_quasipolynomial_bound}
+gives the explicit bound for $n\leq3$. The earlier binary-payload
 variant and its integer-logarithm bounds remain formalized in
 \leanfile{Compiler/QuasipolynomialBound.lean}.
 
@@ -3150,8 +3180,8 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, these bounds are $(n+4)^{2200\lg\lg(n+4)}$ for translations and
-$64{,}000(n+4)^{2200\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+function. In dimension three, these bounds are $(n+4)^{2000\lg\lg(n+4)}$ for translations and
+$64{,}000(n+4)^{2000\lg\lg(n+4)}$ for arbitrary Euclidean motions.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[
@@ -3171,7 +3201,7 @@ additional cubes are needed.
 
 The total reduction in
 \leanfile{FiniteCompiler/Effective/JointCompiler.lean}
-combines the ternary construction with the one-tile edge test and the
+combines the ternary construction with the direct tests for at most three tiles and the
 three mixed-alphabet cases of @prop:bit-channel-bound.
 The ternary branch encodes decorated symbols by base-three integers, uses
 explicit prime tables for small widths and finite arithmetic search for the

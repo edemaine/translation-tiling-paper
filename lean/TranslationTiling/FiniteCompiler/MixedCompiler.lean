@@ -1,5 +1,5 @@
 import TranslationTiling.FiniteCompiler.MixedGeometry
-import TranslationTiling.FiniteCompiler.MixedProfile2
+import TranslationTiling.FiniteCompiler.MixedProfile6
 import TranslationTiling.FiniteCompiler.MixedProfile4
 import TranslationTiling.FiniteCompiler.MixedProfile5
 import TranslationTiling.Compiler.FiniteNormalizedInput
@@ -14,17 +14,17 @@ set_option exponentiation.threshold 20000
 namespace Profiles
 open MixedParameters
 
-def count (k : Fin 3) : ℕ := if k=0 then 2 else if k=1 then 4 else 5
-def profile (k : Fin 3) : Profile := if k=0 then profile2 else if k=1 then profile4 else profile5
-def horizontal (k : Fin 3) : ℕ := if k=0 then horizontal2 else if k=1 then horizontal4 else horizontal5
-def exponent (k : Fin 3) : ℕ := if k=0 then exponent2 else if k=1 then exponent4 else exponent5
+def count (k : Fin 3) : ℕ := if k=0 then 6 else if k=1 then 4 else 5
+def profile (k : Fin 3) : Profile := if k=0 then profile6 else if k=1 then profile4 else profile5
+def horizontal (k : Fin 3) : ℕ := if k=0 then horizontal6 else if k=1 then horizontal4 else horizontal5
+def exponent (k : Fin 3) : ℕ := if k=0 then exponent6 else if k=1 then exponent4 else exponent5
 
 theorem count_pos (k : Fin 3) : 0<count k := by unfold count; split_ifs <;> omega
 theorem count_cap (k : Fin 3) : 24*count k≤216 := by unfold count; split_ifs <;> norm_num
 
 theorem valid (k : Fin 3) : Valid (profile k) := by
   fin_cases k
-  · exact profile2_valid
+  · exact profile6_valid
   · exact profile4_valid
   · exact profile5_valid
 
@@ -33,14 +33,14 @@ theorem capacity (k : Fin 3) : 24*count k≤∏ b : Fin 3, (profile k).radices b
 
 theorem support (k : Fin 3) : SupportValid (profile k) (horizontal k) := by
   fin_cases k
-  · exact support2
+  · exact support6
   · exact support4
   · exact support5
 
 theorem wordCount (k : Fin 3) : 10000≤(profile k).wordCount ∧ 256^2≤3*(profile k).wordCount ∧
     Nat.log 2 (6*(profile k).wordCount)+1≤192 := by
   fin_cases k
-  · exact wordCount2
+  · exact wordCount6
   · exact wordCount4
   · exact wordCount5
 
@@ -49,7 +49,7 @@ theorem volume (k : Fin 3) :
     (2^24*549072*8003^4)*(horizontal k)^2*(profile k).order*(profile k).mass*
       (2^15*(3*(profile k).wordCount)^2)^2≤2^exponent k := by
   fin_cases k
-  · exact volume2
+  · exact volume6
   · exact volume4
   · exact volume5
 end Profiles

@@ -167,5 +167,17 @@ theorem exists_connected_tile_one_quasipolynomial_bound (T : LeanWang.TileSet)
   have hb := FiniteCompiler.Effective.jointCompile_single_bound T.dedup hlen
   exact ⟨_,hne,hc,hd.trans ht,(List.toFinset_card_le _).trans hb⟩
 
+/-- A finite periodicity test handles at most three distinct Wang tiles. -/
+theorem exists_connected_tile_small_quasipolynomial_bound (T : LeanWang.TileSet)
+    (hT : T.toFinset.card≤3) :
+    ∃ P : Tile 3, P≠[] ∧ FaceConnected P ∧
+      (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧ cubeCount P≤2^250 := by
+  have hlen : T.dedup.length≤3 := by simpa only [List.card_toFinset] using hT
+  obtain ⟨hne,hc,ht,_⟩ := FiniteCompiler.Effective.jointCompile_facts T.dedup
+  have hd : LeanWang.TilesPlane T ↔ LeanWang.TilesPlane T.dedup :=
+    LeanWang.tilesPlane_congr (by intro t; simp)
+  have hb := FiniteCompiler.Effective.jointCompile_small_bound T.dedup hlen
+  exact ⟨_,hne,hc,hd.trans ht,(List.toFinset_card_le _).trans hb⟩
+
 end
 end TranslationTiling.Compiler.Size
