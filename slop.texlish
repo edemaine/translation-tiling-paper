@@ -2200,7 +2200,7 @@ numerical family are checked in
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    (n+4)^{2000\lg\lg(n+4)}=n^{O(\log\log n)}
+    (n+4)^{1000\lg\lg(n+4)}=n^{O(\log\log n)}
   $$
   unit cubes.
   For $n\leq3$, we also have the explicit bound $2^{250}$ unit cubes.
@@ -2245,7 +2245,10 @@ numerical family are checked in
   equality of opposite edge colors, as checked separately in
   \leanfile{Compiler/SingleInputBound.lean}. Henceforth assume $n\geq4$.
 
-  First check correctness of the expanded channel system. Activation
+  First derive the coefficient $2000$ for the baseline joint-code compiler;
+  we then refine its channel system to obtain $1350$, and finally shorten
+  the arithmetic boards for $1000$.
+  Check correctness of the expanded channel system. Activation
   gives a nonempty active set in every ordinary ternary channel. Choose
   one active symbol $V(i,b,m)$ at the common vertical section $(0,m)$.
   At every horizontal point $x$, the tuple
@@ -2631,26 +2634,218 @@ numerical family are checked in
   domain gives a fixed finite table, whose computability is checked by
   \leanfile{Compiler/FiniteNormalizedInput.lean} and
   \leanfile{FiniteCompiler/MixedCompiler.lean}.
-  The uniform logarithm conversion is checked in
+  The baseline logarithm conversion is checked in
   \leanfile{Compiler/JointLogBound.lean}.
+
+  To reduce the coefficient from $2000$ to $1350$, separate the arithmetic
+  labels from the Wang-tile labels and omit components unused by the
+  extraction. Keep the $5$-arithmetic labels on columns $0,\ldots,11$,
+  the $7$-arithmetic labels on columns $0,\ldots,15$, and Wang-tile labels
+  only on columns $1,5,7$. Impose the original word rule after
+  existentially filling the omitted components. Completeness follows by
+  restricting the canonical Sudoku array.
+
+  For soundness, apply the arithmetic classification separately to the
+  boards of widths $2p+2=12$ and $2q+2=16$. No small-prime certificate
+  changes. The finite-depth arithmetic argument works on each of these
+  boards, and the same CRT argument chooses a common height shear for
+  both components. On a horizontal word with constant arithmetic labels,
+  coefficient recovery at columns $1,2,3,4$ makes all three retained
+  Wang labels equal. On the line through heights $M n$, the arithmetic
+  recovery samples are $1,2,3,4,5,10$ for $p=5$ and
+  $1,2,3,4,7,14$ for $q=7$, all retained. The labels at columns $1,5,7$
+  then read the corners $(0,0),(1,0),(0,1)$ of the valid rectangle
+  witnessing the word rule. Thus
+  $$
+    H\text{-matches}(C_1(M),C_5(5M)),\qquad
+    V\text{-matches}(C_1(M),C_7(7M)).
+  $$
+  Horizontal-word consistency replaces the second labels by $C_1(5M)$
+  and $C_1(7M)$. Reading $C_1(5^u7^v)$ gives arbitrarily large valid
+  Wang rectangles, and compactness gives a plane tiling. The separate-board
+  arithmetic is checked in \leanfile{SudokuArithmetic/SparseArithmetic.lean};
+  the restricted rule and extraction are checked in
+  \leanfile{SudokuArithmetic/SparseRule.lean},
+  \leanfile{SudokuArithmetic/SparseRecovery.lean}, and
+  \leanfile{SudokuArithmetic/SparseSoundness.lean}.
+
+  For the general-input compiler, retain both arithmetic components on
+  all sixteen original columns and encode each of their $24$ possible
+  pairs by three trits. Encode a Wang tile by $k$ trits with
+  $3^{k-1}\leq n<3^k$, but keep this code only in columns $1,5,7$.
+  Each group of trits retains its original slope. Fix unused padding
+  trits to zero to make the number $w$ of ordinary channels a multiple
+  of $16$, with
+  $$
+    48+3k\leq w\leq48+3k+15.
+  $$
+  For each seed, the required arithmetic pair is one symbol. Excluding
+  incorrect digits of its three-trit code therefore fixes the whole
+  arithmetic pair without restricting any Wang-tile digit. These use
+  at most $288$ fixed two-channel cycle tests. Together with word,
+  dependence, and activation tests, they give
+  $$
+    s\leq3^w+288+w^2+6w+11\leq3^{w+1}.
+  $$
+  All previous support, mass, stacking, and connectedness estimates apply,
+  so again
+  $$
+    |F|\leq P^{33w+98}3^{4w+4},\qquad P=\max\{w+2,256\}.
+  $$
+  The projected word list is obtained by mapping the original finite list
+  of allowed words; no new decision about tilability is used. The typed
+  system's equivalence is checked in
+  \leanfile{FiniteCompiler/SparseTernaryModel.lean}.
+  Its effective word and seed enumerations are combined in
+  \leanfile{FiniteCompiler/Effective/SparseFamily.lean}.
+
+  For $n\geq252$, put $t=\lg(n+4)$ and $g=\lg t$ as before.
+  Minimality of $k$ and $\lg3\geq3/2$ give
+  $$
+    w\leq2t+66\leq\tfrac{41}{4}t,\qquad
+    P\leq32t,\qquad \lg P\leq\tfrac83g.
+  $$
+  Hence the general-input binary exponent is at most
+  $$
+    (34w+99)\lg P
+      \leq\frac83\left(34\cdot\frac{41}{4}+\frac{99}{8}\right)tg
+      =\frac{2887}{3}tg<1350tg.
+  $$
+
+  For $4\leq n\leq10$, use the smaller separate arithmetic boards and
+  a single tile-label channel in each of the three retained columns.
+  There are $31$ ordinary channels: twelve of arity $4$, sixteen of
+  arity $6$, and three of arity $n$ for $n=4,5,6$, or arity $10$ for
+  $7\leq n\leq10$. The non-word tests add at most $2000$ equations, so
+  $s\leq3W$ again, where $W$ is the product of the channel alphabet sizes.
+  Four explicit prime tables provide the same positivity, separation,
+  support, and volume certificates as above, with
+  $\ell\leq2^{15}(3W)^2$ and $H^2\leq2^{15}(3W)^2|V|$.
+  They give the first four rows below. For $11\leq n\leq242$, the
+  padded ternary width is $64$, and for $243\leq n\leq251$ it is $80$;
+  the existing prime tables at these widths give the last two rows.
+  $$
+    \begin{array}{c|r|r|c|c}
+      n & w & e & \text{lower }t & \text{lower }g\\
+      \hline
+      4 & 31 & 6300 & 3 & 19/12\\
+      5 & 31 & 6400 & 31/10 & 163/100\\
+      6 & 31 & 6500 & 33/10 & 17/10\\
+      7,\ldots,10 & 31 & 7000 & 17/5 & 7/4\\
+      11,\ldots,242 & 64 & 9124 & 39/10 & 49/25\\
+      243,\ldots,251 & 80 & 11{,}678 & 7 & 2
+    \end{array}
+  $$
+  Every row satisfies $e\leq1350tg$. The rational logarithm bounds use
+  the same exact power comparisons as before. The four new tables are
+  kernel-checked in \path{FiniteCompiler/SparseProfile4.lean},
+  \path{FiniteCompiler/SparseProfile5.lean},
+  \path{FiniteCompiler/SparseProfile6.lean}, and
+  \path{FiniteCompiler/SparseProfile10.lean}.
+  Their connection to the finite system, geometric construction, and
+  computable finite input tables is checked in
+  \leanfile{FiniteCompiler/SparseSmallSystem.lean},
+  \leanfile{FiniteCompiler/SparseSmallBounds.lean},
+  \leanfile{FiniteCompiler/SparseSmallGeometry.lean}, and
+  \leanfile{FiniteCompiler/SparseSmallCompiler.lean}.
+  The uniform conversion is checked in \leanfile{Compiler/SparseLogBound.lean}.
+  These estimates give the coefficient $1350$.
+
+  To reduce the coefficient further from $1350$ to $1000$, restrict the
+  arithmetic components to the column sets
+  $$
+    I_5=\{0,\ldots,8,10\},\qquad I_7=\{0,\ldots,9,14\}.
+  $$
+  Keep Wang-tile labels at $1,5,7$ as before. This leaves $21$ arithmetic
+  channels and $3$ tile-label channels, instead of $28$ and $3$.
+  The initial affine classification now uses the first nine columns for
+  $p=5$ and the first ten for $q=7$. New kernel-checked SAT certificates
+  force the same clean five-point seed on these shorter boards. The
+  third-row and midpoint implications are checked using only the bounded
+  integer observations that remain inside each board. Four-row
+  propagation needs only eight columns, and horizontal coefficient
+  recovery extends the resulting affine approximation to the isolated
+  column $2r$, for $r\in\{5,7\}$. The classification is checked in
+  \leanfile{SudokuArithmetic/ShortClassification.lean}.
+
+  Rescaling needs a different proof that the vertical coefficient stays
+  nonzero. Normalize the first affine approximation to $Bm$ with
+  $B\ne0$, and write the approximation after $m\mapsto rm$ as
+  $A_1x+B_1m+C_1$. Suppose $B_1=0$. On the line $m=x$,
+  the columns $0,r,2r$ force $C_1=0$: if $C_1\ne0$, at least two
+  distinct nonzero predicted low digits would both equal $C_1$.
+  Thus $A_1\ne0$. For $j=1,2$, use the line $m=x-j$
+  and the two retained columns $j,j+r$. The predicted low digits differ
+  by $B$, whereas their actual values both equal $A_1j\ne0$. One
+  predicted digit must vanish, so $A_1j\in\{B,-B\}$. This requires
+  both $A_1$ and $2A_1$ to belong to $\{B,-B\}$, impossible for
+  $r=5,7$. Therefore $B_1\ne0$. The existing three-sample argument
+  using $0,r,2r$ then gives $B_1=B$.
+  The finite-depth induction and common CRT shear follow as before;
+  these arguments are checked in
+  \leanfile{SudokuArithmetic/ShortArithmetic.lean}.
+  All extraction samples $1,2,3,4,r,2r$ remain available, so the same
+  three Wang decorations yield the tilability equivalence in
+  \leanfile{SudokuArithmetic/ShortBoardSoundness.lean}.
+
+  Use this smaller system for $4\leq n\leq20$. It has $24$ ordinary
+  channels: ten of arity $4$, eleven of arity $6$, and three tile-label
+  channels. The tile-label arity is $n$ for $n=4,5,6$, $10$ for
+  $7\leq n\leq10$, and $20$ for $11\leq n\leq20$. The non-word
+  tests still add fewer than $2000$ equations, giving $s\leq3W$.
+  Five explicit prime tables satisfy the same support and geometric
+  inequalities, without changing the geometric construction. Their safe
+  binary exponents are the first five rows below. The last two rows
+  reuse the existing ternary profiles of widths $64$ and $80$.
+  $$
+    \begin{array}{c|r|c|c}
+      n & e & \text{lower }t & \text{lower }g\\
+      \hline
+      4 & 4700 & 3 & 19/12\\
+      5 & 4800 & 31/10 & 163/100\\
+      6 & 4900 & 33/10 & 17/10\\
+      7,\ldots,10 & 5360 & 17/5 & 7/4\\
+      11,\ldots,20 & 6600 & 39/10 & 49/25\\
+      21,\ldots,242 & 9124 & 9/2 & 13/6\\
+      243,\ldots,251 & 11{,}678 & 7 & 2
+    \end{array}
+  $$
+  Every row satisfies $|F|\leq2^e$ and $e\leq1000tg$.
+  For the new logarithm witnesses at $n=21$, use
+  $2^9\leq25^2$ and $2^{13}\leq(9/2)^6$.
+  For $n\geq252$, the existing bulk estimate
+  $(2887/3)tg$ is already less than $1000tg$.
+  The cases $n\leq3$ retain $2^{250}$.
+  The five prime tables are in \path{FiniteCompiler/ShortProfile4.lean},
+  \path{FiniteCompiler/ShortProfile5.lean},
+  \path{FiniteCompiler/ShortProfile6.lean},
+  \path{FiniteCompiler/ShortProfile10.lean}, and
+  \path{FiniteCompiler/ShortProfile20.lean}.
+  Their computable compiler is checked in
+  \leanfile{FiniteCompiler/ShortSmallCompiler.lean}, and the uniform
+  logarithm conversion in \leanfile{Compiler/ShortLogBound.lean}.
 
 The full construction is in
 \leanfile{Compiler/CleanQuasipolynomialBound.lean}, proved by
 \leandecl{Compiler.Size.exists_connected_tile_clean_quasipolynomial_bound}.
 The generalized graph, dependence, fixed cycle, and activation equations
 are in `FiniteCompiler/`; their common-solution and soundness proofs allow
-repeated column slopes and channel-dependent finite alphabets. The code-independent equivalence is
-\leanref{FiniteCompiler/JointSystem.lean}{FiniteCompiler.JointSystem.finite_system_iff_wang}.
-\leanfile{FiniteCompiler/Effective/JointCompiler.lean} combines the parameter,
-equation-count, stacking, and geometric bounds for one total computable
-reduction. The public theorem includes nonemptiness, face connectedness,
-both tilability directions, and the numerical coefficient uniformly for
-every finite Wang tile set, including the empty set. Duplicate input
-entries have no cost in the existence bound. The explicit bounds in
-@cor:size-bound remain available.
+repeated column slopes and channel-dependent finite alphabets.
+The shorter-board equivalence is
+\leanref{SudokuArithmetic/ShortBoardSoundness.lean}{Sudoku.ShortBoard.wang_iff}.
+\leanfile{FiniteCompiler/Effective/ShortCompiler.lean} combines the smaller
+systems for $4\leq n\leq20$ with the existing ternary compiler above that
+range and the direct tests for $n\leq3$. The public theorem includes
+nonemptiness, face connectedness, both tilability directions, and the
+numerical coefficient uniformly for every finite Wang tile set, including
+the empty set. Duplicate input entries have no cost in the existence bound.
+The explicit bounds in @cor:size-bound remain available.
 \leandecl{Compiler.Size.exists_connected_tile_small_quasipolynomial_bound}
-gives the explicit bound for $n\leq3$. The earlier binary-payload
-variant and its integer-logarithm bounds remain formalized in
+gives the explicit bound for $n\leq3$. The intermediate coefficients
+$1350$ and $2000$ remain formalized in
+\leanfile{FiniteCompiler/Effective/SparseCompiler.lean} and
+\leanfile{FiniteCompiler/Effective/JointCompiler.lean}, respectively;
+earlier binary-payload bounds remain in
 \leanfile{Compiler/QuasipolynomialBound.lean}.
 
 ### The Remaining Cost of Cyclicity
@@ -3180,8 +3375,8 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, these bounds are $(n+4)^{2000\lg\lg(n+4)}$ for translations and
-$64{,}000(n+4)^{2000\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+function. In dimension three, these bounds are $(n+4)^{1000\lg\lg(n+4)}$ for translations and
+$64{,}000(n+4)^{1000\lg\lg(n+4)}$ for arbitrary Euclidean motions.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[
@@ -3200,31 +3395,32 @@ then connects the two translation predicates. Thus no new construction or
 additional cubes are needed.
 
 The total reduction in
-\leanfile{FiniteCompiler/Effective/JointCompiler.lean}
-combines the ternary construction with the direct tests for at most three tiles and the
-three mixed-alphabet cases of @prop:bit-channel-bound.
-The ternary branch encodes decorated symbols by base-three integers, uses
+\leanfile{FiniteCompiler/Effective/ShortCompiler.lean}
+combines the ternary construction with the direct tests for at most three
+tiles and the $24$-channel systems for four through twenty tiles.
+The ternary branch encodes arithmetic pairs and tile labels separately by
+base-three integers, uses
 explicit prime tables for small widths and finite arithmetic search for the
 other widths, and emits
 one fixed cycle test
-per forbidden word or joint seed combination. A common finite coordinate box
+per forbidden word or seed--digit combination. A common finite coordinate box
 canonically orders the test tiles, allowing duplicate descriptions to be removed
 before stacking. This makes the list length equal the number of distinct
 mathematical test tiles. The full-difference partition search in
 \leanfile{FiniteCompiler/Effective/FreshStack.lean} includes the
 quadratic-logarithmic modulus bound used in the volume proof.
 
-\leanfile{FiniteCompiler/Effective/JointFamily.lean} proves that the numerical
-family expresses the encoded word rule and joint seed tests. The connected
+\leanfile{FiniteCompiler/Effective/SparseFamily.lean} proves that the numerical
+family expresses the encoded word rule and seed arithmetic-digit tests. The connected
 geometric compiler and its volume bound are checked in
 \leanfile{FiniteCompiler/Effective/CompactFamilyCompiler.lean} and
 \leanfile{FiniteCompiler/Effective/CompactFamilyBounds.lean}.
-The corresponding mixed-alphabet bounds are checked in
-\leanfile{FiniteCompiler/MixedGeometry.lean} and
-\leanfile{FiniteCompiler/MixedCompiler.lean}.
-\leandecl{FiniteCompiler.Effective.jointCompile_computable} proves
+The corresponding $24$-channel compiler and its bounds are checked in
+\leanfile{FiniteCompiler/ShortSmallCompiler.lean}.
+
+\leandecl{FiniteCompiler.Effective.shortCompile_computable} proves
 computability of this total function.
-Its size bound is \leandecl{FiniteCompiler.Effective.jointCompile_real_bound}.
+Its size bound is \leandecl{FiniteCompiler.Effective.shortCompile_real_bound}.
 The six-key replacement is a primitive-recursive map and
 multiplies its output length by exactly $64{,}000$, so the public Euclidean
 reduction combines computability, correctness, and size as well.

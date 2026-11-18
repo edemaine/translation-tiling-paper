@@ -1,0 +1,8 @@
+import TranslationTiling.FiniteCompiler.Effective.ShortCompiler
+
+#print axioms TranslationTiling.Sudoku.ShortRule.global_affine_approximation
+#print axioms TranslationTiling.Sudoku.ShortArithmetic.rescale_vertical_coefficient_ne_zero
+#print axioms TranslationTiling.Sudoku.ShortArithmetic.arithmetic_finite_structure
+#print axioms TranslationTiling.Sudoku.ShortBoard.wang_iff
+#print axioms TranslationTiling.FiniteCompiler.Effective.shortCompile_facts
+#print axioms TranslationTiling.FiniteCompiler.Effective.shortCompile_computable
