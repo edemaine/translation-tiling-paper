@@ -1,4 +1,4 @@
-import TranslationTiling.FiniteCompiler.GuardedGeometry
+import TranslationTiling.FiniteCompiler.GuardedStrip
 import TranslationTiling.Compiler.FiniteNormalizedInput
 import TranslationTiling.FiniteCompiler.ProjectedProfile6
 import TranslationTiling.FiniteCompiler.ProjectedProfile7
@@ -14,7 +14,7 @@ open TranslationTiling.FiniteCompiler.Effective
 open scoped Classical BigOperators
 noncomputable section
 local instance : SeedFrame := compactSeedFrame
-open GuardedCompiler
+open GuardedCompiler Compiler.StripLift
 set_option maxRecDepth 10000
 set_option maxHeartbeats 4000000
 set_option exponentiation.threshold 20000
@@ -28,16 +28,16 @@ structure CheckedProfile where
   exponent : ℕ
   valid : Valid profile
   support : SupportValid profile horizontal
-  volume : cubeCap horizontal profile.order profile.mass (stackCap (testLimit profile.alphabet))≤2^exponent
+  volume : volumeCap horizontal (profile.order / profile.mass) profile.mass (stackCap (testLimit profile.alphabet))≤2^exponent
 
-def checked6 : CheckedProfile := ⟨profile6,horizontal6,exponent6,profile6_valid,support6,volume6⟩
-def checked7 : CheckedProfile := ⟨profile7,horizontal7,exponent7,profile7_valid,support7,volume7⟩
-def checked10 : CheckedProfile := ⟨profile10,horizontal10,exponent10,profile10_valid,support10,volume10⟩
-def checked20 : CheckedProfile := ⟨profile20,horizontal20,exponent20,profile20_valid,support20,volume20⟩
-def checked30 : CheckedProfile := ⟨profile30,horizontal30,exponent30,profile30_valid,support30,volume30⟩
-def checked40 : CheckedProfile := ⟨profile40,horizontal40,exponent40,profile40_valid,support40,volume40⟩
-def checked44 : CheckedProfile := ⟨profile44,horizontal44,exponent44,profile44_valid,support44,volume44⟩
-def checked48 : CheckedProfile := ⟨profile48,horizontal48,exponent48,profile48_valid,support48,volume48⟩
+def checked6 : CheckedProfile := ⟨profile6,horizontal6,2355,profile6_valid,support6,by decide +kernel⟩
+def checked7 : CheckedProfile := ⟨profile7,horizontal7,2438,profile7_valid,support7,by decide +kernel⟩
+def checked10 : CheckedProfile := ⟨profile10,horizontal10,2536,profile10_valid,support10,by decide +kernel⟩
+def checked20 : CheckedProfile := ⟨profile20,horizontal20,3041,profile20_valid,support20,by decide +kernel⟩
+def checked30 : CheckedProfile := ⟨profile30,horizontal30,3544,profile30_valid,support30,by decide +kernel⟩
+def checked40 : CheckedProfile := ⟨profile40,horizontal40,4055,profile40_valid,support40,by decide +kernel⟩
+def checked44 : CheckedProfile := ⟨profile44,horizontal44,4263,profile44_valid,support44,by decide +kernel⟩
+def checked48 : CheckedProfile := ⟨profile48,horizontal48,4741,profile48_valid,support48,by decide +kernel⟩
 
 def count (k : Fin 43) : ℕ := 6+k.val
 
@@ -56,7 +56,7 @@ theorem alphabet_ge (k : Fin 43) : 6≤(profile k).alphabet := by fin_cases k <;
 theorem valid (k : Fin 43) : Valid (profile k) := (checked k).valid
 theorem support (k : Fin 43) : SupportValid (profile k) (horizontal k) := (checked k).support
 theorem volume (k : Fin 43) :
-    cubeCap (horizontal k) (profile k).order (profile k).mass
+    volumeCap (horizontal k) ((profile k).order / (profile k).mass) (profile k).mass
       (stackCap (testLimit (profile k).alphabet))≤2^exponent k := (checked k).volume
 
 end Profiles
@@ -116,10 +116,10 @@ private theorem tile_witness (k : Fin 43) (T : LeanWang.TileSet) (hlen : T.lengt
     exact (by decide : 65536+3≤2*2313^2).trans
       (Nat.mul_le_mul_left _ (Nat.pow_le_pow_left hs _))
   obtain ⟨U,hne,hc,hi,hb⟩ :=
-    exists_guarded_tile C E H hs (parameters_prime k T hlen) (Profiles.alphabet_ge k) hlarge
+    exists_strip_tile C E H hs (parameters_prime k T hlen) (Profiles.alphabet_ge k) hlarge
   have ho : E.cyclicOrder=p.order := ProjectedParameters.encoding_order p (Profiles.valid k) rfl (code_size k T hlen)
   have hm : MassSize.mass E=p.mass := ProjectedParameters.encoding_mass p (Profiles.valid k) rfl (code_size k T hlen)
-  rw [ho,hm] at hb
+  rw [inputOrder_eq_div E,ho,hm] at hb
   exact ⟨U,hne,hc,hi,hb.trans (Profiles.volume k)⟩
 
 def tile (k : Fin 43) (T : LeanWang.TileSet) (hlen : T.length=Profiles.count k) : Tile 3 :=

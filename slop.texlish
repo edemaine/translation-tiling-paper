@@ -2200,7 +2200,7 @@ numerical family are checked in
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    (n+4)^{635\lg\lg(n+4)}=n^{O(\log\log n)}
+    (n+4)^{410\lg\lg(n+4)}=n^{O(\log\log n)}
   $$
   unit cubes.
   For $n\leq5$, we also have the explicit bound $2^{250}$ unit cubes.
@@ -3104,7 +3104,65 @@ numerical family are checked in
   \]
   The ternary estimate above also gives
   $(68+2343/13)(49/22)tg<635tg$ for $n\geq8188$.
-  See \leanfile{FiniteCompiler/ProjectedCompiler.lean} and
+
+  To reduce the coefficient from $635$ to $410$, we use fewer and
+  shorter corridors in the connectedness construction. Write
+  $R=\prod_i r_i$ for the product of the channel digit products,
+  $N$ for the cyclic order before stacking, and $q$ for the stacking prime.
+  The kernel test includes every multiple of $R$ in $\Z/N\Z$ at horizontal
+  position zero. Any stacking layer assigned to the kernel test therefore
+  contains a whole coset of the multiples of $Rq$ in $\Z/(Nq)\Z$.
+  After taking lattice representatives, both the main components and
+  their displaced marker frames supply points along this column, spaced
+  $201Rq$ apart in height. Each cube lies within $201Rq+400$ in height of
+  one of these points, so we can connect it to the column and join the
+  successive points using a rail of height $201Rq+401$.
+
+  The required horizontal displacements have $|x|\leq201H+465$,
+  where $H$ bounds the horizontal coordinates of all test prototiles.
+  A seed or dependence offset fits in $|y|\leq201\cdot175+400$,
+  and an ordinary activation offset of slope $s$ fits in
+  $|y+sx|\leq465s+400$ for $0\leq s\leq16$. These bounds include the
+  offsets inside each lattice component. Each strip is connected
+  to the origin by horizontal and vertical steps, so we can use their
+  union as the horizontal slot set. This uses at most
+  $a=(402H+931)\cdot210{,}447$ horizontal slots.
+  For the existing stacking cap $L$ on $q$ and mass bound $J$,
+  we use $B=201RL+401$ in the shell estimate and obtain at most
+  \[
+    (201^3+3\cdot7^3+11^3)JL\cdot216(4a+7(B+2)+1)(4a+1)
+  \]
+  unit cubes.
+  See \leanfile{Rails/Strips.lean}, \leanfile{FiniteCompiler/StripStack.lean},
+  \leanfile{FiniteCompiler/StripLift.lean}, and
+  \leanfile{FiniteCompiler/StripVolume.lean}.
+
+  With the same prime profiles, the bounds are $|F|\leq2^e\leq2^{410tg}$.
+  \[
+    \begin{array}{c|r|c|c}
+      n & e & \text{lower bound on }t & \text{lower bound on }g\\
+      \hline
+      6 & 2355 & 83/25 & 45/26\\
+      7 & 2438 & 17/5 & 7/4\\
+      8,\ldots,10 & 2536 & 7/2 & 9/5\\
+      11,\ldots,20 & 3041 & 27/7 & 25/13\\
+      21,\ldots,30 & 3544 & 9/2 & 2\\
+      31,\ldots,40 & 4055 & 5 & 2\\
+      41,\ldots,44 & 4263 & 5 & 9/4\\
+      45,\ldots,48 & 4741 & 11/2 & 7/3\\
+      49,\ldots,242 & 5856 & 40/7 & 5/2\\
+      243,\ldots,8187 & 7488 & 7 & 8/3
+    \end{array}
+  \]
+  For $n\geq8188$, the ternary branch satisfies $R\leq P^{9w+8}$,
+  where $w$ counts its channels and $P=\max(w+2,256)$.
+  Applying the previous coarse estimate on the horizontal area of the shell
+  with $\max(H^2,Rq)$ in the vertical factor gives
+  $|F|\leq P^{21w+78}3^{4w+4}\leq P^{22w+79}$.
+  Using $w\leq2t+66$, $t\geq13$, and $\lg P\leq(49/22)g$
+  gives $\lg|F|\leq(103047/286)tg<410tg$.
+  See \leanfile{FiniteCompiler/ProjectedCompiler.lean},
+  \leanfile{FiniteCompiler/Effective/SparseStrip.lean}, and
   \leanfile{Compiler/ProjectedLogBound.lean}.
 
 The full construction is in
@@ -3659,8 +3717,8 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, these bounds are $(n+4)^{635\lg\lg(n+4)}$ for translations and
-$64{,}000(n+4)^{635\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+function. In dimension three, these bounds are $(n+4)^{410\lg\lg(n+4)}$ for translations and
+$64{,}000(n+4)^{410\lg\lg(n+4)}$ for arbitrary Euclidean motions.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[
