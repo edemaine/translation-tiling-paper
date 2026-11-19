@@ -1,3 +1,5 @@
+import TranslationTiling.FiniteCompiler.Effective.ShortCompiler
+import TranslationTiling.SudokuArithmetic.NineAudit
 import TranslationTiling.Statements
 import TranslationTiling.Abstract
 import TranslationTiling.Proofs.Wang
@@ -507,6 +509,13 @@ run_cmd do
       ``TranslationTiling.FiniteCompiler.ShortParameters.profile6_valid,
       ``TranslationTiling.FiniteCompiler.ShortParameters.profile10_valid,
       ``TranslationTiling.FiniteCompiler.ShortParameters.profile20_valid,
+      ``TranslationTiling.Sudoku.NinePatch.global_affine,
+      ``TranslationTiling.Sudoku.NineArithmetic.arithmetic_finite_structure,
+      ``TranslationTiling.Sudoku.NineBoard.wang_iff,
+      ``TranslationTiling.FiniteCompiler.NineSmallCompiler.compile_facts,
+      ``TranslationTiling.FiniteCompiler.Effective.nineCompile_computable,
+      ``TranslationTiling.FiniteCompiler.Effective.nineCompile_facts,
+      ``TranslationTiling.FiniteCompiler.Effective.nineCompile_small_bound,
       ``TranslationTiling.FiniteCompiler.Effective.shortCompile_computable,
       ``TranslationTiling.FiniteCompiler.Effective.shortCompile_facts,
       ``TranslationTiling.FiniteCompiler.Effective.shortCompile_small_bound,

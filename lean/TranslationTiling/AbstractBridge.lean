@@ -1,4 +1,4 @@
-import TranslationTiling.FiniteCompiler.Effective.ShortCompiler
+import TranslationTiling.FiniteCompiler.Effective.NineCompiler
 import TranslationTiling.Statements
 import TranslationTiling.FiniteCompiler.Effective.SizeBound
 import TranslationTiling.Rotations.Euclidean.Main
@@ -230,8 +230,8 @@ theorem connected_undecidable (d : ℕ) (hd : 3 ≤ d) : ¬ ComputablePred fun P
   undecidable_of_coRE_complete (connected_coRE_complete d hd)
 
 private theorem simulation_bound_mono {n m : ℕ} (h : n ≤ m) :
-    ((n : ℝ) + 4) ^ (1000 * Real.logb 2 (Real.logb 2 ((n : ℝ) + 4))) ≤
-      ((m : ℝ) + 4) ^ (1000 * Real.logb 2 (Real.logb 2 ((m : ℝ) + 4))) := by
+    ((n : ℝ) + 4) ^ (850 * Real.logb 2 (Real.logb 2 ((n : ℝ) + 4))) ≤
+      ((m : ℝ) + 4) ^ (850 * Real.logb 2 (Real.logb 2 ((m : ℝ) + 4))) := by
   have hbase : (n : ℝ) + 4 ≤ (m : ℝ) + 4 := by exact_mod_cast Nat.add_le_add_right h 4
   have hinner : 1 ≤ Real.logb 2 ((n : ℝ) + 4) := by
     calc
@@ -253,23 +253,23 @@ theorem tiling_reduction (d : ℕ) (hd : 3 ≤ d) : ∃ f : LeanWang.TileSet →
     Computable f ∧ ∀ T, f T ≠ [] ∧ AbsConnected (f T) ∧
       (LeanWang.TilesPlane T ↔ AbsTiles (f T)) ∧
       ((f T).length : ℝ) ≤ ((T.length : ℝ) + 4) ^
-        (1000 * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4))) := by
-  refine ⟨fun T => (FiniteCompiler.Effective.shortCompile T).map (pad hd),
-    (padTile_computable hd).comp FiniteCompiler.Effective.shortCompile_computable,fun T => ?_⟩
-  obtain ⟨hn,hc,ht,hb⟩ := FiniteCompiler.Effective.shortCompile_facts T
+        (850 * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4))) := by
+  refine ⟨fun T => (FiniteCompiler.Effective.nineCompile T).map (pad hd),
+    (padTile_computable hd).comp FiniteCompiler.Effective.nineCompile_computable,fun T => ?_⟩
+  obtain ⟨hn,hc,ht,hb⟩ := FiniteCompiler.Effective.nineCompile_facts T
   refine ⟨?_,(faceConnected_iff _).mp (Rotations.General.pad_connected hd _ hc),
     ht.trans ((tiles_pad_iff hd _).symm.trans (tiles_iff _)),?_⟩
   · intro hm
     exact hn (List.map_eq_nil_iff.mp hm)
   · rw [List.length_map]
-    exact FiniteCompiler.Effective.shortCompile_real_bound T
+    exact FiniteCompiler.Effective.nineCompile_real_bound T
 
 /-- The same bounded computable compiler permits arbitrary real translations. -/
 theorem real_tiling_reduction (d : ℕ) (hd : 3 ≤ d) : ∃ f : LeanWang.TileSet → List (Fin d → ℤ),
     Computable f ∧ ∀ T, f T ≠ [] ∧ AbsConnected (f T) ∧
       (LeanWang.TilesPlane T ↔ AbsRealTiles (f T)) ∧
       ((f T).length : ℝ) ≤ ((T.length : ℝ) + 4) ^
-        (1000 * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4))) := by
+        (850 * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4))) := by
   obtain ⟨f,hf,hs⟩ := tiling_reduction d hd
   refine ⟨f,hf,fun T => ?_⟩
   obtain ⟨hn,hc,ht,hb⟩ := hs T
@@ -432,12 +432,12 @@ theorem rigid_tiling_reduction (d : ℕ) (hd : 3 ≤ d) :
       (AbsTiles (f T) ↔ AbsRealTiles (f T)) ∧
       (∀ b : Bool, AbsRealTiles (f T) ↔ AbsRigidTiles (f T) b) ∧
       ((f T).length : ℝ) ≤ (2 : ℝ)^(10*(d+1)^2)*(((T.length : ℝ)+4)^
-        (1000*Real.logb 2 (Real.logb 2 ((T.length : ℝ)+4)))) := by
+        (850*Real.logb 2 (Real.logb 2 ((T.length : ℝ)+4)))) := by
   letI : NeZero d := ⟨by omega⟩
   let f := Rotations.General.Real.rotationCompile hd
   refine ⟨f,Rotations.General.Real.rotationCompile_computable hd,fun T => ?_⟩
-  obtain ⟨hn,hc,ht,_⟩ := FiniteCompiler.Effective.shortCompile_facts T
-  let E := (FiniteCompiler.Effective.shortCompile T).map (pad hd)
+  obtain ⟨hn,hc,ht,_⟩ := FiniteCompiler.Effective.nineCompile_facts T
+  let E := (FiniteCompiler.Effective.nineCompile T).map (pad hd)
   have hE : E ≠ [] := by intro he; exact hn (List.map_eq_nil_iff.mp he)
   have hW : LeanWang.TilesPlane T ↔ Tiles E := ht.trans (tiles_pad_iff hd _).symm
   have htile : LeanWang.TilesPlane T ↔ AbsTiles (f T) := hW.trans
@@ -526,7 +526,7 @@ theorem rigid_tiling_reduction_three : ∃ f : LeanWang.TileSet → List (Fin 3 
       (AbsTiles (f T) ↔ AbsRealTiles (f T)) ∧
       (∀ allowReflections : Bool, AbsRealTiles (f T) ↔ AbsRigidTiles (f T) allowReflections) ∧
       ((f T).length : ℝ) ≤ 64000 * (((T.length : ℝ) + 4) ^
-        (1000 * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4)))) := by
+        (850 * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4)))) := by
   obtain ⟨f,hf,hs⟩ := tiling_reduction 3 (by decide)
   refine ⟨fun T => Rotations.SixKeys.protect (f T),
     Rotations.SixKeys.protect_primrec.to_comp.comp hf,fun T => ?_⟩
@@ -718,7 +718,7 @@ theorem motion_tiling_reduction (d : ℕ) (hd : 3 ≤ d) :
       (∀ allowRotations allowReflections : Bool, AbsTiles (f T) ↔
         AbsMotionTiles (f T) {r | AbsAllowedLinear allowRotations allowReflections r}) ∧
       ((f T).length : ℝ) ≤ (2 : ℝ)^(10*(d+1)^2)*(((T.length : ℝ)+4)^
-        (1000*Real.logb 2 (Real.logb 2 ((T.length : ℝ)+4)))) := by
+        (850*Real.logb 2 (Real.logb 2 ((T.length : ℝ)+4)))) := by
   obtain ⟨f,hf,hs⟩ := rigid_tiling_reduction d hd
   refine ⟨f,hf,fun T => ?_⟩
   obtain ⟨hn,hc,ht,hreal,hrigid,hb⟩ := hs T
@@ -731,7 +731,7 @@ theorem motion_tiling_reduction_three :
       (∀ allowRotations allowReflections : Bool, AbsTiles (f T) ↔
         AbsMotionTiles (f T) {r | AbsAllowedLinear allowRotations allowReflections r}) ∧
       ((f T).length : ℝ) ≤ 64000 * (((T.length : ℝ)+4)^
-        (1000*Real.logb 2 (Real.logb 2 ((T.length : ℝ)+4)))) := by
+        (850*Real.logb 2 (Real.logb 2 ((T.length : ℝ)+4)))) := by
   obtain ⟨f,hf,hs⟩ := rigid_tiling_reduction_three
   refine ⟨f,hf,fun T => ?_⟩
   obtain ⟨hn,hc,ht,hreal,hrigid,hb⟩ := hs T
@@ -861,7 +861,7 @@ theorem set_real_tiling_reduction (d : ℕ) (hd : 3 ≤ d) :
       (LeanWang.TilesPlane T ↔ AbsTiles (f T)) ∧
       (AbsTiles (f T) ↔ AbsSetMotionTiles (f T) AbsTranslations) ∧
       ((f T).length : ℝ) ≤ ((T.length : ℝ) + 4) ^
-        (1000 * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4))) := by
+        (850 * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4))) := by
   obtain ⟨f,hf,hs⟩ := tiling_reduction d hd
   refine ⟨f,hf,fun T => ?_⟩
   obtain ⟨hn,hc,ht,hb⟩ := hs T
@@ -890,7 +890,7 @@ theorem set_motion_tiling_reduction (d : ℕ) (hd : 3 ≤ d) :
       (∀ motions : Set (Motion d), AbsTranslations ⊆ motions →
         (AbsTiles (f T) ↔ AbsSetMotionTiles (f T) motions)) ∧
       ((f T).length : ℝ) ≤ (2 : ℝ)^(10*(d+1)^2)*(((T.length : ℝ)+4)^
-        (1000*Real.logb 2 (Real.logb 2 ((T.length : ℝ)+4)))) := by
+        (850*Real.logb 2 (Real.logb 2 ((T.length : ℝ)+4)))) := by
   obtain ⟨f,hf,hs⟩ := motion_tiling_reduction d hd
   refine ⟨f,hf,fun T => ?_⟩
   obtain ⟨hn,hc,ht,hm,hb⟩ := hs T
@@ -903,7 +903,7 @@ theorem set_motion_tiling_reduction_three :
       (∀ motions : Set (Motion 3), AbsTranslations ⊆ motions →
         (AbsTiles (f T) ↔ AbsSetMotionTiles (f T) motions)) ∧
       ((f T).length : ℝ) ≤ 64000 * (((T.length : ℝ)+4)^
-        (1000*Real.logb 2 (Real.logb 2 ((T.length : ℝ)+4)))) := by
+        (850*Real.logb 2 (Real.logb 2 ((T.length : ℝ)+4)))) := by
   obtain ⟨f,hf,hs⟩ := motion_tiling_reduction_three
   refine ⟨f,hf,fun T => ?_⟩
   obtain ⟨hn,hc,ht,hm,hb⟩ := hs T

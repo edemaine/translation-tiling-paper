@@ -2200,7 +2200,7 @@ numerical family are checked in
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    (n+4)^{1000\lg\lg(n+4)}=n^{O(\log\log n)}
+    (n+4)^{850\lg\lg(n+4)}=n^{O(\log\log n)}
   $$
   unit cubes.
   For $n\leq3$, we also have the explicit bound $2^{250}$ unit cubes.
@@ -2247,7 +2247,7 @@ numerical family are checked in
 
   First derive the coefficient $2000$ for the baseline joint-code compiler;
   we then refine its channel system to obtain $1350$, and finally shorten
-  the arithmetic boards for $1000$.
+  the arithmetic boards for $1000$, and then restrict them further for $850$.
   Check correctness of the expanded channel system. Activation
   gives a nonempty active set in every ordinary ternary channel. Choose
   one active symbol $V(i,b,m)$ at the common vertical section $(0,m)$.
@@ -2825,6 +2825,84 @@ numerical family are checked in
   \leanfile{FiniteCompiler/ShortSmallCompiler.lean}, and the uniform
   logarithm conversion in \leanfile{Compiler/ShortLogBound.lean}.
 
+
+  Finally, reduce the coefficient from $1000$ to $850$ by retaining nine
+  columns in each arithmetic component:
+  $$
+    I_r=\{0,1,2,3,4,r,r+1,r+2,2r\},\qquad r\in\{5,7\}.
+  $$
+  This gives $18$ arithmetic channels and the same three Wang-tile
+  channels. The Wang decoration at column $5$ remains even though this
+  column is absent from the $q=7$ arithmetic component.
+
+  The initial affine classification uses a new finite implication.
+  Normalize one symbol to $1$ and consider a seven-row patch of nonzero
+  field symbols on $I_r$. On each integer line of slope between $-6$
+  and $6$, impose the first-digit affine rule at the patch cells it meets.
+  Kernel-checked SAT certificates show that the entire patch admits a
+  nonzero affine approximation $Ax+By+C$, with agreement wherever this
+  expression is nonzero. Normalization preserves the line rules and can
+  be undone by multiplying the coefficients by the original symbol.
+
+  Adjacent seven-row patches overlap on six rows. Four consecutive rows and
+  the four columns $0,1,2,3$ suffice to identify their affine coefficients.
+  Each nonzero affine form vanishes identically on at most one of those
+  rows, so at least two rows have nonzero horizontal forms for both
+  approximations. On each such row, at least two of the four columns
+  have nonzero predictions for both forms. Agreement at those points
+  identifies the horizontal coefficient and row intercept; two row
+  intercepts then identify the vertical coefficient and constant.
+  Thus all patch approximations glue to one global affine approximation.
+  The normalization and gluing are checked in
+  \leanfile{SudokuArithmetic/NinePatchField.lean},
+  \leanfile{SudokuArithmetic/NinePatchOverlap.lean}, and
+  \leanfile{SudokuArithmetic/NinePatchGlobal.lean}.
+
+  These sets retain all rescaling samples $0,r,2r;1,1+r;2,2+r$ and
+  extraction samples $1,2,3,4,r,2r$. The finite-depth proof in
+  \leanfile{SudokuArithmetic/NineArithmetic.lean} and the Wang-tile
+  extraction in \leanfile{SudokuArithmetic/NineBoardSoundness.lean}
+  therefore apply unchanged.
+  Use this $21$-channel compiler for $4\leq n\leq30$, padding tile labels
+  to $10$, $20$, or $30$ in the indicated ranges. The extra tests number
+  at most $(21+2)^2+21+4+2\cdot21\cdot30+1+21+2=1838<2000$,
+  so $s\leq3W$.
+
+  Six tables give the first six bounds below; the others use the ternary compiler.
+  $$
+    \begin{array}{c|r|c|c}
+      n & e & \text{lower }t & \text{lower }g\\
+      \hline
+      4 & 4010 & 3 & 19/12\\
+      5 & 4100 & 31/10 & 163/100\\
+      6 & 4200 & 33/10 & 17/10\\
+      7,\ldots,10 & 4580 & 17/5 & 7/4\\
+      11,\ldots,20 & 5670 & 39/10 & 49/25\\
+      21,\ldots,30 & 6810 & 9/2 & 13/6\\
+      31,\ldots,242 & 9124 & 5 & 23/10\\
+      243,\ldots,1019 & 11{,}678 & 7 & 2
+    \end{array}
+  $$
+  Every row satisfies $|F|\leq2^e$ and $e\leq850tg$.
+  For $n\geq1020$, we have $t\geq10$ and $g\geq3$, so
+  $w\leq2t+66\leq(43/5)t$ and $\lg P\leq(8/3)g$. Hence
+  $$
+    \lg|F|\leq(34w+99)\lg P
+      \leq\left(34\cdot\frac{43}{5}+\frac{99}{10}\right)
+        \frac83\,tg
+      =\frac{12092}{15}\,tg<850tg.
+  $$
+  The cases $n\leq3$ retain $2^{250}$.
+  The six tables are \path{FiniteCompiler/NineProfile4.lean},
+  \path{FiniteCompiler/NineProfile5.lean},
+  \path{FiniteCompiler/NineProfile6.lean},
+  \path{FiniteCompiler/NineProfile10.lean},
+  \path{FiniteCompiler/NineProfile20.lean}, and
+  \path{FiniteCompiler/NineProfile30.lean}.
+  The compiler and logarithm conversion are checked in
+  \leanfile{FiniteCompiler/NineSmallCompiler.lean} and
+  \leanfile{Compiler/NineLogBound.lean}.
+
 The full construction is in
 \leanfile{Compiler/CleanQuasipolynomialBound.lean}, proved by
 \leandecl{Compiler.Size.exists_connected_tile_clean_quasipolynomial_bound}.
@@ -2832,9 +2910,9 @@ The generalized graph, dependence, fixed cycle, and activation equations
 are in `FiniteCompiler/`; their common-solution and soundness proofs allow
 repeated column slopes and channel-dependent finite alphabets.
 The shorter-board equivalence is
-\leanref{SudokuArithmetic/ShortBoardSoundness.lean}{Sudoku.ShortBoard.wang_iff}.
-\leanfile{FiniteCompiler/Effective/ShortCompiler.lean} combines the smaller
-systems for $4\leq n\leq20$ with the existing ternary compiler above that
+\leanref{SudokuArithmetic/NineBoardSoundness.lean}{Sudoku.NineBoard.wang_iff}.
+\leanfile{FiniteCompiler/Effective/NineCompiler.lean} combines the smaller
+systems for $4\leq n\leq30$ with the existing ternary compiler above that
 range and the direct tests for $n\leq3$. The public theorem includes
 nonemptiness, face connectedness, both tilability directions, and the
 numerical coefficient uniformly for every finite Wang tile set, including
@@ -2842,8 +2920,9 @@ the empty set. Duplicate input entries have no cost in the existence bound.
 The explicit bounds in @cor:size-bound remain available.
 \leandecl{Compiler.Size.exists_connected_tile_small_quasipolynomial_bound}
 gives the explicit bound for $n\leq3$. The intermediate coefficients
-$1350$ and $2000$ remain formalized in
-\leanfile{FiniteCompiler/Effective/SparseCompiler.lean} and
+$1000$, $1350$, and $2000$ remain formalized in
+\leanfile{FiniteCompiler/Effective/ShortCompiler.lean},
+\leanfile{FiniteCompiler/Effective/SparseCompiler.lean}, and
 \leanfile{FiniteCompiler/Effective/JointCompiler.lean}, respectively;
 earlier binary-payload bounds remain in
 \leanfile{Compiler/QuasipolynomialBound.lean}.
@@ -3375,8 +3454,8 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, these bounds are $(n+4)^{1000\lg\lg(n+4)}$ for translations and
-$64{,}000(n+4)^{1000\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+function. In dimension three, these bounds are $(n+4)^{850\lg\lg(n+4)}$ for translations and
+$64{,}000(n+4)^{850\lg\lg(n+4)}$ for arbitrary Euclidean motions.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[
@@ -3395,9 +3474,9 @@ then connects the two translation predicates. Thus no new construction or
 additional cubes are needed.
 
 The total reduction in
-\leanfile{FiniteCompiler/Effective/ShortCompiler.lean}
+\leanfile{FiniteCompiler/Effective/NineCompiler.lean}
 combines the ternary construction with the direct tests for at most three
-tiles and the $24$-channel systems for four through twenty tiles.
+tiles and the $21$-channel systems for four through thirty tiles.
 The ternary branch encodes arithmetic pairs and tile labels separately by
 base-three integers, uses
 explicit prime tables for small widths and finite arithmetic search for the
@@ -3415,12 +3494,12 @@ family expresses the encoded word rule and seed arithmetic-digit tests. The conn
 geometric compiler and its volume bound are checked in
 \leanfile{FiniteCompiler/Effective/CompactFamilyCompiler.lean} and
 \leanfile{FiniteCompiler/Effective/CompactFamilyBounds.lean}.
-The corresponding $24$-channel compiler and its bounds are checked in
-\leanfile{FiniteCompiler/ShortSmallCompiler.lean}.
+The corresponding $21$-channel compiler and its bounds are checked in
+\leanfile{FiniteCompiler/NineSmallCompiler.lean}.
 
-\leandecl{FiniteCompiler.Effective.shortCompile_computable} proves
+\leandecl{FiniteCompiler.Effective.nineCompile_computable} proves
 computability of this total function.
-Its size bound is \leandecl{FiniteCompiler.Effective.shortCompile_real_bound}.
+Its size bound is \leandecl{FiniteCompiler.Effective.nineCompile_real_bound}.
 The six-key replacement is a primitive-recursive map and
 multiplies its output length by exactly $64{,}000$, so the public Euclidean
 reduction combines computability, correctness, and size as well.

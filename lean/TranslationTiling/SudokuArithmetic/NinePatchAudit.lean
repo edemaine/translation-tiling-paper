@@ -1,0 +1,8 @@
+import TranslationTiling.SudokuArithmetic.NinePatchLocal
+import TranslationTiling.SudokuArithmetic.NinePatchOverlap
+
+#print axioms TranslationTiling.Sudoku.NinePatch.patch5_unsat
+#print axioms TranslationTiling.Sudoku.NinePatch.patch7_unsat
+#print axioms TranslationTiling.Sudoku.NinePatch.normalized_patch_affine
+#print axioms TranslationTiling.Sudoku.NinePatch.overlap_unique
+#print axioms TranslationTiling.Sudoku.NinePatch.glue_patches

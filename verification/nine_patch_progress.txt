@@ -1,0 +1,86 @@
+Nine-column arithmetic and coefficient 850: complete
+====================================================
+The public Lean statements, abstract bridge, and texlish now give
+
+    (n+4)^(850 lg lg(n+4)) unit cubes, where lg=log_2.
+
+The total computable function is FiniteCompiler.Effective.nineCompile.
+Its facts theorem proves nonemptiness, face connectivity, both Wang/polycube
+tilability directions, and the displayed size bound for the same output.
+The bound 2^250 remains valid for every input list of length at most 3.
+
+Construction and proof
+-----------------------
+Each arithmetic board retains {0,1,2,3,4,r,r+1,r+2,2r}, for r=5,7.
+The three Wang decorations remain at 1,5,7 independently of arithmetic
+column selection. There are 21 ordinary channels (9+9+3) and two seeds.
+
+NinePatchFormula describes normalized nonzero patches with 9 columns and
+7 rows, with primitive first-digit affine tests on integer slopes -6..6.
+NinePatchKeys and NinePatchModel prove variable separation and semantic
+satisfaction. The kernel checks the CNF identity and every LRAT inference.
+The certificates have 12155/23294 initial clauses and 1888/13622 RUP
+additions for primes 5/7 respectively. No solver is trusted by Lean.
+
+NinePatchLocal proves normalized patch classification. NinePatchField
+normalizes arbitrary nonzero field patches and removes normalization.
+NinePatchOverlap proves 4x4 uniqueness algebraically and glues all integer
+translates. NinePatchGlobal applies those results to unit-valued arrays.
+NineArithmetic proves the full finite-depth classification; NineSamples
+and NineBoardSoundness supply Wang-tile extraction and the equivalence.
+
+NineParameters verifies the prime layout. The six NineProfile files
+verify primality, uniqueness, positive representations, support, order,
+mass, and geometric volume. The safe exponents in volume <= 2^e are:
+
+    n range      e
+    4           4010
+    5           4100
+    6           4200
+    7..10       4580
+    11..20      5670
+    21..30      6810
+
+NineSmallCompiler gives the computable reductions for these inputs.
+The existing sparse ternary compiler handles n>=31. NineLogBound proves
+the uniform coefficient 850, using fixed width profiles through n=1019
+and a bulk estimate (12092/15) lg(n+4) lg lg(n+4) beyond that point.
+Effective/NineCompiler combines all branches, including the empty input.
+The earlier coefficient-1000 compiler remains checked by the main audit.
+
+Verification
+--------------
+Full default project build: lake build (4605 jobs).
+Main AxiomAudit also rejects any axiom other than propext,
+Classical.choice, or Quot.sound for the new arithmetic and compiler
+endpoints and for the public abstract theorems. NineAudit prints their
+dependencies. Both finite contradiction certificates use only propext.
+The standalone Rotations/General/AxiomAudit.lean also passes.
+There are no sorry/admitted declarations, custom axioms, or native-evaluation
+axioms in this construction.
+
+Both texlish files and the Lean snippets were regenerated; PDFs rebuilt
+and affected pages visually checked. Paper: 11 pages. Slop: 43 pages.
+No overfull boxes or undefined references in the final LaTeX logs.
+
+Reproduction from the repository root (use PYTHONUTF8=1 on Windows):
+  python verification/nine_patch_certificates.py 5 9 7 6 0,1,2,3,4,5,6,7,10
+  python verification/nine_patch_certificates.py 7 9 7 6 0,1,2,3,4,7,8,9,14
+  python verification/check_nine_patch_lrat.py lean/TranslationTiling/SudokuArithmetic/Certificates/ninepatch5.cnf lean/TranslationTiling/SudokuArithmetic/Certificates/ninepatch5.lrat
+  python verification/check_nine_patch_lrat.py lean/TranslationTiling/SudokuArithmetic/Certificates/ninepatch7.cnf lean/TranslationTiling/SudokuArithmetic/Certificates/ninepatch7.lrat
+  python verification/generate_nine_prime_profiles.py
+The last command reads verification/nine_prime_profiles.json. Lean checks
+its output independently. The patch generators reproduce the stored CNFs
+byte for byte. prune_nine_patch_lrat.py reduces a solver trace before the
+independent checker and Lean replay it.
+From lean/:
+  lake build
+  lake env lean TranslationTiling/Rotations/General/AxiomAudit.lean
+From the repository root:
+  make all
+
+The LRAT elaborator names balanced input subformulas, input clauses, and
+derived clauses to control repeated expansion. These definitions only
+abbreviate ordinary kernel-checked proofs. Earlier replay attempts that
+used excessive memory were stopped and supply no theorem in the final
+successful build.

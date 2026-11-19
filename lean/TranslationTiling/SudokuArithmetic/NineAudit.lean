@@ -1,0 +1,9 @@
+import TranslationTiling.FiniteCompiler.Effective.NineCompiler
+
+#print axioms TranslationTiling.Sudoku.NinePatch.global_affine
+#print axioms TranslationTiling.Sudoku.NineArithmetic.rescale_vertical_coefficient_ne_zero
+#print axioms TranslationTiling.Sudoku.NineArithmetic.arithmetic_finite_structure
+#print axioms TranslationTiling.Sudoku.NineBoard.wang_iff
+#print axioms TranslationTiling.FiniteCompiler.NineSmallCompiler.compile_facts
+#print axioms TranslationTiling.FiniteCompiler.Effective.nineCompile_facts
+#print axioms TranslationTiling.FiniteCompiler.Effective.nineCompile_computable
