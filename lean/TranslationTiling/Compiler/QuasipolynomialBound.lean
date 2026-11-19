@@ -1,4 +1,4 @@
-import TranslationTiling.FiniteCompiler.Effective.NineCompiler
+import TranslationTiling.FiniteCompiler.Effective.PairCompiler
 import TranslationTiling.FiniteCompiler.Effective.MixedCompiler
 import TranslationTiling.FiniteCompiler.Effective.JointCompiler
 import TranslationTiling.FiniteCompiler.TernaryConstruction
@@ -162,10 +162,10 @@ theorem exists_connected_tile_one_quasipolynomial_bound (T : LeanWang.TileSet)
     ∃ P : Tile 3, P≠[] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧ cubeCount P≤2^250 := by
   have hlen : T.dedup.length=1 := by simpa only [List.card_toFinset] using hT
-  obtain ⟨hne,hc,ht,_⟩ := FiniteCompiler.Effective.nineCompile_facts T.dedup
+  obtain ⟨hne,hc,ht,_⟩ := FiniteCompiler.Effective.pairCompile_facts T.dedup
   have hd : LeanWang.TilesPlane T ↔ LeanWang.TilesPlane T.dedup :=
     LeanWang.tilesPlane_congr (by intro t; simp)
-  have hb := FiniteCompiler.Effective.nineCompile_single_bound T.dedup hlen
+  have hb := FiniteCompiler.Effective.pairCompile_single_bound T.dedup hlen
   exact ⟨_,hne,hc,hd.trans ht,(List.toFinset_card_le _).trans hb⟩
 
 /-- A finite periodicity test handles at most three distinct Wang tiles. -/
@@ -174,10 +174,10 @@ theorem exists_connected_tile_small_quasipolynomial_bound (T : LeanWang.TileSet)
     ∃ P : Tile 3, P≠[] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧ cubeCount P≤2^250 := by
   have hlen : T.dedup.length≤3 := by simpa only [List.card_toFinset] using hT
-  obtain ⟨hne,hc,ht,_⟩ := FiniteCompiler.Effective.nineCompile_facts T.dedup
+  obtain ⟨hne,hc,ht,_⟩ := FiniteCompiler.Effective.pairCompile_facts T.dedup
   have hd : LeanWang.TilesPlane T ↔ LeanWang.TilesPlane T.dedup :=
     LeanWang.tilesPlane_congr (by intro t; simp)
-  have hb := FiniteCompiler.Effective.nineCompile_small_bound T.dedup hlen
+  have hb := FiniteCompiler.Effective.pairCompile_small_bound T.dedup hlen
   exact ⟨_,hne,hc,hd.trans ht,(List.toFinset_card_le _).trans hb⟩
 
 end

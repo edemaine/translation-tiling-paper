@@ -1,0 +1,66 @@
+Coefficient 800 with two Wang decorations: complete
+====================================================
+The public Lean statements and texlish give
+
+    (n+4)^(800 lg lg(n+4)) unit cubes, lg=log_2.
+
+The same total computable function, Effective.pairCompile, has a nonempty,
+face-connected output, both tilability directions, and this size bound.
+It retains 2^250 for every input list of length at most 3. For length 4,
+the finite compiler's explicit binary bound is 2^3770.
+
+Construction and proof endpoints
+---------------------------------
+The nine-column arithmetic boards and their classification are unchanged.
+PairBoard retains Wang decorations at columns 0 and 2. Shifted lines
+m=M(1+2x) and m=M(1+3x) compare M with 5M and 7M respectively.
+PairSamples proves canonical_shifted_coefficients and shifted_root_one
+algebraically; no new SAT certificates are needed. PairBoardRecovery
+proves row equality and both Wang adjacencies. PairBoardSoundness proves
+the Wang-tilability equivalence for every tile set.
+
+The 20-channel system has nine arity-4, nine arity-6, and two tile-label
+channels, plus the same two singleton seeds. PairParameters and the six
+PairProfile modules check prime separation, primality, positive digit
+representations, support, cyclic order, mass, and geometric volume.
+The safe binary exponents are 3770,3890,3950,4220,4980,5780 for the
+ranges 4;5;6;7..10;11..20;21..30. The n=4 profile also optimizes the
+useful-prime pairing. Its search is not trusted by the proof.
+
+PairSmallCompiler checks the finite computable reductions. PairLogBound
+and Effective/PairCompiler prove the uniform 800 bound. Inputs n>=31 use
+the existing generic ternary compiler. Widths 64 and 80 cover 31..242
+and 243..2043; for n>=2044 the bulk coefficient is 2248/3 <800.
+Abstract.lean and AbstractBridge.lean expose the strengthened results.
+The rotation bounds inherit 800 with the same 64000 factor in dimension 3.
+The older 850 and 1000 compilers remain in the main axiom audit.
+
+Validation
+------------
+Full default build: lake build, successful (4623 jobs).
+The main audit explicitly rejects axioms other than propext,
+Classical.choice, and Quot.sound for the new arithmetic, Wang extraction,
+compiler, and public theorem endpoints. PairAudit prints their dependencies.
+The dimension-generic rotation axiom audit also passes in the full build.
+No sorry/admitted statements or new axioms are used.
+
+The texlish files, Lean snippets, and PDFs were regenerated. The affected
+PDF pages were visually inspected, including the outline, public Lean
+statements, shifted-line proof, and explicit-bound table. No overfull boxes
+or undefined references appear in the final LaTeX logs.
+Paper: 11 pages. Slop: 44 pages.
+
+Reproduction
+--------------
+From the repository root (PYTHONUTF8=1 on Windows):
+  python verification/generate_pair_prime_profiles.py
+This reads verification/pair_prime_profiles.json and emits the six Lean
+profile files; Lean checks every resulting numerical certificate.
+From lean/:
+  lake build
+  lake build TranslationTiling.SudokuArithmetic.PairAudit
+From the repository root:
+  make all
+
+The original mathematical notes and independent integer checks remain in
+build/after850/, superseded by the complete Lean proofs described above.

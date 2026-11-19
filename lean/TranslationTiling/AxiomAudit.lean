@@ -1,3 +1,4 @@
+import TranslationTiling.SudokuArithmetic.PairAudit
 import TranslationTiling.FiniteCompiler.Effective.ShortCompiler
 import TranslationTiling.SudokuArithmetic.NineAudit
 import TranslationTiling.Statements
@@ -509,6 +510,13 @@ run_cmd do
       ``TranslationTiling.FiniteCompiler.ShortParameters.profile6_valid,
       ``TranslationTiling.FiniteCompiler.ShortParameters.profile10_valid,
       ``TranslationTiling.FiniteCompiler.ShortParameters.profile20_valid,
+      ``TranslationTiling.Sudoku.NineArithmetic.canonical_shifted_coefficients,
+      ``TranslationTiling.Sudoku.NineArithmetic.shifted_root_one,
+      ``TranslationTiling.Sudoku.PairBoard.wang_iff,
+      ``TranslationTiling.FiniteCompiler.PairSmallCompiler.compile_facts,
+      ``TranslationTiling.FiniteCompiler.Effective.pairCompile_computable,
+      ``TranslationTiling.FiniteCompiler.Effective.pairCompile_facts,
+      ``TranslationTiling.FiniteCompiler.Effective.pairCompile_small_bound,
       ``TranslationTiling.Sudoku.NinePatch.global_affine,
       ``TranslationTiling.Sudoku.NineArithmetic.arithmetic_finite_structure,
       ``TranslationTiling.Sudoku.NineBoard.wang_iff,

@@ -2200,7 +2200,7 @@ numerical family are checked in
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    (n+4)^{850\lg\lg(n+4)}=n^{O(\log\log n)}
+    (n+4)^{800\lg\lg(n+4)}=n^{O(\log\log n)}
   $$
   unit cubes.
   For $n\leq3$, we also have the explicit bound $2^{250}$ unit cubes.
@@ -2246,8 +2246,8 @@ numerical family are checked in
   \leanfile{Compiler/SingleInputBound.lean}. Henceforth assume $n\geq4$.
 
   First derive the coefficient $2000$ for the baseline joint-code compiler;
-  we then refine its channel system to obtain $1350$, and finally shorten
-  the arithmetic boards for $1000$, and then restrict them further for $850$.
+  then refine its channel system for $1350$, restrict arithmetic columns
+  for $1000$ and $850$, and retain two Wang-tile columns for $800$.
   Check correctness of the expanded channel system. Activation
   gives a nonempty active set in every ordinary ternary channel. Choose
   one active symbol $V(i,b,m)$ at the common vertical section $(0,m)$.
@@ -2826,7 +2826,7 @@ numerical family are checked in
   logarithm conversion in \leanfile{Compiler/ShortLogBound.lean}.
 
 
-  Finally, reduce the coefficient from $1000$ to $850$ by retaining nine
+  To reduce the coefficient from $1000$ to $850$, retain nine
   columns in each arithmetic component:
   $$
     I_r=\{0,1,2,3,4,r,r+1,r+2,2r\},\qquad r\in\{5,7\}.
@@ -2903,6 +2903,80 @@ numerical family are checked in
   \leanfile{FiniteCompiler/NineSmallCompiler.lean} and
   \leanfile{Compiler/NineLogBound.lean}.
 
+
+  To reduce the coefficient from $850$ to $800$, keep both nine-column
+  arithmetic boards but retain Wang-tile labels only at columns $0,2$.
+  After the common finite-depth shear, put $M=5^u7^v$. The line
+  $m=M(1+2x)$ compares heights $M$ and $5M$, and $m=M(1+3x)$ compares
+  $M$ and $7M$. Thus the same pair of columns tests both Wang directions.
+
+  Here is the shifted-word coefficient recovery. Fix $r\in\{5,7\}$ and
+  $d\in\{2,3\}$. The canonical first digits on the line $m=M(1+dx)$
+  are $c(1+dx)$, wherever this expression is nonzero, for a nonzero
+  phase $c$. Comparing the primitive word witness $ax+b$ at the four
+  retained columns $1,2,3,4$ gives
+  $a\equiv cd$ and $b\equiv c\pmod r$. In particular, the witness
+  has valuation zero at column $0$. When $r\nmid1+2d$, its valuation
+  at column $2$ is also zero.
+
+  In the remaining cases $r=2d+1$, write $2a+b=rz$. The canonical
+  values at the retained columns $2$ and $2+r$ are $c$ and $c(d+1)$,
+  respectively, since
+  $1+2d=r$ and $1+d(2+r)=r(d+1)$, with $0<d+1<r$.
+  If $r\mid z$, the word witness at $2+r$ has valuation one and low
+  digit $a\equiv cd$, forcing $cd=c(d+1)$, a contradiction.
+  Hence the witness at column $2$ has valuation exactly one.
+  For $d=2$, the two tile columns therefore read rectangle entries
+  $(0,0),(1,0)$; for $d=3$, they read $(0,0),(0,1)$.
+  The constant-row argument identifies both decorations at the queried heights,
+  so these comparisons give a common Wang grid. Completeness restricts
+  the original Sudoku array to the retained arithmetic and tile columns.
+  These proofs are checked in
+  \leanfile{SudokuArithmetic/PairSamples.lean} and
+  \leanfile{SudokuArithmetic/PairBoardSoundness.lean}.
+
+  The resulting system has $20$ ordinary channels: nine of arity $4$,
+  nine of arity $6$, and two tile-label channels. Use it for
+  $4\leq n\leq30$, with the same tile-alphabet padding ranges as above.
+  The extra tests number at most
+  $(20+2)^2+20+4+2\cdot20\cdot30+1+20+2=1731<2000$,
+  so the same bound $s\leq3W$ holds.
+
+  Six new prime tables give the first six rows; the last two reuse the ternary profiles.
+  $$
+    \begin{array}{c|r|c|c}
+      n & e & \text{lower }t & \text{lower }g\\
+      \hline
+      4 & 3770 & 3 & 19/12\\
+      5 & 3890 & 31/10 & 163/100\\
+      6 & 3950 & 33/10 & 17/10\\
+      7,\ldots,10 & 4220 & 17/5 & 7/4\\
+      11,\ldots,20 & 4980 & 39/10 & 49/25\\
+      21,\ldots,30 & 5780 & 9/2 & 13/6\\
+      31,\ldots,242 & 9124 & 5 & 23/10\\
+      243,\ldots,2043 & 11{,}678 & 7 & 9/4
+    \end{array}
+  $$
+  Every row satisfies $|F|\leq2^e$ and $e\leq800tg$.
+  For the last logarithm witness, use $2^9\leq7^4$.
+  For $n\geq2044$, we have $t\geq11$ and $g\geq3$, so
+  $w\leq2t+66\leq8t$ and $\lg P\leq(8/3)g$. Consequently,
+  $$
+    \lg|F|\leq(34w+99)\lg P
+      \leq\left(34\cdot8+\frac{99}{11}\right)\frac83\,tg
+      =\frac{2248}{3}\,tg<800tg.
+  $$
+  The cases $n\leq3$ retain $2^{250}$. The $n=4$ table also improves
+  the useful-prime pairing. The tables are \path{FiniteCompiler/PairProfile4.lean},
+  \path{FiniteCompiler/PairProfile5.lean},
+  \path{FiniteCompiler/PairProfile6.lean},
+  \path{FiniteCompiler/PairProfile10.lean},
+  \path{FiniteCompiler/PairProfile20.lean}, and
+  \path{FiniteCompiler/PairProfile30.lean}.
+  The compiler and logarithm conversion are checked in
+  \leanfile{FiniteCompiler/PairSmallCompiler.lean} and
+  \leanfile{Compiler/PairLogBound.lean}.
+
 The full construction is in
 \leanfile{Compiler/CleanQuasipolynomialBound.lean}, proved by
 \leandecl{Compiler.Size.exists_connected_tile_clean_quasipolynomial_bound}.
@@ -2910,8 +2984,8 @@ The generalized graph, dependence, fixed cycle, and activation equations
 are in `FiniteCompiler/`; their common-solution and soundness proofs allow
 repeated column slopes and channel-dependent finite alphabets.
 The shorter-board equivalence is
-\leanref{SudokuArithmetic/NineBoardSoundness.lean}{Sudoku.NineBoard.wang_iff}.
-\leanfile{FiniteCompiler/Effective/NineCompiler.lean} combines the smaller
+\leanref{SudokuArithmetic/PairBoardSoundness.lean}{Sudoku.PairBoard.wang_iff}.
+\leanfile{FiniteCompiler/Effective/PairCompiler.lean} combines the smaller
 systems for $4\leq n\leq30$ with the existing ternary compiler above that
 range and the direct tests for $n\leq3$. The public theorem includes
 nonemptiness, face connectedness, both tilability directions, and the
@@ -2920,7 +2994,8 @@ the empty set. Duplicate input entries have no cost in the existence bound.
 The explicit bounds in @cor:size-bound remain available.
 \leandecl{Compiler.Size.exists_connected_tile_small_quasipolynomial_bound}
 gives the explicit bound for $n\leq3$. The intermediate coefficients
-$1000$, $1350$, and $2000$ remain formalized in
+$850$, $1000$, $1350$, and $2000$ remain formalized in
+\leanfile{FiniteCompiler/Effective/NineCompiler.lean},
 \leanfile{FiniteCompiler/Effective/ShortCompiler.lean},
 \leanfile{FiniteCompiler/Effective/SparseCompiler.lean}, and
 \leanfile{FiniteCompiler/Effective/JointCompiler.lean}, respectively;
@@ -3454,8 +3529,8 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, these bounds are $(n+4)^{850\lg\lg(n+4)}$ for translations and
-$64{,}000(n+4)^{850\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+function. In dimension three, these bounds are $(n+4)^{800\lg\lg(n+4)}$ for translations and
+$64{,}000(n+4)^{800\lg\lg(n+4)}$ for arbitrary Euclidean motions.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[
@@ -3474,9 +3549,9 @@ then connects the two translation predicates. Thus no new construction or
 additional cubes are needed.
 
 The total reduction in
-\leanfile{FiniteCompiler/Effective/NineCompiler.lean}
+\leanfile{FiniteCompiler/Effective/PairCompiler.lean}
 combines the ternary construction with the direct tests for at most three
-tiles and the $21$-channel systems for four through thirty tiles.
+tiles and the $20$-channel systems for four through thirty tiles.
 The ternary branch encodes arithmetic pairs and tile labels separately by
 base-three integers, uses
 explicit prime tables for small widths and finite arithmetic search for the
@@ -3494,12 +3569,12 @@ family expresses the encoded word rule and seed arithmetic-digit tests. The conn
 geometric compiler and its volume bound are checked in
 \leanfile{FiniteCompiler/Effective/CompactFamilyCompiler.lean} and
 \leanfile{FiniteCompiler/Effective/CompactFamilyBounds.lean}.
-The corresponding $21$-channel compiler and its bounds are checked in
-\leanfile{FiniteCompiler/NineSmallCompiler.lean}.
+The corresponding $20$-channel compiler and its bounds are checked in
+\leanfile{FiniteCompiler/PairSmallCompiler.lean}.
 
-\leandecl{FiniteCompiler.Effective.nineCompile_computable} proves
+\leandecl{FiniteCompiler.Effective.pairCompile_computable} proves
 computability of this total function.
-Its size bound is \leandecl{FiniteCompiler.Effective.nineCompile_real_bound}.
+Its size bound is \leandecl{FiniteCompiler.Effective.pairCompile_real_bound}.
 The six-key replacement is a primitive-recursive map and
 multiplies its output length by exactly $64{,}000$, so the public Euclidean
 reduction combines computability, correctness, and size as well.

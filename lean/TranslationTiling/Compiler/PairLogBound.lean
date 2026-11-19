@@ -1,0 +1,398 @@
+import TranslationTiling.FiniteCompiler.PairSmallCompiler
+import TranslationTiling.FiniteCompiler.SparseTernaryCode
+import Mathlib.Analysis.SpecialFunctions.Log.Base
+
+namespace TranslationTiling.Compiler.Size
+open FiniteCompiler.Effective
+noncomputable section
+set_option maxHeartbeats 2000000
+set_option maxRecDepth 10000
+set_option exponentiation.threshold 2000
+
+private theorem logb_two_pow (k : ℕ) : Real.logb 2 ((2:ℝ)^k)=k := by
+  rw [Real.logb_pow]
+  norm_num [Real.logb_self_eq_one]
+
+private theorem pow_le_log_bound {x : ℝ} (hx : 0<x) (a b : ℕ)
+    (h : (2:ℝ)^a≤x^b) : (a:ℝ)≤b*Real.logb 2 x := by
+  have hl := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2) (by positivity : 0<(2:ℝ)^a) h
+  simpa [Real.logb_pow,Real.logb_self_eq_one] using hl
+
+private theorem lg_three_lower : (3/2:ℝ)≤Real.logb 2 3 := by
+  have h := pow_le_log_bound (by norm_num : (0:ℝ)<3) 3 2 (by norm_num)
+  norm_num at h
+  linarith
+
+private theorem lg_three_upper : Real.logb 2 3≤(8/5:ℝ) := by
+  have h := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2)
+    (by norm_num : (0:ℝ)<3^5) (show (3:ℝ)^5≤(2:ℝ)^8 by norm_num)
+  rw [Real.logb_pow,logb_two_pow] at h
+  norm_num at h
+  linarith
+
+private theorem t_lower {n : ℕ} {a b : ℕ} (hb : 0<b) (h : (2:ℝ)^a≤((n:ℝ)+4)^b) :
+    (a:ℝ)/b≤Real.logb 2 ((n:ℝ)+4) := by
+  have hh := pow_le_log_bound (by positivity : 0<(n:ℝ)+4) a b h
+  apply (div_le_iff₀ (by exact_mod_cast hb : (0:ℝ)<b)).mpr
+  nlinarith only [hh]
+
+private theorem g_lower {n : ℕ} {u : ℝ} (hu : 0<u)
+    (ht : u≤Real.logb 2 ((n:ℝ)+4)) (a b : ℕ) (hb : 0<b)
+    (h : (2:ℝ)^a≤u^b) :
+    (a:ℝ)/b≤Real.logb 2 (Real.logb 2 ((n:ℝ)+4)) := by
+  have hh := pow_le_log_bound hu a b h
+  have hm := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2) hu ht
+  apply (div_le_iff₀ (by exact_mod_cast hb : (0:ℝ)<b)).mpr
+  nlinarith only [hh,hm]
+
+theorem pairWidth_le_log {n : ℕ} (hn : 0<n) :
+    (FiniteCompiler.SparseTernary.width n:ℝ)≤2*Real.logb 2 ((n:ℝ)+4)+66 := by
+  have hp := Nat.pow_log_le_self 3 (by omega : n≠0)
+  have hl := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2)
+    (by positivity : 0<(3:ℝ)^Nat.log 3 n)
+    (show (3:ℝ)^Nat.log 3 n≤n by exact_mod_cast hp)
+  rw [Real.logb_pow] at hl
+  have hm := mul_le_mul_of_nonneg_left lg_three_lower (Nat.cast_nonneg (α:=ℝ) (Nat.log 3 n))
+  have hlog := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2)
+    (by exact_mod_cast hn : (0:ℝ)<n) (show (n:ℝ)≤(n:ℝ)+4 by linarith)
+  have hw := FiniteCompiler.SparseTernary.width_upper n
+  unfold FiniteCompiler.SparseTernary.tileWidth at hw
+  have hw' : (FiniteCompiler.SparseTernary.width n:ℝ)≤48+3*((Nat.log 3 n:ℝ)+1)+15 := by exact_mod_cast hw
+  nlinarith only [hl,hm,hlog,hw']
+
+theorem pair_dyadic_real_bound {n N e : ℕ} (hN : N≤2^e)
+    (he : (e:ℝ)≤800*Real.logb 2 ((n:ℝ)+4)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) :
+    (N:ℝ)≤((n:ℝ)+4)^(800*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
+  apply (show (N:ℝ)≤(2:ℝ)^e by exact_mod_cast hN).trans
+  apply (Real.logb_le_logb (by norm_num : (1:ℝ)<2) (by positivity) (by positivity)).mp
+  rw [logb_two_pow,Real.logb_rpow_eq_mul_logb_of_pos (by positivity : 0<(n:ℝ)+4)]
+  nlinarith only [he]
+
+theorem pair_bulk_real_bound {n N : ℕ} (hn : 2044≤n)
+    (hN : N≤(max (FiniteCompiler.SparseTernary.width n+2) 256)^(33*(FiniteCompiler.SparseTernary.width n)+98)*
+      3^(4*(FiniteCompiler.SparseTernary.width n)+4)) :
+    (N:ℝ)≤((n:ℝ)+4)^(800*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
+  let w := FiniteCompiler.SparseTernary.width n
+  let P := max (w+2) 256
+  let t := Real.logb 2 ((n:ℝ)+4)
+  let g := Real.logb 2 t
+  have hP : 256≤P := le_max_right _ _
+  have hPpos : (0:ℝ)<P := by exact_mod_cast (by omega : 0<P)
+  have ht : (11:ℝ)≤t := by
+    have hh := t_lower (n:=n) (a:=11) (b:=1) (by decide)
+      (by norm_num; exact_mod_cast (by omega : 2048≤n+4))
+    simpa using hh
+  have hg : (3:ℝ)≤g := by
+    have hh := g_lower (n:=n) (by norm_num : (0:ℝ)<11) ht 3 1 (by decide) (by norm_num)
+    simpa using hh
+  have hw : (w:ℝ)≤(8:ℝ)*t := by
+    have hh := pairWidth_le_log (by omega : 0<n)
+    dsimp [w,t] at *
+    linarith
+  have hp : (P:ℝ)≤32*t := by
+    dsimp [P]; push_cast
+    exact max_le (by push_cast; linarith) (by linarith)
+  have hl32 : Real.logb 2 (32:ℝ)=5 := by
+    have hh := logb_two_pow 5
+    norm_num at hh ⊢
+    exact hh
+  have hlog : Real.logb 2 (P:ℝ)≤(8/3:ℝ)*g := by
+    have hh := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2) hPpos hp
+    rw [Real.logb_mul (by norm_num : (32:ℝ)≠0) (by linarith : t≠0),hl32] at hh
+    dsimp [g] at hg ⊢
+    linarith
+  have hloglo : (8:ℝ)≤Real.logb 2 (P:ℝ) := by
+    have hh := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2) (by norm_num : (0:ℝ)<256)
+      (show (256:ℝ)≤P by exact_mod_cast hP)
+    have heq : Real.logb 2 (256:ℝ)=8 := by have hh := logb_two_pow 8; norm_num at hh ⊢; exact hh
+    rwa [heq] at hh
+  have hthree : 4*Real.logb 2 3≤Real.logb 2 (P:ℝ) := by linarith [lg_three_upper]
+  have hextra := mul_le_mul_of_nonneg_right hthree (show (0:ℝ)≤w+1 by positivity)
+  have ha : ((34*w+99:ℕ):ℝ)≤(34*(8)+99/11:ℝ)*t := by push_cast; linarith
+  have hh := mul_le_mul ha hlog (by linarith : 0≤Real.logb 2 (P:ℝ))
+    (by positivity : 0≤(34*(8)+99/11:ℝ)*t)
+  have hc := mul_le_mul_of_nonneg_right
+    (show (34*(8)+99/11:ℝ)*(8/3)≤800 by norm_num) (show 0≤t*g by positivity)
+  have he : ((33*w+98:ℕ):ℝ)*Real.logb 2 (P:ℝ)+((4*w+4:ℕ):ℝ)*Real.logb 2 3≤800*t*g := by
+    push_cast at hh ⊢
+    nlinarith only [hh,hc,hextra]
+  apply (show (N:ℝ)≤((P^(33*w+98)*3^(4*w+4):ℕ):ℝ) by exact_mod_cast hN).trans
+  push_cast
+  apply (Real.logb_le_logb (by norm_num : (1:ℝ)<2) (by positivity) (by positivity)).mp
+  rw [Real.logb_mul (by positivity) (by positivity),Real.logb_pow,Real.logb_pow,
+    Real.logb_rpow_eq_mul_logb_of_pos (by positivity : 0<(n:ℝ)+4)]
+  change _≤800*g*t
+  nlinarith only [he]
+
+
+theorem pair_small_exponent (k : Fin 27) {n : ℕ}
+    (hlen : n=FiniteCompiler.PairSmallCompiler.Profiles.count k) :
+    (FiniteCompiler.PairSmallCompiler.Profiles.exponent k:ℝ)≤
+      800*Real.logb 2 ((n:ℝ)+4)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4)) := by
+  fin_cases k
+  · subst n
+    change (3770:ℝ)≤800*Real.logb 2 ((4:ℝ)+4)*Real.logb 2 (Real.logb 2 ((4:ℝ)+4))
+    have ht : (3/1:ℝ)≤Real.logb 2 ((4:ℝ)+4) := by
+      simpa using (t_lower (n:=4) (a:=3) (b:=1) (by decide) (by norm_num))
+    have hg := g_lower (n:=4) (by norm_num : (0:ℝ)<3/1) ht 19 12 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤19/12) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(4:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (3890:ℝ)≤800*Real.logb 2 ((5:ℝ)+4)*Real.logb 2 (Real.logb 2 ((5:ℝ)+4))
+    have ht : (31/10:ℝ)≤Real.logb 2 ((5:ℝ)+4) := by
+      simpa using (t_lower (n:=5) (a:=31) (b:=10) (by decide) (by norm_num))
+    have hg := g_lower (n:=5) (by norm_num : (0:ℝ)<31/10) ht 163 100 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤163/100) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(5:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (3950:ℝ)≤800*Real.logb 2 ((6:ℝ)+4)*Real.logb 2 (Real.logb 2 ((6:ℝ)+4))
+    have ht : (33/10:ℝ)≤Real.logb 2 ((6:ℝ)+4) := by
+      simpa using (t_lower (n:=6) (a:=33) (b:=10) (by decide) (by norm_num))
+    have hg := g_lower (n:=6) (by norm_num : (0:ℝ)<33/10) ht 17 10 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤17/10) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(6:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (4220:ℝ)≤800*Real.logb 2 ((7:ℝ)+4)*Real.logb 2 (Real.logb 2 ((7:ℝ)+4))
+    have ht : (17/5:ℝ)≤Real.logb 2 ((7:ℝ)+4) := by
+      simpa using (t_lower (n:=7) (a:=17) (b:=5) (by decide) (by norm_num))
+    have hg := g_lower (n:=7) (by norm_num : (0:ℝ)<17/5) ht 7 4 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤7/4) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(7:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (4220:ℝ)≤800*Real.logb 2 ((8:ℝ)+4)*Real.logb 2 (Real.logb 2 ((8:ℝ)+4))
+    have ht : (17/5:ℝ)≤Real.logb 2 ((8:ℝ)+4) := by
+      simpa using (t_lower (n:=8) (a:=17) (b:=5) (by decide) (by norm_num))
+    have hg := g_lower (n:=8) (by norm_num : (0:ℝ)<17/5) ht 7 4 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤7/4) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(8:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (4220:ℝ)≤800*Real.logb 2 ((9:ℝ)+4)*Real.logb 2 (Real.logb 2 ((9:ℝ)+4))
+    have ht : (17/5:ℝ)≤Real.logb 2 ((9:ℝ)+4) := by
+      simpa using (t_lower (n:=9) (a:=17) (b:=5) (by decide) (by norm_num))
+    have hg := g_lower (n:=9) (by norm_num : (0:ℝ)<17/5) ht 7 4 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤7/4) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(9:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (4220:ℝ)≤800*Real.logb 2 ((10:ℝ)+4)*Real.logb 2 (Real.logb 2 ((10:ℝ)+4))
+    have ht : (17/5:ℝ)≤Real.logb 2 ((10:ℝ)+4) := by
+      simpa using (t_lower (n:=10) (a:=17) (b:=5) (by decide) (by norm_num))
+    have hg := g_lower (n:=10) (by norm_num : (0:ℝ)<17/5) ht 7 4 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤7/4) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(10:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (4980:ℝ)≤800*Real.logb 2 ((11:ℝ)+4)*Real.logb 2 (Real.logb 2 ((11:ℝ)+4))
+    have ht : (39/10:ℝ)≤Real.logb 2 ((11:ℝ)+4) := by
+      simpa using (t_lower (n:=11) (a:=39) (b:=10) (by decide) (by norm_num))
+    have hg := g_lower (n:=11) (by norm_num : (0:ℝ)<39/10) ht 49 25 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤49/25) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(11:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (4980:ℝ)≤800*Real.logb 2 ((12:ℝ)+4)*Real.logb 2 (Real.logb 2 ((12:ℝ)+4))
+    have ht : (39/10:ℝ)≤Real.logb 2 ((12:ℝ)+4) := by
+      simpa using (t_lower (n:=12) (a:=39) (b:=10) (by decide) (by norm_num))
+    have hg := g_lower (n:=12) (by norm_num : (0:ℝ)<39/10) ht 49 25 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤49/25) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(12:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (4980:ℝ)≤800*Real.logb 2 ((13:ℝ)+4)*Real.logb 2 (Real.logb 2 ((13:ℝ)+4))
+    have ht : (39/10:ℝ)≤Real.logb 2 ((13:ℝ)+4) := by
+      simpa using (t_lower (n:=13) (a:=39) (b:=10) (by decide) (by norm_num))
+    have hg := g_lower (n:=13) (by norm_num : (0:ℝ)<39/10) ht 49 25 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤49/25) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(13:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (4980:ℝ)≤800*Real.logb 2 ((14:ℝ)+4)*Real.logb 2 (Real.logb 2 ((14:ℝ)+4))
+    have ht : (39/10:ℝ)≤Real.logb 2 ((14:ℝ)+4) := by
+      simpa using (t_lower (n:=14) (a:=39) (b:=10) (by decide) (by norm_num))
+    have hg := g_lower (n:=14) (by norm_num : (0:ℝ)<39/10) ht 49 25 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤49/25) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(14:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (4980:ℝ)≤800*Real.logb 2 ((15:ℝ)+4)*Real.logb 2 (Real.logb 2 ((15:ℝ)+4))
+    have ht : (39/10:ℝ)≤Real.logb 2 ((15:ℝ)+4) := by
+      simpa using (t_lower (n:=15) (a:=39) (b:=10) (by decide) (by norm_num))
+    have hg := g_lower (n:=15) (by norm_num : (0:ℝ)<39/10) ht 49 25 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤49/25) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(15:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (4980:ℝ)≤800*Real.logb 2 ((16:ℝ)+4)*Real.logb 2 (Real.logb 2 ((16:ℝ)+4))
+    have ht : (39/10:ℝ)≤Real.logb 2 ((16:ℝ)+4) := by
+      simpa using (t_lower (n:=16) (a:=39) (b:=10) (by decide) (by norm_num))
+    have hg := g_lower (n:=16) (by norm_num : (0:ℝ)<39/10) ht 49 25 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤49/25) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(16:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (4980:ℝ)≤800*Real.logb 2 ((17:ℝ)+4)*Real.logb 2 (Real.logb 2 ((17:ℝ)+4))
+    have ht : (39/10:ℝ)≤Real.logb 2 ((17:ℝ)+4) := by
+      simpa using (t_lower (n:=17) (a:=39) (b:=10) (by decide) (by norm_num))
+    have hg := g_lower (n:=17) (by norm_num : (0:ℝ)<39/10) ht 49 25 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤49/25) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(17:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (4980:ℝ)≤800*Real.logb 2 ((18:ℝ)+4)*Real.logb 2 (Real.logb 2 ((18:ℝ)+4))
+    have ht : (39/10:ℝ)≤Real.logb 2 ((18:ℝ)+4) := by
+      simpa using (t_lower (n:=18) (a:=39) (b:=10) (by decide) (by norm_num))
+    have hg := g_lower (n:=18) (by norm_num : (0:ℝ)<39/10) ht 49 25 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤49/25) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(18:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (4980:ℝ)≤800*Real.logb 2 ((19:ℝ)+4)*Real.logb 2 (Real.logb 2 ((19:ℝ)+4))
+    have ht : (39/10:ℝ)≤Real.logb 2 ((19:ℝ)+4) := by
+      simpa using (t_lower (n:=19) (a:=39) (b:=10) (by decide) (by norm_num))
+    have hg := g_lower (n:=19) (by norm_num : (0:ℝ)<39/10) ht 49 25 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤49/25) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(19:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (4980:ℝ)≤800*Real.logb 2 ((20:ℝ)+4)*Real.logb 2 (Real.logb 2 ((20:ℝ)+4))
+    have ht : (39/10:ℝ)≤Real.logb 2 ((20:ℝ)+4) := by
+      simpa using (t_lower (n:=20) (a:=39) (b:=10) (by decide) (by norm_num))
+    have hg := g_lower (n:=20) (by norm_num : (0:ℝ)<39/10) ht 49 25 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤49/25) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(20:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (5780:ℝ)≤800*Real.logb 2 ((21:ℝ)+4)*Real.logb 2 (Real.logb 2 ((21:ℝ)+4))
+    have ht : (9/2:ℝ)≤Real.logb 2 ((21:ℝ)+4) := by
+      simpa using (t_lower (n:=21) (a:=9) (b:=2) (by decide) (by norm_num))
+    have hg := g_lower (n:=21) (by norm_num : (0:ℝ)<9/2) ht 13 6 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤13/6) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(21:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (5780:ℝ)≤800*Real.logb 2 ((22:ℝ)+4)*Real.logb 2 (Real.logb 2 ((22:ℝ)+4))
+    have ht : (9/2:ℝ)≤Real.logb 2 ((22:ℝ)+4) := by
+      simpa using (t_lower (n:=22) (a:=9) (b:=2) (by decide) (by norm_num))
+    have hg := g_lower (n:=22) (by norm_num : (0:ℝ)<9/2) ht 13 6 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤13/6) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(22:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (5780:ℝ)≤800*Real.logb 2 ((23:ℝ)+4)*Real.logb 2 (Real.logb 2 ((23:ℝ)+4))
+    have ht : (9/2:ℝ)≤Real.logb 2 ((23:ℝ)+4) := by
+      simpa using (t_lower (n:=23) (a:=9) (b:=2) (by decide) (by norm_num))
+    have hg := g_lower (n:=23) (by norm_num : (0:ℝ)<9/2) ht 13 6 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤13/6) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(23:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (5780:ℝ)≤800*Real.logb 2 ((24:ℝ)+4)*Real.logb 2 (Real.logb 2 ((24:ℝ)+4))
+    have ht : (9/2:ℝ)≤Real.logb 2 ((24:ℝ)+4) := by
+      simpa using (t_lower (n:=24) (a:=9) (b:=2) (by decide) (by norm_num))
+    have hg := g_lower (n:=24) (by norm_num : (0:ℝ)<9/2) ht 13 6 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤13/6) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(24:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (5780:ℝ)≤800*Real.logb 2 ((25:ℝ)+4)*Real.logb 2 (Real.logb 2 ((25:ℝ)+4))
+    have ht : (9/2:ℝ)≤Real.logb 2 ((25:ℝ)+4) := by
+      simpa using (t_lower (n:=25) (a:=9) (b:=2) (by decide) (by norm_num))
+    have hg := g_lower (n:=25) (by norm_num : (0:ℝ)<9/2) ht 13 6 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤13/6) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(25:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (5780:ℝ)≤800*Real.logb 2 ((26:ℝ)+4)*Real.logb 2 (Real.logb 2 ((26:ℝ)+4))
+    have ht : (9/2:ℝ)≤Real.logb 2 ((26:ℝ)+4) := by
+      simpa using (t_lower (n:=26) (a:=9) (b:=2) (by decide) (by norm_num))
+    have hg := g_lower (n:=26) (by norm_num : (0:ℝ)<9/2) ht 13 6 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤13/6) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(26:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (5780:ℝ)≤800*Real.logb 2 ((27:ℝ)+4)*Real.logb 2 (Real.logb 2 ((27:ℝ)+4))
+    have ht : (9/2:ℝ)≤Real.logb 2 ((27:ℝ)+4) := by
+      simpa using (t_lower (n:=27) (a:=9) (b:=2) (by decide) (by norm_num))
+    have hg := g_lower (n:=27) (by norm_num : (0:ℝ)<9/2) ht 13 6 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤13/6) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(27:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (5780:ℝ)≤800*Real.logb 2 ((28:ℝ)+4)*Real.logb 2 (Real.logb 2 ((28:ℝ)+4))
+    have ht : (9/2:ℝ)≤Real.logb 2 ((28:ℝ)+4) := by
+      simpa using (t_lower (n:=28) (a:=9) (b:=2) (by decide) (by norm_num))
+    have hg := g_lower (n:=28) (by norm_num : (0:ℝ)<9/2) ht 13 6 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤13/6) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(28:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (5780:ℝ)≤800*Real.logb 2 ((29:ℝ)+4)*Real.logb 2 (Real.logb 2 ((29:ℝ)+4))
+    have ht : (9/2:ℝ)≤Real.logb 2 ((29:ℝ)+4) := by
+      simpa using (t_lower (n:=29) (a:=9) (b:=2) (by decide) (by norm_num))
+    have hg := g_lower (n:=29) (by norm_num : (0:ℝ)<9/2) ht 13 6 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤13/6) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(29:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+  · subst n
+    change (5780:ℝ)≤800*Real.logb 2 ((30:ℝ)+4)*Real.logb 2 (Real.logb 2 ((30:ℝ)+4))
+    have ht : (9/2:ℝ)≤Real.logb 2 ((30:ℝ)+4) := by
+      simpa using (t_lower (n:=30) (a:=9) (b:=2) (by decide) (by norm_num))
+    have hg := g_lower (n:=30) (by norm_num : (0:ℝ)<9/2) ht 13 6 (by decide) (by norm_num)
+    have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤13/6) (Real.logb_pos (by norm_num : (1:ℝ)<2) (by norm_num : (1:ℝ)<(30:ℝ)+4)).le
+    norm_num at hm ⊢
+    nlinarith only [hm]
+
+theorem pair_medium_exponent {n : ℕ} (hn : 31≤n) :
+    (9124:ℝ)≤800*Real.logb 2 ((n:ℝ)+4)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4)) := by
+  have ht : (5:ℝ)≤Real.logb 2 ((n:ℝ)+4) := by
+    have hh := t_lower (n:=n) (a:=5) (b:=1) (by decide)
+      (by norm_num; exact_mod_cast (by omega : 32≤n+4))
+    simpa using hh
+  have hg := g_lower (n:=n) (by norm_num : (0:ℝ)<5) ht 23 10 (by decide) (by norm_num)
+  have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤23/10) (by linarith : (0:ℝ)≤Real.logb 2 ((n:ℝ)+4))
+  nlinarith only [hm]
+theorem pair_later_exponent {n : ℕ} (hn : 243≤n) :
+    (11678:ℝ)≤800*Real.logb 2 ((n:ℝ)+4)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4)) := by
+  have ht : (7:ℝ)≤Real.logb 2 ((n:ℝ)+4) := by
+    have hh := t_lower (n:=n) (a:=7) (b:=1) (by decide)
+      (by norm_num; exact_mod_cast (by omega : 128≤n+4))
+    simpa using hh
+  have hg : (9/4:ℝ)≤Real.logb 2 (Real.logb 2 ((n:ℝ)+4)) := by
+    have hh := g_lower (n:=n) (by norm_num : (0:ℝ)<7) ht 9 4 (by decide) (by norm_num)
+    simpa using hh
+  have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤9/4) (by linarith : (0:ℝ)≤Real.logb 2 ((n:ℝ)+4))
+  nlinarith only [hm]
+
+theorem pair_tiny_exponent (n : ℕ) :
+    (250:ℝ)≤800*Real.logb 2 ((n:ℝ)+4)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4)) := by
+  have ht : (2:ℝ)≤Real.logb 2 ((n:ℝ)+4) := by
+    have hh := t_lower (n:=n) (a:=2) (b:=1) (by decide)
+      (by norm_num)
+    simpa using hh
+  have hg : (1:ℝ)≤Real.logb 2 (Real.logb 2 ((n:ℝ)+4)) := by
+    have hh := g_lower (n:=n) (by norm_num : (0:ℝ)<2) ht 1 1 (by decide) (by norm_num)
+    simpa using hh
+  have hm := mul_le_mul ht hg (by norm_num : (0:ℝ)≤1) (by linarith : (0:ℝ)≤Real.logb 2 ((n:ℝ)+4))
+  nlinarith only [hm]
+
+ theorem pair_width64 {n : ℕ} (hn : 11≤n) (hhi : n≤242) : FiniteCompiler.SparseTernary.width n=64 := by
+  have hlo := Nat.log_mono_right (b:=3) hn
+  have hhi' := Nat.log_mono_right (b:=3) hhi
+  norm_num at hlo hhi'
+  unfold FiniteCompiler.SparseTernary.width FiniteCompiler.SparseTernary.tileWidth
+  omega
+
+ theorem pair_width80 {n : ℕ} (hn : 243≤n) (hhi : n≤2043) : FiniteCompiler.SparseTernary.width n=80 := by
+  have hlo := Nat.log_mono_right (b:=3) hn
+  have hhi' := Nat.log_mono_right (b:=3) hhi
+  norm_num at hlo hhi'
+  unfold FiniteCompiler.SparseTernary.width FiniteCompiler.SparseTernary.tileWidth
+  omega
+
+end
+end TranslationTiling.Compiler.Size
