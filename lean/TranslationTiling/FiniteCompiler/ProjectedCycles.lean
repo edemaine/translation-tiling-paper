@@ -2,6 +2,8 @@ import TranslationTiling.FiniteCompiler.Soundness
 import TranslationTiling.FiniteCompiler.CommonSolution
 
 namespace TranslationTiling.FiniteCompiler
+
+variable [SeedFrame]
 noncomputable section
 open scoped Classical
 

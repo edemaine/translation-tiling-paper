@@ -1,4 +1,5 @@
 import TranslationTiling.FiniteCompiler.Effective.ProjectedTotalCompiler
+import TranslationTiling.FiniteCompiler.ProjectedSystem
 import TranslationTiling.FiniteCompiler.Effective.SevenCompiler
 import TranslationTiling.SudokuArithmetic.PairAudit
 import TranslationTiling.FiniteCompiler.Effective.ShortCompiler
@@ -524,6 +525,11 @@ run_cmd do
       ``TranslationTiling.FiniteCompiler.Effective.sevenCompile_computable,
       ``TranslationTiling.FiniteCompiler.Effective.sevenCompile_checked_facts,
       ``TranslationTiling.FiniteCompiler.Effective.sevenCompile_checked_small_bound,
+      ``TranslationTiling.Sudoku.PartialWord.partial5.unsat,
+      ``TranslationTiling.Sudoku.PartialWord.partial7.unsat,
+      ``TranslationTiling.Sudoku.PairBoard.guarded_soundness,
+      ``TranslationTiling.FiniteCompiler.GuardedCompiler.deck_equiv,
+      ``TranslationTiling.FiniteCompiler.GuardedCompiler.exists_guarded_tile,
       ``TranslationTiling.Sudoku.PairBoard.projected_soundness,
       ``TranslationTiling.FiniteCompiler.PairSmall.projected_iff_wang,
       ``TranslationTiling.FiniteCompiler.ProjectedCompiler.compile_facts,

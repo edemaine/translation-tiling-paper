@@ -1,6 +1,8 @@
 import TranslationTiling.FiniteCompiler.SparseCycleTests
 
 namespace TranslationTiling.FiniteCompiler
+
+variable [SeedFrame]
 open scoped Classical BigOperators
 noncomputable section
 set_option maxRecDepth 10000

@@ -35,7 +35,7 @@ local instance codeFamily {T : LeanWang.TileSet} (code : Code T) :
     AlphabetFamily (system code) := family code
 
 abbrev Parameters {T : LeanWang.TileSet} (code : Code T) :=
-  @EncodingParameters (system code) (family code)
+  @EncodingParameters regularSeedFrame (system code) (family code)
 
 def letter {T : LeanWang.TileSet} (code : Code T) (i : Sudoku.Column) (b : Fin 3)
     (v : Fin (code.radix b)) : Letter (system code) (flat i b) :=

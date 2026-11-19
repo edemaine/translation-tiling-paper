@@ -11,6 +11,8 @@ namespace TranslationTiling
 
 namespace FiniteCompiler
 
+variable [SeedFrame]
+
 
 noncomputable section
 

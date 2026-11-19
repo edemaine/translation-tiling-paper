@@ -10,6 +10,8 @@ namespace TranslationTiling
 
 namespace FiniteCompiler
 
+variable [SeedFrame]
+
 
 variable {T : System} [AlphabetFamily T]
 

@@ -111,7 +111,8 @@ def encoding (p : Profile) (hv : Valid T.width p) (hB : T.alphabet=3) : Encoding
   seed_a_eq := fun t => (hv.2.2.2.1 t.val (List.mem_range.mpr t.isLt)).1
   seed_b_large := fun t => by
     have h := (hv.2.2.2.1 t.val (List.mem_range.mpr t.isLt)).2
-    convert h using 1 <;> simp [tagIndex,channelIndex,Sudoku.SeedModulus,Sudoku.p,Sudoku.q] <;> congr 1 <;> omega
+    change 30625 < p.entry (T.width+2+channelIndex (.inr t))
+    convert h using 1 <;> simp only [channelIndex] <;> congr 1 <;> omega
   blockA := fun i j => p.coeffA.getD (digitIndex i j) 0
   blockB := fun i j => p.coeffB.getD (digitIndex i j) 0
   blockA_pos := by

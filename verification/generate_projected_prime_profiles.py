@@ -14,19 +14,19 @@ for z in json.loads(Path('verification/projected_prime_profiles.json').read_text
  f=iter(x for x in range(2,65537) if x not in used and x not in (5,7) and all(x%a for a in range(2,math.isqrt(x)+1)))
  ps=[a for a,b in pairs]+[b for a,b in pairs];ca=[];cb=[]
  for i in range(22):
-  ps+=ds[i]+[next(f) for _ in range(44-ar[i])]
-  ca +=[a for a,b in uv[i]]+[1]*(44-ar[i]);cb +=[b for a,b in uv[i]]+[1]*(44-ar[i])
- assert len(ps)==len(set(ps))==1012
+  ps+=ds[i]+[next(f) for _ in range(48-ar[i])]
+  ca +=[a for a,b in uv[i]]+[1]*(48-ar[i]);cb +=[b for a,b in uv[i]]+[1]*(48-ar[i])
+ assert len(ps)==len(set(ps))==1100
  chunks=[ps[i:i+48] for i in range(0,len(ps),48)]
  names=[f'primes{n}Part{i}' for i in range(len(chunks))]
  s=f'''import TranslationTiling.FiniteCompiler.ProjectedParameters
-import TranslationTiling.FiniteCompiler.ProjectedCap
+import TranslationTiling.FiniteCompiler.GuardedCap
 import TranslationTiling.FiniteCompiler.DistinctPrimes
 import Mathlib.Data.List.Nodup
 import Mathlib.Tactic.NormNum.Prime
 
 namespace TranslationTiling.FiniteCompiler.ProjectedParameters
-open PairSmall
+open GuardedCompiler
 set_option maxRecDepth 15000
 set_option maxHeartbeats 6000000
 set_option Elab.async false
@@ -53,14 +53,13 @@ theorem profile{n}_valid : Valid profile{n} := by
   exact '''+reduce(lambda a,b: f'⟨{a},{b}⟩', (name+'_valid' for name in names))+f'''
 
 def horizontal{n} : ℕ := {z["H"]}
-def exponent{n} : ℕ := {z["projected_exponent"]}
+def exponent{n} : ℕ := {z["e"]}
 
 theorem support{n} : SupportValid profile{n} horizontal{n} := by decide +kernel
 
 theorem volume{n} :
-    horizontal{n}^2≤(projectedCap {n})*profile{n}.order ∧
-    (2^24*549072*8003^4)*horizontal{n}^2*profile{n}.order*profile{n}.mass*
-      (projectedCap {n})^2≤2^exponent{n} := by decide +kernel
+    cubeCap horizontal{n} profile{n}.order profile{n}.mass (stackCap (testLimit {n}))≤2^exponent{n} := by
+  decide +kernel
 
 end TranslationTiling.FiniteCompiler.ProjectedParameters
 '''

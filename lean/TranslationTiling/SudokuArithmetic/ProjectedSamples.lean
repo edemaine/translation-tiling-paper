@@ -22,11 +22,11 @@ private instance (r : ℕ) [NeZero r] (d : ℤ) : Decidable (SampleCheck r d) :=
   unfold SampleCheck
   infer_instance
 
-private theorem sampleCheck (r : ℕ) (d : ℤ) (hr : r=5 ∨ r=7)
+theorem sampleCheck (r : ℕ) (d : ℤ) (hr : r=5 ∨ r=7)
     (hd : d=0 ∨ d=2 ∨ d=3) : SampleCheck r d := by
   rcases hr with rfl|rfl <;> rcases hd with rfl|rfl|rfl <;> decide +kernel
 
-private theorem sample_units (r : ℕ) (d : ℤ) (hr : r=5 ∨ r=7)
+theorem sample_units (r : ℕ) (d : ℤ) (hr : r=5 ∨ r=7)
     (hd : d=0 ∨ d=2 ∨ d=3) (i : Fin 3) :
     ¬ (r:ℤ) ∣ d*position r (baseSample r i)+1 := by
   rcases hr with rfl|rfl <;> rcases hd with rfl|rfl|rfl <;> fin_cases i <;> decide +kernel
@@ -62,7 +62,7 @@ theorem selected_coefficients (r : ℕ) (hp : r.Prime) (hr : r=5 ∨ r=7)
   simpa only [c,Int.cast_add,Int.cast_mul,Int.cast_natCast,Int.cast_one,mul_assoc] using hright
 
 
-private theorem canonical_root_value (r : ℕ) (hp : r.Prime)
+theorem canonical_root_value (r : ℕ) (hp : r.Prime)
     {V : Column r → ℤ → (ZMod r)ˣ} {B : ZMod r} {K : ℕ}
     (hC : Canonical r hp V B K) (M d t : ℤ) (hM : M≠0)
     (hdepth : padicValInt r M+1≤K) (n : Column r)

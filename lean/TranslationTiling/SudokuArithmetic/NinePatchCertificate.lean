@@ -41,7 +41,7 @@ private partial def namedClauses (arr : Array (Array Int)) (ctx : Expr)
     let db ← namedClauses arr ctx start mid left lp db
     namedClauses arr ctx mid stop right rp db
 
-private def namedFromLRAT (cnf lrat : String) (name : Name) : MetaM Expr := do
+def namedFromLRAT (cnf lrat : String) (name : Name) : MetaM Expr := do
   let .success _ (_,arr) := Sat.Parser.parseDimacs ⟨_, cnf.startPos⟩
     | throwError "parse CNF failed"
   let .success _ steps := Sat.Parser.parseLRAT ⟨_, lrat.startPos⟩

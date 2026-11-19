@@ -72,6 +72,17 @@ theorem integerTile_cubeCount_mass (d : CyclicTileData) (hm : 0<d.1) :
       (cyclicTileSet d.1 d.2).card := Finset.card_image_le.trans Finset.card_image_le
   exact (Nat.mul_le_mul_right _ hh).trans_eq (Nat.mul_comm _ _)
 
+theorem integerTile_cubeCount_sharp (d : CyclicTileData) (hm : 0<d.1) :
+    cubeCount (integerTile d)≤mssPieceCap*(cyclicTileSet d.1 d.2).card := by
+  letI : NeZero d.1 := ⟨hm.ne'⟩
+  unfold cubeCount
+  rw [integerTile_toFinset,latticeRepresentatives_toFinset d.1 hm d.2]
+  apply (assembled_card_le_sharp _ _).trans
+  have hh : (CyclicQuotient.representatives d.1
+      ((cyclicTileSet d.1 d.2).image (fun f => f-cyclicPoint d.1 (d.2.headD ((0,0),0))))).card≤
+      (cyclicTileSet d.1 d.2).card := Finset.card_image_le.trans Finset.card_image_le
+  exact (Nat.mul_le_mul_right _ hh).trans_eq (Nat.mul_comm _ _)
+
 end
 end TranslationTiling.Compiler.Size
 

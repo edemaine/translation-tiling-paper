@@ -13,6 +13,8 @@ noncomputable section
 
 namespace FiniteCompiler
 
+variable [SeedFrame]
+
 
 variable {T : System} [AlphabetFamily T] (E : EncodingParameters T)
 

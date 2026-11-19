@@ -16,6 +16,8 @@ Enumerating arbitrary functions is unnecessary. The smaller family has at most
 
 namespace TranslationTiling.FiniteCompiler
 
+variable [SeedFrame]
+
 open scoped Classical BigOperators
 noncomputable section
 

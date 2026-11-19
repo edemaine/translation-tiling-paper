@@ -13,6 +13,8 @@ noncomputable section
 
 namespace FiniteCompiler.CommonModel
 
+variable [SeedFrame]
+
 variable {T : System} [AlphabetFamily T] (E : EncodingParameters T) (W : WordArray T)
 
 def ordinarySymbol (n : Column T) (x : Plane) : Letter T n :=

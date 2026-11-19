@@ -142,8 +142,10 @@ def encoding : EncodingParameters T where
   seed_a_eq t := (hv.2.2.2.2.1 t.val (List.mem_range.mpr t.isLt)).1
   seed_b_large t := by
     have h := (hv.2.2.2.2.1 t.val (List.mem_range.mpr t.isLt)).2
-    convert h using 1 <;> norm_num [tagIndex,channelIndex,Sudoku.SeedModulus,Sudoku.p,Sudoku.q,Nat.add_assoc]
-    exact congrArg p.entry (by omega)
+    change 30625 < p.entry (tagIndex (.inr (.inl (.inr t)) : PrimeTag T))
+    have hi : tagIndex (.inr (.inl (.inr t)) : PrimeTag T) = 98+t.val := by
+      simp [tagIndex,channelIndex] <;> omega
+    simpa only [hi] using h
   blockA i j := p.coeffA.getD (6*channelIndex i+labelIndex i j) 0
   blockB i j := p.coeffB.getD (6*channelIndex i+labelIndex i j) 0
   blockA_pos i j := (hv.2.2.2.2.2 _ (List.mem_range.mpr (channelIndex_lt p hv hw hs i)) _

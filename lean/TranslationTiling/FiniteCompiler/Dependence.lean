@@ -19,6 +19,8 @@ noncomputable section
 
 namespace FiniteCompiler
 
+variable [SeedFrame]
+
 
 section CoordinateReplacement
 

@@ -13,6 +13,8 @@ universe uH uB uC
 
 namespace FiniteCompiler
 
+variable [SeedFrame]
+
 
 section RepresentationFibres
 

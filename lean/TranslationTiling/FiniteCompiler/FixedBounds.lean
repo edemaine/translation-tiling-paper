@@ -53,7 +53,7 @@ theorem quadratic_le_three (w : ℕ) (hw : 4≤w) : w^2+12*w+11≤3^w := by
 variable {T : System} (E : EncodingParameters T)
 
 /-- Count the dependence indices directly, independently of prime sizes. -/
-theorem dependence_card {T : System} [AlphabetFamily T] (E : EncodingParameters T) : (dependenceTiles E).card≤(T.width+2)^2+T.width+4 := by
+theorem dependence_card [SeedFrame] {T : System} [AlphabetFamily T] (E : EncodingParameters T) : (dependenceTiles E).card≤(T.width+2)^2+T.width+4 := by
   have hsub (i : Channel T) : Fintype.card {j : Channel T // j≠i}≤T.width+2 := by
     simpa only [channel_card,channelCount] using
       Fintype.card_le_of_injective Subtype.val (Subtype.val_injective (p:=fun j : Channel T => j≠i))

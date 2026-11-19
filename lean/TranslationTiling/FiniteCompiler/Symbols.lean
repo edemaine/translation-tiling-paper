@@ -1,4 +1,5 @@
 import TranslationTiling.Compiler.Symbols
+import Lean.Elab.Tactic.Omega
 
 /-! A finite line-rule system with two seed predicates. Column slopes may repeat. -/
 
@@ -39,13 +40,43 @@ abbrev Letter (T : System) [AlphabetFamily T] (n : Column T) :=
 abbrev Word (T : System) [AlphabetFamily T] := (n : Column T) → Letter T n
 abbrev WordArray (T : System) [AlphabetFamily T] := (n : Column T) → ℤ → Letter T n
 abbrev Channel (T : System) := Column T ⊕ Fin 2
-noncomputable abbrev residueModulus := Compiler.residueModulus
-theorem residueModulus_eq : residueModulus = Sudoku.SeedModulus := Compiler.residueModulus_eq
+/-- The regular and compact seed tests use the same block construction. -/
+class SeedFrame where
+  compact : Bool
+
+instance (priority := low) regularSeedFrame : SeedFrame := ⟨false⟩
+
+@[reducible] def compactSeedFrame : SeedFrame := ⟨true⟩
+
+variable [SeedFrame]
+
+private noncomputable def compactModulus : ℕ :=
+  Classical.choose (show ∃ m : ℕ, m = 35 from ⟨35, rfl⟩)
+
+noncomputable def residueModulus :=
+  if SeedFrame.compact then compactModulus else Compiler.residueModulus
+
+theorem residueModulus_value :
+    residueModulus = if SeedFrame.compact then 35 else Sudoku.SeedModulus := by
+  unfold residueModulus
+  split <;> [exact Classical.choose_spec (show ∃ m : ℕ, m = 35 from ⟨35, rfl⟩); exact Compiler.residueModulus_eq]
+
+theorem residueModulus_eq :
+    @residueModulus regularSeedFrame = Sudoku.SeedModulus :=
+  Compiler.residueModulus_eq
+
+theorem residueModulus_dvd : residueModulus ∣ Sudoku.SeedModulus := by
+  rw [residueModulus_value]
+  split <;> decide
+
+theorem residueModulus_two_le : 2 ≤ residueModulus := by
+  rw [residueModulus_value]
+  split <;> decide
 noncomputable abbrev D (_T : System) := residueModulus ^ 2
 abbrev Residues (_T : System) := ZMod residueModulus × ZMod residueModulus
 
 instance widthNeZero (T : System) : NeZero T.width := ⟨T.width_pos.ne'⟩
-instance residueModulusNeZero : NeZero residueModulus := Compiler.residueModulusNeZero
+instance residueModulusNeZero : NeZero residueModulus := ⟨by have := residueModulus_two_le; omega⟩
 instance dNeZero (T : System) : NeZero (D T) := inferInstanceAs (NeZero (residueModulus ^ 2))
 
 def Label (T : System) [AlphabetFamily T] : Channel T → Type

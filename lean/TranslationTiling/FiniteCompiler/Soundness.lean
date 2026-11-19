@@ -3,6 +3,8 @@ import TranslationTiling.FiniteCompiler.Activation
 
 namespace TranslationTiling.FiniteCompiler
 
+variable [SeedFrame]
+
 noncomputable section
 
 /-- Every common tiling yields a line-rule array meeting both seed predicates. -/

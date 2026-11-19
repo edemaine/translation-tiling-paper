@@ -91,7 +91,7 @@ theorem code_size (k : Fin 7) (T : LeanWang.TileSet) (hlen : T.length=Profiles.c
   fin_cases n <;> rfl
 
 def parameters (k : Fin 7) (T : LeanWang.TileSet) (hlen : T.length=Profiles.count k) :
-    @EncodingParameters (system (code k T hlen)) (family (code k T hlen)) :=
+    @EncodingParameters regularSeedFrame (system (code k T hlen)) (family (code k T hlen)) :=
   SparseParameters.encoding (Profiles.profile k) (Profiles.valid k) rfl (code_size k T hlen)
 
 theorem parameters_prime (k : Fin 7) (T : LeanWang.TileSet) (hlen : T.length=Profiles.count k)

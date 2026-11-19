@@ -51,7 +51,10 @@ private theorem mss_box_card (k : ℕ) : (MSS.box k).card = (2*k+1)^3 := by
   have hi : ((k : ℤ) + 1 + (k : ℤ)).toNat = 2*k+1 := by omega
   simp [hi]
 
-theorem mss_component_card_le (m j : ℕ) (hj : j ≤ 5) : (MSS.component m j).card ≤ 2 ^ 24 := by
+def mssPieceCap : ℕ := 201^3+3*7^3+11^3
+
+theorem mss_component_card_le_sharp (m j : ℕ) (hj : j ≤ 5) :
+    (MSS.component m j).card ≤ mssPieceCap := by
   have hbase : MSS.baseShape.card ≤ 201 ^ 3 + 3 * 7 ^ 3 := by
     unfold MSS.baseShape
     apply (Finset.card_union_le _ _).trans
@@ -79,7 +82,9 @@ theorem mss_component_card_le (m j : ℕ) (hj : j ≤ 5) : (MSS.component m j).c
     _ ≤ MSS.baseShape.card + (MSS.frame j).card :=
       (Finset.card_union_le _ _).trans (Nat.add_le_add (Finset.card_le_card Finset.sdiff_subset) Finset.card_image_le)
     _ ≤ (201 ^ 3 + 3 * 7 ^ 3) + 11 ^ 3 := Nat.add_le_add hbase hframe
-    _ ≤ _ := by norm_num
+
+theorem mss_component_card_le (m j : ℕ) (hj : j ≤ 5) : (MSS.component m j).card ≤ 2 ^ 24 :=
+  (mss_component_card_le_sharp m j hj).trans (by decide)
 
 def sparseGeometryCap (H M : ℕ) : ℕ :=
   (2 ^ 24 * ((2*H+1)^2 * M)) * (18 * latticeSide H M ^ 2 + 6)^3
@@ -110,18 +115,22 @@ theorem cyclic_card_le_box {m H : ℕ} [NeZero m] (F : Finset (Plane × ZMod m))
   simp [Finset.card_product,Int.card_Icc,ZMod.card,pow_two,hi]
 
 
-theorem assembled_card_le (m : ℕ) (U : Finset (Lattice 3)) :
-    (LatticeGeometry.assembled m U).card ≤ U.card * 2 ^ 24 := by
+theorem assembled_card_le_sharp (m : ℕ) (U : Finset (Lattice 3)) :
+    (LatticeGeometry.assembled m U).card ≤ U.card * mssPieceCap := by
   unfold LatticeGeometry.assembled
   apply Finset.card_biUnion_le.trans
   calc
-    _ ≤ ∑ _u ∈ U, 2 ^ 24 := by
+    _ ≤ ∑ _u ∈ U, mssPieceCap := by
       apply Finset.sum_le_sum
       intro u _
       apply Finset.card_image_le.trans
       unfold LatticeGeometry.part
-      split_ifs <;> exact mss_component_card_le _ _ (by decide)
+      split_ifs <;> exact mss_component_card_le_sharp _ _ (by decide)
     _ = _ := by simp
+
+theorem assembled_card_le (m : ℕ) (U : Finset (Lattice 3)) :
+    (LatticeGeometry.assembled m U).card ≤ U.card * 2 ^ 24 :=
+  (assembled_card_le_sharp m U).trans (Nat.mul_le_mul_left _ (by decide))
 
 theorem connectedTile_sparseGeometryCap (E : Tile 3) (H M : ℕ)
     (hc : cubeCount E ≤ 2 ^ 24 * ((2*H+1)^2*M))

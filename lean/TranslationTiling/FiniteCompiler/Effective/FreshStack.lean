@@ -30,14 +30,10 @@ theorem coprime_of_primeBound {N P q : ℕ} (hN : 0<N) (hP : PrimeBound N P)
 
 def freshCap (X P : ℕ) : ℕ := 2*Stacking.logPartitionThreshold X P
 
-private theorem exists_fresh_partition (s N P X : ℕ) (hN : 0<N) (hs : s+1≤X)
-    (hP : P≤X^2) (hpr : PrimeBound N P) :
-    ∃ c : PartitionCertificate, PartitionValid s P c ∧ Nat.Coprime N c.1 ∧ c.1 ≤ freshCap X P := by
-  let threshold := Stacking.logPartitionThreshold X P
-  obtain ⟨q,hq,hqlarge,hqbound⟩ := Nat.bertrand threshold (by dsimp [threshold,Stacking.logPartitionThreshold]; omega)
-  have hlarge : P<q := by dsimp [threshold,Stacking.logPartitionThreshold] at hqlarge; omega
-  have hcop := coprime_of_primeBound hN hpr hq hlarge
-  obtain ⟨E,hpart,hfull⟩ := Stacking.partition_logarithmic (s+1) X P q (by omega) hs hP hq hqlarge hqbound
+theorem partition_certificate (s P q : ℕ) (hq : q.Prime) (hlarge : P<q)
+    (E : Fin (s+1) → Finset (ZMod q)) (hpart : Stacking.IsColorPartition E)
+    (hfull : Stacking.HasFullDifferences E) :
+    ∃ cs, PartitionValid s P (q,cs) := by
   letI : NeZero q := ⟨hq.ne_zero⟩
   let color : ZMod q → Fin (s+1) := fun x => Classical.choose (hpart x)
   have hcolor (x : ZMod q) : x ∈ E (color x) := (Classical.choose_spec (hpart x)).1
@@ -46,7 +42,7 @@ private theorem exists_fresh_partition (s N P X : ℕ) (hN : 0<N) (hs : s+1≤X)
   let cs := List.ofFn fun k : Fin q => (color (k.val:ZMod q)).val
   have hget (x : ℕ) (hx : x<q) : cs.getD x 0 = (color (x:ZMod q)).val := by
     simp [cs,List.getD_eq_getElem?_getD,List.getElem?_ofFn,hx]
-  refine ⟨(q,cs),⟨hq,hlarge,by simp [cs],?_,?_⟩,hcop,hqbound⟩
+  refine ⟨cs,⟨hq,hlarge,by simp [cs],?_,?_⟩⟩
   · intro x hx
     rw [hget x (List.mem_range.mp hx)]
     exact (color (x:ZMod q)).isLt
@@ -59,6 +55,17 @@ private theorem exists_fresh_partition (s N P X : ℕ) (hN : 0<N) (hs : s+1≤X)
         rw [Nat.cast_add,ZMod.natCast_zmod_val,ZMod.natCast_zmod_val]
         simpa only [add_comm] using sub_eq_iff_eq_add.mp he
       simpa only [ZMod.val_natCast] using congrArg ZMod.val hh
+
+private theorem exists_fresh_partition (s N P X : ℕ) (hN : 0<N) (hs : s+1≤X)
+    (hP : P≤X^2) (hpr : PrimeBound N P) :
+    ∃ c : PartitionCertificate, PartitionValid s P c ∧ Nat.Coprime N c.1 ∧ c.1 ≤ freshCap X P := by
+  let threshold := Stacking.logPartitionThreshold X P
+  obtain ⟨q,hq,hqlarge,hqbound⟩ := Nat.bertrand threshold (by dsimp [threshold,Stacking.logPartitionThreshold]; omega)
+  have hlarge : P<q := by dsimp [threshold,Stacking.logPartitionThreshold] at hqlarge; omega
+  have hcop := coprime_of_primeBound hN hpr hq hlarge
+  obtain ⟨E,hpart,hfull⟩ := Stacking.partition_logarithmic (s+1) X P q (by omega) hs hP hq hqlarge hqbound
+  obtain ⟨cs,hcs⟩ := partition_certificate s P q hq hlarge E hpart hfull
+  exact ⟨(q,cs),hcs,hcop,hqbound⟩
 
 abbrev FreshPartitionData := ℕ × ℕ × ℕ × ℕ
 

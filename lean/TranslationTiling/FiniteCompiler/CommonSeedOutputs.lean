@@ -12,6 +12,8 @@ noncomputable section
 
 namespace FiniteCompiler
 
+variable [SeedFrame]
+
 
 open SharedSeed
 
@@ -121,6 +123,7 @@ theorem seedActualForward_zero_eq (x : Plane) (k : Input E) :
   simp only [seedActualForward, seedC, seedBeta, seedSourceInput_same,
     seed_source_residue, seedUseful_zero, seedHigh_zero, commonZ,
     oneForwardOfEq, BlockShiftData.ofMultiplicity, Prod.fst_sub]
+  rfl
 
 theorem seedActualForward_one_eq (x : Plane) (k : Input E) :
     seedActualForward E 1 x k =
@@ -132,6 +135,7 @@ theorem seedActualForward_one_eq (x : Plane) (k : Input E) :
   simp only [seedActualForward, seedC, seedBeta, seedSourceInput_same,
     seed_source_residue, seedUseful_one, seedHigh_one, commonZ,
     twoForwardOfEq, BlockShiftData.ofMultiplicity, Prod.fst_sub]
+  rfl
 
 theorem seedActualForward_bijective (t : Fin 2) (x : Plane) (k : Input E) :
     Function.Bijective (seedActualForward E t x k) := by

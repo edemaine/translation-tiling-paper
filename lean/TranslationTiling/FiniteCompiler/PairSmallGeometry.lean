@@ -9,9 +9,8 @@ noncomputable section
 set_option maxRecDepth 10000
 set_option maxHeartbeats 400000
 attribute [local irreducible] family roleEquiv arity pEquiv qEquiv
-variable {T : LeanWang.TileSet} {d : ℕ} (code : Code T d) (E : EncodingParameters (system code))
-local instance : AlphabetFamily (system code) := family code
-
+section
+variable [SeedFrame]
 def numericalPoint (N : ℕ) (g : Plane × ZMod N) : Compiler.CyclicPoint :=
   (g.1,@ZMod.val N g.2)
 
@@ -24,11 +23,13 @@ theorem numericalPoint_correct (N : ℕ) [NeZero N] (g : Plane × ZMod N) :
     cyclicPoint N (numericalPoint N g)=g := by
   simp [cyclicPoint,numericalPoint]
 
+variable {S : System} [AlphabetFamily S] (E : EncodingParameters S)
+
 def numericalTile (F : Finset (Ambient E)) : CyclicTile :=
   ((F.image (FiniteCompiler.ambientCyclicEquiv E)).toList).map (numericalPoint E.cyclicOrder)
 
 theorem numericalTile_correct (F : Finset (Ambient E)) :
-    cyclicTileSet E.cyclicOrder (numericalTile code E F)=F.image (FiniteCompiler.ambientCyclicEquiv E) := by
+    cyclicTileSet E.cyclicOrder (numericalTile E F)=F.image (FiniteCompiler.ambientCyclicEquiv E) := by
   let G := F.image (FiniteCompiler.ambientCyclicEquiv E)
   change (G.toList.map (numericalPoint E.cyclicOrder)).toFinset.image
     (cyclicPoint E.cyclicOrder)=G
@@ -41,7 +42,12 @@ theorem numericalTile_correct (F : Finset (Ambient E)) :
   · intro hg
     exact ⟨numericalPoint E.cyclicOrder g,⟨g,hg,rfl⟩,numericalPoint_correct _ g⟩
 
-def numericalFamily : List CyclicTile := ((testTiles E).toList).map (numericalTile code E)
+end
+
+variable {T : LeanWang.TileSet} {d : ℕ} (code : Code T d) (E : EncodingParameters (system code))
+local instance : AlphabetFamily (system code) := family code
+
+def numericalFamily : List CyclicTile := ((testTiles E).toList).map (numericalTile E)
 
 theorem numericalFamily_length : (numericalFamily code E).length=(testTiles E).card := by
   simp [numericalFamily]
@@ -55,7 +61,7 @@ theorem numericalFamily_tile_nonempty : ∀ F∈numericalFamily code E, F≠[] :
   obtain ⟨G,hG,rfl⟩ := List.mem_map.mp hF
   have hne := FiniteCompiler.nonempty_of_mem_testTiles E (Finset.mem_toList.mp hG)
   intro he
-  have hh := numericalTile_correct code E G
+  have hh := numericalTile_correct E G
   rw [he] at hh
   have hn := hne.image (FiniteCompiler.ambientCyclicEquiv E)
   have hh' : (∅ : Finset (Plane × ZMod E.cyclicOrder))=G.image (FiniteCompiler.ambientCyclicEquiv E) := by
@@ -67,7 +73,7 @@ theorem numericalFamily_mass : ∀ F∈numericalFamily code E,
     (cyclicTileSet E.cyclicOrder F).card≤MassSize.mass E := by
   intro F hF
   obtain ⟨G,hG,rfl⟩ := List.mem_map.mp hF
-  rw [numericalTile_correct code E,Finset.card_image_of_injective _ (FiniteCompiler.ambientCyclicEquiv E).injective]
+  rw [numericalTile_correct E,Finset.card_image_of_injective _ (FiniteCompiler.ambientCyclicEquiv E).injective]
   exact test_card code E (Finset.mem_toList.mp hG)
 
 theorem numericalFamily_horizontal {H : ℕ} (hH : CompactSupport.Bound E H) :
@@ -81,12 +87,12 @@ theorem numericalFamily_horizontal {H : ℕ} (hH : CompactSupport.Bound E H) :
   rw [numericalPoint_first,ambient_first]
   exact test_horizontal code E hH (Finset.mem_toList.mp hG) ha
 
-theorem ambient_covers {S : System} [AlphabetFamily S] (E : EncodingParameters S)
+theorem ambient_covers [SeedFrame] {S : System} [AlphabetFamily S] (E : EncodingParameters S)
     (F : Finset (Ambient E)) (A : Set (Ambient E)) (h : Tiles F A) :
     Tiles (F.image (FiniteCompiler.ambientCyclicEquiv E)) (FiniteCompiler.ambientCyclicEquiv E '' A) :=
   Compiler.covers_image (G:=Ambient E) (H:=Plane × ZMod E.cyclicOrder) _ F A h
 
-theorem ambient_uncovers {S : System} [AlphabetFamily S] (E : EncodingParameters S)
+theorem ambient_uncovers [SeedFrame] {S : System} [AlphabetFamily S] (E : EncodingParameters S)
     (F : Finset (Ambient E)) (B : Set (Plane × ZMod E.cyclicOrder))
     (h : Tiles (F.image (FiniteCompiler.ambientCyclicEquiv E)) B) :
     Tiles F ((FiniteCompiler.ambientCyclicEquiv E).symm '' B) := by
@@ -104,15 +110,15 @@ theorem numericalFamily_solution :
     refine ⟨FiniteCompiler.ambientCyclicEquiv E '' A,fun i => ?_⟩
     have hm := getD_mem_of_lt (numericalFamily code E) i.val [] i.isLt
     obtain ⟨G,hG,he⟩ := List.mem_map.mp hm
-    rw [←he,numericalTile_correct code E]
+    rw [←he,numericalTile_correct E]
     exact ambient_covers E _ A (hA _ (Finset.mem_toList.mp hG))
   · rintro ⟨B,hB⟩
     refine ⟨(FiniteCompiler.ambientCyclicEquiv E).symm '' B,fun F hF => ?_⟩
-    have hm : numericalTile code E F∈numericalFamily code E :=
+    have hm : numericalTile E F∈numericalFamily code E :=
       List.mem_map.mpr ⟨F,Finset.mem_toList.mpr hF,rfl⟩
     obtain ⟨i,hi,he⟩ := List.mem_iff_getElem.mp hm
     have h := hB ⟨i,hi⟩
-    rw [List.getD_eq_getElem _ _ hi,he,numericalTile_correct code E] at h
+    rw [List.getD_eq_getElem _ _ hi,he,numericalTile_correct E] at h
     exact ambient_uncovers E _ B h
 
 variable (H : ℕ)

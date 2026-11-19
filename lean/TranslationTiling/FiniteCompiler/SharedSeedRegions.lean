@@ -15,10 +15,13 @@ import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Positivity
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
+import Mathlib.Data.Fin.VecNotation
 
 namespace TranslationTiling
 
 namespace FiniteCompiler.SharedSeed
+
+variable [SeedFrame]
 
 noncomputable section
 
@@ -30,11 +33,21 @@ abbrev LabelledResidue (m : ℕ) :=
 
 def residue (T : System) (x : ℤ × ℤ) : Residues T := (x.1, x.2)
 
+def firstHeight (y : ZMod 3) : ℕ := ![1,2,16] ((ZMod.finEquiv 3).symm y)
+def secondHeight (u : Fin 2 × ZMod 2) : ℕ :=
+  ![4,13,18,19] ⟨2*u.1.val+u.2.val, by have := u.1.isLt; have := ZMod.val_lt u.2; omega⟩
+
+def firstCoords (y : ZMod 3) : ℕ × ℕ :=
+  if SeedFrame.compact then (0,firstHeight y) else (35*y.val,1)
+
+def secondCoords (u : Fin 2 × ZMod 2) : ℕ × ℕ :=
+  if SeedFrame.compact then (0,secondHeight u) else (35*(2*u.1.val+u.2.val),2)
+
 def firstPoint (T : System) (y : ZMod 3) : Residues T :=
-  (((Sudoku.p * Sudoku.q) * y.val : ℕ), 1)
+  if SeedFrame.compact then (0,firstHeight y) else ((35*y.val : ℕ),1)
 
 def secondPoint (T : System) (u : Fin 2 × ZMod 2) : Residues T :=
-  (((Sudoku.p * Sudoku.q) * (2 * u.1.val + u.2.val) : ℕ), 2)
+  if SeedFrame.compact then (0,secondHeight u) else ((35*(2*u.1.val+u.2.val) : ℕ),2)
 
 def activePoint (T : System) : ActiveLabels → Residues T :=
   Sum.elim (firstPoint T) (secondPoint T)
@@ -44,59 +57,88 @@ def secondRegion (T : System) : Set (Residues T) := Set.range (secondPoint T)
 def Rest (T : System) := {s : Residues T // s ∉ Set.range (activePoint T)}
 def copyCount (T : System) : ℕ := (residueModulus ^ 2 - 7) / 6
 
-private theorem nat_multiple_cast_injective {u v : ℕ}
-    (hu : u < 4) (hv : v < 4)
-    (h : ((Sudoku.p * Sudoku.q) * u : ZMod residueModulus) =
-      ((Sudoku.p * Sudoku.q) * v : ZMod residueModulus)) : u = v := by
-  have hu' : (Sudoku.p * Sudoku.q) * u < residueModulus := by
-    have hb : (Sudoku.p * Sudoku.q) * 4 < residueModulus := by rw [residueModulus_eq]; decide
-    exact (Nat.mul_lt_mul_of_pos_left hu (by decide)).trans hb
-  have hv' : (Sudoku.p * Sudoku.q) * v < residueModulus := by
-    have hb : (Sudoku.p * Sudoku.q) * 4 < residueModulus := by rw [residueModulus_eq]; decide
-    exact (Nat.mul_lt_mul_of_pos_left hv (by decide)).trans hb
-  have hn : (((Sudoku.p * Sudoku.q) * u : ℕ) : ZMod residueModulus) =
-      (((Sudoku.p * Sudoku.q) * v : ℕ) : ZMod residueModulus) := by
-    simpa only [Nat.cast_mul] using h
-  have hh := congrArg ZMod.val hn
-  rw [ZMod.val_natCast_of_lt hu', ZMod.val_natCast_of_lt hv'] at hh
-  exact Nat.eq_of_mul_eq_mul_left (by decide : 0 < Sudoku.p * Sudoku.q) hh
+private theorem coords_first_injective : Function.Injective firstCoords := by
+  cases h : SeedFrame.compact
+  · intro y z he
+    have hh := congrArg Prod.fst he
+    simp [firstCoords,h] at hh
+    exact ZMod.val_injective _ hh
+  · have hh : Function.Injective firstHeight := by decide +kernel
+    intro y z he
+    apply hh
+    simpa [firstCoords,h] using congrArg Prod.snd he
+
+private theorem coords_second_injective : Function.Injective secondCoords := by
+  cases h : SeedFrame.compact
+  · rintro ⟨i,y⟩ ⟨j,z⟩ he
+    have hh := congrArg Prod.fst he
+    simp [secondCoords,h] at hh
+    exact Prod.ext (Fin.ext (by change i.val=j.val; have hy := ZMod.val_lt y; have hz := ZMod.val_lt z; omega))
+      (ZMod.val_injective _ (by change y.val=z.val; have hy := ZMod.val_lt y; have hz := ZMod.val_lt z; omega))
+  · have hh : Function.Injective secondHeight := by decide +kernel
+    intro y z he
+    apply hh
+    simpa [secondCoords,h] using congrArg Prod.snd he
+
+private theorem firstCoords_lt (y : ZMod 3) :
+    (firstCoords y).1 < residueModulus ∧ (firstCoords y).2 < residueModulus := by
+  cases h : SeedFrame.compact
+  · have hy := ZMod.val_lt y
+    simp [firstCoords,residueModulus_value,h,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]
+    omega
+  · have hb : ∀ z : ZMod 3, firstHeight z < 35 := by decide +kernel
+    simpa [firstCoords,residueModulus_value,h] using hb y
+
+private theorem secondCoords_lt (u : Fin 2 × ZMod 2) :
+    (secondCoords u).1 < residueModulus ∧ (secondCoords u).2 < residueModulus := by
+  cases h : SeedFrame.compact
+  · have hi := u.1.isLt
+    have hu := ZMod.val_lt u.2
+    simp [secondCoords,residueModulus_value,h,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]
+    omega
+  · have hb : ∀ z : Fin 2 × ZMod 2, secondHeight z < 35 := by decide +kernel
+    simpa [secondCoords,residueModulus_value,h] using hb u
+
+private theorem firstPoint_vals (T : System) (y : ZMod 3) :
+    ((firstPoint T y).1.val,(firstPoint T y).2.val)=firstCoords y := by
+  have h' : ((((firstCoords y).1 : ZMod residueModulus)).val,
+      (((firstCoords y).2 : ZMod residueModulus)).val)=firstCoords y :=
+    Prod.ext (ZMod.val_natCast_of_lt (firstCoords_lt y).1)
+      (ZMod.val_natCast_of_lt (firstCoords_lt y).2)
+  cases h : SeedFrame.compact <;>
+    simpa [firstPoint,firstCoords,h,Nat.cast_ofNat] using h'
+
+private theorem secondPoint_vals (T : System) (u : Fin 2 × ZMod 2) :
+    ((secondPoint T u).1.val,(secondPoint T u).2.val)=secondCoords u := by
+  have h' : ((((secondCoords u).1 : ZMod residueModulus)).val,
+      (((secondCoords u).2 : ZMod residueModulus)).val)=secondCoords u :=
+    Prod.ext (ZMod.val_natCast_of_lt (secondCoords_lt u).1)
+      (ZMod.val_natCast_of_lt (secondCoords_lt u).2)
+  cases h : SeedFrame.compact <;>
+    simpa [secondPoint,secondCoords,h,Nat.cast_ofNat] using h'
 
 theorem firstPoint_injective {T : System} [AlphabetFamily T] :
     Function.Injective (firstPoint T) := by
-  intro y y' h
-  apply ZMod.val_injective 3
-  apply nat_multiple_cast_injective
-      (lt_trans (ZMod.val_lt y) (by decide : 3 < 4))
-      (lt_trans (ZMod.val_lt y') (by decide : 3 < 4))
-  simpa only [firstPoint, Nat.cast_mul] using congrArg Prod.fst h
+  intro y z he
+  apply coords_first_injective
+  rw [←firstPoint_vals T y,←firstPoint_vals T z,he]
 
 theorem secondPoint_injective {T : System} [AlphabetFamily T] :
     Function.Injective (secondPoint T) := by
-  rintro ⟨c,y⟩ ⟨c',y'⟩ h
-  have hc := c.isLt
-  have hc' := c'.isLt
-  have hy := ZMod.val_lt y
-  have hy' := ZMod.val_lt y'
-  have hcode : 2 * c.val + y.val = 2 * c'.val + y'.val := by
-    apply nat_multiple_cast_injective (by omega) (by omega)
-    simpa only [secondPoint, Nat.cast_mul, Nat.cast_add, Nat.cast_ofNat]
-      using congrArg Prod.fst h
-  have hcc : c.val = c'.val := by omega
-  have hyy : y.val = y'.val := by omega
-  exact Prod.ext (Fin.ext hcc) (ZMod.val_injective 2 hyy)
+  intro y z he
+  apply coords_second_injective
+  rw [←secondPoint_vals T y,←secondPoint_vals T z,he]
 
 theorem firstPoint_ne_secondPoint {T : System} [AlphabetFamily T]
     (y : ZMod 3) (u : Fin 2 × ZMod 2) : firstPoint T y ≠ secondPoint T u := by
-  intro h
-  have hp2 : 2 < residueModulus := by rw [residueModulus_eq]; decide
-  have hh := congrArg (fun s : Residues T => s.2.val) h
-  change (1 : ZMod (residueModulus)).val = (2 : ZMod (residueModulus)).val at hh
-  have h1 : (1 : ZMod (residueModulus)).val = 1 := by
-    simpa only [Nat.cast_one] using ZMod.val_natCast_of_lt (by omega : 1 < residueModulus)
-  have h2 : (2 : ZMod (residueModulus)).val = 2 := by
-    simpa only [Nat.cast_ofNat] using ZMod.val_natCast_of_lt hp2
-  have h12 : (1 : ℕ) = 2 := h1.symm.trans (hh.trans h2)
-  omega
+  intro he
+  have hh : firstCoords y=secondCoords u := by
+    rw [←firstPoint_vals T y,←secondPoint_vals T u,he]
+  have hs := congrArg Prod.snd hh
+  cases h : SeedFrame.compact
+  · simp [firstCoords,secondCoords,h] at hs
+  · have hb : ∀ (y : ZMod 3) (u : Fin 2 × ZMod 2), firstHeight y ≠ secondHeight u := by decide +kernel
+    exact hb y u (by simpa [firstCoords,secondCoords,h] using hs)
 
 theorem activePoint_injective {T : System} [AlphabetFamily T] :
     Function.Injective (activePoint T) := by
@@ -118,13 +160,13 @@ theorem first_second_disjoint {T : System} [AlphabetFamily T] :
   exact firstPoint_ne_secondPoint y u hu.symm
 
 theorem copyCount_mul_six (T : System) :
-    copyCount T * 6 = residueModulus ^ 2 - 7 := by change ((residueModulus ^ 2 - 7) / 6) * 6 = _; rw [residueModulus_eq]; decide
+    copyCount T * 6 = residueModulus ^ 2 - 7 := by change ((residueModulus ^ 2 - 7) / 6) * 6 = _; rw [residueModulus_value]; split <;> decide +kernel
 
 theorem six_mul_copyCount_add_seven (T : System) :
     6 * copyCount T + 7 = residueModulus ^ 2 := by
   change 6 * ((residueModulus ^ 2 - 7) / 6) + 7 = _
-  rw [residueModulus_eq]
-  decide
+  rw [residueModulus_value]
+  split <;> decide
 
 noncomputable def restEquiv (T : System) :
     Rest T ≃ InactiveLabels (copyCount T) := by

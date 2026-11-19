@@ -3,10 +3,11 @@ import TranslationTiling.FiniteCompiler.CoreSupport
 import TranslationTiling.FiniteCompiler.CoreMassBounds
 import Mathlib.Data.List.Nodup
 
-/-! Finite prime certificates for alphabets with at most forty-four letters per channel. -/
+/-! Finite prime certificates for alphabets with at most forty-eight letters per channel. -/
 namespace TranslationTiling.FiniteCompiler.ProjectedParameters
 open scoped Classical BigOperators
 noncomputable section
+local instance : SeedFrame := compactSeedFrame
 set_option maxRecDepth 10000
 set_option maxHeartbeats 2000000
 
@@ -25,16 +26,17 @@ def Profile.arity (p : Profile) (c : ℕ) : ℕ :=
   split_ifs <;> omega
 
 def Representation (p : Profile) (c j : ℕ) : Prop :=
-  0<p.coeffA.getD (44*c+j) 0 ∧ 0<p.coeffB.getD (44*c+j) 0 ∧
-  p.entry (44+44*c+j)=p.coeffA.getD (44*c+j) 0*p.entry c+
-    p.coeffB.getD (44*c+j) 0*p.entry (22+c)
+  0<p.coeffA.getD (48*c+j) 0 ∧ 0<p.coeffB.getD (48*c+j) 0 ∧
+  p.entry (44+48*c+j)=p.coeffA.getD (48*c+j) 0*p.entry c+
+    p.coeffB.getD (48*c+j) 0*p.entry (22+c)
 instance (p : Profile) (c j : ℕ) : Decidable (Representation p c j) := by unfold Representation; infer_instance
 
 def Valid (p : Profile) : Prop :=
-  p.primes.length=1012 ∧ p.primes.Nodup ∧
+  p.primes.length=1100 ∧ p.primes.Nodup ∧
   (∀ v∈p.primes, v.Prime ∧ v≠5 ∧ v≠7 ∧ v≤65536) ∧
-  (0<p.alphabet ∧ p.alphabet≤44) ∧
-  (∀ t∈List.range 2, p.entry (20+t)=t+2 ∧ 30625<p.entry (42+t)) ∧
+  (0<p.alphabet ∧ p.alphabet≤48) ∧
+  (∀ t∈List.range 2, p.entry (20+t)=t+2 ∧
+    (1225<p.entry (42+t) ∨ t=1 ∧ p.entry (42+t)%3=2 ∧ 1225<2*p.entry (42+t))) ∧
   ∀ c∈List.range 22, ∀ j∈List.range (p.arity c), Representation p c j
 instance (p : Profile) : Decidable (Valid p) := by unfold Valid; infer_instance
 
@@ -52,7 +54,7 @@ def labelIndex (i : Channel T) : Label T i → ℕ := by
 def tagIndex : PrimeTag T → ℕ
   | .inl i => channelIndex i
   | .inr (.inl i) => 22+channelIndex i
-  | .inr (.inr j) => 44+44*channelIndex j.1+labelIndex j.1 j.2
+  | .inr (.inr j) => 44+48*channelIndex j.1+labelIndex j.1 j.2
 
 variable (p : Profile) (hv : Valid p) (hw : T.width=20)
     (hs : ∀ n : Column T, AlphabetFamily.size (T:=T) n=p.arity n.val)
@@ -77,7 +79,7 @@ theorem labelIndex_lt (i : Channel T) (j : Label T i) : labelIndex i j<p.arity (
   | inl n => simpa only [labelIndex,channelIndex,←hs n] using j.isLt
   | inr t => simp [labelIndex,channelIndex]
 
-theorem labelIndex_capacity (i : Channel T) (j : Label T i) : labelIndex i j<44 := by
+theorem labelIndex_capacity (i : Channel T) (j : Label T i) : labelIndex i j<48 := by
   have hh := labelIndex_lt p hv hw hs i j
   cases i with
   | inl n =>
@@ -89,9 +91,9 @@ theorem labelIndex_capacity (i : Channel T) (j : Label T i) : labelIndex i j<44 
   | inr t => simp [labelIndex]
 
 theorem digitIndex_injective : Function.Injective
-    (fun j : Σ i : Channel T, Label T i => 44*channelIndex j.1+labelIndex j.1 j.2) := by
+    (fun j : Σ i : Channel T, Label T i => 48*channelIndex j.1+labelIndex j.1 j.2) := by
   rintro ⟨i,j⟩ ⟨k,l⟩ h
-  change 44*channelIndex i+labelIndex i j=44*channelIndex k+labelIndex k l at h
+  change 48*channelIndex i+labelIndex i j=48*channelIndex k+labelIndex k l at h
   have hj := labelIndex_capacity p hv hw hs i j
   have hl := labelIndex_capacity p hv hw hs k l
   have hc : channelIndex i=channelIndex k := by omega
@@ -105,7 +107,7 @@ theorem digitIndex_injective : Function.Injective
   subst l
   rfl
 
-theorem tagIndex_lt (i : PrimeTag T) : tagIndex i<1012 := by
+theorem tagIndex_lt (i : PrimeTag T) : tagIndex i<1100 := by
   rcases i with i | (i | ⟨i,j⟩)
   · exact (channelIndex_lt p hv hw hs i).trans (by decide)
   · have := channelIndex_lt p hv hw hs i; simp only [tagIndex]; omega
@@ -125,7 +127,7 @@ theorem tagIndex_injective : Function.Injective (tagIndex (T:=T)) := by
   · have := channelIndex_lt p hv hw hs j; omega
   · exact congrArg (Sum.inr ∘ Sum.inr) (digitIndex_injective p hv hw hs (by dsimp; omega))
 
-theorem at_mem {i : ℕ} (hi : i<1012) : p.entry i∈p.primes := by
+theorem at_mem {i : ℕ} (hi : i<1100) : p.entry i∈p.primes := by
   unfold Profile.entry
   have hi' : i<p.primes.length := by rw [hv.1]; exact hi
   rw [List.getD_eq_getElem _ _ hi']
@@ -148,10 +150,14 @@ def encoding : EncodingParameters T where
   seed_a_eq t := (hv.2.2.2.2.1 t.val (List.mem_range.mpr t.isLt)).1
   seed_b_large t := by
     have h := (hv.2.2.2.2.1 t.val (List.mem_range.mpr t.isLt)).2
-    convert h using 1 <;> norm_num [tagIndex,channelIndex,Sudoku.SeedModulus,Sudoku.p,Sudoku.q,Nat.add_assoc]
-    exact congrArg p.entry (by omega)
-  blockA i j := p.coeffA.getD (44*channelIndex i+labelIndex i j) 0
-  blockB i j := p.coeffB.getD (44*channelIndex i+labelIndex i j) 0
+    change (1225<p.entry (22+channelIndex (.inr t)) ∨
+      t=1 ∧ p.entry (22+channelIndex (.inr t))%3=2 ∧ 1225<2*p.entry (22+channelIndex (.inr t)))
+    have ht : t=1 ↔ t.val=1 := ⟨fun h => congrArg Fin.val h,fun h => Fin.ext (by simpa using h)⟩
+    have hi : 22+channelIndex (.inr t : Channel T)=42+t.val := by simp [channelIndex]; omega
+    rw [hi,ht]
+    exact h
+  blockA i j := p.coeffA.getD (48*channelIndex i+labelIndex i j) 0
+  blockB i j := p.coeffB.getD (48*channelIndex i+labelIndex i j) 0
   blockA_pos i j := (hv.2.2.2.2.2 _ (List.mem_range.mpr (channelIndex_lt p hv hw hs i)) _
     (List.mem_range.mpr (labelIndex_lt p hv hw hs i j))).1
   blockB_pos i j := (hv.2.2.2.2.2 _ (List.mem_range.mpr (channelIndex_lt p hv hw hs i)) _
@@ -162,19 +168,19 @@ def encoding : EncodingParameters T where
   digitProduct_eq _ := rfl
 
 def Profile.rAt (p : Profile) (c : ℕ) : ℕ :=
-  ((List.range (p.arity c)).map fun j => p.entry (44+44*c+j)).prod
+  ((List.range (p.arity c)).map fun j => p.entry (44+48*c+j)).prod
 
 def Profile.wordCount (p : Profile) : ℕ := ((List.range 20).map p.arity).prod
 
 def Profile.order (p : Profile) : ℕ :=
-  30625*((List.range 22).map fun c => (p.rAt c)^2*p.entry c*p.entry (22+c)).prod
+  1225*((List.range 22).map fun c => (p.rAt c)^2*p.entry c*p.entry (22+c)).prod
 
 def Profile.mass (p : Profile) : ℕ :=
-  30625*((List.range 22).map fun c => p.rAt c*p.entry c*p.entry (22+c)).prod
+  1225*((List.range 22).map fun c => p.rAt c*p.entry c*p.entry (22+c)).prod
 
 def SupportValid (p : Profile) (H : ℕ) : Prop :=
-  175≤H ∧ (∀ c∈List.range 20, 32*p.rAt c*(p.entry c*p.entry (22+c))^2≤H) ∧
-  ∀ t∈List.range 2, 2*(3-t)*p.rAt (20+t)*(p.entry (20+t)*p.entry (42+t))^2*175^3≤H
+  35≤H ∧ (∀ c∈List.range 20, 32*p.rAt c*(p.entry c*p.entry (22+c))^2≤H) ∧
+  ∀ t∈List.range 2, 2*(3-t)*p.rAt (20+t)*(p.entry (20+t)*p.entry (42+t))^2*35^3≤H
 instance (p : Profile) (H : ℕ) : Decidable (SupportValid p H) := by unfold SupportValid; infer_instance
 
 def labelEquiv (i : Channel T) : Label T i ≃ Fin (p.arity (channelIndex i)) where
@@ -221,8 +227,8 @@ theorem encoding_order : (encoding p hv hw hs).cyclicOrder=p.order := by
   simp_rw [encoding_r p hv hw hs,EncodingParameters.a,EncodingParameters.b,encoding,tagIndex]
   rw [prod_channels p hv hw hs (fun c => (p.rAt c)^2*p.entry c*p.entry (22+c))]
   unfold Profile.order
-  have hd : residueModulus^2=30625 := by norm_num [residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]
-  change residueModulus^2*_=30625*_
+  have hd : residueModulus^2=1225 := by norm_num [residueModulus_value,compactSeedFrame]
+  change residueModulus^2*_=1225*_
   rw [hd]
 
 theorem encoding_mass : MassSize.mass (encoding p hv hw hs)=p.mass := by
@@ -231,16 +237,16 @@ theorem encoding_mass : MassSize.mass (encoding p hv hw hs)=p.mass := by
   simp_rw [←Nat.mul_assoc]
   rw [prod_channels p hv hw hs (fun c => p.rAt c*p.entry c*p.entry (22+c))]
   unfold Profile.mass
-  have hd : residueModulus^2=30625 := by norm_num [residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]
-  change residueModulus^2*_=30625*_
+  have hd : residueModulus^2=1225 := by norm_num [residueModulus_value,compactSeedFrame]
+  change residueModulus^2*_=1225*_
   rw [hd]
 
 theorem encoding_support {H : ℕ} (hH : SupportValid p H)
     (hS : ∀ n, (T.slope n).natAbs≤16) : CompactSupport.Bound (encoding p hv hw hs) H := by
   have hm : residueModulus≤H := by
-    have he : residueModulus=175 := by norm_num [residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]
+    have he : residueModulus=35 := by norm_num [residueModulus_value,compactSeedFrame]
     rw [he]; exact hH.1
-  refine ⟨hm,fun n => (hS n).trans ((by norm_num [residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q] : 16≤residueModulus).trans hm),?_,?_⟩
+  refine ⟨hm,fun n => (hS n).trans ((by rw [residueModulus_value]; split <;> decide : 16≤residueModulus).trans hm),?_,?_⟩
   · intro n
     unfold CompactSupport.B
     rw [encoding_r p hv hw hs]
@@ -252,7 +258,7 @@ theorem encoding_support {H : ℕ} (hH : SupportValid p H)
     have ho : (otherSeed t).val+2=3-t.val := by dsimp [otherSeed]; have := t.isLt; omega
     rw [ho]
     change 2*(3-t.val)*(p.rAt (20+t.val)*(p.entry (20+t.val)*p.entry (22+(20+t.val)))^2)*residueModulus^3≤H
-    have he : residueModulus=175 := by norm_num [residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q]
+    have he : residueModulus=35 := by norm_num [residueModulus_value,compactSeedFrame]
     rw [he,show 22+(20+t.val)=42+t.val by omega]
     simpa only [Nat.mul_assoc] using hH.2.2 t.val (List.mem_range.mpr t.isLt)
 

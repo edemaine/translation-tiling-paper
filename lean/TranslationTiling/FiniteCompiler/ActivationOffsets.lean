@@ -18,6 +18,8 @@ universe uJ
 
 namespace FiniteCompiler
 
+variable [SeedFrame]
+
 
 noncomputable section
 

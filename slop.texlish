@@ -2200,7 +2200,7 @@ numerical family are checked in
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    (n+4)^{660\lg\lg(n+4)}=n^{O(\log\log n)}
+    (n+4)^{635\lg\lg(n+4)}=n^{O(\log\log n)}
   $$
   unit cubes.
   For $n\leq5$, we also have the explicit bound $2^{250}$ unit cubes.
@@ -3042,6 +3042,68 @@ numerical family are checked in
   $\lg P\leq g+9/2\leq(49/22)g$. The existing bound
   $(34w+99)\lg P$ on $\lg|F|$ is then at most
   $(68+2343/13)(49/22)tg<660tg$ using $w\leq2t+66$.
+  To reduce the coefficient further to $635$, we use $460$ forbidden
+  partial patterns on the $5$-board and $1853$ on the $7$-board, each
+  specifying three to five columns. Every disallowed arithmetic word
+  matches at least one pattern, and every allowed word avoids all of them.
+  Lean checks the arithmetic equivalence using finite computations and
+  unsatisfiability certificates in
+  \leanfile{SudokuArithmetic/PartialWordCertificate5.lean} and
+  \leanfile{SudokuArithmetic/PartialWordCertificate7.lean}.
+  For each of the three canonical query slopes, we test just the arithmetic
+  patterns that recover the two Wang symbols at the required valuations.
+  There are $(5-1)(7-1)=24$ choices of the nonzero arithmetic digits at
+  height $M$, so the Wang rules require at most $72D^2$ test prototiles.
+  The implications and their soundness are checked in
+  \leanfile{SudokuArithmetic/QueryGuards.lean} and
+  \leanfile{FiniteCompiler/GuardedSystem.lean}.
+
+  We also reduce the seed modulus from $175$ to $35$ in this branch.
+  The first seed allows digits $1,2$ modulo $5$ and $1,2,3$ modulo $7$,
+  while the second allows the remaining nonzero digits.
+  Thus activation of both seeds still forces two distinct values in
+  every arithmetic column. The first seed can use three residue points
+  $(0,1),(0,2),(0,16)$, and the second can use four
+  $(0,4),(0,13),(0,18),(0,19)$. Their complement has $1218$ points,
+  a multiple of $6$, so the same shared seed labeling works.
+  Inactivity would require writing $35^2=au+bv$ for nonnegative integers
+  $u,v$, where $a,b$ are the useful primes for that seed.
+  We exclude this by choosing $a=2$ and $b>1225$ for the first seed,
+  and $a=3$, $b\equiv2\pmod3$ and $2b>1225$ for the second.
+  See \leanfile{FiniteCompiler/GuardedSeeds.lean}.
+
+  The new tests give $X=2313+72D^2+80D+550$. With
+  $\ell=\lfloor\lg(2X)\rfloor+1$ and prime bound $P=65{,}536$,
+  the stacking modulus is at most $2(6X^2\ell+P+3)$. For a prime
+  $2m+1$ above $6X^2\ell+P+3$, the probability of missing any required
+  difference is bounded by $s(2m)(1-1/s^2)^m$ for $s\leq X$ colors.
+  The exponential factor is at most $e^{-3\ell}$, and the prefactor
+  is less than $16^\ell$ for the chosen prime, so this probability
+  is less than one. We count the final rail shell directly from its
+  side lengths and use the box, bump, and frame counts for the
+  quotient-to-lattice pieces. See
+  \leanfile{Proofs/TightDifferenceBound.lean} and
+  \leanfile{FiniteCompiler/GuardedVolume.lean}.
+
+  The resulting profiles give $|F|\leq2^e\leq2^{635tg}$.
+  \[
+    \begin{array}{c|r|r|c|c}
+      n & D & e & \text{lower bound on }t & \text{lower bound on }g\\
+      \hline
+      6 & 6 & 3651 & 93/28 & 71/41\\
+      7 & 7 & 3779 & 24/7 & 7/4\\
+      8,\ldots,10 & 10 & 3932 & 7/2 & 9/5\\
+      11,\ldots,20 & 20 & 4731 & 31/8 & 25/13\\
+      21,\ldots,30 & 30 & 5533 & 9/2 & 2\\
+      31,\ldots,40 & 40 & 6348 & 5 & 2\\
+      41,\ldots,44 & 44 & 6680 & 5 & 9/4\\
+      45,\ldots,48 & 48 & 7449 & 11/2 & 7/3\\
+      49,\ldots,242 & \text{---} & 9124 & 63/11 & 73/29\\
+      243,\ldots,8187 & \text{---} & 11678 & 7 & 8/3
+    \end{array}
+  \]
+  The ternary estimate above also gives
+  $(68+2343/13)(49/22)tg<635tg$ for $n\geq8188$.
   See \leanfile{FiniteCompiler/ProjectedCompiler.lean} and
   \leanfile{Compiler/ProjectedLogBound.lean}.
 
@@ -3054,7 +3116,7 @@ repeated column slopes and channel-dependent finite alphabets.
 The shorter-board equivalence is
 \leanref{SudokuArithmetic/PairBoardSoundness.lean}{Sudoku.PairBoard.wang_iff}.
 \leanfile{FiniteCompiler/Effective/ProjectedTotalCompiler.lean} combines
-the projected $20$-channel systems for $6\leq n\leq44$ with the ternary compiler for larger
+the $20$-channel systems with partial-word tests for $6\leq n\leq48$ with the ternary compiler for larger
 inputs and the direct test for $n\leq5$. The public theorem includes
 nonemptiness, face connectedness, both tilability directions, and the
 numerical coefficient uniformly for every finite Wang tile set, including
@@ -3597,8 +3659,8 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, these bounds are $(n+4)^{660\lg\lg(n+4)}$ for translations and
-$64{,}000(n+4)^{660\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+function. In dimension three, these bounds are $(n+4)^{635\lg\lg(n+4)}$ for translations and
+$64{,}000(n+4)^{635\lg\lg(n+4)}$ for arbitrary Euclidean motions.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[
@@ -3619,8 +3681,8 @@ additional cubes are needed.
 The total reduction in
 \leanfile{FiniteCompiler/Effective/ProjectedTotalCompiler.lean}
 combines the ternary construction with the direct test for at most five
-tiles and the projected $20$-channel systems for six through forty-four
-tiles.
+tiles and the $20$-channel systems with partial-word tests for six through
+forty-eight tiles.
 The ternary branch encodes arithmetic pairs and tile labels separately by
 base-three integers, uses
 explicit prime tables for small widths and finite arithmetic search for the

@@ -1,6 +1,8 @@
 import TranslationTiling.FiniteCompiler.EncodedSystem
 
 namespace TranslationTiling.FiniteCompiler.CompactSupport
+
+variable [SeedFrame]
 open scoped Classical BigOperators
 noncomputable section
 set_option maxRecDepth 10000
@@ -65,7 +67,7 @@ theorem test_horizontal {H : ℕ} (hb : Bound E H)
     {F : Finset (Ambient E)} (hF : F ∈ testTiles E) {g : Ambient E} (hg : g ∈ F) :
     g.1.1.natAbs ≤ H ∧ g.1.2.natAbs ≤ H := by
   have hzero : (0 : ℤ).natAbs ≤ H := Nat.zero_le _
-  have hb2 : 2≤H := (by norm_num [residueModulus_eq,Sudoku.SeedModulus,Sudoku.p,Sudoku.q] : 2≤residueModulus).trans hb.modulus
+  have hb2 : 2≤H := residueModulus_two_le.trans hb.modulus
   have hq (h : q0 E g = 0) : g.1 = 0 := congrArg Prod.fst h
   have hoff {t : ℕ} [NeZero t] (cycle : ZMod t ↪ Channel T)
       (labels : ∀ j, Label T (cycle j)) (hf : F ∈ fixedCycleTiles E cycle labels) : g.1 = 0 := by

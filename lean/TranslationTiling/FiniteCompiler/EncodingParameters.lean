@@ -13,6 +13,8 @@ namespace TranslationTiling
 
 namespace FiniteCompiler
 
+variable [SeedFrame]
+
 open scoped BigOperators
 
 abbrev PrimeTag (T : System) [AlphabetFamily T] :=
@@ -26,7 +28,10 @@ structure EncodingParameters (T : System) [AlphabetFamily T] where
   prime_ne_q : ∀ t, primeAt t ≠ Sudoku.q
   prime_ne_five : ∀ t, primeAt t ≠ 5
   seed_a_eq : ∀ t : Fin 2, primeAt (.inl (.inr t)) = t.val + 2
-  seed_b_large : ∀ t : Fin 2, (Sudoku.SeedModulus ^ 2) < primeAt (.inr (.inl (.inr t)))
+  seed_b_large : ∀ t : Fin 2,
+    let b := primeAt (.inr (.inl (.inr t)))
+    if SeedFrame.compact then 1225 < b ∨ t = 1 ∧ b % 3 = 2 ∧ 1225 < 2*b
+    else Sudoku.SeedModulus ^ 2 < b
   blockA : ∀ i : Channel T, Label T i → ℕ
   blockB : ∀ i : Channel T, Label T i → ℕ
   blockA_pos : ∀ i j, 0 < blockA i j
@@ -78,7 +83,7 @@ theorem prime_coprime_q (t : PrimeTag T) : Nat.Coprime (E.primeAt t) Sudoku.q :=
   (Nat.coprime_primes (E.prime_isPrime t) (by decide : Sudoku.q.Prime)).2 (E.prime_ne_q t)
 
 theorem prime_coprime_modulus (t : PrimeTag T) : Nat.Coprime (E.primeAt t) residueModulus := by
-  rw [residueModulus_eq]
+  apply Nat.Coprime.coprime_dvd_right residueModulus_dvd
   have h5 : Nat.Coprime (E.primeAt t) 5 :=
     (Nat.coprime_primes (E.prime_isPrime t) (by decide)).2 (E.prime_ne_five t)
   exact (h5.mul_right (E.prime_coprime_p t)).mul_right (E.prime_coprime_q t)

@@ -8,6 +8,7 @@ import Mathlib.Data.Finset.Max
 import Mathlib.Data.Fintype.BigOperators
 import Mathlib.Tactic.Linarith
 import Lean.Elab.Tactic.Omega
+import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Ring
 import TranslationTiling.FiniteCompiler.ActivationTiles
 import TranslationTiling.FiniteCompiler.Dependence
@@ -22,6 +23,8 @@ universe uα uJ uC uK uZ
 noncomputable section
 
 namespace FiniteCompiler
+
+variable [SeedFrame]
 
 
 open scoped BigOperators
@@ -348,13 +351,41 @@ theorem seed_active_somewhere_of_tile (o : Outputs E) (hdep : HasDependence E o)
       simpa only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, Nat.cast_id, K, ZMod.card]
         using hcount
     exact Nat.eq_of_mul_eq_mul_left (E.r_pos (.inr t)) hmul
-  have hdiv : E.a (.inr t) ∣ (residueModulus ^ 2) :=
-    histogram_mass_dvd_of_shift_sum (E.a_two_le (.inr t)) (E.b_two_le (.inr t))
-      (seedHistogram q) (sum_seedHistogram q) (by simpa only [residueModulus_eq, EncodingParameters.b] using E.seed_b_large t) hcoverage
-  have hnot : ¬ (t.val + 2) ∣ residueModulus ^ 2 := by
-    rw [residueModulus_eq]
-    fin_cases t <;> decide
-  exact hnot (E.seed_a t ▸ hdiv)
+  have hmixed := mixedDifferenceZero_of_shift_sum
+    (E.a_two_le (.inr t)) (E.b_two_le (.inr t))
+    (seedHistogram q) (sum_seedHistogram q) hcoverage
+  obtain ⟨u,v,hsep⟩ := histogram_separable (seedHistogram q) hmixed
+  have hmass := (sum_seedHistogram q).symm.trans
+    (histogram_mass_eq (seedHistogram q) u v hsep)
+  have hab := E.seed_b_large t
+  change (if SeedFrame.compact then
+    1225 < E.b (.inr t) ∨ t=1 ∧ E.b (.inr t)%3=2 ∧ 1225<2*E.b (.inr t)
+    else Sudoku.SeedModulus^2 < E.b (.inr t)) at hab
+  have hcase (hlarge : residueModulus^2 < E.b (.inr t)) : False := by
+    have hdiv := histogram_mass_dvd (seedHistogram q) hmixed (sum_seedHistogram q) hlarge
+    rw [E.seed_a t,residueModulus_value] at hdiv
+    cases hc : SeedFrame.compact <;> fin_cases t <;> simp [hc,Sudoku.SeedModulus,Sudoku.p,Sudoku.q] at hdiv
+  cases hc : SeedFrame.compact
+  · exact hcase (by simpa only [residueModulus_value,hc,if_false,Bool.false_eq_true] using hab)
+  · simp only [hc,if_true] at hab
+    rcases hab with hh|⟨rfl,hb,hh⟩
+    · exact hcase (by simpa [residueModulus_value,hc] using hh)
+    · let k := ∑ x,u x
+      let l := ∑ y,v y
+      have hmass' : 1225=E.b (.inr 1)*k+3*l := by
+        calc
+          1225 = residueModulus^2 := by rw [residueModulus_value]; simp [hc]
+          _ = E.b (.inr 1)*k+E.a (.inr 1)*l := hmass
+          _ = E.b (.inr 1)*k+3*l := congrArg (fun a => E.b (.inr 1)*k+a*l) (E.seed_a 1)
+      have hmod := congrArg (fun n : ℕ => n%3) hmass'
+      change 1225%3=(E.b (.inr 1)*k+3*l)%3 at hmod
+      simp only [Nat.add_mul_mod_self_left] at hmod
+      rw [Nat.mul_mod, hb] at hmod
+      have hk : 2≤k := by
+        by_contra! hk
+        rcases (show k=0 ∨ k=1 by omega) with hz|hz <;> rw [hz] at hmod <;> norm_num at hmod
+      have hle := Nat.mul_le_mul_left (E.b (.inr 1)) hk
+      omega
 
 end FiniteCompiler
 

@@ -13,6 +13,8 @@ noncomputable section
 
 namespace FiniteCompiler.SharedSeed
 
+variable [SeedFrame]
+
 def ActiveOne {m : ℕ} : LabelledResidue m → Prop
   | Sum.inl _ => True
   | Sum.inr _ => False

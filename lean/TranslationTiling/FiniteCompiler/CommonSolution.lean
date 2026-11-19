@@ -11,6 +11,8 @@ noncomputable section
 
 namespace FiniteCompiler.CommonModel
 
+variable [SeedFrame]
+
 variable {T : System} [AlphabetFamily T] (E : EncodingParameters T) (W : WordArray T)
 
 theorem ordinaryActivationMap_outputs (n : Column T) (b : Base E) :

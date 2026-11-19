@@ -13,6 +13,8 @@ noncomputable section
 
 namespace FiniteCompiler
 
+variable [SeedFrame]
+
 open scoped BigOperators
 
 variable {T : System} [AlphabetFamily T]

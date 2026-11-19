@@ -46,8 +46,8 @@ private theorem g_lower {n : ℕ} {u : ℝ} (hu : 0<u)
   nlinarith only [hh,hm]
 
 theorem projected_dyadic_real_bound {n N e : ℕ} (hN : N≤2^e)
-    (he : (e:ℝ)≤660*Real.logb 2 ((n:ℝ)+4)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) :
-    (N:ℝ)≤((n:ℝ)+4)^(660*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
+    (he : (e:ℝ)≤635*Real.logb 2 ((n:ℝ)+4)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) :
+    (N:ℝ)≤((n:ℝ)+4)^(635*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
   apply (show (N:ℝ)≤(2:ℝ)^e by exact_mod_cast hN).trans
   apply (Real.logb_le_logb (by norm_num : (1:ℝ)<2) (by positivity) (by positivity)).mp
   rw [logb_two_pow,Real.logb_rpow_eq_mul_logb_of_pos (by positivity : 0<(n:ℝ)+4)]
@@ -56,7 +56,7 @@ theorem projected_dyadic_real_bound {n N e : ℕ} (hN : N≤2^e)
 theorem projected_bulk_real_bound {n N : ℕ} (hn : 8188≤n)
     (hN : N≤(max (FiniteCompiler.SparseTernary.width n+2) 256)^(33*(FiniteCompiler.SparseTernary.width n)+98)*
       3^(4*(FiniteCompiler.SparseTernary.width n)+4)) :
-    (N:ℝ)≤((n:ℝ)+4)^(660*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
+    (N:ℝ)≤((n:ℝ)+4)^(635*Real.logb 2 (Real.logb 2 ((n:ℝ)+4))) := by
   let w := FiniteCompiler.SparseTernary.width n
   let P := max (w+2) 256
   let t := Real.logb 2 ((n:ℝ)+4)
@@ -99,8 +99,8 @@ theorem projected_bulk_real_bound {n N : ℕ} (hn : 8188≤n)
   have hh := mul_le_mul ha hlog (by linarith : 0≤Real.logb 2 (P:ℝ))
     (by positivity : 0≤(34*(92/13)+99/13:ℝ)*t)
   have hc := mul_le_mul_of_nonneg_right
-    (show (34*(92/13)+99/13:ℝ)*(49/22)≤660 by norm_num) (show 0≤t*g by positivity)
-  have he : ((33*w+98:ℕ):ℝ)*Real.logb 2 (P:ℝ)+((4*w+4:ℕ):ℝ)*Real.logb 2 3≤660*t*g := by
+    (show (34*(92/13)+99/13:ℝ)*(49/22)≤635 by norm_num) (show 0≤t*g by positivity)
+  have he : ((33*w+98:ℕ):ℝ)*Real.logb 2 (P:ℝ)+((4*w+4:ℕ):ℝ)*Real.logb 2 3≤635*t*g := by
     push_cast at hh ⊢
     nlinarith only [hh,hc,hextra]
   apply (show (N:ℝ)≤((P^(33*w+98)*3^(4*w+4):ℕ):ℝ) by exact_mod_cast hN).trans
@@ -108,15 +108,15 @@ theorem projected_bulk_real_bound {n N : ℕ} (hn : 8188≤n)
   apply (Real.logb_le_logb (by norm_num : (1:ℝ)<2) (by positivity) (by positivity)).mp
   rw [Real.logb_mul (by positivity) (by positivity),Real.logb_pow,Real.logb_pow,
     Real.logb_rpow_eq_mul_logb_of_pos (by positivity : 0<(n:ℝ)+4)]
-  change _≤660*g*t
+  change _≤635*g*t
   nlinarith only [he]
 
 
 
 theorem projected_exponent {n m e a b c d : ℕ} (hn : m≤n) (hb : 0<b) (hd : 0<d)
     (ht : (2:ℝ)^a≤((m:ℝ)+4)^b) (hg : (2:ℝ)^c≤((a:ℝ)/b)^d)
-    (ha : (0:ℝ)<(a:ℝ)/b) (he : (e:ℝ)≤660*((a:ℝ)/b)*((c:ℝ)/d)) :
-    (e:ℝ)≤660*Real.logb 2 ((n:ℝ)+4)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4)) := by
+    (ha : (0:ℝ)<(a:ℝ)/b) (he : (e:ℝ)≤635*((a:ℝ)/b)*((c:ℝ)/d)) :
+    (e:ℝ)≤635*Real.logb 2 ((n:ℝ)+4)*Real.logb 2 (Real.logb 2 ((n:ℝ)+4)) := by
   have hmt : (m:ℝ)+4≤(n:ℝ)+4 := by exact_mod_cast Nat.add_le_add_right hn 4
   have ht' := t_lower (n:=n) (a:=a) (b:=b) hb (ht.trans (pow_le_pow_left₀ (by positivity) hmt _))
   have hg' := g_lower ha ht' c d hd hg

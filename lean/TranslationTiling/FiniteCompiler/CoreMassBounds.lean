@@ -2,6 +2,8 @@ import TranslationTiling.FiniteCompiler.EncodedSystem
 
 /-! Count the actual finite fibres of the test tiles, instead of their boxes. -/
 namespace TranslationTiling.FiniteCompiler.MassSize
+
+variable [SeedFrame]
 open scoped Classical BigOperators
 noncomputable section
 set_option maxRecDepth 10000

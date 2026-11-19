@@ -62,7 +62,7 @@ theorem code_size (k : Fin 10) (T : LeanWang.TileSet) (hlen : T.length=Profiles.
   fin_cases n <;> rfl
 
 def parameters (k : Fin 10) (T : LeanWang.TileSet) (hlen : T.length=Profiles.count k) :
-    @EncodingParameters (system (code k T hlen)) (family (code k T hlen)) :=
+    @EncodingParameters regularSeedFrame (system (code k T hlen)) (family (code k T hlen)) :=
   FortyParameters.encoding (Profiles.profile k) (Profiles.valid k) rfl (code_size k T hlen)
 
 theorem parameters_prime (k : Fin 10) (T : LeanWang.TileSet) (hlen : T.length=Profiles.count k)
