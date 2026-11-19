@@ -2200,10 +2200,10 @@ numerical family are checked in
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    (n+4)^{800\lg\lg(n+4)}=n^{O(\log\log n)}
+    (n+4)^{700\lg\lg(n+4)}=n^{O(\log\log n)}
   $$
   unit cubes.
-  For $n\leq3$, we also have the explicit bound $2^{250}$ unit cubes.
+  For $n\leq5$, we also have the explicit bound $2^{250}$ unit cubes.
 
 : proof
   For $n=0$, consolidate the two contradictory equations with prototiles
@@ -2213,37 +2213,25 @@ numerical family are checked in
   $2^{250}$ cubes. This fixed output is checked in
   \leanfile{Compiler/EmptyInputBound.lean}.
 
-  For $1\leq n\leq3$, test periodic assignments on the $2\times2$ and
-  $3\times3$ tori. This suffices by a finite local-to-periodic argument.
-  Label the input tiles using three symbols, repeating a tile when necessary.
-  Let $H(i,j)$ and $V(i,j)$ be the horizontal and vertical matching relations.
-  Because matching is equality of edge colors, two rows of either relation
-  have equal or disjoint supports. The $128$ encoded matrices with this
-  property cover all possible matching relations.
+  For $1\leq n\leq5$, test whether the tiles admit an $11\times11$ patch.
+  Label the tiles with five symbols, repeating a tile when necessary.
+  In either matching relation, two rows have equal or disjoint supports
+  because matching is equality of edge colors. Up to simultaneous
+  relabeling, the horizontal relation has $676$ such matrices.
 
-  For each of the $128^2$ pairs $(H,V)$, a kernel-checked certificate gives
-  either a valid $2\times2$ or $3\times3$ torus, or an obstruction to a
-  valid $4\times4$ patch. The obstruction assigns a rank in $\{0,1,2\}$
-  to every horizontally valid word of length four, with strictly increasing
-  ranks across every allowed vertical transition. Four consecutive rows
-  would require three strict increases, which is impossible.
-  A plane tiling supplies a $4\times4$ patch, so it forces a periodic
-  certificate; conversely, repeating a certified torus gives a plane tiling.
-  This argument is checked in
-  \leanfile{Compiler/SmallTileCertificate.lean},
-  \leanfile{Compiler/SmallTileMasks.lean},
-  \leanfile{Compiler/SmallTileChecked.lean}, and
-  \leanfile{Compiler/SmallTilePeriodicity.lean}.
-  The certificate data is split across the sixteen files
-  \path{Compiler/SmallTileData0.lean} through \path{Compiler/SmallTileData15.lean};
-  the Python generator is not trusted by these kernel checks.
+  For each representative, a Lean-checked SAT certificate proves that a
+  valid patch forces a plane tiling. The clauses impose vertical
+  matching, horizontal matching, and the patch conditions, and exclude
+  verified periodic witnesses. Separate certificates check that the
+  representatives cover all horizontal matching relations. A plane tiling
+  supplies a patch by restriction. See
+  \leanfile{Compiler/FiveTileClassification.lean} and
+  \leanfile{Compiler/FiveInputBound.lean}.
 
   Return one cube when the test succeeds and the fixed connected nontile
-  otherwise. This gives at most $2^{250}$ cubes for $n\leq3$, below the
-  uniform bound. The Wang-tiling bridge and computability are checked in
-  \leanfile{Compiler/SmallInputBound.lean}. For $n=1$, the test reduces to
-  equality of opposite edge colors, as checked separately in
-  \leanfile{Compiler/SingleInputBound.lean}. Henceforth assume $n\geq4$.
+  otherwise. This uses at most $2^{250}$ cubes for $n\leq5$.
+  For $n=1$, equality of opposite edge colors suffices, as checked in
+  \leanfile{Compiler/SingleInputBound.lean}. Henceforth assume $n\geq6$.
 
   First derive the coefficient $2000$ for the baseline joint-code compiler;
   then refine its channel system for $1350$, restrict arithmetic columns
@@ -2977,6 +2965,38 @@ numerical family are checked in
   \leanfile{FiniteCompiler/PairSmallCompiler.lean} and
   \leanfile{Compiler/PairLogBound.lean}.
 
+  To reduce the coefficient from $800$ to $700$, use the direct patch
+  test through $n=5$ and extend the $20$-channel construction through
+  $n=40$. For $31\leq n\leq40$, pad the tile alphabet to $40$.
+  The prime profile in \leanfile{FiniteCompiler/FortyProfile40.lean}
+  gives at most $2^{6586}$ unit cubes in that range.
+
+  With $t=\lg(n+4)$ and $g=\lg t$, the following bounds use the same
+  dyadic caps for $6\leq n\leq30$ and the ternary construction for
+  $n\geq41$. Each row satisfies $|F|\leq2^e\leq2^{700tg}$.
+  \[
+    \begin{array}{c|r|c|c}
+      n & e & \text{lower bound on }t & \text{lower bound on }g\\
+      \hline
+      6 & 3950 & 33/10 & 12/7\\
+      7,\ldots,10 & 4220 & 69/20 & 7/4\\
+      11,\ldots,20 & 4980 & 39/10 & 49/25\\
+      21,\ldots,30 & 5780 & 9/2 & 13/6\\
+      31,\ldots,40 & 6586 & 5 & 23/10\\
+      41,\ldots,242 & 9124 & 49/9 & 12/5\\
+      243,\ldots,8187 & 11678 & 7 & 12/5
+    \end{array}
+  \]
+  For $n\geq8188$, we have $t\geq13$, $g\geq3$, and
+  $w\leq2t+66\leq(92/13)t$. Since $P\leq32t$, it follows that
+  $\lg P\leq(8/3)g$, and the ternary bound gives
+  \[
+    \lg|F|\leq(34w+99)\lg P
+      \leq\frac{25816}{39}\,tg<700tg.
+  \]
+  The size inequalities are checked in
+  \leanfile{Compiler/SevenLogBound.lean}.
+
 The full construction is in
 \leanfile{Compiler/CleanQuasipolynomialBound.lean}, proved by
 \leandecl{Compiler.Size.exists_connected_tile_clean_quasipolynomial_bound}.
@@ -2985,15 +3005,15 @@ are in `FiniteCompiler/`; their common-solution and soundness proofs allow
 repeated column slopes and channel-dependent finite alphabets.
 The shorter-board equivalence is
 \leanref{SudokuArithmetic/PairBoardSoundness.lean}{Sudoku.PairBoard.wang_iff}.
-\leanfile{FiniteCompiler/Effective/PairCompiler.lean} combines the smaller
-systems for $4\leq n\leq30$ with the existing ternary compiler above that
-range and the direct tests for $n\leq3$. The public theorem includes
+\leanfile{FiniteCompiler/Effective/SevenCompiler.lean} combines the
+$20$-channel systems for $6\leq n\leq40$ with the ternary compiler for larger
+inputs and the direct test for $n\leq5$. The public theorem includes
 nonemptiness, face connectedness, both tilability directions, and the
 numerical coefficient uniformly for every finite Wang tile set, including
 the empty set. Duplicate input entries have no cost in the existence bound.
 The explicit bounds in @cor:size-bound remain available.
 \leandecl{Compiler.Size.exists_connected_tile_small_quasipolynomial_bound}
-gives the explicit bound for $n\leq3$. The intermediate coefficients
+gives the explicit bound for $n\leq5$. The intermediate coefficients
 $850$, $1000$, $1350$, and $2000$ remain formalized in
 \leanfile{FiniteCompiler/Effective/NineCompiler.lean},
 \leanfile{FiniteCompiler/Effective/ShortCompiler.lean},
@@ -3529,8 +3549,8 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, these bounds are $(n+4)^{800\lg\lg(n+4)}$ for translations and
-$64{,}000(n+4)^{800\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+function. In dimension three, these bounds are $(n+4)^{700\lg\lg(n+4)}$ for translations and
+$64{,}000(n+4)^{700\lg\lg(n+4)}$ for arbitrary Euclidean motions.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[
@@ -3549,9 +3569,9 @@ then connects the two translation predicates. Thus no new construction or
 additional cubes are needed.
 
 The total reduction in
-\leanfile{FiniteCompiler/Effective/PairCompiler.lean}
-combines the ternary construction with the direct tests for at most three
-tiles and the $20$-channel systems for four through thirty tiles.
+\leanfile{FiniteCompiler/Effective/SevenCompiler.lean}
+combines the ternary construction with the direct test for at most five
+tiles and the $20$-channel systems for six through forty tiles.
 The ternary branch encodes arithmetic pairs and tile labels separately by
 base-three integers, uses
 explicit prime tables for small widths and finite arithmetic search for the

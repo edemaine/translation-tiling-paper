@@ -1,3 +1,4 @@
+import TranslationTiling.FiniteCompiler.Effective.SevenCompiler
 import TranslationTiling.SudokuArithmetic.PairAudit
 import TranslationTiling.FiniteCompiler.Effective.ShortCompiler
 import TranslationTiling.SudokuArithmetic.NineAudit
@@ -517,6 +518,11 @@ run_cmd do
       ``TranslationTiling.FiniteCompiler.Effective.pairCompile_computable,
       ``TranslationTiling.FiniteCompiler.Effective.pairCompile_facts,
       ``TranslationTiling.FiniteCompiler.Effective.pairCompile_small_bound,
+      ``TranslationTiling.Compiler.FiveTile.plane_of_patch,
+      ``TranslationTiling.Compiler.FiveTile.hasPatch_iff_tilesPlane,
+      ``TranslationTiling.FiniteCompiler.Effective.sevenCompile_computable,
+      ``TranslationTiling.FiniteCompiler.Effective.sevenCompile_checked_facts,
+      ``TranslationTiling.FiniteCompiler.Effective.sevenCompile_checked_small_bound,
       ``TranslationTiling.Sudoku.NinePatch.global_affine,
       ``TranslationTiling.Sudoku.NineArithmetic.arithmetic_finite_structure,
       ``TranslationTiling.Sudoku.NineBoard.wang_iff,
