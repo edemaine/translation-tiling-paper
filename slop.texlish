@@ -2200,7 +2200,7 @@ numerical family are checked in
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    (n+4)^{700\lg\lg(n+4)}=n^{O(\log\log n)}
+    (n+4)^{660\lg\lg(n+4)}=n^{O(\log\log n)}
   $$
   unit cubes.
   For $n\leq5$, we also have the explicit bound $2^{250}$ unit cubes.
@@ -2997,6 +2997,54 @@ numerical family are checked in
   The size inequalities are checked in
   \leanfile{Compiler/SevenLogBound.lean}.
 
+  To reduce the coefficient from $700$ to $660$, replace the full word
+  constraint by four tests on subsets of columns. Two of them check the two
+  nine-column arithmetic boards separately. The other two check Wang
+  adjacency using the two Wang positions, arithmetic positions $0,1,4$
+  on both boards, and one additional position $2+r$ on the board for the
+  requested direction ($r=5$ or $7$). At each stage, a test forbids a
+  partial word exactly when it cannot extend to an allowed word.
+  A fixed cycle through the selected channels rules out that partial word.
+
+  On a canonical query line $m=M(1+dx)$ with $d=0,2,3$, the three samples
+  at $0,1,4$ have nonzero first digits for both primes. A primitive affine
+  witness has at most one root among the three samples, so two agreements
+  recover its coefficients modulo $r$. When $r=2d+1$, position $2+r$
+  distinguishes valuation one from a higher valuation at position $2$.
+  The two Wang positions thus recover row equality for $d=0$, horizontal
+  adjacency for $d=2$, and vertical adjacency for $d=3$. This is checked in
+  \leanfile{SudokuArithmetic/ProjectedBoard.lean} and
+  \leanfile{FiniteCompiler/ProjectedSystem.lean}.
+
+  With Wang alphabet size $D$, the number of word tests is at most
+  $4^9+6^9+(4^4 6^3+4^3 6^4)D^2$. Allowing for the other tests and one spare
+  index gives $X=4^9+6^9+(4^4 6^3+4^3 6^4)D^2+80D+550$.
+  The same geometry bound applies with the stacking cap at this $X$.
+  Using the checked prime profiles, including a new assignment at $n=6$,
+  gives the following dyadic bounds $|F|\leq2^e\leq2^{660tg}$.
+  \[
+    \begin{array}{c|r|r|c|c}
+      n & D & e & \text{lower bound on }t & \text{lower bound on }g\\
+      \hline
+      6 & 6 & 3788 & 83/25 & 173/100\\
+      7 & 7 & 3912 & 17/5 & 7/4\\
+      8,\ldots,10 & 10 & 4065 & 7/2 & 9/5\\
+      11,\ldots,20 & 20 & 4862 & 39/10 & 49/25\\
+      21,\ldots,30 & 30 & 5663 & 9/2 & 13/6\\
+      31,\ldots,40 & 40 & 6476 & 5 & 23/10\\
+      41,\ldots,44 & 44 & 6807 & 5 & 23/10\\
+      45,\ldots,242 & \text{---} & 9124 & 28/5 & 247/100\\
+      243,\ldots,8187 & \text{---} & 11678 & 7 & 11/4
+    \end{array}
+  \]
+  The last two rows use the ternary compiler. For $n\geq8188$, we have
+  $t\geq13$, $g\geq11/3$, and $P\leq20t$, so
+  $\lg P\leq g+9/2\leq(49/22)g$. The existing bound
+  $(34w+99)\lg P$ on $\lg|F|$ is then at most
+  $(68+2343/13)(49/22)tg<660tg$ using $w\leq2t+66$.
+  See \leanfile{FiniteCompiler/ProjectedCompiler.lean} and
+  \leanfile{Compiler/ProjectedLogBound.lean}.
+
 The full construction is in
 \leanfile{Compiler/CleanQuasipolynomialBound.lean}, proved by
 \leandecl{Compiler.Size.exists_connected_tile_clean_quasipolynomial_bound}.
@@ -3005,8 +3053,8 @@ are in `FiniteCompiler/`; their common-solution and soundness proofs allow
 repeated column slopes and channel-dependent finite alphabets.
 The shorter-board equivalence is
 \leanref{SudokuArithmetic/PairBoardSoundness.lean}{Sudoku.PairBoard.wang_iff}.
-\leanfile{FiniteCompiler/Effective/SevenCompiler.lean} combines the
-$20$-channel systems for $6\leq n\leq40$ with the ternary compiler for larger
+\leanfile{FiniteCompiler/Effective/ProjectedTotalCompiler.lean} combines
+the projected $20$-channel systems for $6\leq n\leq44$ with the ternary compiler for larger
 inputs and the direct test for $n\leq5$. The public theorem includes
 nonemptiness, face connectedness, both tilability directions, and the
 numerical coefficient uniformly for every finite Wang tile set, including
@@ -3549,8 +3597,8 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, these bounds are $(n+4)^{700\lg\lg(n+4)}$ for translations and
-$64{,}000(n+4)^{700\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+function. In dimension three, these bounds are $(n+4)^{660\lg\lg(n+4)}$ for translations and
+$64{,}000(n+4)^{660\lg\lg(n+4)}$ for arbitrary Euclidean motions.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[
@@ -3569,9 +3617,10 @@ then connects the two translation predicates. Thus no new construction or
 additional cubes are needed.
 
 The total reduction in
-\leanfile{FiniteCompiler/Effective/SevenCompiler.lean}
+\leanfile{FiniteCompiler/Effective/ProjectedTotalCompiler.lean}
 combines the ternary construction with the direct test for at most five
-tiles and the $20$-channel systems for six through forty tiles.
+tiles and the projected $20$-channel systems for six through forty-four
+tiles.
 The ternary branch encodes arithmetic pairs and tile labels separately by
 base-three integers, uses
 explicit prime tables for small widths and finite arithmetic search for the
@@ -3590,9 +3639,9 @@ geometric compiler and its volume bound are checked in
 \leanfile{FiniteCompiler/Effective/CompactFamilyCompiler.lean} and
 \leanfile{FiniteCompiler/Effective/CompactFamilyBounds.lean}.
 The corresponding $20$-channel compiler and its bounds are checked in
-\leanfile{FiniteCompiler/PairSmallCompiler.lean}.
+\leanfile{FiniteCompiler/ProjectedCompiler.lean}.
 
-\leandecl{FiniteCompiler.Effective.pairCompile_computable} proves
+\leandecl{FiniteCompiler.Effective.projectedCompile_computable} proves
 computability of this total function.
 Its size bound is \leandecl{FiniteCompiler.Effective.pairCompile_real_bound}.
 The six-key replacement is a primitive-recursive map and

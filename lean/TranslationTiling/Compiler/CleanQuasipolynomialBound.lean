@@ -1,4 +1,4 @@
-import TranslationTiling.FiniteCompiler.Effective.SevenCompiler
+import TranslationTiling.FiniteCompiler.Effective.ProjectedTotalCompiler
 import TranslationTiling.Compiler.QuasipolynomialBound
 import Mathlib.Analysis.SpecialFunctions.Log.Base
 
@@ -118,14 +118,14 @@ theorem exists_connected_tile_clean_quasipolynomial_bound (T : LeanWang.TileSet)
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
       (cubeCount P : ℝ) ≤ ((T.toFinset.card : ℝ) + 4) ^
-        ((700 : ℝ) * Real.logb 2 (Real.logb 2 ((T.toFinset.card : ℝ) + 4))) := by
-  obtain ⟨hn,hc,ht,hb⟩ := FiniteCompiler.Effective.sevenCompile_checked_facts T.dedup
+        ((660 : ℝ) * Real.logb 2 (Real.logb 2 ((T.toFinset.card : ℝ) + 4))) := by
+  obtain ⟨hn,hc,ht,hb⟩ := FiniteCompiler.Effective.projectedCompile_facts T.dedup
   have hd : LeanWang.TilesPlane T ↔ LeanWang.TilesPlane T.dedup :=
     LeanWang.tilesPlane_congr (by intro t; simp)
-  refine ⟨FiniteCompiler.Effective.sevenCompile T.dedup,hn,hc,hd.trans ht,?_⟩
-  have hcard : (cubeCount (FiniteCompiler.Effective.sevenCompile T.dedup):ℝ) ≤
-      ((FiniteCompiler.Effective.sevenCompile T.dedup).length:ℝ) := by
-    exact_mod_cast List.toFinset_card_le (FiniteCompiler.Effective.sevenCompile T.dedup)
+  refine ⟨FiniteCompiler.Effective.projectedCompile T.dedup,hn,hc,hd.trans ht,?_⟩
+  have hcard : (cubeCount (FiniteCompiler.Effective.projectedCompile T.dedup):ℝ) ≤
+      ((FiniteCompiler.Effective.projectedCompile T.dedup).length:ℝ) := by
+    exact_mod_cast List.toFinset_card_le (FiniteCompiler.Effective.projectedCompile T.dedup)
   apply hcard.trans
   simpa only [List.card_toFinset] using hb
 
