@@ -3,7 +3,7 @@ adc7f1241b42e322a6451854ab7e4b4c146bf78a. Apache 2.0; see
 third_party/openai-math.LICENSE. Decorated alphabet and two-prime residue size;
 namespace and imports changed for Lean 4.31. -/
 import TranslationTiling.FiniteCompiler.CyclicCoordinates
-import TranslationTiling.FiniteCompiler.ShiftMultiplicity
+import TranslationTiling.FiniteCompiler.CompactShift
 import TranslationTiling.CompactIndex
 import Mathlib.Tactic.FinCases
 import Mathlib.Tactic.Linarith
@@ -168,8 +168,80 @@ def activationResidue (i : Channel T) (j : ActivationIndex E i) :
     ((j.1, rhoA (E.a_two_le i) (E.b_two_le i) j.2),
       rhoB (E.a_two_le i) (E.b_two_le i) j.2)
 
+private theorem ordinaryA_ne_two (n : Column T) : E.a (.inl n)≠2 := by
+  intro h
+  have he := h.trans (E.seed_a (0 : Fin 2)).symm
+  have hh := E.prime_injective he
+  simp at hh
+
+private theorem ordinaryB_ne_two (n : Column T) : E.b (.inl n)≠2 := by
+  intro h
+  have he := h.trans (E.seed_a (0 : Fin 2)).symm
+  have hh := E.prime_injective he
+  simp at hh
+
+private theorem two_unit {p : ℕ} (hp : p.Prime) (hne : p≠2) : IsUnit (2 : ZMod p) := by
+  letI : Fact p.Prime := ⟨hp⟩
+  apply isUnit_iff_ne_zero.mpr
+  have hd : ¬p∣2 := fun h => (Nat.dvd_prime (by decide : Nat.Prime 2)).mp h |>.elim
+    hp.ne_one hne
+  change ¬ ((2:ℕ):ZMod p)=0
+  rwa [ZMod.natCast_eq_zero_iff]
+
+def ordinaryShiftData (n : Column T) :
+    BlockShiftData (ShiftIndex (E.a (.inl n)) (E.b (.inl n))) (E.a (.inl n)) (E.b (.inl n)) :=
+  if SeedFrame.compact then
+    BlockShiftData.compact (E.a_two_le _) (E.b_two_le _)
+      (two_unit (E.a_prime _) (ordinaryA_ne_two E n))
+      (two_unit (E.b_prime _) (ordinaryB_ne_two E n))
+  else BlockShiftData.ofMultiplicity (E.a_two_le _) (E.b_two_le _)
+
+@[simp] theorem ordinaryShiftData_e (n : Column T) (δ : ShiftIndex (E.a (.inl n)) (E.b (.inl n))) :
+    (ordinaryShiftData E n).e δ=shift _ _ δ := by
+  unfold ordinaryShiftData
+  split <;> rfl
+
+def ordinaryLiftCode (n : Column T) (j : ActivationIndex E (.inl n)) : ℕ :=
+  if SeedFrame.compact then (if extraShift j.2 then 1 else 0) else activationIndexCode E _ j
+
+def ordinaryResidue (n : Column T) (j : ActivationIndex E (.inl n)) :
+    ZMod (activationModulus E (.inl n)) :=
+  (activationCRT E (.inl n)).symm
+    ((j.1,(ordinaryShiftData E n).rhoA j.2),(ordinaryShiftData E n).rhoB j.2)
+
+theorem ordinaryLiftCode_le (n : Column T) (j : ActivationIndex E (.inl n)) :
+    ordinaryLiftCode E n j≤max 1 (activationIndexCode E _ j) := by
+  unfold ordinaryLiftCode
+  split_ifs <;> omega
+
+theorem ordinaryLiftCode_sharp_lt (n : Column T) (j : ActivationIndex E (.inl n)) :
+    ordinaryLiftCode E n j<2*(E.a (.inl n)*E.b (.inl n)) := by
+  have h := activationIndexCode_sharp_lt E (.inl n) j
+  have hp := Nat.mul_pos (E.a_pos (.inl n)) (E.b_pos (.inl n))
+  exact (ordinaryLiftCode_le E n j).trans_lt (max_lt_iff.mpr ⟨by omega,h⟩)
+
+private theorem compact_rho_ne (n : Column T) :
+    ((2 : ZMod (E.a (.inl n))),(2 : ZMod (E.b (.inl n))))≠(-1,-1) := by
+  intro h
+  have ha : (3:ZMod (E.a (.inl n)))=0 := by
+    have he := congrArg Prod.fst h
+    change (2:ZMod (E.a (.inl n)))= -1 at he
+    have h3 : (3:ZMod (E.a (.inl n)))=2+1 := by ring
+    rw [h3,he,neg_add_cancel]
+  have hb : (3:ZMod (E.b (.inl n)))=0 := by
+    have he := congrArg Prod.snd h
+    change (2:ZMod (E.b (.inl n)))= -1 at he
+    have h3 : (3:ZMod (E.b (.inl n)))=2+1 := by ring
+    rw [h3,he,neg_add_cancel]
+  have ha' : E.a (.inl n)∣3 := (ZMod.natCast_eq_zero_iff 3 _).mp ha
+  have hb' : E.b (.inl n)∣3 := (ZMod.natCast_eq_zero_iff 3 _).mp hb
+  have hA := ((Nat.dvd_prime (by decide : Nat.Prime 3)).mp ha').resolve_left (E.a_prime _).ne_one
+  have hB := ((Nat.dvd_prime (by decide : Nat.Prime 3)).mp hb').resolve_left (E.b_prime _).ne_one
+  have hh := E.prime_injective (hA.trans hB.symm)
+  simp at hh
+
 def ordinaryFirst (n : Column T) : ActivationIndex E (.inl n) → ℤ :=
-  separatedResidueLift (activationModulus E (.inl n)) (activationResidue E (.inl n)) (activationIndexCode E (.inl n))
+  separatedResidueLift (activationModulus E (.inl n)) (ordinaryResidue E n) (ordinaryLiftCode E n)
 
 def ordinaryOffset (n : Column T) (j : ActivationIndex E (.inl n)) : Plane :=
   (ordinaryFirst E n j, -(T.slope n : ℤ) * ordinaryFirst E n j)
@@ -178,12 +250,12 @@ theorem ordinaryFirst_residues (n : Column T) (j : ActivationIndex E (.inl n)) :
     (((ordinaryFirst E n j : K E (.inl n)),
        (ordinaryFirst E n j : ZMod (E.a (.inl n)))),
        (ordinaryFirst E n j : ZMod (E.b (.inl n)))) =
-      ((j.1, rhoA (E.a_two_le (.inl n)) (E.b_two_le (.inl n)) j.2),
-        rhoB (E.a_two_le (.inl n)) (E.b_two_le (.inl n)) j.2) := by
+      ((j.1, (ordinaryShiftData E n).rhoA j.2),
+        (ordinaryShiftData E n).rhoB j.2) := by
   have h := congrArg (activationCRT E (.inl n))
     (separatedResidueLift_cast (activationModulus E (.inl n))
-      (activationResidue E (.inl n)) (activationIndexCode E (.inl n)) j)
-  rw [activationResidue, RingEquiv.apply_symm_apply] at h
+      (ordinaryResidue E n) (ordinaryLiftCode E n) j)
+  rw [ordinaryResidue, RingEquiv.apply_symm_apply] at h
   refine Prod.ext (Prod.ext ?_ ?_) ?_
   · simpa only [ordinaryFirst, map_intCast, Prod.fst_intCast] using
       congrArg (fun z => z.1.1) h
@@ -198,12 +270,12 @@ theorem ordinaryFirst_residues (n : Column T) (j : ActivationIndex E (.inl n)) :
 
 @[simp] theorem ordinaryOffset_rhoA (n : Column T) (j : ActivationIndex E (.inl n)) :
     ((ordinaryOffset E n j).1 : ZMod (E.a (.inl n))) =
-      rhoA (E.a_two_le (.inl n)) (E.b_two_le (.inl n)) j.2 :=
+      (ordinaryShiftData E n).rhoA j.2 :=
   congrArg (fun z => z.1.2) (ordinaryFirst_residues E n j)
 
 @[simp] theorem ordinaryOffset_rhoB (n : Column T) (j : ActivationIndex E (.inl n)) :
     ((ordinaryOffset E n j).1 : ZMod (E.b (.inl n))) =
-      rhoB (E.a_two_le (.inl n)) (E.b_two_le (.inl n)) j.2 :=
+      (ordinaryShiftData E n).rhoB j.2 :=
   congrArg Prod.snd (ordinaryFirst_residues E n j)
 
 @[simp] theorem ordinaryOffset_lineValue (n : Column T) (j : ActivationIndex E (.inl n)) :
@@ -214,8 +286,33 @@ theorem ordinaryOffset_injective (n : Column T) : Function.Injective (ordinaryOf
   intro i j hij
   have hl : i.1=j.1 := by
     simpa only [ordinaryOffset_low] using congrArg (fun p : Plane => (p.1 : K E (.inl n))) hij
-  exact activationIndexCode_injective E (.inl n) hl
-    (separatedResidueLift_code_eq _ _ _ (congrArg Prod.fst hij))
+  have hc := separatedResidueLift_code_eq _ _ _ (congrArg Prod.fst hij)
+  by_cases h : SeedFrame.compact = true
+  · have ha := congrArg (fun p : Plane => (p.1 : ZMod (E.a (.inl n)))) hij
+    have hb := congrArg (fun p : Plane => (p.1 : ZMod (E.b (.inl n)))) hij
+    simp only [ordinaryOffset_rhoA,ordinaryOffset_rhoB,ordinaryShiftData,h,if_true,
+      BlockShiftData.compact] at ha hb
+    have he : extraShift i.2=extraShift j.2 := by
+      simp only [ordinaryLiftCode,h,if_true] at hc
+      cases hi : extraShift i.2 <;> cases hj : extraShift j.2 <;> simp_all
+    exact Prod.ext hl (compactShift_injective (E.a_two_le _) (E.b_two_le _)
+      (compact_rho_ne E n) (Prod.ext he (Prod.ext ha hb)))
+  · exact activationIndexCode_injective E (.inl n) hl (by simpa [ordinaryLiftCode,h] using hc)
+
+theorem ordinaryFirst_compact_le (h : SeedFrame.compact = true) (n : Column T)
+    (j : ActivationIndex E (.inl n)) :
+    (ordinaryFirst E n j).natAbs≤2*(E.r (.inl n)*E.a (.inl n)*E.b (.inl n)) := by
+  have hc : ordinaryLiftCode E n j≤1 := by
+    simp only [ordinaryLiftCode,h,if_true]
+    split <;> decide
+  have hv := ZMod.val_lt (ordinaryResidue E n j)
+  have he : ordinaryFirst E n j=(((ordinaryResidue E n j).val+
+      activationModulus E (.inl n)*ordinaryLiftCode E n j:ℕ):ℤ) := by
+    simp [ordinaryFirst,separatedResidueLift]
+  rw [he,Int.natAbs_natCast]
+  have hh := Nat.mul_le_mul_left (activationModulus E (.inl n)) hc
+  unfold activationModulus at *
+  omega
 
 def seedModulus (t : Fin 2) : ℕ :=
   (activationModulus E (.inr t) * residueModulus) * E.a (.inr (otherSeed t))

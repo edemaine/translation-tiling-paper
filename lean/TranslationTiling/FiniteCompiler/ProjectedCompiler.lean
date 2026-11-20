@@ -22,22 +22,35 @@ open PairSmall
 namespace Profiles
 open ProjectedParameters
 
+def ordinaryRadius (p : Profile) (n : ℕ) : ℕ :=
+  2*(p.rAt n*p.entry n*p.entry (22+n))
+
+def seedRadius (p : Profile) (t : ℕ) : ℕ :=
+  2*(3-t)*(p.rAt (20+t)*(p.entry (20+t)*p.entry (42+t))^2)*35^3
+
+def stripRadius (p : Profile) (s : ℕ) : ℕ :=
+  (((List.finRange 20).map fun n =>
+      if (PairSmall.slope n).natAbs=s then ordinaryRadius p n.val else 0).foldl max
+    (if s=0 then max 35 (max (seedRadius p 0) (seedRadius p 1)) else 0))
+
 structure CheckedProfile where
   profile : Profile
-  horizontal : ℕ
   exponent : ℕ
   valid : Valid profile
-  support : SupportValid profile horizontal
-  volume : volumeCap horizontal (profile.order / profile.mass) profile.mass (stackCap (testLimit profile.alphabet))≤2^exponent
+  base : 35≤stripRadius profile 0
+  ordinary : ∀ n : Fin 20, ordinaryRadius profile n.val≤stripRadius profile (PairSmall.slope n).natAbs
+  seed : ∀ t : Fin 2, seedRadius profile t.val≤stripRadius profile 0
+  volume : reservedVolumeCap 35 (stripRadius profile) (profile.order / profile.mass)
+    profile.mass (reservedCap (testLimit profile.alphabet) 65536)≤2^exponent
 
-def checked6 : CheckedProfile := ⟨profile6,horizontal6,2355,profile6_valid,support6,by decide +kernel⟩
-def checked7 : CheckedProfile := ⟨profile7,horizontal7,2438,profile7_valid,support7,by decide +kernel⟩
-def checked10 : CheckedProfile := ⟨profile10,horizontal10,2536,profile10_valid,support10,by decide +kernel⟩
-def checked20 : CheckedProfile := ⟨profile20,horizontal20,3041,profile20_valid,support20,by decide +kernel⟩
-def checked30 : CheckedProfile := ⟨profile30,horizontal30,3544,profile30_valid,support30,by decide +kernel⟩
-def checked40 : CheckedProfile := ⟨profile40,horizontal40,4055,profile40_valid,support40,by decide +kernel⟩
-def checked44 : CheckedProfile := ⟨profile44,horizontal44,4263,profile44_valid,support44,by decide +kernel⟩
-def checked48 : CheckedProfile := ⟨profile48,horizontal48,4741,profile48_valid,support48,by decide +kernel⟩
+def checked6 : CheckedProfile := ⟨profile6,2307,profile6_valid,by decide +kernel,by decide +kernel,by decide +kernel,by decide +kernel⟩
+def checked7 : CheckedProfile := ⟨profile7,2389,profile7_valid,by decide +kernel,by decide +kernel,by decide +kernel,by decide +kernel⟩
+def checked10 : CheckedProfile := ⟨profile10,2487,profile10_valid,by decide +kernel,by decide +kernel,by decide +kernel,by decide +kernel⟩
+def checked20 : CheckedProfile := ⟨profile20,2988,profile20_valid,by decide +kernel,by decide +kernel,by decide +kernel,by decide +kernel⟩
+def checked30 : CheckedProfile := ⟨profile30,3489,profile30_valid,by decide +kernel,by decide +kernel,by decide +kernel,by decide +kernel⟩
+def checked40 : CheckedProfile := ⟨profile40,3999,profile40_valid,by decide +kernel,by decide +kernel,by decide +kernel,by decide +kernel⟩
+def checked44 : CheckedProfile := ⟨profile44,4206,profile44_valid,by decide +kernel,by decide +kernel,by decide +kernel,by decide +kernel⟩
+def checked48 : CheckedProfile := ⟨profile48,4679,profile48_valid,by decide +kernel,by decide +kernel,by decide +kernel,by decide +kernel⟩
 
 def count (k : Fin 43) : ℕ := 6+k.val
 
@@ -47,17 +60,16 @@ def checked (k : Fin 43) : CheckedProfile :=
   else if k.val<25 then checked30 else if k.val<35 then checked40 else if k.val<39 then checked44 else checked48
 
 def profile (k : Fin 43) : Profile := (checked k).profile
-def horizontal (k : Fin 43) : ℕ := (checked k).horizontal
 def exponent (k : Fin 43) : ℕ := (checked k).exponent
 
 theorem count_pos (k : Fin 43) : 0<count k := by unfold count; omega
 theorem capacity (k : Fin 43) : count k≤(profile k).alphabet := by fin_cases k <;> decide +kernel
 theorem alphabet_ge (k : Fin 43) : 6≤(profile k).alphabet := by fin_cases k <;> decide +kernel
 theorem valid (k : Fin 43) : Valid (profile k) := (checked k).valid
-theorem support (k : Fin 43) : SupportValid (profile k) (horizontal k) := (checked k).support
 theorem volume (k : Fin 43) :
-    volumeCap (horizontal k) ((profile k).order / (profile k).mass) (profile k).mass
-      (stackCap (testLimit (profile k).alphabet))≤2^exponent k := (checked k).volume
+    reservedVolumeCap 35 (stripRadius (profile k)) ((profile k).order / (profile k).mass)
+      (profile k).mass (reservedCap (testLimit (profile k).alphabet) 65536)≤2^exponent k :=
+  (checked k).volume
 
 end Profiles
 
@@ -106,11 +118,29 @@ private theorem tile_witness (k : Fin 43) (T : LeanWang.TileSet) (hlen : T.lengt
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles U) ∧ U.length≤2^Profiles.exponent k := by
   let C := code k T hlen
   let E := parameters k T hlen
-  let H := Profiles.horizontal k
   let p := Profiles.profile k
-  have hs : CompactSupport.Bound E H :=
-    ProjectedParameters.encoding_support p (Profiles.valid k) rfl (code_size k T hlen)
-      (Profiles.support k) (slope_bound C)
+  let H := Profiles.stripRadius p
+  have hs : StripBounds C E H := by
+    refine ⟨(Profiles.checked k).base,?_,?_⟩
+    · intro n
+      have hr := ProjectedParameters.encoding_r p (Profiles.valid k) rfl (code_size k T hlen) (.inl n)
+      change 2*(E.r (.inl n)*E.a (.inl n)*E.b (.inl n))≤_
+      change E.r (.inl n)=p.rAt n.val at hr
+      rw [hr]
+      exact (Profiles.checked k).ordinary n
+    · intro t
+      have h := (Profiles.checked k).seed t
+      have hr := ProjectedParameters.encoding_r p (Profiles.valid k) rfl (code_size k T hlen) (.inr t)
+      have ho : (otherSeed t).val+2=3-t.val := by dsimp [otherSeed]; have := t.isLt; omega
+      rw [E.seed_a,ho]
+      unfold CompactSupport.B
+      change E.r (.inr t)=p.rAt (20+t.val) at hr
+      rw [hr]
+      have hd : residueModulus=35 := by norm_num [residueModulus_value,compactSeedFrame]
+      rw [hd]
+      change 2*(3-t.val)*(p.rAt (20+t.val)*(p.entry (20+t.val)*p.entry (22+(20+t.val)))^2)*35^3≤_
+      rw [show 22+(20+t.val)=42+t.val by omega]
+      exact h
   have hlarge : 65536+3≤2*(testLimit p.alphabet)^2 := by
     have hs : 2313≤testLimit p.alphabet := by unfold testLimit; omega
     exact (by decide : 65536+3≤2*2313^2).trans

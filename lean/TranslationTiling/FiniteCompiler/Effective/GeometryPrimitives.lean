@@ -252,7 +252,8 @@ theorem numericalActivationFirst_eq {T : System} (E : EncodingParameters T)
       (E.b i, (rhoB (E.a_two_le i) (E.b_two_le i) j.2).val)]
     (activationCongruences_iff E i j)
   unfold numericalActivationFirst nativeActivationNumbers ordinaryFirst separatedResidueLift
-  dsimp only
+  simp only [ordinaryResidue,ordinaryLiftCode,ordinaryShiftData,regularSeedFrame,Bool.false_eq_true,
+    ↓reduceIte,BlockShiftData.ofMultiplicity]
   dsimp only [i, activationModulus] at hs
   simp only [numericalRank_compat]
   rw [hA, hB, hs]

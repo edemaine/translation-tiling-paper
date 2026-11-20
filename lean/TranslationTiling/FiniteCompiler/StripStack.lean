@@ -7,10 +7,6 @@ namespace TranslationTiling.Compiler
 open Effective
 open scoped Classical
 
-/-- A full vertical coset at horizontal coordinate zero. -/
-def HasColumn (d : CyclicTileData) (U : ℕ) : Prop :=
-  ∃ c : ZMod d.1, ∀ k : ℤ, ((0 : Plane), c+((U:ℤ)*k : ℤ))∈cyclicTileSet d.1 d.2
-
 theorem stack_hasColumn (N P : ℕ) (Fs : List CyclicTile) (c : PartitionCertificate)
     (hc : PartitionValid (Fs.length-1) P c) (hcop : Nat.Coprime N c.1)
     (hN : 0<N) (i : Fin Fs.length) (R : ℕ)

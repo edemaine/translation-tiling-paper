@@ -1,4 +1,5 @@
 import TranslationTiling.FiniteCompiler.StripSupport
+import TranslationTiling.FiniteCompiler.StripStack
 
 namespace TranslationTiling.Compiler.StripLift
 open Rails Rails.Strips
@@ -25,6 +26,34 @@ theorem volume (d : CyclicTileData) (hQ : 0<d.1) (H R J q L : ℕ) (hq : q≤L)
   unfold volumeCap
   refine Nat.mul_le_mul (hr.trans (Nat.mul_le_mul_left _ (Nat.mul_le_mul_left _ hq))) ?_
   dsimp only [shellCap,railHeight]
+  gcongr
+
+def reservedVolumeCap (M : ℕ) (H : ℕ → ℕ) (R J L : ℕ) : ℕ :=
+  let a := countCapAt M H
+  let B := railHeight (3*R+1)
+  Size.mssPieceCap*(J*L)*(216*(4*a+7*(B+2)+1)*(4*a+1))
+
+theorem reservedVolume (d : CyclicTileData) (hQ : 0<d.1) (M : ℕ) (H : ℕ → ℕ)
+    (R J q L : ℕ) (hq : q≤L) (hm : (cyclicTileSet d.1 d.2).card≤J*q) :
+    (SlotAssembly.assemble (integerTile d) (slotsAt M H) (railHeight (3*R+1))).length≤
+      reservedVolumeCap M H R J L := by
+  have hr := (Size.integerTile_cubeCount_sharp d hQ).trans (Nat.mul_le_mul_left _ hm)
+  have hlen := SlotAssembly.length_le _ (validAt M H) (integerTile d) (railHeight (3*R+1))
+    (countCapAt M H) (length_leAt M H)
+  have he : (integerTile d).dedup.length=Size.cubeCount (integerTile d) := by rw [←List.card_toFinset]; rfl
+  rw [he] at hlen
+  exact hlen.trans (Nat.mul_le_mul_right _
+    (hr.trans (Nat.mul_le_mul_left _ (Nat.mul_le_mul_left _ hq))))
+
+theorem reservedVolumeCap_le (H R J L : ℕ) (hR : 0<R) (hL : 4≤L) :
+    reservedVolumeCap 175 (fun _ => H) R J L≤volumeCap H R J L := by
+  unfold reservedVolumeCap volumeCap shellCap
+  dsimp only
+  rw [countCapAt_uniform]
+  have hu : 3*R+1≤R*L := by
+    have hm := Nat.mul_le_mul_left R hL
+    omega
+  unfold railHeight
   gcongr
 
 theorem shellCap_coarse (H U : ℕ) (hH : 175≤H) :

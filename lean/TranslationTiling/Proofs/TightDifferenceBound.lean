@@ -7,12 +7,33 @@ open scoped BigOperators
 set_option maxRecDepth 10000
 set_option maxHeartbeats 2000000
 
-theorem tight_bad_bound (s m X L : ℕ) (hs : 2 ≤ s) (hsX : s ≤ X)
-    (hL : 2 ≤ L) (hX : 2*X < 2^L)
-    (hlower : 3*X^2*L ≤ m) (hupper : 2*m ≤ (12*L+4)*X^2) :
-    s*(2*m)*(s^2-1)^m < s^(2*m) := by
+theorem bad_label_bound (s Q X L K : ℕ) (hsX : s≤X) (hL : 1≤L)
+    (hX : 2*X<2^L) (hupper : Q≤K*X^2) (hKpos : 0<K) (hK : K≤8*2^L) :
+    s*Q<16^L := by
+  have hxpow : X < 2^(L-1) := by
+    have hh : L=L-1+1 := by omega
+    rw [hh,pow_succ] at hX
+    omega
+  calc
+    _ ≤ (K)*X^3 := by
+      calc
+        s*Q ≤ X*((K)*X^2) := Nat.mul_le_mul hsX hupper
+        _ = _ := by ring
+    _ < (K)*(2^(L-1))^3 :=
+      Nat.mul_lt_mul_of_pos_left (Nat.pow_lt_pow_left hxpow (by decide)) (by omega)
+    _ ≤ (8*2^L)*(2^(L-1))^3 := Nat.mul_le_mul_right _ hK
+    _ = _ := by
+      calc
+        _ = 2^(3+L+(L-1)*3) := by
+          rw [pow_add,pow_add,pow_mul]
+          rfl
+        _ = 2^(4*L) := by congr 1; omega
+        _ = 16^L := by rw [pow_mul]; rfl
+
+theorem tight_bad_bound_of_labels (s m Q X L : ℕ) (hs : 2 ≤ s) (hsX : s ≤ X)
+    (hlower : 3*X^2*L ≤ m) (hpref : s*Q<16^L) :
+    s*Q*(s^2-1)^m < s^(2*m) := by
   have hsR : (2:ℝ) ≤ s := by exact_mod_cast hs
-  have hXpos : (0:ℝ) < X := by exact_mod_cast (by omega : 0<X)
   have hspos : (0:ℝ) < s := by linarith
   have ha : ((s^2-1:ℕ):ℝ) = (s:ℝ)^2-1 := by
     have hsq : 1 ≤ s^2 := by nlinarith
@@ -41,17 +62,6 @@ theorem tight_bad_bound (s m X L : ℕ) (hs : 2 ≤ s) (hsX : s ≤ X)
     rw [←Real.exp_nat_mul] at he
     norm_num at he
     linarith
-  have hgeom : ∀ k≥2, 12*k+4≤8*2^k := by
-    intro k hk
-    induction k,hk using Nat.le_induction with
-    | base => decide
-    | succ k hk ih =>
-      rw [pow_succ]
-      omega
-  have hxpow : X < 2^(L-1) := by
-    have hh : L=L-1+1 := by omega
-    rw [hh,pow_succ] at hX
-    omega
   have hexp : Real.exp (-(m:ℝ)/(s:ℝ)^2) ≤ ((16:ℝ)^L)⁻¹ := by
     have hh : (16:ℝ)^L ≤ Real.exp (3*(L:ℝ)) := by
       have h := pow_le_pow_left₀ (by norm_num : (0:ℝ)≤16) he L
@@ -60,39 +70,37 @@ theorem tight_bad_bound (s m X L : ℕ) (hs : 2 ≤ s) (hsX : s ≤ X)
     rw [show -(m:ℝ)/(s:ℝ)^2 = -((m:ℝ)/(s:ℝ)^2) by ring,Real.exp_neg]
     apply inv_anti₀ (by positivity)
     exact hh.trans (Real.exp_le_exp.mpr hratio)
-  have hpref : s*(2*m)<16^L := by
-    calc
-      _ ≤ (12*L+4)*X^3 := by
-        calc
-          s*(2*m) ≤ X*((12*L+4)*X^2) := Nat.mul_le_mul hsX hupper
-          _ = _ := by ring
-      _ < (12*L+4)*(2^(L-1))^3 :=
-        Nat.mul_lt_mul_of_pos_left (Nat.pow_lt_pow_left hxpow (by decide)) (by omega)
-      _ ≤ (8*2^L)*(2^(L-1))^3 := Nat.mul_le_mul_right _ (hgeom L hL)
-      _ = _ := by
-        calc
-          _ = 2^(3+L+(L-1)*3) := by
-            rw [pow_add,pow_add,pow_mul]
-            rfl
-          _ = 2^(4*L) := by congr 1; omega
-          _ = 16^L := by rw [pow_mul]; rfl
-  have hpref' : (s:ℝ)*(2*m)<(16:ℝ)^L := by exact_mod_cast hpref
+  have hpref' : (s:ℝ)*Q<(16:ℝ)^L := by exact_mod_cast hpref
   have hp16 : (0:ℝ)<(16:ℝ)^L := by positivity
-  have hprob : (s:ℝ)*(2*m)*Real.exp (-(m:ℝ)/(s:ℝ)^2)<1 := by
+  have hprob : (s:ℝ)*Q*Real.exp (-(m:ℝ)/(s:ℝ)^2)<1 := by
     calc
-      _ ≤ ((s:ℝ)*(2*m))*((16:ℝ)^L)⁻¹ :=
+      _ ≤ ((s:ℝ)*Q)*((16:ℝ)^L)⁻¹ :=
         mul_le_mul_of_nonneg_left hexp (by positivity)
       _ < 1 := by rw [←div_eq_mul_inv]; exact (div_lt_one hp16).mpr hpref'
   have hp : (0:ℝ)<(s:ℝ)^(2*m) := by positivity
-  have hfinal : ((s*(2*m)*(s^2-1)^m:ℕ):ℝ) < (s:ℝ)^(2*m) := by
+  have hfinal : ((s*Q*(s^2-1)^m:ℕ):ℝ) < (s:ℝ)^(2*m) := by
     push_cast
     calc
-      (s:ℝ)*(2*m)*((s^2-1:ℕ):ℝ)^m ≤ (s:ℝ)*(2*m)*((s:ℝ)^(2*m)*Real.exp (-(m:ℝ)/(s:ℝ)^2)) :=
+      (s:ℝ)*Q*((s^2-1:ℕ):ℝ)^m ≤ (s:ℝ)*Q*((s:ℝ)^(2*m)*Real.exp (-(m:ℝ)/(s:ℝ)^2)) :=
         mul_le_mul_of_nonneg_left (by exact_mod_cast hpow) (by positivity)
-      _ = ((s:ℝ)*(2*m)*Real.exp (-(m:ℝ)/(s:ℝ)^2))*(s:ℝ)^(2*m) := by ring
+      _ = ((s:ℝ)*Q*Real.exp (-(m:ℝ)/(s:ℝ)^2))*(s:ℝ)^(2*m) := by ring
       _ < 1*(s:ℝ)^(2*m) := mul_lt_mul_of_pos_right hprob hp
       _ = _ := one_mul _
   exact_mod_cast hfinal
+
+theorem tight_bad_bound (s m X L : ℕ) (hs : 2 ≤ s) (hsX : s ≤ X)
+    (hL : 2 ≤ L) (hX : 2*X < 2^L)
+    (hlower : 3*X^2*L ≤ m) (hupper : 2*m ≤ (12*L+4)*X^2) :
+    s*(2*m)*(s^2-1)^m < s^(2*m) := by
+  have hgeom : ∀ k≥2, 12*k+4≤8*2^k := by
+    intro k hk
+    induction k,hk using Nat.le_induction with
+    | base => decide
+    | succ k hk ih =>
+      rw [pow_succ]
+      omega
+  exact tight_bad_bound_of_labels _ _ _ _ _ hs hsX hlower
+    (bad_label_bound _ _ _ _ _ hsX (by omega) hX hupper (by omega) (hgeom L hL))
 
 def tightThreshold (X P : ℕ) := 6*X^2*differenceLog X+P+3
 

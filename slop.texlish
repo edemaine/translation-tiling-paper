@@ -2200,7 +2200,7 @@ numerical family are checked in
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    (n+4)^{410\lg\lg(n+4)}=n^{O(\log\log n)}
+    (n+4)^{401\lg\lg(n+4)}=n^{O(\log\log n)}
   $$
   unit cubes.
   For $n\leq5$, we also have the explicit bound $2^{250}$ unit cubes.
@@ -3165,6 +3165,54 @@ numerical family are checked in
   \leanfile{FiniteCompiler/Effective/SparseStrip.lean}, and
   \leanfile{Compiler/ProjectedLogBound.lean}.
 
+  To reduce the coefficient from $410$ to $401$, we reserve layers indexed by
+  $3Rj\bmod q$ for the kernel test, for $0\leq 3j<q$. For each nonzero
+  difference there is a matching of $(q-1)/2$ disjoint pairs realizing it.
+  Discarding pairs that meet reserved layers leaves at least $(q-7)/6$ pairs.
+  The same counting argument on the free layers finds a partition whose color
+  classes all realize every difference. With $X$ bounding the number of tests
+  and $P$ bounding the original prime factors, we take
+  $q>20X^2(\lfloor\lg(2X)\rfloor+1)+P+3$ and at most twice that threshold.
+  The ternary branch can use its existing upper bound on $q$.
+  After stacking, the resulting column has gaps at most $3R$ around the
+  cycle. The lifted pieces can therefore use a rail of height
+  $201(3R+1)+401$.
+  See \leanfile{Proofs/ReservedDifferenceBound.lean},
+  \leanfile{FiniteCompiler/Effective/ReservedStack.lean}, and
+  \leanfile{FiniteCompiler/ReservedStripLift.lean}.
+
+  In the smaller-input compiler, each ordinary activation offset is a
+  Chinese-remainder representative plus at most one copy of its modulus
+  $r_i a_i b_i$. In each fixed slice, doubling the ranks of the shift copies
+  preserves their permutation because the ordinary useful primes are odd.
+  The residues and the copy flag then distinguish every shift copy.
+  For each slope $s$ we bound the horizontal radius using only its own
+  channels. The seed and dependence offsets fit in the slope-zero strip.
+  We use the sum of these strip sizes in the same shell estimate.
+  See \leanfile{FiniteCompiler/CompactShift.lean} and
+  \leanfile{FiniteCompiler/ProjectedCompiler.lean}.
+
+  With the same prime profiles, these estimates give
+  $|F|\leq2^e\leq2^{401tg}$ using the following certificates.
+  \[
+    \begin{array}{c|r|c|c}
+      n & e & \text{lower bound on }t & \text{lower bound on }g\\
+      \hline
+      6 & 2307 & 289/87 & 168/97\\
+      7 & 2389 & 24/7 & 7/4\\
+      8,\ldots,10 & 2487 & 7/2 & 9/5\\
+      11,\ldots,20 & 2988 & 31/8 & 25/13\\
+      21,\ldots,30 & 3489 & 9/2 & 2\\
+      31,\ldots,40 & 3999 & 5 & 2\\
+      41,\ldots,44 & 4206 & 5 & 9/4\\
+      45,\ldots,48 & 4679 & 11/2 & 7/3\\
+      49,\ldots,242 & 5636 & 40/7 & 5/2\\
+      243,\ldots,8187 & 7218 & 7 & 8/3
+    \end{array}
+  \]
+  The same coarse estimate for $n\geq8188$ gives
+  $\lg|F|\leq(103047/286)tg<401tg$.
+
 The full construction is in
 \leanfile{Compiler/CleanQuasipolynomialBound.lean}, proved by
 \leandecl{Compiler.Size.exists_connected_tile_clean_quasipolynomial_bound}.
@@ -3717,8 +3765,8 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, these bounds are $(n+4)^{410\lg\lg(n+4)}$ for translations and
-$64{,}000(n+4)^{410\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+function. In dimension three, these bounds are $(n+4)^{401\lg\lg(n+4)}$ for translations and
+$64{,}000(n+4)^{401\lg\lg(n+4)}$ for arbitrary Euclidean motions.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[

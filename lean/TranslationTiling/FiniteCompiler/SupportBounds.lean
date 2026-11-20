@@ -164,8 +164,14 @@ theorem ordinaryOffset_bound (hb : ParameterBudget E b) (n : Column T)
   have hb2 := hb.two
   have hcode : activationIndexCode E (.inl n) j ≤ indexCap b :=
     (activation_code_le hb _ j).trans (le_pairCap _)
+  have hindex : 1 ≤ indexCap b := by
+    unfold indexCap
+    exact (by omega : 1≤b).trans ((le_pairCap _).trans
+      ((le_pairCap _).trans ((le_pairCap _).trans (le_pairCap _))))
+  have hcode' : ordinaryLiftCode E n j ≤ indexCap b :=
+    (ordinaryLiftCode_le E n j).trans (max_le hindex hcode)
   have hfirst : (ordinaryFirst E n j).natAbs ≤ b ^ 5 * (indexCap b + 1) := by
-    apply (separated_natAbs_le _ _ _ _ hcode).trans
+    apply (separated_natAbs_le _ _ _ _ hcode').trans
     apply Nat.mul_le_mul_right
     exact (modulus_le hb _).trans (Nat.pow_le_pow_right (by omega) (by decide : 3 ≤ 5))
   have hn : (T.slope n).natAbs ≤ b := hb.slope n

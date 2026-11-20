@@ -30,10 +30,11 @@ theorem coprime_of_primeBound {N P q : ℕ} (hN : 0<N) (hP : PrimeBound N P)
 
 def freshCap (X P : ℕ) : ℕ := 2*Stacking.logPartitionThreshold X P
 
-theorem partition_certificate (s P q : ℕ) (hq : q.Prime) (hlarge : P<q)
+theorem partition_certificate_of_membership (s P q : ℕ) (hq : q.Prime) (hlarge : P<q)
     (E : Fin (s+1) → Finset (ZMod q)) (hpart : Stacking.IsColorPartition E)
     (hfull : Stacking.HasFullDifferences E) :
-    ∃ cs, PartitionValid s P (q,cs) := by
+    ∃ cs, PartitionValid s P (q,cs) ∧
+      ∀ x i, x ∈ E i → cs.getD x.val 0 = i.val := by
   letI : NeZero q := ⟨hq.ne_zero⟩
   let color : ZMod q → Fin (s+1) := fun x => Classical.choose (hpart x)
   have hcolor (x : ZMod q) : x ∈ E (color x) := (Classical.choose_spec (hpart x)).1
@@ -42,7 +43,7 @@ theorem partition_certificate (s P q : ℕ) (hq : q.Prime) (hlarge : P<q)
   let cs := List.ofFn fun k : Fin q => (color (k.val:ZMod q)).val
   have hget (x : ℕ) (hx : x<q) : cs.getD x 0 = (color (x:ZMod q)).val := by
     simp [cs,List.getD_eq_getElem?_getD,List.getElem?_ofFn,hx]
-  refine ⟨cs,⟨hq,hlarge,by simp [cs],?_,?_⟩⟩
+  refine ⟨cs,⟨hq,hlarge,by simp [cs],?_,?_⟩,?_⟩
   · intro x hx
     rw [hget x (List.mem_range.mp hx)]
     exact (color (x:ZMod q)).isLt
@@ -55,6 +56,15 @@ theorem partition_certificate (s P q : ℕ) (hq : q.Prime) (hlarge : P<q)
         rw [Nat.cast_add,ZMod.natCast_zmod_val,ZMod.natCast_zmod_val]
         simpa only [add_comm] using sub_eq_iff_eq_add.mp he
       simpa only [ZMod.val_natCast] using congrArg ZMod.val hh
+
+  · intro x i hx
+    rw [hget _ (ZMod.val_lt x),ZMod.natCast_zmod_val,hcolor_eq x i hx]
+
+theorem partition_certificate (s P q : ℕ) (hq : q.Prime) (hlarge : P<q)
+    (E : Fin (s+1) → Finset (ZMod q)) (hpart : Stacking.IsColorPartition E)
+    (hfull : Stacking.HasFullDifferences E) :
+    ∃ cs, PartitionValid s P (q,cs) :=
+  (partition_certificate_of_membership s P q hq hlarge E hpart hfull).imp (fun _ h => h.1)
 
 private theorem exists_fresh_partition (s N P X : ℕ) (hN : 0<N) (hs : s+1≤X)
     (hP : P≤X^2) (hpr : PrimeBound N P) :

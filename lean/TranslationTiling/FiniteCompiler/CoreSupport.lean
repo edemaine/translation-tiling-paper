@@ -26,13 +26,13 @@ theorem ordinary_bound (hS : ∀ n, (T.slope n).natAbs≤16) (n : Column T)
     (j : ActivationIndex E (.inl n)) :
     (ordinaryOffset E n j).1.natAbs≤32*B E (.inl n) ∧
     (ordinaryOffset E n j).2.natAbs≤32*B E (.inl n) := by
-  have hc : activationIndexCode E (.inl n) j+1≤2*(E.a (.inl n)*E.b (.inl n)) := activationIndexCode_sharp_lt E _ j
+  have hc : ordinaryLiftCode E n j+1≤2*(E.a (.inl n)*E.b (.inl n)) :=
+    ordinaryLiftCode_sharp_lt E n j
   have hf : (ordinaryFirst E n j).natAbs≤2*B E (.inl n) := by
     have hh := separated_natAbs_le (activationModulus E (.inl n))
-      (activationResidue E (.inl n)) (activationIndexCode E (.inl n)) j
+      (ordinaryResidue E n) (ordinaryLiftCode E n) j
     have hm := Nat.mul_le_mul_left (A E (.inl n)) hc
-    change (ordinaryFirst E n j).natAbs≤activationModulus E (.inl n)*(activationIndexCode E (.inl n) j+1) at hh
-    change (ordinaryFirst E n j).natAbs≤A E (.inl n)*(activationIndexCode E (.inl n) j+1) at hh
+    change (ordinaryFirst E n j).natAbs≤A E (.inl n)*(ordinaryLiftCode E n j+1) at hh
     dsimp [A,B] at hh hm ⊢
     nlinarith only [hh,hm]
   constructor

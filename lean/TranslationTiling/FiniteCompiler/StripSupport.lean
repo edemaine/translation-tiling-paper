@@ -53,13 +53,18 @@ theorem test_strip {H : ℕ} (hsupport : CompactSupport.Bound E H)
     exact Or.inl ((CompactSupport.seed_bound E t j).2.trans hR)
 
 omit E in
-theorem stack_strip (N : ℕ) (c : PartitionCertificate) (Fs : List CyclicTile) (H : ℕ)
-    (hs : ∀ F∈Fs, ∀ f∈F, TestSupport H f.1) :
-    ∀ f∈stackCodes (N,c,Fs), TestSupport H f.1 := by
+theorem stack_support (N : ℕ) (c : PartitionCertificate) (Fs : List CyclicTile) (P : Plane → Prop)
+    (hs : ∀ F∈Fs, ∀ f∈F, P f.1) :
+    ∀ f∈stackCodes (N,c,Fs), P f.1 := by
   intro f hf
   simp only [stackCodes,List.mem_flatMap,List.mem_map,List.mem_filter,List.mem_range] at hf
   obtain ⟨i,hi,g,hg,j,_,rfl⟩ := hf
   exact hs (Fs.getD i []) (by rw [List.getD_eq_getElem _ _ hi]; exact List.getElem_mem hi) g hg
+
+omit E in
+theorem stack_strip (N : ℕ) (c : PartitionCertificate) (Fs : List CyclicTile) (H : ℕ)
+    (hs : ∀ F∈Fs, ∀ f∈F, TestSupport H f.1) :
+    ∀ f∈stackCodes (N,c,Fs), TestSupport H f.1 := stack_support N c Fs _ hs
 
 end
 end TranslationTiling.FiniteCompiler

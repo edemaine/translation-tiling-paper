@@ -16,6 +16,10 @@ def cyclicPoint (Q : ℕ) (f : CyclicPoint) : Plane × ZMod Q := (f.1, (f.2 : ZM
 def cyclicTileSet (Q : ℕ) (F : CyclicTile) : Finset (Plane × ZMod Q) :=
   F.toFinset.image (cyclicPoint Q)
 
+/-- A full vertical coset at horizontal coordinate zero. -/
+def HasColumn (d : CyclicTileData) (U : ℕ) : Prop :=
+  ∃ c : ZMod d.1, ∀ k : ℤ, ((0 : Plane), c+((U:ℤ)*k : ℤ))∈cyclicTileSet d.1 d.2
+
 /-- Normalize at the first tile point and choose the canonical quotient representatives. -/
 def latticeRepresentatives (Q : ℕ) (F : CyclicTile) : Tile 3 :=
   let f₀ := F.headD ((0, 0), 0)

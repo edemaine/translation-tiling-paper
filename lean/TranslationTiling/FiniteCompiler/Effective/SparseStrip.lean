@@ -1,4 +1,5 @@
 import TranslationTiling.FiniteCompiler.StripVolume
+import TranslationTiling.FiniteCompiler.ReservedStripLift
 
 namespace TranslationTiling.FiniteCompiler.Effective
 open Compiler Compiler.Effective Compiler.StripLift
@@ -23,38 +24,56 @@ private theorem raw_inputOrder (T : System) :
 
 private abbrev StripFamilyData := (ParameterData × List CyclicTile) × ℕ
 
+private def kernelCode (p : ParameterData) : CyclicTile :=
+  canonicalTile (rawHorizontal p) (rawOrder p) (kernelCodes (rawOrder p) (rawModuli p))
+
+private theorem kernelCode_primrec : Primrec kernelCode := by
+  unfold kernelCode
+  exact canonicalTile_primrec.comp
+    ((rawHorizontal_primrec.pair rawOrder_primrec).pair
+      (kernelCodes_primrec.comp (rawOrder_primrec.pair rawModuli_primrec)))
+
+private def kernelIndex (p : ParameterData) (Fs : List CyclicTile) : ℕ :=
+  Fs.idxOf (kernelCode p)
+
+private def reserveData (d : ParameterData × List CyclicTile) : ReserveData :=
+  let P := max (d.1.1+2) 256
+  ((d.2.length-1,rawOrder d.1,P^4,max d.2.length (P^2)),kernelIndex d.1 d.2,(rawModuli d.1).prod)
+
+private theorem reserveData_primrec : Primrec reserveData := by
+  unfold reserveData
+  have hk := kernelCode_primrec.comp (Primrec.fst : Primrec (Prod.fst : ParameterData × List CyclicTile → ParameterData))
+  have hi : Primrec (fun d : ParameterData × List CyclicTile => kernelIndex d.1 d.2) := by
+    refine (Primrec.list_idxOf.comp hk Primrec.snd).of_eq (fun d => ?_)
+    unfold kernelIndex List.idxOf
+    congr 1
+    funext x
+    simp [beq_eq_decide]
+  have hR := product_primrec.comp (rawModuli_primrec.comp
+    (Primrec.fst : Primrec (Prod.fst : ParameterData × List CyclicTile → ParameterData)))
+  have hdata : Primrec (fun d : ParameterData × List CyclicTile =>
+      let P := max (d.1.1+2) 256
+      (d.2.length-1,rawOrder d.1,P^4,max d.2.length (P^2))) := by fun_prop
+  exact hdata.pair (hi.pair hR)
+
 private def stripFamilyTileAt (z : StripFamilyData) : Tile 3 :=
-  let p := z.1.1
-  let data := familyCyclic z.1
-  Rails.Strips.assemble (integerTile data) z.2 ((rawModuli p).prod*(data.1/rawOrder p))
-
-private def stripAssemblyData (z : ParameterData × ℕ × CyclicTileData) :
-    Tile 3 × ℕ × ℕ :=
-  (integerTile z.2.2,z.2.1,(rawModuli z.1).prod*(z.2.2.1/rawOrder z.1))
-
-private theorem stripAssemblyData_primrec : Primrec stripAssemblyData := by
-  have hp : Primrec (fun z : ParameterData × ℕ × CyclicTileData => z.1) := Primrec.fst
-  have hd : Primrec (fun z : ParameterData × ℕ × CyclicTileData => z.2.2) :=
-    Primrec.snd.comp Primrec.snd
-  have hq : Primrec (fun z : ParameterData × ℕ × CyclicTileData => z.2.2.1) :=
-    Primrec.fst.comp hd
-  have hR : Primrec (fun z : ParameterData × ℕ × CyclicTileData => (rawModuli z.1).prod) :=
-    product_primrec.comp (rawModuli_primrec.comp hp)
-  exact (integerTile_primrec.comp hd).pair
-    ((Primrec.fst.comp Primrec.snd).pair (natMul hR (natDiv hq (rawOrder_primrec.comp hp))))
+  let d := reserveData z.1
+  let c := reservedPartition d
+  let data := (d.1.2.1*c.1,stackCodes (d.1.2.1,c,z.1.2))
+  Rails.Strips.assemble (integerTile data) z.2 (3*d.2.2+1)
 
 private theorem stripFamilyTileAt_computable : Computable stripFamilyTileAt := by
-  have hd : Computable (fun z : StripFamilyData => familyCyclic z.1) :=
-    familyCyclic_computable.comp (g:=Prod.fst) Computable.fst
-  have hp : Primrec (fun z : StripFamilyData => z.1.1) := Primrec.fst.comp Primrec.fst
-  have ht : Computable (fun z : StripFamilyData =>
-      (z.1.1,z.2,familyCyclic z.1)) := hp.to_comp.pair (Computable.snd.pair hd)
-  have hs : Computable (fun z : StripFamilyData =>
-      stripAssemblyData (z.1.1,z.2,familyCyclic z.1)) :=
-    stripAssemblyData_primrec.to_comp.comp (f:=stripAssemblyData) ht
-  exact (Rails.Strips.assemble_computable.comp
-    (f:=fun z : Tile 3 × ℕ × ℕ => Rails.Strips.assemble z.1 z.2.1 z.2.2)
-    (g:=fun z : StripFamilyData => stripAssemblyData (z.1.1,z.2,familyCyclic z.1)) hs).of_eq
+  have hd := reserveData_primrec.comp (Primrec.fst : Primrec (Prod.fst : StripFamilyData → _))
+  have hc := reservedPartition_computable.comp hd.to_comp
+  have hp : Primrec (fun z : StripFamilyData × PartitionCertificate =>
+      ((reserveData z.1.1).1.2.1*z.2.1,stackCodes ((reserveData z.1.1).1.2.1,z.2,z.1.1.2))) := by
+    have hh := hd.comp (Primrec.fst : Primrec (Prod.fst : StripFamilyData × PartitionCertificate → _))
+    exact (by fun_prop : Primrec (fun z : StripFamilyData × PartitionCertificate =>
+      (reserveData z.1.1).1.2.1*z.2.1)).pair
+        (stackCodes_primrec.comp (by fun_prop))
+  have ht := Compiler.integerTile_primrec.to_comp.comp (hp.to_comp.comp (Computable.id.pair hc))
+  have hr : Primrec (fun z : StripFamilyData => 3*(reserveData z.1).2.2+1) := by fun_prop
+  exact (Rails.Strips.assemble_computable.comp (ht.pair (Computable.snd.pair hr.to_comp))).of_eq
     (fun _ => rfl)
 
 def sparseStripCore (T : LeanWang.TileSet) : Tile 3 :=
@@ -87,27 +106,49 @@ private theorem sparse_strip (T : LeanWang.TileSet) :
     simp [TestSupport,hz]
 
 private theorem sparse_kernel (T : LeanWang.TileSet) :
-    ∃ F∈sparseFamily T, ∀ k : ℤ,
-      (((0:Plane), ((inputOrder (parameters (SparseTernary.system T)):ℤ)*k : ℤ)) :
-        Plane × ZMod (parameters (SparseTernary.system T)).cyclicOrder) ∈
-      cyclicTileSet (parameters (SparseTernary.system T)).cyclicOrder F := by
-  let E := parameters (SparseTernary.system T)
-  have hk : kernelTile E∈decodedFamily E (sparseFamily T) := by
-    rw [sparseFamily_correct]
-    exact Finset.mem_union_left _ (kernelTile_mem_testTiles _)
-  obtain ⟨F,hF,hEq⟩ := (mem_decodedFamily _ _ _).mp hk
-  refine ⟨F,hF,fun k => ?_⟩
-  have he := decodedTile_eq_image E F
-  rw [hEq] at he
-  have hmem := kernel_column E k
-  rw [he,Finset.image_image] at hmem
-  simpa using hmem
+    let S := SparseTernary.system T
+    let F := kernelCode (parameterData S)
+    F∈sparseFamily T ∧ ∀ k : ℤ,
+      (((0:Plane), ((inputOrder (parameters S):ℤ)*k : ℤ)) :
+        Plane × ZMod (parameters S).cyclicOrder) ∈ cyclicTileSet (parameters S).cyclicOrder F := by
+  let S := SparseTernary.system T
+  let p := parameterData S
+  let K := kernelCodes (rawOrder p) (rawModuli p)
+  let E := parameters S
+  have hm : K∈rawSparseFamily T := by
+    unfold rawSparseFamily rawFamily sparseInput
+    simp [K,p,S]
+  have hC : kernelCode p∈sparseFamily T := by
+    unfold sparseFamily canonicalFamily
+    exact List.mem_dedup.mpr (List.mem_map.mpr ⟨K,hm,rfl⟩)
+  refine ⟨hC,fun k => ?_⟩
+  have he := decodedTile_eq_image E K
+  rw [rawKernel_correct S] at he
+  have hker := kernel_column E k
+  rw [he,Finset.image_image] at hker
+  have horder : rawOrder p=E.cyclicOrder := rawOrder_eq S
+  have hcanon := canonicalTile_correct (rawHorizontal p) (rawOrder p) (horder.symm ▸ E.cyclicOrder_pos) K
+    (fun f hf => by
+      obtain ⟨hx,hy⟩ := rawSparseFamily_horizontal T K hm f hf
+      change f.1.1.natAbs≤rawHorizontal p at hx
+      change f.1.2.natAbs≤rawHorizontal p at hy
+      exact ⟨⟨by omega,by omega⟩,⟨by omega,by omega⟩⟩)
+  change ((0:Plane),_) ∈ cyclicTileSet E.cyclicOrder (kernelCode p)
+  have hmap : (ambientCyclicEquiv E ∘ (ambientCyclicEquiv E).symm)=id := by funext x; simp
+  rw [hmap,Finset.image_id] at hker
+  unfold kernelCode
+  have he' : cyclicTileSet E.cyclicOrder (canonicalTile (rawHorizontal p) (rawOrder p) K) =
+      cyclicTileSet E.cyclicOrder K := by
+    exact Eq.mp (congrArg (fun m =>
+      cyclicTileSet m (canonicalTile (rawHorizontal p) (rawOrder p) K)=cyclicTileSet m K) horder) hcanon
+  rw [show kernelCodes (rawOrder p) (rawModuli p)=K from rfl,he']
+  exact hker
 
 theorem sparseStripCore_facts (T : LeanWang.TileSet) (hn : 0<T.length) :
     sparseStripCore T≠[] ∧ FaceConnected (sparseStripCore T) ∧
     (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles (sparseStripCore T)) ∧
-    (sparseStripCore T).length≤volumeCap
-      (compactHorizontal (parameterData (SparseTernary.system T)))
+    (sparseStripCore T).length≤reservedVolumeCap 175
+      (fun _ => compactHorizontal (parameterData (SparseTernary.system T)))
       (inputOrder (parameters (SparseTernary.system T))) (MassSize.mass (parameters (SparseTernary.system T)))
       (freshCap (max (sparseFamily T).length (primeBudget (SparseTernary.system T)^2))
         (primeBudget (SparseTernary.system T)^4)) := by
@@ -126,43 +167,78 @@ theorem sparseStripCore_facts (T : LeanWang.TileSet) (hn : 0<T.length) :
     rw [show P^4=(P^2)^2 by rw [←pow_mul]]
     exact Nat.pow_le_pow_left (le_max_right Fs.length (P^2)) 2
   have hpr := BudgetSize.cyclicOrder_primeBound E rfl (parameters_bounded_budget S rfl) (le_max_right _ _)
-  have hr : FreshReady (Fs.length-1,N,P^4,X) := ⟨hN,by dsimp [X]; omega,hP,hpr⟩
-  let c := freshPartition (Fs.length-1,N,P^4,X)
-  have hc : PartitionValid (Fs.length-1) (P^4) c ∧ N.Coprime c.1 ∧ c.1≤freshCap X (P^4) :=
-    freshPartition_spec _ hr
+  have hX : P^2≤X := le_max_right _ _
+  have hX' : 65536≤X := (Nat.pow_le_pow_left (le_max_right _ _) 2).trans hX
+  have hl : 5≤Stacking.differenceLog X := by
+    unfold Stacking.differenceLog
+    have hh := (Nat.le_log_iff_pow_le (by decide : 1<2) (by omega : 2*X≠0)).mpr (show 2^4≤2*X by omega)
+    omega
+  have hlarge : P^4+3≤2*X^2 := by
+    have h := (by decide : 3≤65536^2).trans (Nat.pow_le_pow_left hX' 2)
+    omega
+  obtain ⟨hk,hkernel⟩ := sparse_kernel T
+  have hidx : kernelIndex (parameterData S) Fs<Fs.length := by
+    unfold kernelIndex
+    exact List.idxOf_lt_length_of_mem hk
+  let i : Fin Fs.length := ⟨kernelIndex (parameterData S) Fs,hidx⟩
+  let d : ReserveData := ((Fs.length-1,N,P^4,X),i.val,R)
+  have hr : ReserveReady d := ⟨⟨hN,by dsimp [d,X]; omega,hP,hpr⟩,by dsimp [d]; have := i.isLt; omega,hl,hlarge⟩
+  let c := reservedPartition d
+  obtain ⟨hc,hcop,hcap,hres⟩ := reservedPartition_spec d hr
+  change c.1≤reservedCap X (P^4) at hcap
+  have hcap' : c.1≤freshCap X (P^4) := hcap.trans (by
+    unfold reservedCap reservedThreshold freshCap Stacking.logPartitionThreshold
+    have h := Nat.zero_le (44*X^2*Stacking.differenceLog X)
+    nlinarith only [h])
   let data : CyclicTileData := (N*c.1,stackCodes (N,c,Fs))
-  have hdata : familyCyclic (parameterData S,Fs)=data := by
-    unfold familyCyclic
-    rw [rawOrder_eq]
+  have hdata : reserveData (parameterData S,Fs)=d := by
+    unfold reserveData
+    rw [rawOrder_eq,raw_inputOrder]
     rfl
-  have heq : sparseStripCore T = Rails.Strips.assemble (integerTile data) H (R*c.1) := by
+  have heq : sparseStripCore T = Rails.Strips.assemble (integerTile data) H (3*R+1) := by
     unfold sparseStripCore stripFamilyTileAt
-    change Rails.Strips.assemble (integerTile (familyCyclic (parameterData S,Fs))) H _=_
-    rw [hdata,raw_inputOrder,rawOrder_eq]
-    have he : data.1/N=c.1 := by dsimp [data]; rw [Nat.mul_div_cancel_left _ hN]
-    rw [he]
-  have hpos : 0<data.1 := Nat.mul_pos hN hc.1.1.pos
-  have hR : 0<R*c.1 := Nat.mul_pos (inputOrder_pos E) hc.1.1.pos
-  have hdvd : R*c.1∣data.1 := mul_dvd_mul_right (inputOrder_dvd E) c.1
-  have hne := stackCodes_nonempty N c Fs hs hc.1 hf.nonempty
-  obtain ⟨F,hF,hkernel⟩ := sparse_kernel T
-  obtain ⟨i,hi,he⟩ := List.mem_iff_getElem.mp hF
-  have hcol : HasColumn data (R*c.1) := by
-    apply stack_hasColumn N (P^4) Fs c hc.1 hc.2.1 hN ⟨i,hi⟩ R
-    rw [List.getD_eq_getElem _ _ hi,he]
+    dsimp only
+    change (let a := reserveData (parameterData S,Fs)
+            Rails.Strips.assemble (integerTile (a.1.2.1*(reservedPartition a).1,
+              stackCodes (a.1.2.1,reservedPartition a,Fs))) H (3*a.2.2+1)) = _
+    rw [hdata]
+  have hpos : 0<data.1 := Nat.mul_pos hN hc.1.pos
+  have hne := stackCodes_nonempty N c Fs hs hc hf.nonempty
+  have hcol : HasForwardColumn data (3*R) := by
+    apply stack_hasForwardColumn N (P^4) Fs c hc hcop hN i R (inputOrder_pos E) hres
+    rw [List.getD_eq_getElem _ _ i.isLt]
+    have hget : Fs[i.val]=kernelCode (parameterData S) := by
+      dsimp only [i,kernelIndex]
+      apply List.getElem_idxOf
+    rw [hget]
     exact hkernel
-  have hconn := StripLift.connected data H _ hR hpos hdvd hcol
-    (stack_strip N c Fs H (sparse_strip T))
+  have hgap : 3*R<2*data.1 := by
+    have hR : R≤N := Nat.le_of_dvd hN (inputOrder_dvd E)
+    have hRpos : 0<R := inputOrder_pos E
+    have hq : P^4<c.1 := hc.2.1
+    have hq' : 3<c.1 := lt_of_lt_of_le (by
+      exact (by decide : 3<256^4).trans_le (Nat.pow_le_pow_left (le_max_right _ _) _)) hq.le
+    have hm := Nat.mul_le_mul_right c.1 hR
+    have hreq : 3*R<R*c.1 := by
+      simpa only [Nat.mul_comm c.1 R] using Nat.mul_lt_mul_of_pos_right hq' hRpos
+    change _<2*(N*c.1)
+    omega
+  have hsupport : ∀ f∈data.2, TestSupportAt 175 (fun _ => H) f.1 := by
+    intro f hf'
+    rcases stack_strip N c Fs H (sparse_strip T) f hf' with ⟨hx,hy|⟨s,hs',hy⟩⟩
+    · exact Or.inl ⟨hx,hy⟩
+    · exact Or.inr ⟨s,by omega,hx,hy⟩
+  have hconn := connected_forward data 175 (fun _ => H) _ hpos hgap hcol hsupport
   have hcorrect := Rails.SlotAssembly.correct _ (Rails.Strips.valid H) (integerTile data)
-    (Rails.Strips.railHeight (R*c.1))
+    (Rails.Strips.railHeight (3*R+1))
   rw [heq]
   refine ⟨Rails.SlotAssembly.nonempty _ (Rails.Strips.valid H) _ _
     (integerTile_nonempty data hne),hconn,?_,?_⟩
   · exact (SparseTernary.finite_system_iff_wang E).trans ((sparse_family_solution_iff T).trans
-      ((stackCodes_correct_coprime N (P^4) hN Fs hs c hc.1 hc.2.1).trans
+      ((stackCodes_correct_coprime N (P^4) hN Fs hs c hc hcop).trans
         ((integerTile_correct MSS.rigidity data hpos hne).trans hcorrect.symm)))
-  · exact volume data hpos H R _ c.1 _ hc.2.2
-      (stack_mass N (P^4) hN Fs hs c hc.1 hc.2.1 _ hf.mass)
+  · exact reservedVolume data hpos 175 (fun _ => H) R _ c.1 _ hcap'
+      (stack_mass N (P^4) hN Fs hs c hc hcop _ hf.mass)
 
 
 private theorem inputOrder_budget (T : System) (hB : T.alphabet=3) :
@@ -213,6 +289,8 @@ theorem sparseStripCore_channel_bound (T : LeanWang.TileSet) (hn : 0<T.length) :
   have hK : 2^24*549072*8003^4≤P^12 :=
     (by norm_num : 2^24*549072*8003^4≤256^12).trans (Nat.pow_le_pow_left hP 12)
   apply (sparseStripCore_facts T hn).2.2.2.trans
+  have hl4 : 4≤L := by unfold L freshCap Stacking.logPartitionThreshold; omega
+  apply (reservedVolumeCap_le _ _ _ _ (inputOrder_pos E) hl4).trans
   apply (volumeCap_coarse H R J L hHlo).trans
   calc
     _ = (2^24*549072*8003^4)*H^2*(J*L)*max (H^2) (R*L) := by ring
@@ -224,13 +302,13 @@ theorem sparseStripCore_channel_bound (T : LeanWang.TileSet) (hn : 0<T.length) :
       ring_nf
 
 private theorem volume_mono {H R J L L' : ℕ} (hL : L≤L') :
-    volumeCap H R J L≤volumeCap H R J L' := by
-  dsimp only [volumeCap,shellCap,Rails.Strips.railHeight]
+    reservedVolumeCap 175 (fun _ => H) R J L≤reservedVolumeCap 175 (fun _ => H) R J L' := by
+  dsimp only [reservedVolumeCap]
   gcongr
 
 private theorem small_cap (T : LeanWang.TileSet) (hn : 0<T.length) (i : Fin 5)
     (hw : (SparseTernary.system T).width=SmallProfiles.width i) :
-    (sparseStripCore T).length≤volumeCap (SmallProfiles.horizontal i)
+    (sparseStripCore T).length≤reservedVolumeCap 175 (fun _ => SmallProfiles.horizontal i)
       ((SmallProfiles.profile i).order (SmallProfiles.width i) /
         (SmallProfiles.profile i).mass (SmallProfiles.width i))
       ((SmallProfiles.profile i).mass (SmallProfiles.width i)) (2^15*3^(2*SmallProfiles.width i+2)) := by
@@ -246,11 +324,11 @@ private theorem small_cap (T : LeanWang.TileSet) (hn : 0<T.length) (i : Fin 5)
   exact hb.trans (volume_mono hl)
 
 theorem sparseStripCore_width64 (T : LeanWang.TileSet) (hn : 0<T.length)
-    (hw : (SparseTernary.system T).width=64) : (sparseStripCore T).length≤2^5856 :=
+    (hw : (SparseTernary.system T).width=64) : (sparseStripCore T).length≤2^5636 :=
   (small_cap T hn 1 hw).trans (by decide +kernel)
 
 theorem sparseStripCore_width80 (T : LeanWang.TileSet) (hn : 0<T.length)
-    (hw : (SparseTernary.system T).width=80) : (sparseStripCore T).length≤2^7488 :=
+    (hw : (SparseTernary.system T).width=80) : (sparseStripCore T).length≤2^7218 :=
   (small_cap T hn 2 hw).trans (by decide +kernel)
 
 end

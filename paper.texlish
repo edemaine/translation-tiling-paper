@@ -396,13 +396,13 @@ as summarized in @fig:reduction:
    We additionally require that neither integer component is constant
    down any column.
 
-   To optimize the reduction size, our soundness proof combines five-point
-   affine recovery with finite compatibility checks to reduce the prime
-   requirement from $p,q>48$ to $p,q\geq5$ and the number of columns from
-   $p^2q^2$ to $2q+2$, with the same form of constraints.
-   For the original smallest eligible primes $p=53$ and $q=59$,
-   the shorter board reduces the width from $9{,}778{,}129$ to $120$;
-   choosing our smaller primes $p=5$ and $q=7$ reduces it further to $16$.
+   %To optimize the reduction size, our soundness proof combines five-point
+   %affine recovery with finite compatibility checks to reduce the prime
+   %requirement from $p,q>48$ to $p,q\geq5$ and the number of columns from
+   %$p^2q^2$ to $2q+2$, with the same form of constraints.
+   %For the original smallest eligible primes $p=53$ and $q=59$,
+   %the shorter board reduces the width from $9{,}778{,}129$ to $120$;
+   %choosing our smaller primes $p=5$ and $q=7$ reduces it further to $16$.
 2. We adapt OpenAI's cyclic tiling encoding \cite[Sections~3--5]{OpenAI2026}
    to the Sudoku array problem from the previous step.
    (OpenAI originally applied this encoding to a different construction
@@ -419,17 +419,17 @@ as summarized in @fig:reduction:
    a 3D integer grid whose $z$ coordinate wraps around modulo~$m$
    (where $m$ depends on the Wang tile set).
 
-   The original encoding uses many prototiles to rule out each forbidden
-   combination of symbols. To optimize the reduction size, we use the cyclic
-   structure of the encoding to show that one fixed test prototile per
-   forbidden combination suffices. We also test the conditions enforcing
-   nonconstant columns on whole codewords instead of individual digits,
-   removing digit restrictions and thereby shortening encodings of Sudoku
-   symbols. We also show that two Wang-tile columns suffice, using
-   different slopes for horizontal and vertical adjacency tests, among
-   other optimizations. For smaller inputs, we reduce the number of test prototiles by
-   ruling out shorter forbidden patterns and checking adjacency only
-   when the arithmetic symbols identify a line used to recover Wang neighbors.
+   %The original encoding uses many prototiles to rule out each forbidden
+   %combination of symbols. To optimize the reduction size, we use the cyclic
+   %structure of the encoding to show that one fixed test prototile per
+   %forbidden combination suffices. We also test the conditions enforcing
+   %nonconstant columns on whole codewords instead of individual digits,
+   %removing digit restrictions and thereby shortening encodings of Sudoku
+   %symbols. We also show that two Wang-tile columns suffice, using
+   %different slopes for horizontal and vertical adjacency tests, among
+   %other optimizations. For smaller inputs, we reduce the number of test prototiles by
+   %ruling out shorter forbidden patterns and checking adjacency only
+   %when the arithmetic symbols identify a line used to recover Wang neighbors.
 3. We apply OpenAI's stacking construction \cite[Section~6]{OpenAI2026}
    (based on an earlier construction of Greenfeld and Tao
    \cite[Theorem~3.1 and Lemma~3.2]{GTPeriodic})
@@ -442,6 +442,9 @@ as summarized in @fig:reduction:
    %of the original target space to be covered exactly once by each
    %original prototile.
    This construction enlarges $m$ in the target space $\Z^2 \times (\Z/m\Z)$.
+
+   %We reserve regularly spaced layers for the kernel test, giving a column
+   %with short gaps for the connectedness construction.
 4. We apply the reduction of Meyerovitch, Sanadhya, and Solomon
    \cite[Theorem~1.1]{MSS}, which converts tiling problems in a quotient
    of $\Z^3$ into tiling problems in $\Z^3$,
@@ -468,13 +471,13 @@ as summarized in @fig:reduction:
    This construction scales up the prototile, giving space to connect the
    lattice points by thin corridors, with bumps and dents to force alignment.
 
-   We use an eight-layer variant to optimize the reduction size,
-   reducing the volume expansion factor from $O(L^6)$ to $O(L^4)$ for an input
-   prototile contained in an $L\times L\times L$ box. For the prototile produced
-   by the preceding steps, we shorten the corridors by connecting pieces
-   through the regularly spaced column supplied by one test prototile,
-   and we use fewer corridors because the Sudoku line slopes confine
-   the horizontal displacements to narrow strips.
+   %We use an eight-layer variant to optimize the reduction size,
+   %reducing the volume expansion factor from $O(L^6)$ to $O(L^4)$ for an input
+   %prototile contained in an $L\times L\times L$ box. For the prototile produced
+   %by the preceding steps, we shorten the corridors by connecting pieces
+   %through the regularly spaced column supplied by one test prototile,
+   %and we use fewer corridors because the Sudoku line slopes confine
+   %the horizontal displacements to narrow strips, each sized for its own slope.
 
 For $d\geq3$, appending $d-3$ zero coordinates to each lattice point
 preserves tilability, by slicing $\Z^d$ into parallel copies of $\Z^3$.
@@ -491,8 +494,12 @@ closed polynomial constraints and using finite-precision tests
 to recognize infeasibility.
 
 For $n$ Wang tiles, the translation-only reduction uses at most
-$B(n)=(n+4)^{410\lg\lg(n+4)}=n^{O(\log\log n)}$ lattice points / unit cubes
+$B(n)=(n+4)^{401\lg\lg(n+4)}=n^{O(\log\log n)}$ lattice points / unit cubes
 in every fixed dimension $d\geq3$, where $\lg=\log_2$.
+A logarithmic number of encoding channels and sparse tests give the
+quasipolynomial dependence, and further optimizations improve the constants
+in the bound (see “Quantitative Size Bounds” in the
+[technical overview](https://edemaine.github.io/translation-tiling-paper/slop.pdf)).
 For $n\leq5$, we can improve the upper bound to $2^{250}$.
 Allowing rotations and/or reflections gives bounds of $64{,}000B(n)$ in 3D
 and $2^{10(d+1)^2}B(n)$ in $d$D.
@@ -570,7 +577,7 @@ In both statements, the proof is a single call to a theorem in
 
 A computable reduction converts a list of $n$ Wang tiles into an
 equivalent nonempty connected prototile $P\subset\Z^d$ using
-at most $B(n) = (n+4)^{410\lg\lg(n+4)}$ unit cubes:
+at most $B(n) = (n+4)^{401\lg\lg(n+4)}$ unit cubes:
 the Wang tiles tile the plane if and only if $P$ tiles $\Z^d$ by translations.
 Here `LeanWang.TileSet` is a list of Wang tiles, and `LeanWang.TilesPlane`
 asserts that they tile the whole plane.

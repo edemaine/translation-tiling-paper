@@ -1,0 +1,174 @@
+import TranslationTiling.FiniteCompiler.Effective.FreshStack
+import TranslationTiling.Proofs.ReservedDifferenceBound
+
+namespace TranslationTiling.FiniteCompiler.Effective
+open Compiler Compiler.Effective
+open scoped Classical
+noncomputable section
+
+def reservedThreshold (X P : ℕ) : ℕ := 20*X^2*Stacking.differenceLog X+P+3
+
+def reservedCap (X P : ℕ) : ℕ := 2*reservedThreshold X P
+
+abbrev ReserveData := FreshPartitionData × ℕ × ℕ
+
+def ReserveReady (d : ReserveData) : Prop :=
+  FreshReady d.1 ∧ d.2.1<d.1.1+1 ∧ 5≤Stacking.differenceLog d.1.2.2.2 ∧
+    d.1.2.2.1+3≤2*d.1.2.2.2^2
+
+def Reserves (c : PartitionCertificate) (i R : ℕ) : Prop :=
+  ∀ j ∈ List.range ((c.1+2)/3), c.2.getD ((R*(3*j))%c.1) 0=i
+
+def ReservedValid (d : ReserveData) (c : PartitionCertificate) : Prop :=
+  if ReserveReady d then PartitionValid d.1.1 d.1.2.2.1 c ∧
+    c.1≤reservedCap d.1.2.2.2 d.1.2.2.1 ∧ Reserves c d.2.1 d.2.2
+  else c=(0,[])
+
+@[fun_prop] theorem reserveReady_primrec : PrimrecPred ReserveReady := by
+  unfold ReserveReady Stacking.differenceLog
+  have h := freshReady_primrec.comp (Primrec.fst : Primrec (Prod.fst : ReserveData → FreshPartitionData))
+  have hl := natLog_primrec 2 (by decide)
+  fun_prop
+
+@[fun_prop] theorem reserves_primrec :
+    PrimrecPred (fun z : PartitionCertificate × ℕ × ℕ => Reserves z.1 z.2.1 z.2.2) := by
+  unfold Reserves
+  fun_prop
+
+@[fun_prop] theorem reservedValid_primrec :
+    PrimrecPred (fun z : ReserveData × PartitionCertificate => ReservedValid z.1 z.2) := by
+  have hr : PrimrecPred (fun z : ReserveData × PartitionCertificate => ReserveReady z.1) :=
+    reserveReady_primrec.comp Primrec.fst
+  have hp : PrimrecPred (fun z : ReserveData × PartitionCertificate => PartitionValid z.1.1.1 z.1.1.2.2.1 z.2) :=
+    partitionValid_primrec.comp (show Primrec (fun z : ReserveData × PartitionCertificate =>
+      ((z.1.1.1,z.1.1.2.2.1),z.2)) by fun_prop)
+  have hb : PrimrecPred (fun z : ReserveData × PartitionCertificate => z.2.1≤reservedCap z.1.1.2.2.2 z.1.1.2.2.1) := by
+    unfold reservedCap reservedThreshold Stacking.differenceLog
+    have hl := natLog_primrec 2 (by decide)
+    fun_prop
+  have hs := reserves_primrec.comp (show Primrec (fun z : ReserveData × PartitionCertificate =>
+    (z.2,z.1.2.1,z.1.2.2)) by fun_prop)
+  have hd : PrimrecPred (fun z : ReserveData × PartitionCertificate => z.2=(0,[])) := by fun_prop
+  apply ((hr.and (hp.and (hb.and hs))).or (hr.not.and hd)).of_eq
+  intro z
+  unfold ReservedValid
+  by_cases h : ReserveReady z.1 <;> simp [h]
+
+theorem exists_reserved_partition (s P X i R : ℕ) (hs : s+1≤X) (hi : i<s+1)
+    (hL : 5≤Stacking.differenceLog X) (hP : P+3≤2*X^2) :
+    ∃ c : PartitionCertificate, PartitionValid s P c ∧ c.1≤reservedCap X P ∧ Reserves c i R := by
+  let M := reservedThreshold X P
+  obtain ⟨q,hq,hlo,hhi⟩ := Nat.bertrand M (by unfold M reservedThreshold; omega)
+  letI : NeZero q := ⟨hq.ne_zero⟩
+  have hlarge : P<q := by unfold M reservedThreshold at hlo; omega
+  let f (j : ℕ) : ZMod q := (R*(3*j):ℕ)
+  let D := (Finset.range ((q+2)/3)).image f
+  have hD : D.card≤(q+2)/3 := Finset.card_image_le.trans (by simp)
+  obtain ⟨E,hE,hfull,hreserve⟩ :=
+    Stacking.partition_reserved (s+1) X P q (by omega) hs hP hL hq hlo hhi D hD ⟨i,hi⟩
+  obtain ⟨cs,hcs,hmem⟩ := partition_certificate_of_membership s P q hq hlarge E hE hfull
+  refine ⟨(q,cs),hcs,hhi,?_⟩
+  intro j hj
+  have hm := hreserve (Finset.mem_image.mpr ⟨j,Finset.mem_range.mpr (List.mem_range.mp hj),rfl⟩)
+  simpa only [f,ZMod.val_natCast] using hmem (f j) ⟨i,hi⟩ hm
+
+private theorem exists_reservedPartitionCode (d : ReserveData) :
+    ∃ n, ReservedValid d (decodePartitionCertificate n) := by
+  by_cases h : ReserveReady d
+  · obtain ⟨c,hc⟩ := exists_reserved_partition d.1.1 d.1.2.2.1 d.1.2.2.2 d.2.1 d.2.2
+      h.1.2.1 h.2.1 h.2.2.1 h.2.2.2
+    refine ⟨Encodable.encode c,?_⟩
+    simpa only [ReservedValid,if_pos h,decodePartitionCertificate,Encodable.encodek,Option.getD_some]
+      using hc
+  · exact ⟨Encodable.encode (0,([]:List ℕ)),by simp [ReservedValid,h,decodePartitionCertificate]⟩
+
+def reservedPartition (d : ReserveData) : PartitionCertificate :=
+  decodePartitionCertificate (leastWitness (fun d n => ReservedValid d (decodePartitionCertificate n))
+    exists_reservedPartitionCode d)
+
+theorem reservedPartition_computable : Computable reservedPartition :=
+  decodePartitionCertificate_primrec.to_comp.comp
+    (leastWitness_computable _ ((reservedValid_primrec.comp
+      (Primrec.fst.pair (decodePartitionCertificate_primrec.comp Primrec.snd))).computablePred) _)
+
+theorem reservedPartition_spec (d : ReserveData) (h : ReserveReady d) :
+    PartitionValid d.1.1 d.1.2.2.1 (reservedPartition d) ∧
+    d.1.2.1.Coprime (reservedPartition d).1 ∧
+    (reservedPartition d).1≤reservedCap d.1.2.2.2 d.1.2.2.1 ∧
+    Reserves (reservedPartition d) d.2.1 d.2.2 := by
+  have hv : ReservedValid d (reservedPartition d) := by
+    unfold reservedPartition leastWitness
+    exact @Nat.find_spec _ (Classical.decPred _) (exists_reservedPartitionCode d)
+  simp only [ReservedValid,h,if_true] at hv
+  exact ⟨hv.1,coprime_of_primeBound h.1.1 h.1.2.2.2 hv.1.1 hv.1.2.1,hv.2⟩
+
+/-- Every forward interval of the given length meets the column at horizontal zero. -/
+def HasForwardColumn (d : CyclicTileData) (U : ℕ) : Prop :=
+  ∀ z : ℕ, ∃ v : ℕ, z≤v ∧ v≤z+U ∧
+    ((0:Plane),(v:ZMod d.1))∈cyclicTileSet d.1 d.2
+
+theorem stack_hasForwardColumn (N P : ℕ) (Fs : List CyclicTile) (c : PartitionCertificate)
+    (hc : PartitionValid (Fs.length-1) P c) (hcop : Nat.Coprime N c.1)
+    (hN : 0<N) (i : Fin Fs.length) (R : ℕ) (hR : 0<R)
+    (hr : Reserves c i.val R)
+    (hker : ∀ k : ℤ, (((0:Plane),((R:ℤ)*k:ℤ)) : Plane × ZMod N)∈
+      cyclicTileSet N (Fs.getD i.val [])) :
+    HasForwardColumn (N*c.1,stackCodes (N,c,Fs)) (3*R) := by
+  letI : NeZero N := ⟨hN.ne'⟩
+  letI : NeZero c.1 := ⟨hc.1.ne_zero⟩
+  intro z
+  let q := c.1
+  let j := z/R+1
+  let r := j%q
+  let next := 3*((r+2)/3)
+  have hq : 0<q := hc.1.pos
+  have hrq : r<q := Nat.mod_lt _ hq
+  have hn : r≤next ∧ next≤r+2 := by dsimp [next]; omega
+  let t := if next<q then next else q
+  have ht : r≤t ∧ t≤r+2 := by dsimp only [t]; split <;> omega
+  let k := q*(j/q)+t
+  have hk : j≤k ∧ k≤j+2 := by
+    have hh : r+q*(j/q)=j := Nat.mod_add_div _ _
+    dsimp only [k]
+    omega
+  have hkr : ∃ l< (q+2)/3, (k:ZMod q)=((3*l:ℕ):ZMod q) := by
+    unfold k t
+    push_cast
+    simp only [ZMod.natCast_self,zero_mul,zero_add]
+    split
+    · rename_i hh
+      refine ⟨(r+2)/3,?_ ,by simp [next,Nat.cast_mul]⟩
+      dsimp [next] at hh
+      omega
+    · exact ⟨0,by omega,by simp⟩
+  refine ⟨R*k,?_,?_,?_⟩
+  · have h := Nat.mul_le_mul_left R hk.1
+    have h' := Nat.mod_add_div z R
+    have hz := Nat.mod_lt z hR
+    dsimp only [j] at h
+    rw [Nat.mul_add,Nat.mul_one] at h
+    omega
+  · calc
+      R*k ≤ R*(j+2) := Nat.mul_le_mul_left _ hk.2
+      _ = R*(z/R)+3*R := by rw [show j+2=z/R+3 from rfl, Nat.mul_add, Nat.mul_comm R 3]
+      _ ≤ z+3*R := Nat.add_le_add_right (Nat.mul_div_le z R) _
+  · obtain ⟨l,hl,he⟩ := hkr
+    rw [stackCodes_correct hcop c.2 Fs]
+    let e := ZMod.chineseRemainder hcop
+    have hval : ((R*k:ℕ):ZMod q)=((R*(3*l):ℕ):ZMod q) := by simp only [Nat.cast_mul,he]
+    refine Finset.mem_image.mpr
+      ⟨(((0:Plane),((R*k:ℕ):ZMod N)),((R*k:ℕ):ZMod q)),?_,?_⟩
+    · apply Stacking.mem_stack.mpr
+      refine ⟨i,?_,?_⟩
+      · exact_mod_cast hker k
+      · simp only [stackParts,Finset.mem_filter,Finset.mem_univ,true_and,hval,ZMod.val_natCast]
+        exact hr l (List.mem_range.mpr hl)
+    · have h : e.symm (((R*k:ℕ):ZMod N),((R*k:ℕ):ZMod q)) =
+          ((R*k:ℕ):ZMod (N*q)) := by
+        apply e.symm_apply_eq.mpr
+        rw [map_natCast]
+        rfl
+      exact Prod.ext (rfl : (0:Plane)=0) h
+
+end
+end TranslationTiling.FiniteCompiler.Effective

@@ -24,8 +24,7 @@ def ordinaryForward (n : Column T) (x : Plane) (k : K E (.inl n))
 theorem ordinaryForward_bijective (n : Column T) (x : Plane) (k : K E (.inl n)) :
     Function.Bijective (ordinaryForward E W n x k) := by
   let D := channelDigitBlocks E (.inl n) (ordinarySymbol W n x)
-  let S := BlockShiftData.ofMultiplicity
-    (E.a_two_le (.inl n)) (E.b_two_le (.inl n))
+  let S := ordinaryShiftData E n
   let e := BlockShiftData.blockInverseEquiv D S
     (fun j => (ordinaryOffset E n j).1)
     (fun j => ordinaryOffset_rhoA E n j)
@@ -33,7 +32,8 @@ theorem ordinaryForward_bijective (n : Column T) (x : Plane) (k : K E (.inl n)) 
   have he : ordinaryForward E W n x k = e := by
     funext j
     simp only [ordinaryForward, ordinaryUseful_offset, ordinaryHigh_offset]
-    rfl
+    change (_,_) = (ordinaryUseful E W n x (k-j.1)+S.e j.2,_)
+    rw [show S.e j.2=shift _ _ j.2 from ordinaryShiftData_e E n j.2]
   rw [he]
   exact e.bijective
 
