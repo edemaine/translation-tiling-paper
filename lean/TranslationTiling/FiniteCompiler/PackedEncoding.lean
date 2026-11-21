@@ -23,6 +23,7 @@ def Profile.injectivityCheck (p : Profile) : Prop :=
 
 instance (p : Profile) : Decidable p.injectivityCheck := by unfold Profile.injectivityCheck; infer_instance
 
+theorem profile1_injective : profile1.injectivityCheck := by decide +kernel
 theorem profile12_injective : profile12.injectivityCheck := by decide +kernel
 theorem profile36_injective : profile36.injectivityCheck := by decide +kernel
 theorem profile243_injective : profile243.injectivityCheck := by decide +kernel

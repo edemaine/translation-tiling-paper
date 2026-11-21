@@ -31,6 +31,11 @@ structure CheckedProfile where
     2*(3-t.val)*profile.r (profile.width+t.val)*
       (profile.a (profile.width+t.val)*profile.b (profile.width+t.val))^2*35^3 ≤ profile.radius 0
 
+def checked1 : CheckedProfile :=
+  ⟨profile1,2112,profile1_valid,
+    ⟨by decide +kernel,by decide +kernel,by decide +kernel,by decide +kernel⟩,
+    profile1_injective,profile1_cap,by decide +kernel,by decide +kernel,by decide +kernel,by decide +kernel⟩
+
 def checked12 : CheckedProfile :=
   ⟨profile12,2392,profile12_valid,
     ⟨by decide +kernel,by decide +kernel,by decide +kernel,by decide +kernel⟩,

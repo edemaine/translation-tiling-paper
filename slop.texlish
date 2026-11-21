@@ -2200,39 +2200,16 @@ numerical family are checked in
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    (n+4)^{312\lg\lg(n+4)}=n^{O(\log\log n)}
+    \max\{(n+4)^{312\lg\lg(n+4)},2^{2392}\}=n^{O(\log\log n)}
   $$
   unit cubes.
-  At $n=1$, the general formula gives at most $2^{881}$ unit cubes.
-  Lean verifies $2^{880}<5^{312\lg\lg 5}<2^{881}$ in
-  \leanfile{Compiler/PackedLogBound.lean}.
+  For $n=1$, the same construction uses at most $2^{2112}$ unit cubes.
 
 : proof
-  For $n=0$, consolidate the two contradictory equations with prototiles
-  $\{0\}$ and $\{0,(1,0)\}$ in $\Z^2$. The stacking prime can be at most
-  $520$, and the lattice bounding side is less than $2^{20}$. The original
-  geometric cap then gives a nonempty connected nontile with at most
-  $2^{250}$ cubes. This fixed output is checked in
-  \leanfile{Compiler/EmptyInputBound.lean}.
-
-  For $1\leq n\leq5$, test whether the tiles admit an $11\times11$ patch.
-  Label the tiles with five symbols, repeating a tile when necessary.
-  In either matching relation, two rows have equal or disjoint supports
-  because matching is equality of edge colors. Up to simultaneous
-  relabeling, the horizontal relation has $676$ such matrices.
-
-  For each representative, a Lean-checked SAT certificate proves that a
-  valid patch forces a plane tiling. The clauses impose vertical
-  matching, horizontal matching, and the patch conditions, and exclude
-  verified periodic witnesses. Separate certificates check that the
-  representatives cover all horizontal matching relations. A plane tiling
-  supplies a patch by restriction. See
-  \leanfile{Compiler/FiveTileClassification.lean} and
-  \leanfile{Compiler/FiveInputBound.lean}.
-
-  Return one cube when the test succeeds and the fixed connected nontile
-  otherwise. The size cap $2^{250}$ fits the general bound throughout
-  this range. Henceforth assume $n\geq6$.
+  The guarded encoder requires a nonempty Wang alphabet. For an empty
+  input we use an alphabet consisting of one tile with unequal north and
+  south colors. It cannot tile the plane, and we pass it through the same
+  encoder and geometric construction.
 
   First derive the coefficient $2000$ for the baseline joint-code compiler;
   then refine its channel system for $1350$, restrict arithmetic columns
@@ -2804,7 +2781,6 @@ numerical family are checked in
   $2^9\leq25^2$ and $2^{13}\leq(9/2)^6$.
   For $n\geq252$, the existing bulk estimate
   $(2887/3)tg$ is already less than $1000tg$.
-  The cases $n\leq3$ retain $2^{250}$.
   The five prime tables are in \path{FiniteCompiler/ShortProfile4.lean},
   \path{FiniteCompiler/ShortProfile5.lean},
   \path{FiniteCompiler/ShortProfile6.lean},
@@ -2881,7 +2857,6 @@ numerical family are checked in
         \frac83\,tg
       =\frac{12092}{15}\,tg<850tg.
   $$
-  The cases $n\leq3$ retain $2^{250}$.
   The six tables are \path{FiniteCompiler/NineProfile4.lean},
   \path{FiniteCompiler/NineProfile5.lean},
   \path{FiniteCompiler/NineProfile6.lean},
@@ -2955,7 +2930,7 @@ numerical family are checked in
       \leq\left(34\cdot8+\frac{99}{11}\right)\frac83\,tg
       =\frac{2248}{3}\,tg<800tg.
   $$
-  The cases $n\leq3$ retain $2^{250}$. The $n=4$ table also improves
+  The $n=4$ table also improves
   the useful-prime pairing. The tables are \path{FiniteCompiler/PairProfile4.lean},
   \path{FiniteCompiler/PairProfile5.lean},
   \path{FiniteCompiler/PairProfile6.lean},
@@ -2966,9 +2941,8 @@ numerical family are checked in
   \leanfile{FiniteCompiler/PairSmallCompiler.lean} and
   \leanfile{Compiler/PairLogBound.lean}.
 
-  To reduce the coefficient from $800$ to $700$, use the direct patch
-  test through $n=5$ and extend the $20$-channel construction through
-  $n=40$. For $31\leq n\leq40$, pad the tile alphabet to $40$.
+  Extend the $20$-channel construction through $n=40$.
+  For $31\leq n\leq40$, pad the tile alphabet to $40$.
   The prime profile in \leanfile{FiniteCompiler/FortyProfile40.lean}
   gives at most $2^{6586}$ unit cubes in that range.
 
@@ -3225,8 +3199,8 @@ numerical family are checked in
   See \leanfile{FiniteCompiler/ColumnRefinement.lean} and
   \leanfile{FiniteCompiler/GuardedRefinement.lean}.
 
-  The ranges $11$--$12$, $13$--$36$, and $37$--$242$ use radices
-  $(3,4)$, $(3,3,4)$, and $(3,3,3,3,3)$, respectively. Write $D$
+  The ranges $n=1$, $2$--$12$, $13$--$36$, and $37$--$242$ use radices
+  $(1)$, $(3,4)$, $(3,3,4)$, and $(3,3,3,3,3)$, respectively. Write $D$
   for the product of the radices and $m$ for the number of ordinary
   columns after splitting. If those columns have alphabet sizes $a_i$,
   we bound the number of tests by
@@ -3235,12 +3209,14 @@ numerical family are checked in
   $$
   The same reserved stacking and strip bounds apply with this $X$.
   The prime certificates and volume checks give the following
-  bounds $|F|\leq 2^e\leq 2^{312tg}$.
+  bounds $|F|\leq 2^e$. The first two rows fit the fixed term $2^{2392}$,
+  and the remaining rows satisfy $2^e\leq 2^{312tg}$.
   \[
     \begin{array}{c|r|c|c}
       n & e & \text{lower bound on }t & \text{lower bound on }g\\
       \hline
-      11,\ldots,12 & 2392 & 82/21 & 55/28\\
+      1 & 2112 & \text{---} & \text{---}\\
+      2,\ldots,12 & 2392 & \text{---} & \text{---}\\
       13,\ldots,36 & 2573 & 49/12 & 69/34\\
       37,\ldots,242 & 2876 & 5 & 2\\
       243,\ldots,8187 & 7218 & 55/7 & 53/18
@@ -3256,14 +3232,6 @@ numerical family are checked in
   The checks are in \leanfile{FiniteCompiler/PackedCompiler.lean} and
   \leanfile{Compiler/PackedLogBound.lean}.
 
-  For $6\leq n\leq10$, normalizing the edge colors gives finitely
-  many inputs. For each fixed size, a finite table returns one cube
-  on tileable inputs and the same fixed connected nontile on the
-  other inputs. Lean proves that the table, whose entries are chosen
-  classically, gives a computable reduction. Its size cap fits
-  the uniform bound. See \leanfile{Compiler/FiniteSmallLookup.lean}
-  and \leanfile{FiniteCompiler/Effective/PackedTotalCompiler.lean}.
-
 The full construction is in
 \leanfile{Compiler/CleanQuasipolynomialBound.lean}, proved by
 \leandecl{Compiler.Size.exists_connected_tile_clean_quasipolynomial_bound}.
@@ -3272,22 +3240,13 @@ are in `FiniteCompiler/`; their common-solution and soundness proofs allow
 repeated column slopes and channel-dependent finite alphabets.
 The shorter-board equivalence is
 \leanref{SudokuArithmetic/PairBoardSoundness.lean}{Sudoku.PairBoard.wang_iff}.
-\leanfile{FiniteCompiler/Effective/ProjectedTotalCompiler.lean} combines
-the $20$-channel systems with partial-word tests for $6\leq n\leq48$ with the ternary compiler for larger
-inputs and the direct test for $n\leq5$. The public theorem includes
-nonemptiness, face connectedness, both tilability directions, and the
-numerical coefficient uniformly for every finite Wang tile set, including
-the empty set. Duplicate input entries have no cost in the existence bound.
-The explicit bounds in @cor:size-bound remain available.
-\leandecl{Compiler.Size.exists_connected_tile_small_quasipolynomial_bound}
-gives the explicit bound for $n\leq5$. The intermediate coefficients
-$850$, $1000$, $1350$, and $2000$ remain formalized in
-\leanfile{FiniteCompiler/Effective/NineCompiler.lean},
-\leanfile{FiniteCompiler/Effective/ShortCompiler.lean},
-\leanfile{FiniteCompiler/Effective/SparseCompiler.lean}, and
-\leanfile{FiniteCompiler/Effective/JointCompiler.lean}, respectively;
-earlier binary-payload bounds remain in
-\leanfile{Compiler/QuasipolynomialBound.lean}.
+\leanfile{FiniteCompiler/Effective/PackedTotalCompiler.lean} selects the
+prime table by alphabet size and uses the ternary compiler for larger
+inputs. The public theorem includes nonemptiness, face connectedness, both
+tilability directions, and the numerical bound. Duplicate input entries
+have no cost in the existence bound. The explicit bounds in @cor:size-bound
+remain available. The sharper count for one Wang tile is
+\leandecl{Compiler.Size.exists_connected_tile_one_quasipolynomial_bound}.
 
 ### The Remaining Cost of Cyclicity
 
@@ -3816,8 +3775,8 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, these bounds are $(n+4)^{312\lg\lg(n+4)}$ for translations and
-$64{,}000(n+4)^{312\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+function. In dimension three, these bounds are $\max\{(n+4)^{312\lg\lg(n+4)},2^{2392}\}$ for translations and
+$64{,}000\max\{(n+4)^{312\lg\lg(n+4)},2^{2392}\}$ for arbitrary Euclidean motions.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[
@@ -3837,9 +3796,8 @@ additional cubes are needed.
 
 The total reduction in
 \leanfile{FiniteCompiler/Effective/PackedTotalCompiler.lean}
-uses the direct test through five tiles, a finite lookup table for six
-through ten tiles, mixed-radix Wang labels with partial-word tests for eleven
-through 242 tiles, and the ternary construction for larger inputs.
+uses mixed-radix Wang labels with partial-word tests through 242 tiles
+and the ternary construction for larger inputs.
 The ternary branch encodes arithmetic pairs and tile labels separately by
 base-three integers, uses
 explicit prime tables for small widths and finite arithmetic search for the

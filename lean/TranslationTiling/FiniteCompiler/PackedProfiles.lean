@@ -70,6 +70,94 @@ set_option maxRecDepth 12000
 set_option maxHeartbeats 5000000
 set_option exponentiation.threshold 10000
 
+def profile1 : Profile :=
+  ⟨[1],
+   [(179, 61), (41, 229), (157, 263), (113, 127), (151, 59), (67, 107), (79, 97), (181, 269), (109, 103), (37, 17), (89, 83), (71, 53), (47, 73), (137, 19), (23, 101), (131, 11), (31, 43), (13, 29), (199, 227), (163, 257), (2, 1229), (3, 773)],
+   [[(419, 2, 1), (659, 3, 2), (541, 2, 3), (907, 2, 9)],
+    [(311, 2, 1), (557, 8, 1), (769, 2, 3), (499, 1, 2)],
+    [(577, 2, 1), (683, 1, 2), (1103, 2, 3), (997, 3, 2)],
+    [(353, 2, 1), (367, 1, 2), (593, 3, 2), (607, 2, 3)],
+    [(479, 2, 3), (571, 3, 2), (859, 1, 12), (977, 1, 14)],
+    [(281, 1, 2), (643, 8, 1), (509, 6, 1), (709, 1, 6)],
+    [(661, 1, 6), (431, 3, 2), (467, 1, 4), (449, 2, 3)],
+    [(631, 2, 1), (719, 1, 2), (1531, 4, 3), (1619, 3, 4)],
+    [(739, 3, 4), (733, 2, 5), (521, 1, 4), (727, 1, 6)],
+    [(139, 1, 6), (173, 1, 8), (233, 4, 5), (491, 5, 18), (347, 8, 3), (457, 5, 16)],
+    [(433, 3, 2), (421, 1, 4), (439, 4, 1), (587, 1, 6), (599, 3, 4), (617, 6, 1)],
+    [(283, 1, 4), (337, 4, 1), (619, 2, 9), (443, 4, 3), (389, 1, 6), (461, 5, 2)],
+    [(569, 9, 2), (313, 2, 3), (673, 5, 6), (193, 1, 2), (647, 6, 5), (167, 2, 1)],
+    [(251, 1, 6), (563, 3, 8), (293, 2, 1), (331, 2, 3), (601, 3, 10), (487, 3, 4)],
+    [(317, 5, 2), (239, 6, 1), (349, 2, 3), (547, 15, 2), (271, 3, 2), (409, 9, 2)],
+    [(373, 1, 22), (197, 1, 6), (241, 1, 10), (307, 1, 16), (503, 3, 10), (383, 2, 11)],
+    [(613, 17, 2), (277, 2, 5), (401, 6, 5), (463, 8, 5), (191, 2, 3), (523, 3, 10)],
+    [(149, 7, 2), (223, 6, 5), (211, 14, 1), (359, 12, 7), (379, 18, 5), (397, 6, 11)],
+    [(653, 1, 2)],
+    [(677, 1, 2)],
+    [(1231, 1, 1)],
+    [(797, 8, 1)]]⟩
+
+private theorem profile1Primes0 : ∀ q ∈ ([179, 61, 41, 229, 157, 263, 113, 127, 151, 59, 67, 107, 79, 97, 181, 269, 109, 103, 37, 17, 89, 83, 71, 53, 47, 73, 137, 19, 23, 101, 131, 11] : List ℕ),
+    q.Prime ∧ q ≠ 5 ∧ q ≠ 7 ∧ q ≤ 65536 := by
+  simp only [List.forall_mem_cons]
+  exact ⟨by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by simp⟩
+
+private theorem profile1Primes1 : ∀ q ∈ ([31, 43, 13, 29, 199, 227, 163, 257, 2, 1229, 3, 773, 419, 659, 541, 907, 311, 557, 769, 499, 577, 683, 1103, 997, 353, 367, 593, 607, 479, 571, 859, 977] : List ℕ),
+    q.Prime ∧ q ≠ 5 ∧ q ≠ 7 ∧ q ≤ 65536 := by
+  simp only [List.forall_mem_cons]
+  exact ⟨by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by simp⟩
+
+private theorem profile1Primes2 : ∀ q ∈ ([281, 643, 509, 709, 661, 431, 467, 449, 631, 719, 1531, 1619, 739, 733, 521, 727, 139, 173, 233, 491, 347, 457, 433, 421, 439, 587, 599, 617, 283, 337, 619, 443] : List ℕ),
+    q.Prime ∧ q ≠ 5 ∧ q ≠ 7 ∧ q ≤ 65536 := by
+  simp only [List.forall_mem_cons]
+  exact ⟨by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by simp⟩
+
+private theorem profile1Primes3 : ∀ q ∈ ([389, 461, 569, 313, 673, 193, 647, 167, 251, 563, 293, 331, 601, 487, 317, 239, 349, 547, 271, 409, 373, 197, 241, 307, 503, 383, 613, 277, 401, 463, 191, 523] : List ℕ),
+    q.Prime ∧ q ≠ 5 ∧ q ≠ 7 ∧ q ≤ 65536 := by
+  simp only [List.forall_mem_cons]
+  exact ⟨by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by simp⟩
+
+private theorem profile1Primes4 : ∀ q ∈ ([149, 223, 211, 359, 379, 397, 653, 677, 1231, 797] : List ℕ),
+    q.Prime ∧ q ≠ 5 ∧ q ≠ 7 ∧ q ≤ 65536 := by
+  simp only [List.forall_mem_cons]
+  exact ⟨by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by simp⟩
+
+theorem profile1_valid : Valid profile1 := by
+  refine ⟨by decide +kernel, by decide +kernel,
+    (distinctCheck_sound (seen := 0) (by decide +kernel)).1, ?_,
+    by decide +kernel, by decide +kernel⟩
+  change ∀ q ∈ ([179, 61, 41, 229, 157, 263, 113, 127, 151, 59, 67, 107, 79, 97, 181, 269, 109, 103, 37, 17, 89, 83, 71, 53, 47, 73, 137, 19, 23, 101, 131, 11] ++ [31, 43, 13, 29, 199, 227, 163, 257, 2, 1229, 3, 773, 419, 659, 541, 907, 311, 557, 769, 499, 577, 683, 1103, 997, 353, 367, 593, 607, 479, 571, 859, 977] ++ [281, 643, 509, 709, 661, 431, 467, 449, 631, 719, 1531, 1619, 739, 733, 521, 727, 139, 173, 233, 491, 347, 457, 433, 421, 439, 587, 599, 617, 283, 337, 619, 443] ++ [389, 461, 569, 313, 673, 193, 647, 167, 251, 563, 293, 331, 601, 487, 317, 239, 349, 547, 271, 409, 373, 197, 241, 307, 503, 383, 613, 277, 401, 463, 191, 523] ++ [149, 223, 211, 359, 379, 397, 653, 677, 1231, 797] : List ℕ), q.Prime ∧ q ≠ 5 ∧ q ≠ 7 ∧ q ≤ 65536
+  simp only [List.forall_mem_append]
+  exact ⟨⟨⟨⟨profile1Primes0, profile1Primes1⟩, profile1Primes2⟩, profile1Primes3⟩, profile1Primes4⟩
+
+theorem profile1_cap : profile1.cap ≤ 2^2112 := by
+  have hr : profile1.inputOrder = 11613907444672288293883518933668122125696304264732432830029966906554092193002841149164101645696653374875815081823177526074579066533793883162617447126199532589395355552913426687248667738985921012005947853143466493867275826803000723623456013779759775857 := by decide +kernel
+  have hj : profile1.mass = 655163945840813163652681124147695934093189085389861143688859623738929305094289124799427761643009724600005926722793069598674334549065894508454135029716351632592335601898255857585852124551880753109542452173179580429141726355028127857371932691486679061941388692509138668020670564146519224308425652101303053704886181170836610943031725095050 := by decide +kernel
+  have hl : reservedCap profile1.testLimit 65536 = 5611568078 := by decide +kernel
+  have h0 : profile1.radius 0 = 548813306238667462 := by decide +kernel
+  have h1 : profile1.radius 1 = 256497239098623202858 := by decide +kernel
+  have h2 : profile1.radius 2 = 35295996877359283378 := by decide +kernel
+  have h3 : profile1.radius 3 = 17151434246681869454 := by decide +kernel
+  have h4 : profile1.radius 4 = 20882636432023742438 := by decide +kernel
+  have h5 : profile1.radius 5 = 934910174984374 := by decide +kernel
+  have h6 : profile1.radius 6 = 915526189949278 := by decide +kernel
+  have h7 : profile1.radius 7 = 7448035205427158066 := by decide +kernel
+  have h8 : profile1.radius 8 = 3018500217791854246 := by decide +kernel
+  have h9 : profile1.radius 9 = 8395775330372922494 := by decide +kernel
+  have h10 : profile1.radius 10 = 4606958133045766 := by decide +kernel
+  have h11 : profile1.radius 11 = 0 := by decide +kernel
+  have h12 : profile1.radius 12 = 0 := by decide +kernel
+  have h13 : profile1.radius 13 = 0 := by decide +kernel
+  have h14 : profile1.radius 14 = 285541408822353346 := by decide +kernel
+  have h15 : profile1.radius 15 = 0 := by decide +kernel
+  have h16 : profile1.radius 16 = 0 := by decide +kernel
+  have ha : Rails.Strips.countCapAt 35 profile1.radius = 346689468440643741181466037 := by
+    change (([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] : List ℕ).map fun i =>
+      (2*Rails.Strips.radius (profile1.radius i)+1)*(2*Rails.Strips.widthAt 35 i+1)).sum = _
+    norm_num [Rails.Strips.radius, Rails.Strips.widthAt, h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15, h16]
+  unfold Profile.cap Compiler.StripLift.reservedVolumeCap
+  simp only [hr,hj,hl,ha]
+  decide +kernel
+
 def profile12 : Profile :=
   ⟨[3, 4],
    [(127, 83), (173, 73), (109, 167), (103, 257), (157, 263), (101, 79), (149, 113), (53, 223), (179, 137), (11, 29), (41, 97), (17, 211), (13, 71), (59, 37), (67, 47), (151, 19), (31, 107), (61, 23), (277, 233), (43, 139), (197, 163), (271, 89), (2, 1229), (3, 773)],

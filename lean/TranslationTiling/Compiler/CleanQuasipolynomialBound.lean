@@ -117,8 +117,7 @@ theorem clean_power_le_real_loglog (k n : ℕ) :
 theorem exists_connected_tile_clean_quasipolynomial_bound (T : LeanWang.TileSet) :
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
-      (cubeCount P : ℝ) ≤ ((T.toFinset.card : ℝ) + 4) ^
-        ((312 : ℝ) * Real.logb 2 (Real.logb 2 ((T.toFinset.card : ℝ) + 4))) :=
+      (cubeCount P : ℝ) ≤ packedBound T.toFinset.card :=
   exists_connected_tile_packed_quasipolynomial_bound T
 
 end

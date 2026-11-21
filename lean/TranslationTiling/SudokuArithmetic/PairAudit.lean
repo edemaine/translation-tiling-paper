@@ -4,5 +4,3 @@ import TranslationTiling.FiniteCompiler.Effective.PairCompiler
 #print axioms TranslationTiling.Sudoku.NineArithmetic.shifted_root_one
 #print axioms TranslationTiling.Sudoku.PairBoard.wang_iff
 #print axioms TranslationTiling.FiniteCompiler.PairSmallCompiler.compile_facts
-#print axioms TranslationTiling.FiniteCompiler.Effective.pairCompile_facts
-#print axioms TranslationTiling.FiniteCompiler.Effective.pairCompile_computable

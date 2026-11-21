@@ -250,13 +250,15 @@ uses the smaller support bound in the actual connected tile.
 converts these estimates to the clean coefficient `2600`: it uses the finite
 profiles for `1 ≤ n ≤ 91` and coefficient `35752/15 < 2600` for `n ≥ 92`.
 
-[Effective/JointCompiler.lean](TranslationTiling/FiniteCompiler/Effective/JointCompiler.lean)
-proves the same bound for one total computable compiler, with input list length
-in place of distinct tile count. For empty input it uses a fixed connected
-nontile with at most `2^250` cubes, constructed and verified in
-[Compiler/EmptyInputBound.lean](TranslationTiling/Compiler/EmptyInputBound.lean).
-The public abstract and motion wrappers use this compiler. All dependencies
-are included in the axiom audit.
+[Effective/PackedTotalCompiler.lean](TranslationTiling/FiniteCompiler/Effective/PackedTotalCompiler.lean)
+proves the bound for the total computable compiler used by the public
+abstract and motion wrappers. It selects a mixed-radix prime table by
+alphabet size and uses the ternary construction for larger inputs.
+Its uniform cube bound is `max((n+4)^(312 lg lg(n+4)), 2^2392)`.
+The capacity-one table in [PackedProfiles.lean](TranslationTiling/FiniteCompiler/PackedProfiles.lean)
+gives the sharper bound `2^2112`. An empty alphabet is represented by a
+Wang tile with unequal north and south colors and encoded by the same
+construction. The compiler is included in the axiom audit.
 
 The earlier seed-class code remains in
 [Effective/PackedWords.lean](TranslationTiling/FiniteCompiler/Effective/PackedWords.lean),

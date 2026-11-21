@@ -13,47 +13,9 @@ private theorem log_lower {a b : ℕ} {x : ℝ} (_hx : 0 < x) (hb : 0 < b)
   rw [Real.logb_pow, Real.logb_pow, Real.logb_self_eq_one (by norm_num : (1 : ℝ) < 2), mul_one] at hl
   exact (div_le_iff₀ (by exact_mod_cast hb)).mpr (by linarith)
 
-private theorem log_upper {a b : ℕ} {x : ℝ} (hx : 0 < x) (hb : 0 < b)
-    (h : x^b ≤ (2 : ℝ)^a) : Real.logb 2 x ≤ (a : ℝ)/b := by
-  have hlog := Real.logb_le_logb_of_le (by norm_num : (1 : ℝ) < 2)
-    (pow_pos hx b) h
-  rw [Real.logb_pow, Real.logb_pow, Real.logb_self_eq_one (by norm_num), mul_one] at hlog
-  exact (le_div_iff₀ (by exact_mod_cast hb)).mpr (by linarith)
-
-/-- The consecutive powers of two bracketing the uniform formula at one tile. -/
-theorem packed_bound_one :
-    (2 : ℝ)^880 < (5 : ℝ)^(312 * Real.logb 2 (Real.logb 2 5)) ∧
-    (5 : ℝ)^(312 * Real.logb 2 (Real.logb 2 5)) < (2 : ℝ)^881 := by
-  let t := Real.logb 2 (5 : ℝ)
-  let g := Real.logb 2 t
-  have ht₀ : 202/87 ≤ t :=
-    log_lower (a:=202) (b:=87) (by norm_num) (by decide) (by norm_num)
-  have ht₁ : t ≤ 137/59 :=
-    log_upper (a:=137) (b:=59) (by norm_num) (by decide) (by norm_num)
-  have htpos : 0 < t := by linarith
-  have hg₀ : 96/79 ≤ g :=
-    (log_lower (a:=96) (b:=79) (by norm_num) (by decide) (by norm_num)).trans
-      (Real.logb_le_logb_of_le (by norm_num) (by norm_num) ht₀)
-  have hg₁ : g ≤ 62/51 :=
-    (Real.logb_le_logb_of_le (by norm_num) htpos ht₁).trans
-      (log_upper (a:=62) (b:=51) (by norm_num) (by decide) (by norm_num))
-  have hp₀ := mul_le_mul ht₀ hg₀ (by norm_num : (0 : ℝ) ≤ 96/79) htpos.le
-  have hp₁ := mul_le_mul ht₁ hg₁ (show 0 ≤ g by linarith) (by norm_num : (0 : ℝ) ≤ 137/59)
-  have hpow (k : ℕ) : Real.logb 2 ((2 : ℝ)^k) = k := by
-    rw [Real.logb_pow, Real.logb_self_eq_one (by norm_num), mul_one]
-  have hr : Real.logb 2 ((5 : ℝ)^(312 * g)) = 312 * g * t :=
-    Real.logb_rpow_eq_mul_logb_of_pos (by norm_num)
-  constructor
-  · apply (Real.logb_lt_logb_iff (by norm_num : (1 : ℝ) < 2) (by positivity) (by positivity)).mp
-    change Real.logb 2 ((2 : ℝ)^880) < Real.logb 2 ((5 : ℝ)^(312*g))
-    rw [hpow, hr]
-    norm_num at hp₀ ⊢
-    nlinarith only [hp₀]
-  · apply (Real.logb_lt_logb_iff (by norm_num : (1 : ℝ) < 2) (by positivity) (by positivity)).mp
-    change Real.logb 2 ((5 : ℝ)^(312*g)) < Real.logb 2 ((2 : ℝ)^881)
-    rw [hpow, hr]
-    norm_num at hp₁ ⊢
-    nlinarith only [hp₁]
+/-- The size envelope for the compiler, including its smallest prime tables. -/
+def packedBound (n : ℕ) : ℝ :=
+  max (((n : ℝ)+4)^(312 * Real.logb 2 (Real.logb 2 ((n : ℝ)+4)))) ((2 : ℝ)^2392)
 
 theorem packed_exponent {n m e a b c d : ℕ} (hn : m ≤ n) (hb : 0 < b) (hd : 0 < d)
     (ht : (2 : ℝ)^a ≤ ((m : ℝ)+4)^b) (hg : (2 : ℝ)^c ≤ ((a : ℝ)/b)^d)

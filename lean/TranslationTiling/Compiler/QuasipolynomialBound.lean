@@ -1,4 +1,4 @@
-import TranslationTiling.FiniteCompiler.Effective.ProjectedTotalCompiler
+import TranslationTiling.FiniteCompiler.Effective.PackedTotalCompiler
 import TranslationTiling.FiniteCompiler.Effective.MixedCompiler
 import TranslationTiling.FiniteCompiler.Effective.JointCompiler
 import TranslationTiling.FiniteCompiler.TernaryConstruction
@@ -156,28 +156,16 @@ theorem exists_connected_tile_joint_count_bound (T : LeanWang.TileSet) (hn : 0<T
   simpa only [List.card_toFinset,FiniteCompiler.Effective.jointSystem,
     FiniteCompiler.JointSystem.system,FiniteCompiler.primeBudget,FiniteCompiler.channelCount] using hb
 
-/-- The explicit opposite-edge test handles one distinct Wang tile. -/
+/-- The capacity-one prime table bounds the guarded compiler on a one-tile input. -/
 theorem exists_connected_tile_one_quasipolynomial_bound (T : LeanWang.TileSet)
     (hT : T.toFinset.card=1) :
     ∃ P : Tile 3, P≠[] ∧ FaceConnected P ∧
-      (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧ cubeCount P≤2^250 := by
+      (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧ cubeCount P≤2^2112 := by
   have hlen : T.dedup.length=1 := by simpa only [List.card_toFinset] using hT
-  obtain ⟨hne,hc,ht,_⟩ := FiniteCompiler.Effective.projectedCompile_facts T.dedup
+  obtain ⟨hne,hc,ht,_⟩ := FiniteCompiler.Effective.packedCompile_facts T.dedup
   have hd : LeanWang.TilesPlane T ↔ LeanWang.TilesPlane T.dedup :=
     LeanWang.tilesPlane_congr (by intro t; simp)
-  have hb := FiniteCompiler.Effective.projectedCompile_single_bound T.dedup hlen
-  exact ⟨_,hne,hc,hd.trans ht,(List.toFinset_card_le _).trans hb⟩
-
-/-- A finite patch test handles at most five Wang tiles. -/
-theorem exists_connected_tile_small_quasipolynomial_bound (T : LeanWang.TileSet)
-    (hT : T.toFinset.card≤5) :
-    ∃ P : Tile 3, P≠[] ∧ FaceConnected P ∧
-      (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧ cubeCount P≤2^250 := by
-  have hlen : T.dedup.length≤5 := by simpa only [List.card_toFinset] using hT
-  obtain ⟨hne,hc,ht,_⟩ := FiniteCompiler.Effective.projectedCompile_facts T.dedup
-  have hd : LeanWang.TilesPlane T ↔ LeanWang.TilesPlane T.dedup :=
-    LeanWang.tilesPlane_congr (by intro t; simp)
-  have hb := FiniteCompiler.Effective.projectedCompile_small_bound T.dedup hlen
+  have hb := FiniteCompiler.Effective.packedCompile_one_bound T.dedup hlen
   exact ⟨_,hne,hc,hd.trans ht,(List.toFinset_card_le _).trans hb⟩
 
 end

@@ -5,5 +5,3 @@ import TranslationTiling.FiniteCompiler.Effective.NineCompiler
 #print axioms TranslationTiling.Sudoku.NineArithmetic.arithmetic_finite_structure
 #print axioms TranslationTiling.Sudoku.NineBoard.wang_iff
 #print axioms TranslationTiling.FiniteCompiler.NineSmallCompiler.compile_facts
-#print axioms TranslationTiling.FiniteCompiler.Effective.nineCompile_facts
-#print axioms TranslationTiling.FiniteCompiler.Effective.nineCompile_computable
