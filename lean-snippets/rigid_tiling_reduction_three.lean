@@ -5,5 +5,6 @@ theorem rigid_tiling_reduction_three :
       (∀ motions : Set (Motion 3), translations ⊆ motions →
         (Tiles (f T) ↔ RealTiles (f T) motions)) ∧
       ((f T).length : ℝ) ≤ 64000 * (max (((T.length : ℝ) + 4) ^
-        ((88331 / 5000 : ℝ) * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4)) + 561))
+        (10 * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4)) +
+          19 * Real.logb 2 (Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4))) + 557))
         ((2 : ℝ)^2392)) := ...

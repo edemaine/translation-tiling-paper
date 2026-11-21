@@ -57,13 +57,13 @@ private theorem arithmetic_slope (i : Fin 20) (hi : i.val < 18) :
       (([0,1,2,3,4,5,6,7,10,0,1,2,3,4,7,8,9,14] : List ℕ).getD i.val 0 : ℤ) := by
   fin_cases i <;> first | rfl | contradiction | omega
 
-theorem packedTernary_layout (p : Profile) {k : ℕ} (hk : 0 < k)
-    (hr : p.radices = List.replicate k 3) : Layout p := by
+theorem packedRadix_layout (p : Profile) {k r : ℕ} (hk : 0 < k) (hrpos : 0 < r)
+    (hr : p.radices = List.replicate k r) : Layout p := by
   have hlen : p.radices.length = k := by rw [hr, List.length_replicate]
-  have hprod : p.radices.prod = 3^k := by rw [hr, List.prod_replicate]
+  have hprod : p.radices.prod = r^k := by rw [hr, List.prod_replicate]
   have hw : p.width = 18+2*k := by rw [Profile.width, hlen]
   have harity (j : Fin p.width) : p.arity j.val =
-      if j.val < 9 then 4 else if j.val < 18 then 6 else 3 := by
+      if j.val < 9 then 4 else if j.val < 18 then 6 else r := by
     have hj := j.isLt
     unfold Profile.arity
     split_ifs with h9 h18 hwidth
@@ -83,7 +83,7 @@ theorem packedTernary_layout (p : Profile) {k : ℕ} (hk : 0 < k)
   refine ⟨hcover, ?_, ?_, ?_⟩
   · intro j
     rw [harity]
-    split_ifs <;> decide
+    split_ifs <;> first | exact hrpos | decide
   · intro i
     by_cases hi : i.val < 18
     · letI : Unique (p.Fibre i) :=
@@ -91,13 +91,13 @@ theorem packedTernary_layout (p : Profile) {k : ℕ} (hk : 0 < k)
           fun a => p.arithmetic_unique i hi a _⟩
       rw [Fintype.prod_unique]
       rw [harity, arity_original]
-      change (if i.val < 9 then 4 else if i.val < 18 then 6 else 3) = _
+      change (if i.val < 9 then 4 else if i.val < 18 then 6 else r) = _
       simp only [if_pos hi]
     · let t : Fin 2 := ⟨i.val-18, by have := i.isLt; omega⟩
       have he : (⟨18+t.val, by have := t.isLt; omega⟩ : Fin 20) = i := Fin.ext (by dsimp [t]; omega)
       have hcard : Fintype.card (p.Fibre i) = k := by
         rw [← he, ← Fintype.card_congr (wangFibre p t), Fintype.card_fin, hlen]
-      have hall (j : p.Fibre i) : p.arity j.val.val = 3 := by
+      have hall (j : p.Fibre i) : p.arity j.val.val = r := by
         have hj : 18 ≤ j.val.val := by
           have ho := congrArg Fin.val j.property
           rw [origin_val] at ho
@@ -119,23 +119,37 @@ theorem packedTernary_layout (p : Profile) {k : ℕ} (hk : 0 < k)
       rfl
 
 
-/-- The guarded board with two groups of ternary Wang-label digits. -/
-def ternaryLayoutProfile (k : ℕ) : Profile := ⟨List.replicate k 3, [], []⟩
+/-- The guarded board with two groups of Wang-label digits of radix r. -/
+def radixLayoutProfile (r k : ℕ) : Profile := ⟨List.replicate k r, [], []⟩
 
-@[simp] theorem ternaryLayout_width (k : ℕ) :
-    (ternaryLayoutProfile k).width = 18 + 2*k := by
-  simp [ternaryLayoutProfile, Profile.width]
+@[simp] theorem radixLayout_width (r k : ℕ) :
+    (radixLayoutProfile r k).width = 18 + 2*k := by
+  simp [radixLayoutProfile, Profile.width]
 
-theorem ternaryLayout_arity {k i : ℕ} (hk : 0 < k)
-    (hi : i < (ternaryLayoutProfile k).width) :
-    (ternaryLayoutProfile k).arity i = if i < 9 then 4 else if i < 18 then 6 else 3 := by
+theorem radixLayout_arity {r k i : ℕ} (hk : 0 < k)
+    (hi : i < (radixLayoutProfile r k).width) :
+    (radixLayoutProfile r k).arity i = if i < 9 then 4 else if i < 18 then 6 else r := by
   unfold Profile.arity
   split_ifs
   · rfl
   · rfl
-  · simp only [ternaryLayoutProfile, List.length_replicate]
+  · simp only [radixLayoutProfile, List.length_replicate]
     rw [List.getD_eq_getElem _ _ (by simpa using Nat.mod_lt (i-18) hk)]
     simp
+
+def ternaryLayoutProfile := radixLayoutProfile 3
+
+theorem packedTernary_layout (p : Profile) {k : ℕ} (hk : 0 < k)
+    (hr : p.radices = List.replicate k 3) : Layout p :=
+  packedRadix_layout p hk (by decide) hr
+
+@[simp] theorem ternaryLayout_width (k : ℕ) :
+    (ternaryLayoutProfile k).width = 18 + 2*k := radixLayout_width 3 k
+
+theorem ternaryLayout_arity {k i : ℕ} (hk : 0 < k)
+    (hi : i < (ternaryLayoutProfile k).width) :
+    (ternaryLayoutProfile k).arity i = if i < 9 then 4 else if i < 18 then 6 else 3 :=
+  radixLayout_arity hk hi
 
 end
 end TranslationTiling.FiniteCompiler.Packed

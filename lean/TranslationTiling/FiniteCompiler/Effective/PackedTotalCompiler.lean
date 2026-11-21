@@ -104,7 +104,7 @@ theorem packedCompile_computable : Computable packedCompile := by
 theorem packedCompile_facts (T : LeanWang.TileSet) :
     packedCompile T ≠ [] ∧ FaceConnected (packedCompile T) ∧
     (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles (packedCompile T)) ∧
-    ((packedCompile T).length : ℝ) ≤ Size.guardedBound T.length := by
+    ((packedCompile T).length : ℝ) ≤ Size.residueBound T.length := by
   by_cases hm : T.length ≤ cutoff
   · rw [packedCompile, if_pos hm]
     have hlen := nonemptyInput_length T
@@ -114,12 +114,12 @@ theorem packedCompile_facts (T : LeanWang.TileSet) :
     rw [hlen] at hsize
     exact ⟨hne,hc,(nonemptyInput_tiles T).symm.trans ht,
       (show (_ : ℝ) ≤ ((2^(guardedProfile (max 1 T.length)).exponent : ℕ) : ℝ) by exact_mod_cast hsize).trans
-        (Packed.guardedProfile_bound T.length)⟩
+        (Packed.guardedProfile_residue_bound T.length)⟩
   · rw [packedCompile, if_neg hm]
     exact Packed.packedTailCore_facts T (Nat.lt_of_not_ge hm)
 
 theorem packedCompile_real_bound (T : LeanWang.TileSet) :
-    ((packedCompile T).length : ℝ) ≤ Size.guardedBound T.length :=
+    ((packedCompile T).length : ℝ) ≤ Size.residueBound T.length :=
   (packedCompile_facts T).2.2.2
 
 /-- The one-symbol instance of the same guarded compiler uses the capacity-one prime table. -/
@@ -147,7 +147,7 @@ namespace TranslationTiling.Compiler.Size
 theorem exists_connected_tile_packed_quasipolynomial_bound (T : LeanWang.TileSet) :
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
-      (cubeCount P : ℝ) ≤ guardedBound T.toFinset.card := by
+      (cubeCount P : ℝ) ≤ residueBound T.toFinset.card := by
   let P := FiniteCompiler.Effective.packedCompile T.dedup
   obtain ⟨hne,hc,hi,hsize⟩ := FiniteCompiler.Effective.packedCompile_facts T.dedup
   have he : LeanWang.TilesPlane T ↔ LeanWang.TilesPlane T.dedup :=

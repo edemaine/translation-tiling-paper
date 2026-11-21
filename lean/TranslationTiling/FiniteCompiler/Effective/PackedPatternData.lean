@@ -98,33 +98,33 @@ theorem rawGuardedMasks_primrec :
 def rawOrigin (k i : ℕ) : ℕ :=
   if i < 18 then i else if i < 18+k then 18 else 19
 
-def expandMask (k : ℕ) (m : RawMask) : GuardedAssignments :=
+def expandMask (r k : ℕ) (m : RawMask) : GuardedAssignments :=
   ((List.range (18+2*k)).filter (fun i => (m.getD (rawOrigin k i) none).isSome)).map
-    fun i => (i,ternaryDigit k i ((m.getD (rawOrigin k i) none).getD 0))
+    fun i => (i,radixDigit r k i ((m.getD (rawOrigin k i) none).getD 0))
 
 @[fun_prop] theorem rawOrigin_primrec : Primrec (fun z : ℕ × ℕ => rawOrigin z.1 z.2) := by
   unfold rawOrigin
   fun_prop
 
-@[fun_prop] theorem ternaryDigit_primrec :
-    Primrec (fun z : ℕ × ℕ × ℕ => ternaryDigit z.1 z.2.1 z.2.2) := by
-  unfold ternaryDigit
+@[fun_prop] theorem radixDigit_primrec :
+    Primrec (fun z : ℕ × ℕ × ℕ × ℕ => radixDigit z.1 z.2.1 z.2.2.1 z.2.2.2) := by
+  unfold radixDigit
   fun_prop
 
-@[fun_prop] theorem expandMask_primrec : Primrec (fun z : ℕ × RawMask => expandMask z.1 z.2) := by
+@[fun_prop] theorem expandMask_primrec : Primrec (fun z : ℕ × ℕ × RawMask => expandMask z.1 z.2.1 z.2.2) := by
   unfold expandMask
-  have hm : Primrec (fun z : (ℕ × RawMask) × ℕ => z.1.2.getD (rawOrigin z.1.1 z.2) none) := by fun_prop
-  have hb : Primrec (fun z : (ℕ × RawMask) × ℕ => (z.1.2.getD (rawOrigin z.1.1 z.2) none).isSome) :=
+  have hm : Primrec (fun z : (ℕ × ℕ × RawMask) × ℕ => z.1.2.2.getD (rawOrigin z.1.2.1 z.2) none) := by fun_prop
+  have hb : Primrec (fun z : (ℕ × ℕ × RawMask) × ℕ => (z.1.2.2.getD (rawOrigin z.1.2.1 z.2) none).isSome) :=
     Primrec.option_isSome.comp hm
-  have hv : Primrec (fun z : (ℕ × RawMask) × ℕ => (z.1.2.getD (rawOrigin z.1.1 z.2) none).getD 0) :=
+  have hv : Primrec (fun z : (ℕ × ℕ × RawMask) × ℕ => (z.1.2.2.getD (rawOrigin z.1.2.1 z.2) none).getD 0) :=
     Primrec.option_getD.comp hm (Primrec.const 0)
-  have htest : PrimrecPred (fun z : (ℕ × RawMask) × ℕ =>
-      (z.1.2.getD (rawOrigin z.1.1 z.2) none).isSome = true) :=
-    (hb.of_eq (fun z => by cases h : (z.1.2.getD (rawOrigin z.1.1 z.2) none).isSome <;> simp [h])).primrecPred
-  have hf := filterList (p := fun (z : ℕ × RawMask) i => (z.2.getD (rawOrigin z.1 i) none).isSome = true)
-    (show Primrec (fun z : ℕ × RawMask => List.range (18+2*z.1)) by fun_prop) htest
-  have hf' : Primrec (fun z : ℕ × RawMask =>
-      (List.range (18+2*z.1)).filter (fun i => (z.2.getD (rawOrigin z.1 i) none).isSome)) :=
+  have htest : PrimrecPred (fun z : (ℕ × ℕ × RawMask) × ℕ =>
+      (z.1.2.2.getD (rawOrigin z.1.2.1 z.2) none).isSome = true) :=
+    (hb.of_eq (fun z => by cases h : (z.1.2.2.getD (rawOrigin z.1.2.1 z.2) none).isSome <;> simp [h])).primrecPred
+  have hf := filterList (p := fun (z : ℕ × ℕ × RawMask) i => (z.2.2.getD (rawOrigin z.2.1 i) none).isSome = true)
+    (show Primrec (fun z : ℕ × ℕ × RawMask => List.range (18+2*z.2.1)) by fun_prop) htest
+  have hf' : Primrec (fun z : ℕ × ℕ × RawMask =>
+      (List.range (18+2*z.2.1)).filter (fun i => (z.2.2.getD (rawOrigin z.2.1 i) none).isSome)) :=
     hf.of_eq (fun z => by simp only [Bool.decide_coe])
   apply mapList hf'
   fun_prop

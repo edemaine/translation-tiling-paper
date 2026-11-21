@@ -522,6 +522,8 @@ run_cmd do
       ``TranslationTiling.Sudoku.PairBoard.projected_soundness,
       ``TranslationTiling.FiniteCompiler.PairSmall.projected_iff_wang,
       ``TranslationTiling.FiniteCompiler.ProjectedCompiler.compile_facts,
+      ``TranslationTiling.FiniteCompiler.Packed.residueRows_computable,
+      ``TranslationTiling.Compiler.Size.residue_volume_bound,
       ``TranslationTiling.FiniteCompiler.Effective.packedCompile_computable,
       ``TranslationTiling.FiniteCompiler.Effective.packedCompile_facts,
       ``TranslationTiling.FiniteCompiler.Effective.packedCompile_one_bound,

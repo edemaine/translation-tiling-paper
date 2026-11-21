@@ -54,6 +54,66 @@ private theorem atPrime_mem (i : p.Tag) : p.atPrime i ∈ p.primes := by
       rw [List.getD_eq_getElem _ _ hj]
       exact List.getElem_mem _
 
+include hv in
+theorem valid_injectivity : p.injectivityCheck := by
+  classical
+  have himage : Finset.univ.image p.atPrime = p.primes.toFinset := by
+    ext q
+    simp only [Finset.mem_image,Finset.mem_univ,true_and,List.mem_toFinset]
+    constructor
+    · rintro ⟨t,rfl⟩
+      exact atPrime_mem p hv t
+    · intro hq
+      rcases List.mem_append.mp hq with hp|hd
+      · obtain ⟨ab,hab,hq⟩ := List.mem_flatMap.mp hp
+        obtain ⟨i,hi,rfl⟩ := List.mem_iff_getElem.mp hab
+        have hi' : i < p.width+2 := by rwa [hv.1] at hi
+        have hget : p.pairs.getD i (0,0)=p.pairs[i] := List.getD_eq_getElem _ _ hi
+        simp only [List.mem_cons,List.not_mem_nil,or_false] at hq
+        rcases hq with hq|hq
+        · exact ⟨.inl ⟨i,hi'⟩,by change (p.pairs.getD i (0,0)).1 = q; rw [hget]; exact hq.symm⟩
+        · exact ⟨.inr (.inl ⟨i,hi'⟩),by change (p.pairs.getD i (0,0)).2 = q; rw [hget]; exact hq.symm⟩
+      · obtain ⟨row,hrow,hd⟩ := List.mem_flatMap.mp hd
+        obtain ⟨i,hi,rfl⟩ := List.mem_iff_getElem.mp hrow
+        have hi' : i < p.width+2 := by rwa [hv.2.1] at hi
+        have hget : p.row i=p.digits[i] := List.getD_eq_getElem _ _ hi
+        rw [← hget] at hd
+        obtain ⟨j,hj,he⟩ := List.mem_iff_getElem.mp hd
+        have hj' : j < (p.row i).length := by simpa using hj
+        rw [List.getElem_map] at he
+        have hrowlen := (hv.2.2.2.2.1 i (List.mem_range.mpr hi')).1
+        refine ⟨.inr (.inr ⟨⟨i,hi'⟩,⟨j,hrowlen ▸ hj'⟩⟩),?_⟩
+        exact (congrArg Prod.fst (List.getD_eq_getElem _ _ hj')).trans he
+  unfold Profile.injectivityCheck
+  rw [himage,List.toFinset_card_of_nodup hv.2.2.1]
+  have hl : p.primes.length = 2*(p.width+2) +
+      ((List.range (p.width+2)).map p.arity).sum := by
+    unfold Profile.primes
+    simp only [List.length_append,List.length_flatMap,List.map_map,Function.comp_def,
+      List.length_cons,List.length_nil,List.length_map,List.map_const,List.sum_replicate,hv.1]
+    congr 1
+    · change (p.pairs.map (fun _ => 2)).sum = _
+      simp [hv.1,Nat.mul_comm]
+    · congr 1
+      apply List.ext_getElem
+      · simp [hv.2.1]
+      · intro i hi hj
+        have h' : i < p.digits.length := by simpa using hi
+        have h'' : i < p.width+2 := by rwa [hv.2.1] at h'
+        have hh := (hv.2.2.2.2.1 i (List.mem_range.mpr h'')).1
+        change (p.digits.getD i []).length = _ at hh
+        rw [List.getD_eq_getElem _ _ h'] at hh
+        simpa using hh
+  rw [hl,Fintype.card_sum,Fintype.card_sum,Fintype.card_sigma]
+  simp only [Fintype.card_fin]
+  rw [← Fin.sum_ofFn]
+  have h : (List.range (p.width+2)).map p.arity = List.ofFn (fun i : Fin (p.width+2) => p.arity i.val) := by
+    apply List.ext_getElem
+    · simp
+    · intro i hi hj
+      simp only [List.getElem_map,List.getElem_range,List.getElem_ofFn]
+  rw [← h,two_mul,Nat.add_assoc]
+
 variable {T : System} [AlphabetFamily T]
   (hw : T.width = p.width) (ha : ∀ n : Column T, AlphabetFamily.size (T:=T) n = p.arity n.val)
 
@@ -123,6 +183,15 @@ variable (hinj : p.injectivityCheck)
 theorem encoding_prime (i : PrimeTag T) :
     (encoding p hv hw ha hinj).primeAt i ≤ P :=
   (hv.2.2.2.1 _ (atPrime_mem p hv _)).2.2.2
+
+theorem encoding_digit_seed (t : Fin 2) (v : Label T (.inr t)) :
+    (encoding p hv hw ha hinj).digitPrime (.inr t) v =
+      (p.digit (p.width+t.val) 0).1 := by
+  change (p.digit (p.width+t.val) (labelEquiv p hw ha (.inr t) v).val).1 = _
+  have h := (labelEquiv p hw ha (.inr t) v).isLt
+  change (labelEquiv p hw ha (.inr t) v).val < p.arity (p.width+t.val) at h
+  rw [arity_seed p t] at h
+  rw [show (labelEquiv p hw ha (.inr t) v).val = 0 by omega]
 
 theorem encoding_r (i : Channel T) :
     (encoding p hv hw ha hinj).r i = p.r (channelEquiv p hw i).val := by

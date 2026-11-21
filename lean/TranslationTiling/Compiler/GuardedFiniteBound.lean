@@ -1,4 +1,4 @@
-import TranslationTiling.Compiler.GuardedLogBound
+import TranslationTiling.Compiler.ResidueLogBound
 import TranslationTiling.FiniteCompiler.PackedExtendedProfiles
 
 namespace TranslationTiling.FiniteCompiler.Packed
@@ -31,9 +31,10 @@ theorem guardedProfile_capacity {n : ℕ} (hn : n ≤ 3^21) :
   · exact h19683
   · exact hn
 
-theorem guardedProfile_bound (n : ℕ) :
-    ((2^(guardedProfile (max 1 n)).exponent : ℕ) : ℝ) ≤ guardedBound n := by
-  have hbudget (d : ℕ) (hd : d ≤ 2392) : ((2^d : ℕ) : ℝ) ≤ guardedBound n := by
+
+theorem guardedProfile_residue_bound (n : ℕ) :
+    ((2^(guardedProfile (max 1 n)).exponent : ℕ) : ℝ) ≤ residueBound n := by
+  have hbudget (d : ℕ) (hd : d ≤ 2392) : ((2^d : ℕ) : ℝ) ≤ residueBound n := by
     apply le_trans _ (le_max_right _ _)
     push_cast
     exact pow_le_pow_right₀ (by norm_num) hd
@@ -44,21 +45,27 @@ theorem guardedProfile_bound (n : ℕ) :
   split_ifs with h1 h12 h15 h36 h243 h19683
   · exact hbudget 2112 (by decide)
   · exact hbudget 2392 (by decide)
-  · exact guarded_bound_dyadic (a:=94) (b:=23) (c:=67) (d:=33)
-      (by decide) (by decide) (hlog 13 94 23 (by omega) (by norm_num))
-      (by norm_num) (by decide) (by change (2438 : ℝ) ≤ _; norm_num)
-  · exact guarded_bound_dyadic (a:=69) (b:=16) (c:=21) (d:=10)
-      (by decide) (by decide) (hlog 16 69 16 (by omega) (by norm_num))
-      (by norm_num) (by decide) (by change (2573 : ℝ) ≤ _; norm_num)
-  · exact guarded_bound_dyadic (a:=5) (b:=1) (c:=2) (d:=1)
-      (by decide) (by decide) (hlog 37 5 1 (by omega) (by norm_num))
-      (by norm_num) (by decide) (by change (2876 : ℝ) ≤ _; norm_num)
-  · exact guarded_bound_dyadic (a:=7) (b:=1) (c:=2) (d:=1)
-      (by decide) (by decide) (hlog 243 7 1 (by omega) (by norm_num))
-      (by norm_num) (by decide) (by change (3594 : ℝ) ≤ _; norm_num)
-  · exact guarded_bound_dyadic (a:=14) (b:=1) (c:=3) (d:=1)
-      (by decide) (by decide) (hlog 19684 14 1 (by omega) (by norm_num))
-      (by norm_num) (by decide) (by change (5954 : ℝ) ≤ _; norm_num)
+  · exact residue_bound_dyadic (a:=94) (b:=23) (c:=67) (d:=33) (u:=51) (v:=50)
+      (by decide) (by decide) (by decide) (by decide) (by decide)
+      (hlog 13 94 23 (by omega) (by norm_num)) (by norm_num) (by norm_num)
+      (by change (2438 : ℝ) ≤ _; norm_num)
+  · exact residue_bound_dyadic (a:=69) (b:=16) (c:=21) (d:=10) (u:=21) (v:=20)
+      (by decide) (by decide) (by decide) (by decide) (by decide)
+      (hlog 16 69 16 (by omega) (by norm_num)) (by norm_num) (by norm_num)
+      (by change (2573 : ℝ) ≤ _; norm_num)
+  · exact residue_bound_dyadic (a:=5) (b:=1) (c:=2) (d:=1) (u:=1) (v:=1)
+      (by decide) (by decide) (by decide) (by decide) (by decide)
+      (hlog 37 5 1 (by omega) (by norm_num)) (by norm_num) (by norm_num)
+      (by change (2876 : ℝ) ≤ _; norm_num)
+  · exact residue_bound_dyadic (a:=7) (b:=1) (c:=2) (d:=1) (u:=1) (v:=1)
+      (by decide) (by decide) (by decide) (by decide) (by decide)
+      (hlog 243 7 1 (by omega) (by norm_num)) (by norm_num) (by norm_num)
+      (by change (3594 : ℝ) ≤ _; norm_num)
+  · exact residue_bound_dyadic (a:=14) (b:=1) (c:=3) (d:=1) (u:=1) (v:=1)
+      (by decide) (by decide) (by decide) (by decide) (by decide)
+      (hlog 19684 14 1 (by omega) (by norm_num)) (by norm_num) (by norm_num)
+      (by change (5954 : ℝ) ≤ _; norm_num)
+
 
 end
 end TranslationTiling.FiniteCompiler.Packed

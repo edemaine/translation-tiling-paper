@@ -83,7 +83,7 @@ theorem digitPool_primrec : Primrec digitPool := by
   unfold tailSlopes
   have hr : Primrec (fun k : ℕ => List.range (18+2*k)) := by fun_prop
   apply mapList hr
-  unfold Profile.slope ternaryLayoutProfile
+  unfold Profile.slope ternaryLayoutProfile radixLayoutProfile
   simp only [List.length_replicate]
   fun_prop
 

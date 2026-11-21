@@ -160,56 +160,56 @@ theorem rawGuardedMasks_length (T : LeanWang.TileSet) (D : ℕ) :
   rw [List.length_flatMap]
   exact Nat.add_le_add_left houter 2313
 
-variable {k : ℕ} (hk : 0 < k)
-  (c : Code T (ternaryLayoutProfile k).radices.prod)
+variable {k r : ℕ} (hk : 0 < k) (hr : 0 < r)
+  (c : Code T (radixLayoutProfile r k).radices.prod)
 
-local notation "p" => ternaryLayoutProfile k
+local notation "p" => radixLayoutProfile r k
 
 def tailRefinement : ColumnRefinement (system c) :=
-  refinementWith p (packedTernary_layout p hk rfl) c (explicitTernaryCode hk c)
+  refinementWith p (packedRadix_layout p hk hr rfl) c (explicitRadixCode hk hr c)
 
-theorem tailRefinement_width : (tailRefinement hk c).width = 18+2*k :=
-  ternaryLayout_width k
+theorem tailRefinement_width : (tailRefinement hk hr c).width = 18+2*k :=
+  radixLayout_width r k
 
-private theorem rawOrigin_eq (j : Column (tailRefinement hk c).system) :
-    rawOrigin k j.val = ((tailRefinement hk c).origin j).val := by
+private theorem rawOrigin_eq (j : Column (tailRefinement hk hr c).system) :
+    rawOrigin k j.val = ((tailRefinement hk hr c).origin j).val := by
   let j' : Fin (p).width := ⟨j.val,j.isLt⟩
   change rawOrigin k j'.val = ((p).origin j').val
   rw [origin_val]
-  simp [rawOrigin,ternaryLayoutProfile]
+  simp [rawOrigin,radixLayoutProfile]
 
 private theorem expandMask_get (b : PartialTest (system c))
-    (j : Column (tailRefinement hk c).system) :
-    let S := tailRefinement hk c
+    (j : Column (tailRefinement hk hr c).system) :
+    let S := tailRefinement hk hr c
     (testMask c b).getD (rawOrigin k j.val) none =
       if h : j ∈ (S.expand b).columns then some (b.label
         ⟨S.origin j,(Finset.mem_filter.mp h).2⟩).val else none := by
   dsimp only
-  rw [rawOrigin_eq hk c j, testMask_get]
-  by_cases h : (tailRefinement hk c).origin j ∈ b.columns
-  · have hj : j ∈ ((tailRefinement hk c).expand b).columns := Finset.mem_filter.mpr ⟨Finset.mem_univ _,h⟩
+  rw [rawOrigin_eq hk hr c j, testMask_get]
+  by_cases h : (tailRefinement hk hr c).origin j ∈ b.columns
+  · have hj : j ∈ ((tailRefinement hk hr c).expand b).columns := Finset.mem_filter.mpr ⟨Finset.mem_univ _,h⟩
     rw [dif_pos h,dif_pos hj]
-  · have hj : j ∉ ((tailRefinement hk c).expand b).columns :=
+  · have hj : j ∉ ((tailRefinement hk hr c).expand b).columns :=
       fun hj => h (Finset.mem_filter.mp hj).2
     rw [dif_neg h,dif_neg hj]
 
 private theorem expandMask_label (b : PartialTest (system c))
-    (j : ((tailRefinement hk c).expand b).columns) :
-    let q := (tailRefinement hk c).expand b
+    (j : ((tailRefinement hk hr c).expand b).columns) :
+    let q := (tailRefinement hk hr c).expand b
     (q.label j).val =
-      ternaryDigit k j.val.val (((testMask c b).getD (rawOrigin k j.val.val) none).getD 0) := by
+      radixDigit r k j.val.val (((testMask c b).getD (rawOrigin k j.val.val) none).getD 0) := by
   dsimp only
-  rw [expandMask_get hk c b j, dif_pos j.property,Option.getD_some]
+  rw [expandMask_get hk hr c b j, dif_pos j.property,Option.getD_some]
   rfl
 
-theorem numericalExpandedPattern (E : EncodingParameters (tailRefinement hk c).system)
+theorem numericalExpandedPattern (E : EncodingParameters (tailRefinement hk hr c).system)
     (rs : GuardedRows) (hm : GuardedRowsMatch E rs)
     (b : PartialTest (system c)) :
-    guardedDecodedFamily E (guardedCycle rs (expandMask k (testMask c b))) =
-      partialTiles E ((tailRefinement hk c).expand b) := by
-  let S := tailRefinement hk c
+    guardedDecodedFamily E (guardedCycle rs (expandMask r k (testMask c b))) =
+      partialTiles E ((tailRefinement hk hr c).expand b) := by
+  let S := tailRefinement hk hr c
   let q := S.expand b
-  let f (j : ℕ) := ternaryDigit k j (((testMask c b).getD (rawOrigin k j) none).getD 0)
+  let f (j : ℕ) := radixDigit r k j (((testMask c b).getD (rawOrigin k j) none).getD 0)
   let js := (List.range (18+2*k)).filter (fun i => ((testMask c b).getD (rawOrigin k i) none).isSome)
   have hj (j : ℕ) : j ∈ js ↔ ∃ i : q.columns, i.val.val = j := by
     unfold js
@@ -217,19 +217,19 @@ theorem numericalExpandedPattern (E : EncodingParameters (tailRefinement hk c).s
     constructor
     · intro h
       let i : Column S.system := ⟨j,by
-        change j < (tailRefinement hk c).width
-        rw [tailRefinement_width hk c]
+        change j < (tailRefinement hk hr c).width
+        rw [tailRefinement_width hk hr c]
         exact List.mem_range.mp h.1⟩
       refine ⟨⟨i,?_⟩,rfl⟩
       have he := h.2
       change ((testMask c b).getD (rawOrigin k i.val) none).isSome = true at he
-      rw [expandMask_get hk c b i] at he
+      rw [expandMask_get hk hr c b i] at he
       split at he
       · assumption
       · contradiction
     · rintro ⟨i,rfl⟩
       refine ⟨List.mem_range.mpr (by have := i.val.isLt; simpa [S,tailRefinement_width] using this),?_⟩
-      rw [expandMask_get hk c b i,dif_pos i.property]
+      rw [expandMask_get hk hr c b i,dif_pos i.property]
       rfl
   by_cases hn : q.columns.Nonempty
   · letI : NeZero q.columns.card := ⟨(Finset.card_pos.mpr hn).ne'⟩
@@ -261,12 +261,12 @@ theorem numericalExpandedPattern (E : EncodingParameters (tailRefinement hk c).s
         rw [hxsk] at hi
         obtain ⟨j,hj'⟩ := List.mem_ofFn.mp hi
         exact (hj i).mpr ⟨testEquiv q j,hj'⟩
-    have hex : expandMask k (testMask c b) = xs := by
+    have hex : expandMask r k (testMask c b) = xs := by
       change js.map (fun i => (i,f i)) = _
       rw [hkeys,hxsk,hxsf,List.map_ofFn]
       congr 1
       funext j
-      exact Prod.ext rfl (expandMask_label hk c b (testEquiv q j)).symm
+      exact Prod.ext rfl (expandMask_label hk hr c b (testEquiv q j)).symm
     change _ = partialTiles E q
     rw [hex,partialTiles,dif_pos hn]
     exact numericalCycle_correct hm cy labs
@@ -300,13 +300,13 @@ private theorem originalSeed_matches {D : ℕ} (c : Code T D)
     simp only [seedTemplateSet,if_neg (by omega : ¬ 9+(9+a.val)<9),
       if_neg (by omega : ¬ 9+(9+a.val)<18)]
 
-theorem tailSeedTest_matches (t : Fin 2) (i : Column (tailRefinement hk c).system)
-    (v : Letter (tailRefinement hk c).system i) :
-    LetterSeedSet (tailRefinement hk c).system t i v ↔ seedTemplateSet t i.val v.val := by
+theorem tailSeedTest_matches (t : Fin 2) (i : Column (tailRefinement hk hr c).system)
+    (v : Letter (tailRefinement hk hr c).system i) :
+    LetterSeedSet (tailRefinement hk hr c).system t i v ↔ seedTemplateSet t i.val v.val := by
   let i' : Fin (p).width := ⟨i.val,i.isLt⟩
   let j := (p).origin i'
-  let digits := oneDigit p (packedTernary_layout p hk rfl) i' v
-  let u := (explicitTernaryCode hk c j).symm digits
+  let digits := oneDigit p (packedRadix_layout p hk hr rfl) i' v
+  let u := (explicitRadixCode hk hr c j).symm digits
   have hj := origin_val p i'
   change (if j.val < 18 then LetterSeedSet (system c) t j u else True) ↔ _
   by_cases hi : i'.val < 18
@@ -314,10 +314,10 @@ theorem tailSeedTest_matches (t : Fin 2) (i : Column (tailRefinement hk c).syste
     rw [if_pos (show j.val < 18 from hj'.trans_lt hi),originalSeed_matches c]
     have hv : u.val = v.val := by
       let a : (p).Fibre j := ⟨i',rfl⟩
-      have he : ((explicitTernaryCode hk c j) u a).val = (digits a).val :=
-        congrArg Fin.val (congrFun ((explicitTernaryCode hk c j).apply_symm_apply digits) a)
-      rw [explicitTernaryCode_val hk c j u a] at he
-      change ternaryDigit k i'.val u.val = _ at he
+      have he : ((explicitRadixCode hk hr c j) u a).val = (digits a).val :=
+        congrArg Fin.val (congrFun ((explicitRadixCode hk hr c j).apply_symm_apply digits) a)
+      rw [explicitRadixCode_val hk hr c j u a] at he
+      change radixDigit r k i'.val u.val = _ at he
       have hd : digits a = v := by
         unfold digits oneDigit
         split
@@ -325,7 +325,7 @@ theorem tailSeedTest_matches (t : Fin 2) (i : Column (tailRefinement hk c).syste
         · rename_i he
           exact (he rfl).elim
       rw [hd] at he
-      simpa only [ternaryDigit,if_pos hi] using he
+      simpa only [radixDigit,if_pos hi] using he
     exact iff_of_eq (congrArg₂ (seedTemplateSet t) hj' hv)
   · have hj' : ¬ j.val < 18 := by rw [hj,if_neg hi]; split <;> omega
     rw [if_neg hj']
@@ -334,10 +334,10 @@ theorem tailSeedTest_matches (t : Fin 2) (i : Column (tailRefinement hk c).syste
 
 include hk in
 private theorem seedTest_template (t : Fin 2) {i v : ℕ}
-    (hi : i < 18+2*k) (hv : v < (ternaryLayoutProfile k).arity i) :
+    (hi : i < 18+2*k) (hv : v < (radixLayoutProfile r k).arity i) :
     (t.val,i,v) ∈ seedTestTemplates ↔ ¬ seedTemplateSet t i v := by
   have hv' := hv
-  rw [ternaryLayout_arity hk (by simpa using hi)] at hv'
+  rw [radixLayout_arity hk (by simpa using hi)] at hv'
   simp only [seedTestTemplates,List.mem_flatMap,List.mem_append,List.mem_map,
     Finset.mem_toList,Finset.mem_filter,Finset.mem_univ,true_and,Prod.mk.injEq]
   by_cases h : i < 9
@@ -383,15 +383,15 @@ private theorem seedTest_template (t : Fin 2) {i v : ℕ}
       · rcases hb with ⟨u,hu,ht,hi,hv⟩
         omega
 
-private theorem seedVector_eq (t : Fin 2) (i : Column (tailRefinement hk c).system) (v : Letter _ i) :
+private theorem seedVector_eq (t : Fin 2) (i : Column (tailRefinement hk hr c).system) (v : Letter _ i) :
     vectorForCycle (seedCycle t i) (seedCycleLabels t i v) =
       [(18+2*k+t.val,0),(i.val,v.val)] := by
   unfold vectorForCycle
   rw [List.ofFn_succ,List.ofFn_succ,List.ofFn_zero]
-  change [((tailRefinement hk c).width+t.val,0),(i.val,v.val)] = _
+  change [((tailRefinement hk hr c).width+t.val,0),(i.val,v.val)] = _
   rw [tailRefinement_width]
 
-theorem numericalSeedTests_correct (E : EncodingParameters (tailRefinement hk c).system)
+theorem numericalSeedTests_correct (E : EncodingParameters (tailRefinement hk hr c).system)
     (rs : GuardedRows) (hm : GuardedRowsMatch E rs) :
     guardedDecodedFamily E ((tailSeedTests k).flatMap (guardedCycle rs)) =
       seedConstraintTiles E := by
@@ -408,37 +408,37 @@ theorem numericalSeedTests_correct (E : EncodingParameters (tailRefinement hk c)
       simp only [seedTestTemplates,List.mem_flatMap,List.mem_append,List.mem_map,
         Prod.mk.injEq] at h
       rcases h with ⟨⟨u,b⟩,_,⟨a,_,_,h,_⟩ | ⟨a,_,_,h,_⟩⟩ <;> omega
-    have hv : v < (ternaryLayoutProfile k).arity i := by
-      rw [ternaryLayout_arity hk (by simpa using hi)]
+    have hv : v < (radixLayoutProfile r k).arity i := by
+      rw [radixLayout_arity hk (by simpa using hi)]
       simp only [seedTestTemplates,List.mem_flatMap,List.mem_append,List.mem_map,
         Prod.mk.injEq] at h
       rcases h with ⟨⟨u,b⟩,_,⟨a,_,_,rfl,rfl⟩ | ⟨a,_,_,rfl,rfl⟩⟩
       · rw [if_pos b.isLt]; exact (pEquiv a).isLt
       · rw [if_neg (by omega),if_pos (by omega)]; exact (qEquiv a).isLt
     let t' : Fin 2 := ⟨t,ht⟩
-    let i' : Column (tailRefinement hk c).system := ⟨i,by change i < (tailRefinement hk c).width; rwa [tailRefinement_width]⟩
-    let v' : Letter (tailRefinement hk c).system i' := ⟨v,hv⟩
+    let i' : Column (tailRefinement hk hr c).system := ⟨i,by change i < (tailRefinement hk hr c).width; rwa [tailRefinement_width]⟩
+    let v' : Letter (tailRefinement hk hr c).system i' := ⟨v,hv⟩
     refine ⟨⟨t',i',v'⟩, ?_, ?_⟩
-    · rw [tailSeedTest_matches hk c]
+    · rw [tailSeedTest_matches hk hr c]
       exact (seedTest_template hk t' hi hv).mp h
-    · rw [← numericalCycle_correct hm, seedVector_eq hk c]
+    · rw [← numericalCycle_correct hm, seedVector_eq hk hr c]
       exact List.mem_toFinset.mpr (List.mem_map.mpr ⟨xs,hxs,rfl⟩)
   · rintro ⟨⟨t,i,v⟩,h,hF⟩
     have hi : i.val < 18+2*k := by simpa only [tailRefinement_width] using i.isLt
-    have hv : v.val < (ternaryLayoutProfile k).arity i.val := v.isLt
-    have htemp := (seedTest_template hk t hi hv).mpr (fun hp => h ((tailSeedTest_matches hk c _ _ _).mpr hp))
-    rw [← numericalCycle_correct hm, seedVector_eq hk c] at hF
+    have hv : v.val < (radixLayoutProfile r k).arity i.val := v.isLt
+    have htemp := (seedTest_template hk t hi hv).mpr (fun hp => h ((tailSeedTest_matches hk hr c _ _ _).mpr hp))
+    rw [← numericalCycle_correct hm, seedVector_eq hk hr c] at hF
     obtain ⟨xs,hxs,hFx⟩ := List.mem_map.mp (List.mem_toFinset.mp hF)
     exact ⟨xs,⟨_,⟨_,htemp,rfl⟩,hxs⟩,hFx⟩
 
-theorem numericalExpandedTests_correct (hn : 0 < T.length) (hcap : T.length ≤ (ternaryLayoutProfile k).radices.prod)
-    (E : EncodingParameters (tailRefinement hk (code T ((ternaryLayoutProfile k).radices.prod) hn hcap)).system)
+theorem numericalExpandedTests_correct (hn : 0 < T.length) (hcap : T.length ≤ (radixLayoutProfile r k).radices.prod)
+    (E : EncodingParameters (tailRefinement hk hr (code T ((radixLayoutProfile r k).radices.prod) hn hcap)).system)
     (rs : GuardedRows) (hm : GuardedRowsMatch E rs) :
-    guardedDecodedFamily E (((rawGuardedMasks T ((ternaryLayoutProfile k).radices.prod)).map (expandMask k)).flatMap (guardedCycle rs)) =
+    guardedDecodedFamily E (((rawGuardedMasks T ((radixLayoutProfile r k).radices.prod)).map (expandMask r k)).flatMap (guardedCycle rs)) =
       (List.flatMap (fun test => (partialTiles E test).toList)
-        (GuardedCompiler.refinedPatterns (code T ((ternaryLayoutProfile k).radices.prod) hn hcap)
-          (tailRefinement hk (code T ((ternaryLayoutProfile k).radices.prod) hn hcap)))).toFinset := by
-  let c := code T ((ternaryLayoutProfile k).radices.prod) hn hcap
+        (GuardedCompiler.refinedPatterns (code T ((radixLayoutProfile r k).radices.prod) hn hcap)
+          (tailRefinement hk hr (code T ((radixLayoutProfile r k).radices.prod) hn hcap)))).toFinset := by
+  let c := code T ((radixLayoutProfile r k).radices.prod) hn hcap
   ext F
   simp only [mem_guardedDecodedFamily,List.mem_flatMap,List.mem_map,List.mem_toFinset,
     Finset.mem_toList,GuardedCompiler.refinedPatterns]
@@ -446,10 +446,10 @@ theorem numericalExpandedTests_correct (hn : 0 < T.length) (hcap : T.length ≤ 
   · rintro ⟨xs,⟨_,⟨m,hm',rfl⟩,hxs⟩,rfl⟩
     obtain ⟨test,hp,rfl⟩ := (rawMask_membership hn hcap m).mp hm'
     refine ⟨_,⟨test,hp,rfl⟩,?_⟩
-    rw [← numericalExpandedPattern hk c E rs hm test]
+    rw [← numericalExpandedPattern hk hr c E rs hm test]
     exact (mem_guardedDecodedFamily _ _).mpr ⟨xs,hxs,rfl⟩
   · rintro ⟨_,⟨test,hp,rfl⟩,hF⟩
-    rw [← numericalExpandedPattern hk c E rs hm test] at hF
+    rw [← numericalExpandedPattern hk hr c E rs hm test] at hF
     obtain ⟨xs,hxs,rfl⟩ := (mem_guardedDecodedFamily _ _).mp hF
     exact ⟨xs,⟨_,⟨_,(rawMask_membership hn hcap _).mpr ⟨test,hp,rfl⟩,rfl⟩,hxs⟩,rfl⟩
 

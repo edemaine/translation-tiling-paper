@@ -256,7 +256,7 @@ abstract and motion wrappers. It uses the guarded construction with checked
 prime tables through `3^21` Wang tiles. For larger inputs,
 [PackedTailCore.lean](TranslationTiling/FiniteCompiler/Effective/PackedTailCore.lean)
 generates the primes and tests for the same guarded construction.
-Its uniform cube bound is `max{(n+4)^(17.6662 lg lg(n+4) + 561), 2^2392}`.
+Its uniform cube bound is `max{(n+4)^(10 lg lg(n+4) + 19 lg lg lg(n+4) + 557), 2^2392}`.
 The capacity-one table in [PackedProfiles.lean](TranslationTiling/FiniteCompiler/PackedProfiles.lean)
 gives the sharper bound `2^2112`. An empty alphabet is represented by a
 Wang tile with unequal north and south colors and encoded by the same
