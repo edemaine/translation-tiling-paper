@@ -494,13 +494,13 @@ closed polynomial constraints and using finite-precision tests
 to recognize infeasibility.
 
 For $n$ Wang tiles, the translation-only reduction uses at most
-$B(n)=(n+4)^{401\lg\lg(n+4)}=n^{O(\log\log n)}$ lattice points / unit cubes
+$B(n)=(n+4)^{312\lg\lg(n+4)}=n^{O(\log\log n)}$ lattice points / unit cubes
 in every fixed dimension $d\geq3$, where $\lg=\log_2$.
 A logarithmic number of encoding channels and sparse tests give the
 quasipolynomial dependence, and further optimizations improve the constants
 in the bound (see “Quantitative Size Bounds” in the
 [technical overview](https://edemaine.github.io/translation-tiling-paper/slop.pdf)).
-For $n\leq5$, we can improve the upper bound to $2^{250}$.
+For $n=1$, the general formula gives at most $2^{881}$ unit cubes.
 Allowing rotations and/or reflections gives bounds of $64{,}000B(n)$ in 3D
 and $2^{10(d+1)^2}B(n)$ in $d$D.
 
@@ -577,7 +577,7 @@ In both statements, the proof is a single call to a theorem in
 
 A computable reduction converts a list of $n$ Wang tiles into an
 equivalent nonempty connected prototile $P\subset\Z^d$ using
-at most $B(n) = (n+4)^{401\lg\lg(n+4)}$ unit cubes:
+at most $B(n) = (n+4)^{312\lg\lg(n+4)}$ unit cubes:
 the Wang tiles tile the plane if and only if $P$ tiles $\Z^d$ by translations.
 Here `LeanWang.TileSet` is a list of Wang tiles, and `LeanWang.TilesPlane`
 asserts that they tile the whole plane.

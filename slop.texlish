@@ -2200,10 +2200,12 @@ numerical family are checked in
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    (n+4)^{401\lg\lg(n+4)}=n^{O(\log\log n)}
+    (n+4)^{312\lg\lg(n+4)}=n^{O(\log\log n)}
   $$
   unit cubes.
-  For $n\leq5$, we also have the explicit bound $2^{250}$ unit cubes.
+  At $n=1$, the general formula gives at most $2^{881}$ unit cubes.
+  Lean verifies $2^{880}<5^{312\lg\lg 5}<2^{881}$ in
+  \leanfile{Compiler/PackedLogBound.lean}.
 
 : proof
   For $n=0$, consolidate the two contradictory equations with prototiles
@@ -2229,9 +2231,8 @@ numerical family are checked in
   \leanfile{Compiler/FiveInputBound.lean}.
 
   Return one cube when the test succeeds and the fixed connected nontile
-  otherwise. This uses at most $2^{250}$ cubes for $n\leq5$.
-  For $n=1$, equality of opposite edge colors suffices, as checked in
-  \leanfile{Compiler/SingleInputBound.lean}. Henceforth assume $n\geq6$.
+  otherwise. The size cap $2^{250}$ fits the general bound throughout
+  this range. Henceforth assume $n\geq6$.
 
   First derive the coefficient $2000$ for the baseline joint-code compiler;
   then refine its channel system for $1350$, restrict arithmetic columns
@@ -3213,6 +3214,56 @@ numerical family are checked in
   The same coarse estimate for $n\geq8188$ gives
   $\lg|F|\leq(103047/286)tg<401tg$.
 
+  To reduce the coefficient from $401$ to $312$, keep the eighteen
+  arithmetic columns in the guarded compiler and encode each Wang
+  label by several small digits sharing its original slope. A forbidden
+  partial pattern specifies all digits of each Wang label it mentions,
+  and a single cycle still tests the resulting pattern. Decoding
+  commutes with sampling a line, because all the digits of a label
+  use that line's slope. The two seed predicates on the arithmetic
+  columns are unchanged, and the seeds allow every Wang digit.
+  See \leanfile{FiniteCompiler/ColumnRefinement.lean} and
+  \leanfile{FiniteCompiler/GuardedRefinement.lean}.
+
+  The ranges $11$--$12$, $13$--$36$, and $37$--$242$ use radices
+  $(3,4)$, $(3,3,4)$, and $(3,3,3,3,3)$, respectively. Write $D$
+  for the product of the radices and $m$ for the number of ordinary
+  columns after splitting. If those columns have alphabet sizes $a_i$,
+  we bound the number of tests by
+  $$
+    X=2313+72D^2+(m+2)^2+2m+8+4\sum_i a_i.
+  $$
+  The same reserved stacking and strip bounds apply with this $X$.
+  The prime certificates and volume checks give the following
+  bounds $|F|\leq 2^e\leq 2^{312tg}$.
+  \[
+    \begin{array}{c|r|c|c}
+      n & e & \text{lower bound on }t & \text{lower bound on }g\\
+      \hline
+      11,\ldots,12 & 2392 & 82/21 & 55/28\\
+      13,\ldots,36 & 2573 & 49/12 & 69/34\\
+      37,\ldots,242 & 2876 & 5 & 2\\
+      243,\ldots,8187 & 7218 & 55/7 & 53/18
+    \end{array}
+  \]
+  The last row uses the existing ternary compiler. For
+  $8188\leq n<3^{10}$, its width is at most $80$, so $P=256$.
+  With $t\geq 13$ and $g\geq 11/3$, the coefficient from
+  $P^{21w+78}3^{4w+4}$ is at most $218736/715$. For $n\geq 3^{10}$,
+  we use $t\geq15$, $g\geq39/10$, and $w\leq2t+66$. Thus
+  $\lg P\leq\max(8,g+3)\leq(80/39)g$ and
+  $\lg 3\leq(16/39)g$, giving a coefficient at most $173728/585$.
+  The checks are in \leanfile{FiniteCompiler/PackedCompiler.lean} and
+  \leanfile{Compiler/PackedLogBound.lean}.
+
+  For $6\leq n\leq10$, normalizing the edge colors gives finitely
+  many inputs. For each fixed size, a finite table returns one cube
+  on tileable inputs and the same fixed connected nontile on the
+  other inputs. Lean proves that the table, whose entries are chosen
+  classically, gives a computable reduction. Its size cap fits
+  the uniform bound. See \leanfile{Compiler/FiniteSmallLookup.lean}
+  and \leanfile{FiniteCompiler/Effective/PackedTotalCompiler.lean}.
+
 The full construction is in
 \leanfile{Compiler/CleanQuasipolynomialBound.lean}, proved by
 \leandecl{Compiler.Size.exists_connected_tile_clean_quasipolynomial_bound}.
@@ -3765,8 +3816,8 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, these bounds are $(n+4)^{401\lg\lg(n+4)}$ for translations and
-$64{,}000(n+4)^{401\lg\lg(n+4)}$ for arbitrary Euclidean motions.
+function. In dimension three, these bounds are $(n+4)^{312\lg\lg(n+4)}$ for translations and
+$64{,}000(n+4)^{312\lg\lg(n+4)}$ for arbitrary Euclidean motions.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[
@@ -3785,10 +3836,10 @@ then connects the two translation predicates. Thus no new construction or
 additional cubes are needed.
 
 The total reduction in
-\leanfile{FiniteCompiler/Effective/ProjectedTotalCompiler.lean}
-combines the ternary construction with the direct test for at most five
-tiles and the $20$-channel systems with partial-word tests for six through
-forty-eight tiles.
+\leanfile{FiniteCompiler/Effective/PackedTotalCompiler.lean}
+uses the direct test through five tiles, a finite lookup table for six
+through ten tiles, mixed-radix Wang labels with partial-word tests for eleven
+through 242 tiles, and the ternary construction for larger inputs.
 The ternary branch encodes arithmetic pairs and tile labels separately by
 base-three integers, uses
 explicit prime tables for small widths and finite arithmetic search for the
@@ -3806,12 +3857,12 @@ family expresses the encoded word rule and seed arithmetic-digit tests. The conn
 geometric compiler and its volume bound are checked in
 \leanfile{FiniteCompiler/Effective/CompactFamilyCompiler.lean} and
 \leanfile{FiniteCompiler/Effective/CompactFamilyBounds.lean}.
-The corresponding $20$-channel compiler and its bounds are checked in
-\leanfile{FiniteCompiler/ProjectedCompiler.lean}.
+The mixed-radix compiler and its bounds are checked in
+\leanfile{FiniteCompiler/PackedCompiler.lean}.
 
-\leandecl{FiniteCompiler.Effective.projectedCompile_computable} proves
+\leandecl{FiniteCompiler.Effective.packedCompile_computable} proves
 computability of this total function.
-Its size bound is \leandecl{FiniteCompiler.Effective.pairCompile_real_bound}.
+Its size bound is \leandecl{FiniteCompiler.Effective.packedCompile_real_bound}.
 The six-key replacement is a primitive-recursive map and
 multiplies its output length by exactly $64{,}000$, so the public Euclidean
 reduction combines computability, correctness, and size as well.

@@ -131,13 +131,14 @@ private theorem compact_seed_regions (t : Fin 2) (s : System) (x : Plane)
       digit_in_region (by decide) (by decide) x s _ n (h7 v).1 he]
     exact ⟨(h5 v).2,(h7 v).2⟩
 
-theorem exists_solution_of_wang (E : EncodingParameters (system code))
-    (hT : LeanWang.TilesPlane T) : ∃ A : Set (Ambient E), Solves E A := by
+theorem exists_wordArray_of_wang (hT : LeanWang.TilesPlane T) :
+    ∃ W : WordArray (system code), LineRule (system code) W ∧
+      ∀ t n x, SharedSeed.residue (system code) x ∈ seedActiveRegion (system code) t →
+        LetterSeedSet (system code) t n (W n (lineValue (system code) n x)) := by
   obtain ⟨τ,hτ⟩ := (wang_plane_iff_quadrant T).mp hT
   let U := Sudoku.canonical τ (τ (0,0))
   let W := encodeArray code U
-  refine ⟨CommonModel.commonGraph E W, CommonModel.common_solution E W
-    (encodeArray_lineRule code U (Sudoku.canonical_lineRule τ hτ (τ (0,0)))) ?_⟩
+  refine ⟨W, encodeArray_lineRule code U (Sudoku.canonical_lineRule τ hτ (τ (0,0))), ?_⟩
   intro t n x hx
   obtain ⟨r,rfl⟩ := roleEquiv.surjective n
   rcases r with j | j | j
@@ -160,6 +161,11 @@ theorem exists_solution_of_wang (E : EncodingParameters (system code))
   · unfold LetterSeedSet guardedAlphabet alphabet AlphabetFamily.seed
     dsimp only []
     simp only [Equiv.symm_apply_apply]
+
+theorem exists_solution_of_wang (E : EncodingParameters (system code))
+    (hT : LeanWang.TilesPlane T) : ∃ A : Set (Ambient E), Solves E A := by
+  obtain ⟨W, hW, hs⟩ := exists_wordArray_of_wang code hT
+  exact ⟨CommonModel.commonGraph E W, CommonModel.common_solution E W hW hs⟩
 
 end
 end TranslationTiling.FiniteCompiler.GuardedCompiler

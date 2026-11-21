@@ -1,3 +1,4 @@
+import TranslationTiling.FiniteCompiler.Effective.PackedTotalCompiler
 import TranslationTiling.FiniteCompiler.Effective.ProjectedTotalCompiler
 import TranslationTiling.FiniteCompiler.ProjectedSystem
 import TranslationTiling.FiniteCompiler.Effective.SevenCompiler
@@ -549,6 +550,10 @@ run_cmd do
       ``TranslationTiling.FiniteCompiler.ProjectedCompiler.compile_facts,
       ``TranslationTiling.FiniteCompiler.Effective.projectedCompile_computable,
       ``TranslationTiling.FiniteCompiler.Effective.projectedCompile_facts,
+      ``TranslationTiling.Compiler.Size.smallLookup_computable,
+      ``TranslationTiling.FiniteCompiler.Effective.packedCompile_computable,
+      ``TranslationTiling.FiniteCompiler.Effective.packedCompile_facts,
+      ``TranslationTiling.Compiler.Size.exists_connected_tile_packed_quasipolynomial_bound,
       ``TranslationTiling.FiniteCompiler.Effective.projectedCompile_small_bound,
       ``TranslationTiling.Sudoku.NinePatch.global_affine,
       ``TranslationTiling.Sudoku.NineArithmetic.arithmetic_finite_structure,
