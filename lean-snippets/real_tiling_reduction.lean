@@ -4,6 +4,6 @@ theorem real_tiling_reduction (d : ℕ) (hd : 3 ≤ d) :
       (LeanWang.TilesPlane T ↔ Tiles (f T)) ∧
       (Tiles (f T) ↔ RealTiles (f T) translations) ∧
       ((f T).length : ℝ) ≤ max (((T.length : ℝ) + 4) ^
-        (10 * Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4)) +
-          19 * Real.logb 2 (Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4))) + 557))
+        ((441651 / 50000 : ℝ) * (Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4)) +
+          Real.logb 2 (Real.logb 2 (Real.logb 2 ((T.length : ℝ) + 4)))) + 570))
         ((2 : ℝ)^2392) := ...

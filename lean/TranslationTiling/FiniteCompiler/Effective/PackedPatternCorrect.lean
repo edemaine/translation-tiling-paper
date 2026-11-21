@@ -202,11 +202,11 @@ private theorem expandMask_label (b : PartialTest (system c))
   rw [expandMask_get hk hr c b j, dif_pos j.property,Option.getD_some]
   rfl
 
-theorem numericalExpandedPattern (E : EncodingParameters (tailRefinement hk hr c).system)
-    (rs : GuardedRows) (hm : GuardedRowsMatch E rs)
-    (b : PartialTest (system c)) :
-    guardedDecodedFamily E (guardedCycle rs (expandMask r k (testMask c b))) =
-      partialTiles E ((tailRefinement hk hr c).expand b) := by
+theorem numericalExpandedPattern_indices (b : PartialTest (system c)) :
+    let q := (tailRefinement hk hr c).expand b
+    expandMask r k (testMask c b) = if q.columns.Nonempty then
+      List.ofFn (fun j : Fin q.columns.card => ((testEquiv q j).val.val,(q.label (testEquiv q j)).val))
+    else [] := by
   let S := tailRefinement hk hr c
   let q := S.expand b
   let f (j : ℕ) := radixDigit r k j (((testMask c b).getD (rawOrigin k j) none).getD 0)
@@ -231,20 +231,15 @@ theorem numericalExpandedPattern (E : EncodingParameters (tailRefinement hk hr c
       refine ⟨List.mem_range.mpr (by have := i.val.isLt; simpa [S,tailRefinement_width] using this),?_⟩
       rw [expandMask_get hk hr c b i,dif_pos i.property]
       rfl
+  change expandMask r k (testMask c b) = if q.columns.Nonempty then
+    List.ofFn (fun j : Fin q.columns.card => ((testEquiv q j).val.val,(q.label (testEquiv q j)).val))
+    else []
   by_cases hn : q.columns.Nonempty
-  · letI : NeZero q.columns.card := ⟨(Finset.card_pos.mpr hn).ne'⟩
-    let cy := projectedCycle (testEmbedding q)
-    let labs := partialLabels (testEmbedding q) (fun j => q.label (testEquiv q j))
-    let xs := vectorForCycle cy labs
-    have hxsf : xs = List.ofFn (fun j => ((testEquiv q j).val.val,(q.label (testEquiv q j)).val)) := by
-      apply List.ofFn_inj.mpr
-      funext j
-      let out (v : Fin q.columns.card) :=
-        ((testEquiv q v).val.val,(q.label (testEquiv q v)).val)
-      change out ((ZMod.finEquiv q.columns.card).symm ((ZMod.finEquiv q.columns.card) j)) = out j
-      exact congrArg out ((ZMod.finEquiv q.columns.card).symm_apply_apply j)
+  · rw [if_pos hn]
+    let xs := List.ofFn (fun j : Fin q.columns.card =>
+      ((testEquiv q j).val.val,(q.label (testEquiv q j)).val))
     have hxsk : xs.map Prod.fst = List.ofFn (fun j => (testEquiv q j).val.val) := by
-      rw [hxsf,List.map_ofFn]
+      simp only [xs,List.map_ofFn]
       rfl
     have hs₁ : js.Pairwise (· < ·) := List.pairwise_lt_range.filter _
     have hs₂ : (xs.map Prod.fst).Pairwise (· < ·) := by
@@ -261,25 +256,49 @@ theorem numericalExpandedPattern (E : EncodingParameters (tailRefinement hk hr c
         rw [hxsk] at hi
         obtain ⟨j,hj'⟩ := List.mem_ofFn.mp hi
         exact (hj i).mpr ⟨testEquiv q j,hj'⟩
-    have hex : expandMask r k (testMask c b) = xs := by
-      change js.map (fun i => (i,f i)) = _
-      rw [hkeys,hxsk,hxsf,List.map_ofFn]
-      congr 1
-      funext j
-      exact Prod.ext rfl (expandMask_label hk hr c b (testEquiv q j)).symm
-    change _ = partialTiles E q
-    rw [hex,partialTiles,dif_pos hn]
-    exact numericalCycle_correct hm cy labs
-  · have he : js = [] := by
+    change js.map (fun i => (i,f i)) = xs
+    rw [hkeys,hxsk]
+    unfold xs
+    rw [List.map_ofFn]
+    congr 1
+    funext j
+    exact Prod.ext rfl (expandMask_label hk hr c b (testEquiv q j)).symm
+  · rw [if_neg hn]
+    have he : js = [] := by
       apply List.eq_nil_iff_forall_not_mem.mpr
       intro j h
       obtain ⟨i,_⟩ := (hj j).mp h
       exact hn ⟨i.val,i.property⟩
-    change guardedDecodedFamily E (guardedCycle rs (js.map (fun i => (i,f i)))) = partialTiles E q
-    rw [partialTiles,dif_neg hn]
-    simp [he,guardedCycle,guardedDecodedFamily]
+    change js.map (fun i => (i,f i)) = []
+    simp [he]
 
-private def seedTemplateSet (t : Fin 2) (i v : ℕ) : Prop :=
+theorem numericalExpandedPattern (E : EncodingParameters (tailRefinement hk hr c).system)
+    (rs : GuardedRows) (hm : GuardedRowsMatch E rs)
+    (b : PartialTest (system c)) :
+    guardedDecodedFamily E (guardedCycle rs (expandMask r k (testMask c b))) =
+      partialTiles E ((tailRefinement hk hr c).expand b) := by
+  let q := (tailRefinement hk hr c).expand b
+  rw [numericalExpandedPattern_indices hk hr c b]
+  change _ = partialTiles E q
+  by_cases hn : q.columns.Nonempty
+  · letI : NeZero q.columns.card := ⟨(Finset.card_pos.mpr hn).ne'⟩
+    rw [if_pos hn,partialTiles,dif_pos hn]
+    let cy := projectedCycle (testEmbedding q)
+    let labs := partialLabels (testEmbedding q) (fun j => q.label (testEquiv q j))
+    have he : vectorForCycle cy labs = List.ofFn (fun j : Fin q.columns.card =>
+        ((testEquiv q j).val.val,(q.label (testEquiv q j)).val)) := by
+      apply List.ofFn_inj.mpr
+      funext j
+      let out (v : Fin q.columns.card) :=
+        ((testEquiv q v).val.val,(q.label (testEquiv q v)).val)
+      change out ((ZMod.finEquiv q.columns.card).symm ((ZMod.finEquiv q.columns.card) j)) = out j
+      exact congrArg out ((ZMod.finEquiv q.columns.card).symm_apply_apply j)
+    rw [← he]
+    exact numericalCycle_correct hm cy labs
+  · rw [if_neg hn,partialTiles,dif_neg hn]
+    simp [guardedCycle,guardedDecodedFamily]
+
+def seedTemplateSet (t : Fin 2) (i v : ℕ) : Prop :=
   if i < 9 then ∃ u : Units5, seedDigit 5 t u.val ∧ (pEquiv u).val=v
   else if i < 18 then ∃ u : Units7, seedDigit 7 t u.val ∧ (qEquiv u).val=v
   else True
@@ -333,7 +352,7 @@ theorem tailSeedTest_matches (t : Fin 2) (i : Column (tailRefinement hk hr c).sy
     simp only [seedTemplateSet,if_neg (show ¬ i.val < 9 by omega),if_neg hi0]
 
 include hk in
-private theorem seedTest_template (t : Fin 2) {i v : ℕ}
+theorem seedTest_template (t : Fin 2) {i v : ℕ}
     (hi : i < 18+2*k) (hv : v < (radixLayoutProfile r k).arity i) :
     (t.val,i,v) ∈ seedTestTemplates ↔ ¬ seedTemplateSet t i v := by
   have hv' := hv

@@ -233,7 +233,7 @@ theorem connected_undecidable (d : ℕ) (hd : 3 ≤ d) : ¬ ComputablePred fun P
 theorem tiling_reduction (d : ℕ) (hd : 3 ≤ d) : ∃ f : LeanWang.TileSet → List (Fin d → ℤ),
     Computable f ∧ ∀ T, f T ≠ [] ∧ AbsConnected (f T) ∧
       (LeanWang.TilesPlane T ↔ AbsTiles (f T)) ∧
-      ((f T).length : ℝ) ≤ Compiler.Size.residueBound T.length := by
+      ((f T).length : ℝ) ≤ Compiler.Size.sharedUsefulBound T.length := by
   refine ⟨fun T => (FiniteCompiler.Effective.packedCompile T).map (pad hd),
     (padTile_computable hd).comp FiniteCompiler.Effective.packedCompile_computable,fun T => ?_⟩
   obtain ⟨hn,hc,ht,hb⟩ := FiniteCompiler.Effective.packedCompile_facts T
@@ -248,7 +248,7 @@ theorem tiling_reduction (d : ℕ) (hd : 3 ≤ d) : ∃ f : LeanWang.TileSet →
 theorem real_tiling_reduction (d : ℕ) (hd : 3 ≤ d) : ∃ f : LeanWang.TileSet → List (Fin d → ℤ),
     Computable f ∧ ∀ T, f T ≠ [] ∧ AbsConnected (f T) ∧
       (LeanWang.TilesPlane T ↔ AbsRealTiles (f T)) ∧
-      ((f T).length : ℝ) ≤ Compiler.Size.residueBound T.length := by
+      ((f T).length : ℝ) ≤ Compiler.Size.sharedUsefulBound T.length := by
   obtain ⟨f,hf,hs⟩ := tiling_reduction d hd
   refine ⟨f,hf,fun T => ?_⟩
   obtain ⟨hn,hc,ht,hb⟩ := hs T
@@ -410,7 +410,7 @@ theorem rigid_tiling_reduction (d : ℕ) (hd : 3 ≤ d) :
       (LeanWang.TilesPlane T ↔ AbsTiles (f T)) ∧
       (AbsTiles (f T) ↔ AbsRealTiles (f T)) ∧
       (∀ b : Bool, AbsRealTiles (f T) ↔ AbsRigidTiles (f T) b) ∧
-      ((f T).length : ℝ) ≤ (2 : ℝ)^(10*(d+1)^2)*(Compiler.Size.residueBound T.length) := by
+      ((f T).length : ℝ) ≤ (2 : ℝ)^(10*(d+1)^2)*(Compiler.Size.sharedUsefulBound T.length) := by
   letI : NeZero d := ⟨by omega⟩
   let f := Rotations.General.Real.rotationCompile hd
   refine ⟨f,Rotations.General.Real.rotationCompile_computable hd,fun T => ?_⟩
@@ -503,7 +503,7 @@ theorem rigid_tiling_reduction_three : ∃ f : LeanWang.TileSet → List (Fin 3 
       (LeanWang.TilesPlane T ↔ AbsTiles (f T)) ∧
       (AbsTiles (f T) ↔ AbsRealTiles (f T)) ∧
       (∀ allowReflections : Bool, AbsRealTiles (f T) ↔ AbsRigidTiles (f T) allowReflections) ∧
-      ((f T).length : ℝ) ≤ 64000 * (Compiler.Size.residueBound T.length) := by
+      ((f T).length : ℝ) ≤ 64000 * (Compiler.Size.sharedUsefulBound T.length) := by
   obtain ⟨f,hf,hs⟩ := tiling_reduction 3 (by decide)
   refine ⟨fun T => Rotations.SixKeys.protect (f T),
     Rotations.SixKeys.protect_primrec.to_comp.comp hf,fun T => ?_⟩
@@ -694,7 +694,7 @@ theorem motion_tiling_reduction (d : ℕ) (hd : 3 ≤ d) :
       (LeanWang.TilesPlane T ↔ AbsTiles (f T)) ∧
       (∀ allowRotations allowReflections : Bool, AbsTiles (f T) ↔
         AbsMotionTiles (f T) {r | AbsAllowedLinear allowRotations allowReflections r}) ∧
-      ((f T).length : ℝ) ≤ (2 : ℝ)^(10*(d+1)^2)*(Compiler.Size.residueBound T.length) := by
+      ((f T).length : ℝ) ≤ (2 : ℝ)^(10*(d+1)^2)*(Compiler.Size.sharedUsefulBound T.length) := by
   obtain ⟨f,hf,hs⟩ := rigid_tiling_reduction d hd
   refine ⟨f,hf,fun T => ?_⟩
   obtain ⟨hn,hc,ht,hreal,hrigid,hb⟩ := hs T
@@ -706,7 +706,7 @@ theorem motion_tiling_reduction_three :
       (LeanWang.TilesPlane T ↔ AbsTiles (f T)) ∧
       (∀ allowRotations allowReflections : Bool, AbsTiles (f T) ↔
         AbsMotionTiles (f T) {r | AbsAllowedLinear allowRotations allowReflections r}) ∧
-      ((f T).length : ℝ) ≤ 64000 * (Compiler.Size.residueBound T.length) := by
+      ((f T).length : ℝ) ≤ 64000 * (Compiler.Size.sharedUsefulBound T.length) := by
   obtain ⟨f,hf,hs⟩ := rigid_tiling_reduction_three
   refine ⟨f,hf,fun T => ?_⟩
   obtain ⟨hn,hc,ht,hreal,hrigid,hb⟩ := hs T
@@ -835,7 +835,7 @@ theorem set_real_tiling_reduction (d : ℕ) (hd : 3 ≤ d) :
     Computable f ∧ ∀ T, f T ≠ [] ∧ AbsConnected (f T) ∧
       (LeanWang.TilesPlane T ↔ AbsTiles (f T)) ∧
       (AbsTiles (f T) ↔ AbsSetMotionTiles (f T) AbsTranslations) ∧
-      ((f T).length : ℝ) ≤ Compiler.Size.residueBound T.length := by
+      ((f T).length : ℝ) ≤ Compiler.Size.sharedUsefulBound T.length := by
   obtain ⟨f,hf,hs⟩ := tiling_reduction d hd
   refine ⟨f,hf,fun T => ?_⟩
   obtain ⟨hn,hc,ht,hb⟩ := hs T
@@ -863,7 +863,7 @@ theorem set_motion_tiling_reduction (d : ℕ) (hd : 3 ≤ d) :
       (LeanWang.TilesPlane T ↔ AbsTiles (f T)) ∧
       (∀ motions : Set (Motion d), AbsTranslations ⊆ motions →
         (AbsTiles (f T) ↔ AbsSetMotionTiles (f T) motions)) ∧
-      ((f T).length : ℝ) ≤ (2 : ℝ)^(10*(d+1)^2)*(Compiler.Size.residueBound T.length) := by
+      ((f T).length : ℝ) ≤ (2 : ℝ)^(10*(d+1)^2)*(Compiler.Size.sharedUsefulBound T.length) := by
   obtain ⟨f,hf,hs⟩ := motion_tiling_reduction d hd
   refine ⟨f,hf,fun T => ?_⟩
   obtain ⟨hn,hc,ht,hm,hb⟩ := hs T
@@ -875,7 +875,7 @@ theorem set_motion_tiling_reduction_three :
       (LeanWang.TilesPlane T ↔ AbsTiles (f T)) ∧
       (∀ motions : Set (Motion 3), AbsTranslations ⊆ motions →
         (AbsTiles (f T) ↔ AbsSetMotionTiles (f T) motions)) ∧
-      ((f T).length : ℝ) ≤ 64000 * (Compiler.Size.residueBound T.length) := by
+      ((f T).length : ℝ) ≤ 64000 * (Compiler.Size.sharedUsefulBound T.length) := by
   obtain ⟨f,hf,hs⟩ := motion_tiling_reduction_three
   refine ⟨f,hf,fun T => ?_⟩
   obtain ⟨hn,hc,ht,hm,hb⟩ := hs T

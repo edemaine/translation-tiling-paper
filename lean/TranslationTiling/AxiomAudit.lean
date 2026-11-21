@@ -1,4 +1,5 @@
 import TranslationTiling.FiniteCompiler.Effective.PackedTotalCompiler
+import TranslationTiling.FiniteCompiler.Effective.ResidueRows
 import TranslationTiling.FiniteCompiler.Effective.SparseStrip
 import TranslationTiling.FiniteCompiler.ProjectedCompiler
 import TranslationTiling.FiniteCompiler.FortySmallCompiler
@@ -524,6 +525,7 @@ run_cmd do
       ``TranslationTiling.FiniteCompiler.ProjectedCompiler.compile_facts,
       ``TranslationTiling.FiniteCompiler.Packed.residueRows_computable,
       ``TranslationTiling.Compiler.Size.residue_volume_bound,
+      ``TranslationTiling.FiniteCompiler.Packed.sharedTailCore_facts,
       ``TranslationTiling.FiniteCompiler.Effective.packedCompile_computable,
       ``TranslationTiling.FiniteCompiler.Effective.packedCompile_facts,
       ``TranslationTiling.FiniteCompiler.Effective.packedCompile_one_bound,

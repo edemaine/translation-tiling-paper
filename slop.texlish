@@ -2200,7 +2200,7 @@ numerical family are checked in
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    B(n)=\max\{(n+4)^{10\lg\lg(n+4)+19\lg\lg\lg(n+4)+557},2^{2392}\}=n^{O(\log\log n)}
+    B(n)=\max\{(n+4)^{8.83302\bigl(\lg\lg(n+4)+\lg\lg\lg(n+4)\bigr)+570},2^{2392}\}=n^{O(\log\log n)}
   $$
   unit cubes.
   For $n=1$, the same construction uses at most $2^{2112}$ unit cubes.
@@ -3261,17 +3261,72 @@ The shorter-board equivalence is
 \leanref{SudokuArithmetic/PairBoardSoundness.lean}{Sudoku.PairBoard.wang_iff}.
 \leanfile{FiniteCompiler/Effective/PackedTotalCompiler.lean} selects the
 prime table by alphabet size and generates the primes and tests for
-larger inputs. The larger-input compiler is in
-\leanfile{FiniteCompiler/Effective/PackedTailCore.lean}. The public theorem includes nonemptiness, face connectedness, both
+larger inputs. The public theorem includes nonemptiness, face connectedness, both
 tilability directions, and the numerical bound. Duplicate input entries
 have no cost in the existence bound. The explicit bounds in @cor:size-bound
 remain available. The sharper count for one Wang tile is
 \leandecl{Compiler.Size.exists_connected_tile_one_quasipolynomial_bound}.
 
+### Sharing a Useful Prime Across Wang Columns
+
+For $n>3^{21}$, the compiler shares one useful prime per Wang slope.
+The uniform bound is
+$$
+B(n)=\max\bigl\{(n+4)^{8.83302(\lg\lg(n+4)+\lg\lg\lg(n+4))+570},
+  2^{2392}\bigr\}.
+$$
+The computable compiler is in
+\leanfile{FiniteCompiler/Effective/SharedTailCore.lean},
+with its correctness and size bound proved in
+\leanfile{FiniteCompiler/Effective/SharedDeckCorrect.lean}.
+
+Use $k=\lceil\log_3 n\rceil$ ternary digits per Wang label. At slope
+$s\in\{0,2\}$, share one useful coordinate $\alpha_s$ of prime order
+$a_s$, with $a_0=199$ and $a_2=163$. Each Wang column $i$ keeps its
+private useful coordinate $\xi_i$ of prime order $b_i$ and its three
+digit primes, whose product is $r_i$. Its dependence and cycle tests
+read $\xi_i$. Its activation tile reads the pair $(\alpha_s,\xi_i)$
+and the high coordinate for column $i$. Two extra dependence tests
+make each $\alpha_s$ constant along its slope for each fixed vector
+of low coordinates. All arithmetic and seed coordinates retain their
+private pairs.
+
+For soundness, fix a line and the low coordinates outside column $i$.
+If $\xi_i$ were constant there, the activation histogram would be
+supported on one value of its second coordinate. The activation shift
+multiplicities force its mixed difference to vanish. The histogram is
+therefore uniform in the first coordinate on its support, implying
+$a_s\mid r_i$. The primes are distinct, so each line has an active
+digit for the private coordinate, which is the coordinate used in the
+cycle tests. For completeness, take $\alpha_s$ to be the sum of the
+first block coordinates of the columns at slope $s$. Within the
+activation test for column $i$, the other summands are constant
+because those columns have the same slope and their low coordinates
+stay fixed. The existing block inverse works after translating the
+shared target by that constant. A positive number of blocks of size
+$b_i$ ensures the private coordinate detects the designated digit.
+
+Write $x=\Pi(2k+136)$, and choose the $2k$ private useful primes at
+most $x$, excluding the fixed primes. The explicit Chebyshev bounds
+supply the $6k$ digit primes in $(200x,1600x]$. Each exceeds $a_sb_i$,
+so it is a positive integer combination of $a_s$ and $b_i$.
+With $P=1600x$, the cyclic order is at most $2^{1893}P^{12k}x^{2k}$.
+Each Wang column contributes three squared digit primes and one
+private useful prime. Both shared primes are in the fixed factor.
+Consequently the leading coefficient is $2(2\cdot3+1)/\lg 3=14/\lg 3$,
+rounded up to $8.83302$ in the displayed bound. The strip radius is
+at most $2^{70}+400P^3x$, and the test cap is $2048(n+4)^2$. Each test
+individually complements a graph, so its mass equals the size of one
+fibre of the low-coordinate projection. The stacking and assembly
+estimates give the displayed bound for $n>3^{21}$.
+For the other inputs the guarded prime tables above still fit,
+including the sharper $2^{2112}$ count when $n=1$.
+
 ### The Remaining Cost of Cyclicity
 
-The quasipolynomial cost is intrinsic to the current prime assignment.
-Let $C$ be the number of channels and $H_0$ the graph-kernel prototile.
+Distinct private useful primes already incur a quasipolynomial cost.
+For the variant with two per channel, let $C$ be the number of channels
+and $H_0$ the graph-kernel prototile.
 Its useful-output space embeds in $H_0$: set all other coordinates to
 zero. Consequently,
 $$
@@ -3282,8 +3337,10 @@ $k$th entry is at least $k+1$. These inequalities are checked in
 \leanfile{FiniteCompiler/SizeObstruction.lean} by
 \leandecl{FiniteCompiler.factorial_le_kernelTile_card}.
 Since $C=\Theta(\lg n)$ in this channel construction, even this intermediate
-prototile has $n^{\Omega(\log\log n)}$ elements. Thus polynomial size
-requires changing the encoding. This is a limitation of the present
+prototile has $n^{\Omega(\log\log n)}$ elements. The shared-prime variant
+still has $2k$ distinct private Wang useful primes, so their product alone
+gives the same asymptotic cost. Thus polynomial size requires changing
+the encoding. This is a limitation of the present
 construction, with no corresponding lower bound for arbitrary reductions.
 
 A possible change is to reuse a fixed prime table across ordinary ternary

@@ -63,22 +63,81 @@ theorem digitGenerator_spans (i : Channel T) (j : Label T i)
     exact div_mul_cancel₀ _ hv
   · rw [digitGenerator_mem E i j k hk,hu k hk,nsmul_zero]
 
-theorem digitActive_step (i : Channel T) (j : Label T i) (g : K E i → P E i)
-    (hg : DigitActive g (digitSubgroup E i j)) :
-    ∃ w, g w ≠ g (w-digitGenerator E i j) := by
+omit [SeedFrame] in
+/-- A generator detects every nonconstant restriction to a coset. -/
+theorem digitActive_generator_step {M Y : Type*} [AddCommGroup M]
+    {U : AddSubgroup M} (s : U) (hspan : ∀ u ∈ U, ∃ n : ℕ, n • (s : M) = u)
+    (g : M → Y) (hg : DigitActive g U) :
+    ∃ w, g w ≠ g (w - (s : M)) := by
   by_contra hn
-  have hstep : ∀ w, g w=g (w-digitGenerator E i j) := by simpa using hn
-  have hiter (w : K E i) (n : ℕ) : g w=g (w-n • digitGenerator E i j) := by
+  have hstep : ∀ w, g w=g (w-(s : M)) := by simpa using hn
+  have hiter (w : M) (n : ℕ) : g w=g (w-n • (s : M)) := by
     induction n with
     | zero => simp
     | succ n ih =>
       calc
-        _ = g (w-n • digitGenerator E i j) := ih
-        _ = g ((w-n • digitGenerator E i j)-digitGenerator E i j) := hstep _
+        _ = g (w-n • (s : M)) := ih
+        _ = g ((w-n • (s : M))-(s : M)) := hstep _
         _ = _ := by congr 1; rw [succ_nsmul]; abel
   obtain ⟨w,w',hmem,hne⟩ := hg
-  obtain ⟨n,hn⟩ := digitGenerator_spans E i j (w-w') hmem
+  obtain ⟨n,hn⟩ := hspan _ hmem
   exact hne (by simpa only [hn,sub_sub_cancel] using hiter w n)
+
+def cycleGeneratorMaps {I : Type*} {M N : I → Type*}
+    [∀ i, AddCommGroup (M i)] [∀ i, Zero (N i)] [∀ i, DecidableEq (N i)] {t : ℕ} [NeZero t]
+    (cycle : ZMod t ↪ I) (U : ∀ j, AddSubgroup (M (cycle j)))
+    (step : ∀ j, U j) : ∀ j, N (cycle (j-1)) → U j :=
+  fun j e => if e = 0 then 0 else step j
+
+/-- Fixed-cycle exclusion depends only on the observed additive coordinates. -/
+theorem cycleMap_generator_bijective_iff {I : Type*} [Fintype I] {M N : I → Type*}
+    [∀ i, AddCommGroup (M i)] [∀ i, AddCommGroup (N i)] [∀ i, Fintype (N i)]
+    [∀ i, DecidableEq (N i)] {t : ℕ} [NeZero t] (cycle : ZMod t ↪ I) (U : ∀ j, AddSubgroup (M (cycle j)))
+    (step : ∀ j, U j) (hspan : ∀ j u, u ∈ U j → ∃ n : ℕ, n • (step j : M (cycle j)) = u)
+    (g : ∀ i, M i → N i) :
+    (∀ k, Function.Bijective (cycleMap cycle U (cycleGeneratorMaps cycle U step) g k)) ↔
+    ∃ j, ¬ DigitActive (g (cycle j)) (U j) := by
+  classical
+  constructor
+  · intro hall
+    by_contra hn
+    have hactive : ∀ j, DigitActive (g (cycle j)) (U j) := by
+      simpa only [not_exists,not_not] using hn
+    choose w hw using fun j => digitActive_generator_step (step j) (hspan j) (g (cycle j)) (hactive j)
+    let e₀ : ∀ j, N (cycle j) := fun j => g (cycle j) (w j)-
+      g (cycle j) (w j-(step j : M (cycle j)))
+    have he₀ (j) : e₀ j≠0 := sub_ne_zero.mpr (hw j)
+    let e : ∀ i, N i := cycleExtend cycle e₀
+    let k : ∀ i, M i := cycleExtend cycle w
+    have hcol : cycleMap cycle U
+        (cycleGeneratorMaps cycle U step) g k 0 =
+        cycleMap cycle U
+        (cycleGeneratorMaps cycle U step) g k e := by
+      funext i
+      by_cases hi : ∃ j, cycle j=i
+      · obtain ⟨j,rfl⟩ := hi
+        simp only [cycleMap_apply_cycle,k,e,cycleExtend_apply,Pi.zero_apply,
+          cycleGeneratorMaps,ite_true,ZeroMemClass.coe_zero,sub_zero,zero_add,
+          ite_eq_right (he₀ (j-1))]
+        change g (cycle j) (w j) =
+          (g (cycle j) (w j)-g (cycle j) (w j-(step j : M (cycle j))))+
+            g (cycle j) (w j-(step j : M (cycle j)))
+        exact (sub_add_cancel _ _).symm
+      · have hoff : ∀ j, cycle j≠i := by simpa only [not_exists] using hi
+        simp only [cycleMap,Pi.zero_apply,e,cycleExtend_eq_zero cycle e₀ hoff,
+          cycleShift_eq_zero cycle _ _ _ hoff,sub_zero,zero_add]
+    have he : e=0 := ((hall k).1 hcol).symm
+    apply he₀ 0
+    have hh := congrFun he (cycle 0)
+    simpa only [e,cycleExtend_apply,Pi.zero_apply] using hh
+  · rintro ⟨j,hj⟩ k
+    exact cycleMap_bijective_of_inactive cycle _ _ g k j hj
+
+theorem digitActive_step (i : Channel T) (j : Label T i) (g : K E i → P E i)
+    (hg : DigitActive g (digitSubgroup E i j)) :
+    ∃ w, g w ≠ g (w-digitGenerator E i j) :=
+  digitActive_generator_step ⟨digitGenerator E i j,digitGenerator_mem E i j⟩
+    (fun u hu => digitGenerator_spans E i j u hu) g hg
 
 def fixedCycleMaps {t : ℕ} [NeZero t] (cycle : ZMod t ↪ Channel T)
     (labels : ∀ j, Label T (cycle j)) :
@@ -90,41 +149,9 @@ theorem fixedCycleMap_bijective_iff {t : ℕ} [NeZero t]
     (g : ∀ i, K E i → P E i) :
     (∀ k, Function.Bijective (cycleMap cycle (fun j => digitSubgroup E (cycle j) (labels j))
       (fixedCycleMaps E cycle labels) g k)) ↔
-    ∃ j, ¬ DigitActive (g (cycle j)) (digitSubgroup E (cycle j) (labels j)) := by
-  constructor
-  · intro hall
-    by_contra hn
-    have hactive : ∀ j, DigitActive (g (cycle j)) (digitSubgroup E (cycle j) (labels j)) := by
-      simpa only [not_exists,not_not] using hn
-    choose w hw using fun j => digitActive_step E (cycle j) (labels j) (g (cycle j)) (hactive j)
-    let e₀ : ∀ j, P E (cycle j) := fun j => g (cycle j) (w j)-
-      g (cycle j) (w j-digitGenerator E (cycle j) (labels j))
-    have he₀ (j) : e₀ j≠0 := sub_ne_zero.mpr (hw j)
-    let e : Useful E := cycleExtend cycle e₀
-    let k : Input E := cycleExtend cycle w
-    have hcol : cycleMap cycle (fun j => digitSubgroup E (cycle j) (labels j))
-        (fixedCycleMaps E cycle labels) g k 0 =
-        cycleMap cycle (fun j => digitSubgroup E (cycle j) (labels j))
-        (fixedCycleMaps E cycle labels) g k e := by
-      funext i
-      by_cases hi : ∃ j, cycle j=i
-      · obtain ⟨j,rfl⟩ := hi
-        simp only [cycleMap_apply_cycle,k,e,cycleExtend_apply,Pi.zero_apply,
-          fixedCycleMaps,ite_true,ZeroMemClass.coe_zero,sub_zero,zero_add,
-          if_neg (he₀ (j-1))]
-        change g (cycle j) (w j) =
-          (g (cycle j) (w j)-g (cycle j) (w j-digitGenerator E (cycle j) (labels j)))+
-            g (cycle j) (w j-digitGenerator E (cycle j) (labels j))
-        exact (sub_add_cancel _ _).symm
-      · have hoff : ∀ j, cycle j≠i := by simpa only [not_exists] using hi
-        simp only [cycleMap,Pi.zero_apply,e,cycleExtend_eq_zero cycle e₀ hoff,
-          cycleShift_eq_zero cycle _ _ _ hoff,sub_zero,zero_add]
-    have he : e=0 := ((hall k).1 hcol).symm
-    apply he₀ 0
-    have hh := congrFun he (cycle 0)
-    simpa only [e,cycleExtend_apply,Pi.zero_apply] using hh
-  · rintro ⟨j,hj⟩ k
-    exact cycleMap_bijective_of_inactive cycle _ _ g k j hj
+    ∃ j, ¬ DigitActive (g (cycle j)) (digitSubgroup E (cycle j) (labels j)) :=
+  cycleMap_generator_bijective_iff cycle _ (fun j => ⟨digitGenerator E (cycle j) (labels j), digitGenerator_mem E _ _⟩)
+    (fun j u hu => digitGenerator_spans E (cycle j) (labels j) u hu) g
 
 def fixedCycleTiles {t : ℕ} [NeZero t] (cycle : ZMod t ↪ Channel T)
     (labels : ∀ j, Label T (cycle j)) : Finset (Finset (Ambient E)) :=
