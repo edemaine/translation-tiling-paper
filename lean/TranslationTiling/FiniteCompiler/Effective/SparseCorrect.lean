@@ -6,11 +6,12 @@ namespace TranslationTiling.FiniteCompiler.Effective
 open Compiler.Effective
 open scoped Classical
 noncomputable section
+variable [SeedFrame]
 set_option maxRecDepth 10000
 set_option maxHeartbeats 2000000
 
 /-- Transfer a numerical row specification to the checked offset gadget. -/
-theorem cycleCodes_correct {T : System} (E : EncodingParameters T)
+theorem cycleCodes_correct {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     (D : Useful E → Low E) (rows : List CycleRow)
     (hspec : ∀ n, CycleTest rows n ↔ q0 E (decodeNumericalPoint E ((0, 0), n)) =
       (0, D (usefulProjection E (decodeNumericalPoint E ((0, 0), n))))) :
@@ -36,7 +37,7 @@ theorem cycleCodes_correct {T : System} (E : EncodingParameters T)
     simpa only [he] using hq
 
 
-variable {T : System} (E : EncodingParameters T) {t : ℕ} [NeZero t]
+variable {T : System} [AlphabetFamily T] (E : EncodingParameters T) {t : ℕ} [NeZero t]
 
 abbrev Slots (T : System) := Fin (T.width + 2)
 

@@ -1,4 +1,5 @@
 import TranslationTiling.FiniteCompiler.Effective.PackedTotalCompiler
+import TranslationTiling.FiniteCompiler.Effective.SparseStrip
 import TranslationTiling.FiniteCompiler.ProjectedCompiler
 import TranslationTiling.FiniteCompiler.FortySmallCompiler
 import TranslationTiling.FiniteCompiler.ProjectedSystem

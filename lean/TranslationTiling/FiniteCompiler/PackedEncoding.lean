@@ -28,7 +28,7 @@ theorem profile12_injective : profile12.injectivityCheck := by decide +kernel
 theorem profile36_injective : profile36.injectivityCheck := by decide +kernel
 theorem profile243_injective : profile243.injectivityCheck := by decide +kernel
 
-variable (p : Profile) (hv : Valid p)
+variable (p : Profile) {P : ℕ} (hv : Valid p P)
 
 include hv in
 private theorem atPrime_mem (i : p.Tag) : p.atPrime i ∈ p.primes := by
@@ -121,7 +121,7 @@ def encoding (hinj : p.injectivityCheck) : EncodingParameters T where
 variable (hinj : p.injectivityCheck)
 
 theorem encoding_prime (i : PrimeTag T) :
-    (encoding p hv hw ha hinj).primeAt i ≤ 65536 :=
+    (encoding p hv hw ha hinj).primeAt i ≤ P :=
   (hv.2.2.2.1 _ (atPrime_mem p hv _)).2.2.2
 
 theorem encoding_r (i : Channel T) :

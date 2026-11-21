@@ -10,13 +10,14 @@ set_option maxHeartbeats 2000000
 
 namespace TranslationTiling.FiniteCompiler
 noncomputable section
+variable [SeedFrame]
 open scoped BigOperators
 /-- Decode a cyclic coordinate by reduction modulo each factor. -/
-def numericalFactor {T : System} (E : EncodingParameters T) (n : ℕ) : V E :=
+def numericalFactor {T : System} [AlphabetFamily T] (E : EncodingParameters T) (n : ℕ) : V E :=
   ((n : ZMod (D T)), fun i => ((n : ZMod (E.r i ^ 2)),
     ((n : ZMod (E.a i)), (n : ZMod (E.b i)))))
 
-theorem numericalFactor_eq {T : System} (E : EncodingParameters T) (n : ℕ) :
+theorem numericalFactor_eq {T : System} [AlphabetFamily T] (E : EncodingParameters T) (n : ℕ) :
     numericalFactor E n = cyclicToFiniteFactor E (n : ZMod E.cyclicOrder) := by
   have houter : ZMod.chineseRemainder E.p4_coprime_blocks (n : ZMod E.cyclicOrder) =
       ((n : ZMod (D T)), (n : ZMod (∏ i : Channel T, E.blockModulus i))) := by
@@ -52,7 +53,7 @@ theorem numericalFactor_eq {T : System} (E : EncodingParameters T) (n : ℕ) :
   rw [hpi]
   exact Prod.ext rfl (funext fun i => (hchannel i).symm)
 
-theorem numericalFactor_surjective {T : System} (E : EncodingParameters T)
+theorem numericalFactor_surjective {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     (v : V E) : ∃ n : ℕ, n < E.cyclicOrder ∧ numericalFactor E n = v := by
   refine ⟨(finiteFactorEquiv E v).val, ZMod.val_lt _, ?_⟩
   rw [numericalFactor_eq, ZMod.natCast_zmod_val]
@@ -65,10 +66,10 @@ open scoped Classical
 private theorem numericalRank_compat : Compiler.numericalRank = numericalRank := rfl
 private theorem numericalMultiplicity_compat : Compiler.numericalMultiplicity = numericalMultiplicity := rfl
 
-noncomputable def decodeNumericalPoint {T : System} (E : EncodingParameters T)
+noncomputable def decodeNumericalPoint {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     (f : NumericalPoint) : Ambient E := (f.1, numericalFactor E f.2)
 
-theorem kernelTest_iff {T : System} (E : EncodingParameters T) (n : ℕ) :
+theorem kernelTest_iff {T : System} [AlphabetFamily T] (E : EncodingParameters T) (n : ℕ) :
     KernelTest ((Finset.univ : Finset (Channel T)).toList.map E.r) n ↔
       q0 E (decodeNumericalPoint E ((0, 0), n)) = 0 := by
   simp only [KernelTest, List.mem_map, Finset.mem_toList, Finset.mem_univ, true_and]
@@ -89,7 +90,7 @@ theorem kernelTest_iff {T : System} (E : EncodingParameters T) (n : ℕ) :
     rw [CyclicShear.low_natCast] at hi
     simpa only [ZMod.val_natCast, ZMod.val_zero] using congrArg ZMod.val hi
 
-theorem lowCongruences_iff {T : System} (E : EncodingParameters T)
+theorem lowCongruences_iff {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     (k : Input E) (n : ℕ) :
     Congruences ((Finset.univ : Finset (Channel T)).toList.map
       (fun i => (E.r i, (k i).val))) n ↔ ∀ i, (n : K E i) = k i := by
@@ -104,7 +105,7 @@ theorem lowCongruences_iff {T : System} (E : EncodingParameters T)
     have hi := congrArg ZMod.val (h i)
     simpa only [ZMod.val_natCast, Nat.mod_eq_of_lt (ZMod.val_lt (k i))] using hi
 
-theorem usefulZero_iff {T : System} (E : EncodingParameters T) (i : Channel T)
+theorem usefulZero_iff {T : System} [AlphabetFamily T] (E : EncodingParameters T) (i : Channel T)
     (h : Plane) (n : ℕ) : UsefulZero (E.a i) (E.b i) n ↔
       usefulCoord E i (decodeNumericalPoint E (h, n)) = 0 := by
   change (n % E.a i = 0 ∧ n % E.b i = 0) ↔
@@ -113,7 +114,7 @@ theorem usefulZero_iff {T : System} (E : EncodingParameters T) (i : Channel T)
     ← (ZMod.val_injective (E.b i)).eq_iff, ZMod.val_natCast, ZMod.val_zero]
 
 
-theorem kernelCodes_correct {T : System} (E : EncodingParameters T) :
+theorem kernelCodes_correct {T : System} [AlphabetFamily T] (E : EncodingParameters T) :
     (kernelCodes E.cyclicOrder ((Finset.univ : Finset (Channel T)).toList.map E.r)).toFinset.image
       (decodeNumericalPoint E) = kernelTile E := by
   classical
@@ -134,7 +135,7 @@ theorem kernelCodes_correct {T : System} (E : EncodingParameters T) :
     apply List.mem_map.mpr
     refine ⟨n, List.mem_filter.mpr ⟨List.mem_range.mpr hn, ?_⟩, rfl⟩
     apply decide_eq_true ((kernelTest_iff E n).mpr (he.symm ▸ hq))
-theorem q0_decode_iff {T : System} (E : EncodingParameters T)
+theorem q0_decode_iff {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     (h : Plane) (n : ℕ) (b : Base E) :
     q0 E (decodeNumericalPoint E (h, n)) = b ↔ h = b.1 ∧
       Congruences ((Finset.univ : Finset (Channel T)).toList.map
@@ -155,7 +156,7 @@ theorem q0_decode_iff {T : System} (E : EncodingParameters T)
     rw [CyclicShear.low_natCast]
     exact hk i
 
-theorem invarianceCodes_correct {T : System} (E : EncodingParameters T)
+theorem invarianceCodes_correct {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     (i : Channel T) (σ : Base E) :
     (invarianceCodes E.cyclicOrder
       ((Finset.univ : Finset (Channel T)).toList.map E.r) (E.a i) (E.b i) σ.1
@@ -206,18 +207,18 @@ theorem invarianceCodes_correct {T : System} (E : EncodingParameters T)
       apply decide_eq_true
       exact ⟨((q0_decode_iff E σ.1 n σ).mp (he.symm ▸ hq)).2,
         (usefulZero_iff E i σ.1 n).mpr (he.symm ▸ hc)⟩
-noncomputable def nativeActivationNumbers {T : System} (E : EncodingParameters T)
+noncomputable def nativeActivationNumbers {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     (i : Channel T) (j : ActivationIndex E i) : ActivationNumbers :=
   ((E.a i, E.b i, E.r i), (j.1.val, j.2.1.1.val, j.2.1.2.val, j.2.2.val))
 
-private theorem activationCongruences_iff {T : System} (E : EncodingParameters T)
-    (i : Channel T) (j : ActivationIndex E i) (n : ℕ) :
-    Congruences [(E.r i, j.1.val),
-      (E.a i, (rhoA (E.a_two_le i) (E.b_two_le i) j.2).val),
-      (E.b i, (rhoB (E.a_two_le i) (E.b_two_le i) j.2).val)] n ↔
+theorem activationCongruences_iff {T : System} [AlphabetFamily T] (E : EncodingParameters T)
+    (i : Channel T) (c : K E i) (u : ZMod (E.a i)) (v : ZMod (E.b i)) (n : ℕ) :
+    Congruences [(E.r i, c.val),
+      (E.a i, (u).val),
+      (E.b i, (v).val)] n ↔
       activationCRT E i (n : ZMod (activationModulus E i)) =
-        ((j.1, rhoA (E.a_two_le i) (E.b_two_le i) j.2),
-          rhoB (E.a_two_le i) (E.b_two_le i) j.2) := by
+        ((c, u),
+          v) := by
   have he : activationCRT E i (n : ZMod (activationModulus E i)) =
       (((n : K E i), (n : ZMod (E.a i))), (n : ZMod (E.b i))) := by
     rw [map_natCast]
@@ -226,13 +227,14 @@ private theorem activationCongruences_iff {T : System} (E : EncodingParameters T
   simp only [Congruences, List.forall_mem_cons, List.not_mem_nil, false_implies, forall_const, and_true,
     Prod.mk.injEq, ← (ZMod.val_injective (E.r i)).eq_iff,
     ← (ZMod.val_injective (E.a i)).eq_iff, ← (ZMod.val_injective (E.b i)).eq_iff,
-    ZMod.val_natCast, Nat.mod_eq_of_lt (ZMod.val_lt j.1),
-    Nat.mod_eq_of_lt (ZMod.val_lt (rhoA (E.a_two_le i) (E.b_two_le i) j.2)),
-    Nat.mod_eq_of_lt (ZMod.val_lt (rhoB (E.a_two_le i) (E.b_two_le i) j.2))]
+    ZMod.val_natCast, Nat.mod_eq_of_lt (ZMod.val_lt c),
+    Nat.mod_eq_of_lt (ZMod.val_lt (u)),
+    Nat.mod_eq_of_lt (ZMod.val_lt (v))]
   exact and_assoc.symm
 
-theorem numericalActivationFirst_eq {T : System} (E : EncodingParameters T)
-    (n : Column T) (j : ActivationIndex E (.inl n)) :
+theorem numericalActivationFirst_eq {T : System} [AlphabetFamily T] (E : EncodingParameters T)
+    (n : Column T) (j : ActivationIndex E (.inl n))
+    (hregular : SeedFrame.compact = false := by rfl) :
     numericalActivationFirst (nativeActivationNumbers E (.inl n) j) = ordinaryFirst E n j := by
   let i : Channel T := .inl n
   have hA : differenceResidue (E.a i)
@@ -250,20 +252,20 @@ theorem numericalActivationFirst_eq {T : System} (E : EncodingParameters T)
       rhoB (E.a_two_le i) (E.b_two_le i) j.2)
     [(E.r i, j.1.val), (E.a i, (rhoA (E.a_two_le i) (E.b_two_le i) j.2).val),
       (E.b i, (rhoB (E.a_two_le i) (E.b_two_le i) j.2).val)]
-    (activationCongruences_iff E i j)
+    (activationCongruences_iff E i j.1 _ _)
   unfold numericalActivationFirst nativeActivationNumbers ordinaryFirst separatedResidueLift
-  simp only [ordinaryResidue,ordinaryLiftCode,ordinaryShiftData,regularSeedFrame,Bool.false_eq_true,
+  simp only [ordinaryResidue,ordinaryLiftCode,ordinaryShiftData,hregular,Bool.false_eq_true,
     ↓reduceIte,BlockShiftData.ofMultiplicity]
   dsimp only [i, activationModulus] at hs
   simp only [numericalRank_compat]
   rw [hA, hB, hs]
   rfl
-noncomputable def nativeSeedNumbers {T : System} (E : EncodingParameters T)
+noncomputable def nativeSeedNumbers {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     (t : Fin 2) (j : SeedActivationIndex E t) : SeedNumbers :=
   (nativeActivationNumbers E (.inr t) j.1,
     (residueModulus, E.a (.inr (otherSeed t)), j.2.1.val, j.2.2.val))
 
-private theorem seedCongruences_iff {T : System} (E : EncodingParameters T)
+private theorem seedCongruences_iff {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     (t : Fin 2) (j : SeedActivationIndex E t) (n : ℕ) :
     Congruences [(E.r (.inr t), j.1.1.val),
       (E.a (.inr t), (rhoA (E.a_two_le (.inr t)) (E.b_two_le (.inr t)) j.1.2).val),
@@ -292,7 +294,7 @@ private theorem seedCongruences_iff {T : System} (E : EncodingParameters T)
     Nat.mod_eq_of_lt (ZMod.val_lt (rhoB (E.a_two_le (.inr t)) (E.b_two_le (.inr t)) j.1.2))]
   tauto
 
-theorem numericalSeedFirst_eq {T : System} (E : EncodingParameters T)
+theorem numericalSeedFirst_eq {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     (t : Fin 2) (j : SeedActivationIndex E t) :
     numericalSeedFirst (nativeSeedNumbers E t j) = seedFirst E t j := by
   let i : Channel T := .inr t
@@ -319,11 +321,11 @@ theorem numericalSeedFirst_eq {T : System} (E : EncodingParameters T)
   simp only [numericalRank_compat]
   rw [hA, hB, hs]
   rfl
-noncomputable def rawActivationIndex {T : System} (E : EncodingParameters T)
+noncomputable def rawActivationIndex {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     (i : Channel T) (j : ActivationIndex E i) : ActivationCode :=
   (j.1.val, j.2.1.1.val, j.2.1.2.val, j.2.2.val)
 
-theorem rawActivationIndex_mem {T : System} (E : EncodingParameters T)
+theorem rawActivationIndex_mem {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     (i : Channel T) (j : ActivationIndex E i) :
     rawActivationIndex E i j ∈ activationIndices (E.a i) (E.b i) (E.r i) := by
   apply (mem_activationIndices _ _ _ _).mpr
@@ -332,7 +334,7 @@ theorem rawActivationIndex_mem {T : System} (E : EncodingParameters T)
   rw [numericalMultiplicity_compat, ← shiftMultiplicity_numerical (E.a_two_le i) (E.b_two_le i)]
   exact j.2.2.isLt
 
-theorem activationIndices_native {T : System} (E : EncodingParameters T)
+theorem activationIndices_native {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     (i : Channel T) (code : ActivationCode) :
     code ∈ activationIndices (E.a i) (E.b i) (E.r i) ↔
       ∃ j : ActivationIndex E i, rawActivationIndex E i j = code := by
@@ -355,11 +357,11 @@ theorem activationIndices_native {T : System} (E : EncodingParameters T)
   · rintro ⟨j, rfl⟩
     exact rawActivationIndex_mem E i j
 
-noncomputable def rawSeedIndex {T : System} (E : EncodingParameters T)
+noncomputable def rawSeedIndex {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     (t : Fin 2) (j : SeedActivationIndex E t) : SeedCode :=
   (rawActivationIndex E (.inr t) j.1, j.2.1.val, j.2.2.val)
 
-theorem seedIndices_native {T : System} (E : EncodingParameters T)
+theorem seedIndices_native {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     (t : Fin 2) (code : SeedCode) :
     code ∈ seedIndices (E.a (.inr t)) (E.b (.inr t)) (E.r (.inr t)) residueModulus ↔
       ∃ j : SeedActivationIndex E t, rawSeedIndex E t j = code := by
@@ -375,13 +377,13 @@ theorem seedIndices_native {T : System} (E : EncodingParameters T)
   · rintro ⟨j, rfl⟩
     exact ⟨rawActivationIndex E (.inr t) j.1, rawActivationIndex_mem E (.inr t) j.1,
       j.2.1.val, ZMod.val_lt j.2.1, j.2.2.val, ZMod.val_lt j.2.2, rfl⟩
-noncomputable def nativeActivationBatchData {T : System}
+noncomputable def nativeActivationBatchData {T : System} [AlphabetFamily T]
     (E : EncodingParameters T) (i : Channel T) (h : Plane) (e : P E i)
     (freeZ : Bool) : ActivationBatchData :=
   ((E.cyclicOrder, ((Finset.univ : Finset (Channel T)).filter (· ≠ i)).toList.map E.r),
     (E.r i, E.a i, E.b i, D T), h, (e.1.val, e.2.val), freeZ)
 
-theorem activationBatchTest_iff {T : System} (E : EncodingParameters T)
+theorem activationBatchTest_iff {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     (i : Channel T) (h : Plane) (e : P E i) (freeZ : Bool) (n : ℕ) :
     ActivationBatchTest (nativeActivationBatchData E i h e freeZ) n ↔
       decodeNumericalPoint E (h, n) ∈ activationBatch E i h e freeZ := by
@@ -416,7 +418,7 @@ theorem activationBatchTest_iff {T : System} (E : EncodingParameters T)
   rw [Nat.mod_eq_of_lt (ZMod.val_lt e.1), Nat.mod_eq_of_lt (ZMod.val_lt e.2)]
   tauto
 
-theorem activationBatchCodes_correct {T : System} (E : EncodingParameters T)
+theorem activationBatchCodes_correct {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     (i : Channel T) (h : Plane) (e : P E i) (freeZ : Bool) :
     (activationBatchCodes (nativeActivationBatchData E i h e freeZ)).toFinset.image
       (decodeNumericalPoint E) = activationBatch E i h e freeZ := by
@@ -437,13 +439,14 @@ theorem activationBatchCodes_correct {T : System} (E : EncodingParameters T)
     refine ⟨n, List.mem_filter.mpr ⟨List.mem_range.mpr hn, ?_⟩, rfl⟩
     exact decide_eq_true ((activationBatchTest_iff E i h e freeZ n).mpr (he.symm ▸ hg))
 
-noncomputable def nativeActivationEnvironment {T : System}
+noncomputable def nativeActivationEnvironment {T : System} [AlphabetFamily T]
     (E : EncodingParameters T) (i : Channel T) : ActivationEnvironment :=
   ((E.cyclicOrder, ((Finset.univ : Finset (Channel T)).filter (· ≠ i)).toList.map E.r),
     (E.r i, E.a i, E.b i, D T))
 
-theorem ordinaryBatchCodes_correct {T : System} (E : EncodingParameters T)
-    (n : Column T) (k : ℕ) (hs : T.slope n = (k : ℤ)) (j : ActivationIndex E (.inl n)) :
+theorem ordinaryBatchCodes_correct {T : System} [AlphabetFamily T] (E : EncodingParameters T)
+    (n : Column T) (k : ℕ) (hs : T.slope n = (k : ℤ)) (j : ActivationIndex E (.inl n))
+    (hregular : SeedFrame.compact = false := by rfl) :
     (ordinaryBatchCodes (nativeActivationEnvironment E (.inl n)) k
       (rawActivationIndex E (.inl n) j)).toFinset.image (decodeNumericalPoint E) =
       activationBatch E (.inl n) (ordinaryOffset E n j)
@@ -452,13 +455,13 @@ theorem ordinaryBatchCodes_correct {T : System} (E : EncodingParameters T)
   change (activationBatchCodes (_, _,
     (numericalActivationFirst (nativeActivationNumbers E (.inl n) j),
       -(k : ℤ) * numericalActivationFirst (nativeActivationNumbers E (.inl n) j)), _, _)).toFinset.image _ = _
-  rw [numericalActivationFirst_eq]
+  rw [numericalActivationFirst_eq E n j hregular]
   simpa only [ordinaryOffset, hs, nativeActivationBatchData, nativeActivationEnvironment,
     rawActivationIndex, shift] using
     (activationBatchCodes_correct E (.inl n) (ordinaryOffset E n j)
       (shift (E.a (.inl n)) (E.b (.inl n)) j.2) true)
 
-theorem seedBatchCodes_correct {T : System} (E : EncodingParameters T)
+theorem seedBatchCodes_correct {T : System} [AlphabetFamily T] (E : EncodingParameters T)
     (t : Fin 2) (j : SeedActivationIndex E t) :
     (seedBatchCodes (nativeActivationEnvironment E (.inr t))
       (E.a (.inr (otherSeed t))) residueModulus (rawSeedIndex E t j)).toFinset.image
@@ -470,8 +473,9 @@ theorem seedBatchCodes_correct {T : System} (E : EncodingParameters T)
   rw [numericalSeedFirst_eq]
   exact activationBatchCodes_correct E (.inr t) _ _ _
 
-theorem ordinaryCodes_correct {T : System} (E : EncodingParameters T) (n : Column T)
-    (k : ℕ) (hs : T.slope n = (k : ℤ)) :
+theorem ordinaryCodes_correct {T : System} [AlphabetFamily T] (E : EncodingParameters T) (n : Column T)
+    (k : ℕ) (hs : T.slope n = (k : ℤ))
+    (hregular : SeedFrame.compact = false := by rfl) :
     (ordinaryCodes (nativeActivationEnvironment E (.inl n)) k).toFinset.image
       (decodeNumericalPoint E) = ordinaryActivationTile E n := by
   ext g
@@ -481,14 +485,14 @@ theorem ordinaryCodes_correct {T : System} (E : EncodingParameters T) (n : Colum
   constructor
   · rintro ⟨f, ⟨code, ⟨j, rfl⟩, hf⟩, he⟩
     refine ⟨j, ?_⟩
-    rw [← ordinaryBatchCodes_correct E n k hs j]
+    rw [← ordinaryBatchCodes_correct E n k hs j hregular]
     exact Finset.mem_image.mpr ⟨f, List.mem_toFinset.mpr hf, he⟩
   · rintro ⟨j, hg⟩
-    rw [← ordinaryBatchCodes_correct E n k hs j] at hg
+    rw [← ordinaryBatchCodes_correct E n k hs j hregular] at hg
     obtain ⟨f, hf, he⟩ := Finset.mem_image.mp hg
     exact ⟨f, ⟨_, ⟨j, rfl⟩, List.mem_toFinset.mp hf⟩, he⟩
 
-theorem seedCodes_correct {T : System} (E : EncodingParameters T) (t : Fin 2) :
+theorem seedCodes_correct {T : System} [AlphabetFamily T] (E : EncodingParameters T) (t : Fin 2) :
     (seedCodes (nativeActivationEnvironment E (.inr t)) (E.a (.inr (otherSeed t)))
       residueModulus).toFinset.image (decodeNumericalPoint E) = seedActivationTile E t := by
   ext g

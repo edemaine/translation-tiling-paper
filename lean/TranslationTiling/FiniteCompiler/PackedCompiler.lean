@@ -51,7 +51,7 @@ def checked243 : CheckedProfile :=
     ⟨by decide +kernel,by decide +kernel,by decide +kernel,by decide +kernel⟩,
     profile243_injective,profile243_cap,by decide +kernel,by decide +kernel,by decide +kernel,by decide +kernel⟩
 
-private theorem patterns_length_bound {T : LeanWang.TileSet} {d : ℕ} (C : Code T d) :
+theorem patterns_length_bound {T : LeanWang.TileSet} {d : ℕ} (C : Code T d) :
     (GuardedCompiler.patterns C).length ≤ 2313+72*d^2 := by
   unfold GuardedCompiler.patterns
   simp only [List.length_append,List.length_map,Finset.length_toList]
@@ -75,32 +75,32 @@ private theorem sum_arity (p : Profile) :
   · intro i hi hj
     simp
 
-private def code (T : LeanWang.TileSet) (d : ℕ) (hpos : 0 < T.length) (hcap : T.length ≤ d) :
+def code (T : LeanWang.TileSet) (d : ℕ) (hpos : 0 < T.length) (hcap : T.length ≤ d) :
     Code T d := by
-  letI : Nonempty (LeanWang.TileIn T) := ⟨⟨T[0],List.getElem_mem hpos⟩⟩
   let f : LeanWang.TileIn T → Fin d :=
     fun t => ⟨T.idxOf t.val,(List.idxOf_lt_length_of_mem t.property).trans_le hcap⟩
-  have hi : Function.Injective f := by
-    intro t u h
-    apply Subtype.ext
-    exact (List.idxOf_inj t.property).mp (congrArg Fin.val h)
-  exact ⟨f,Function.invFun f,Function.leftInverse_invFun hi⟩
+  let decode (j : Fin d) : LeanWang.TileIn T :=
+    if hj : j.val < T.length then ⟨T[j.val],List.getElem_mem hj⟩ else ⟨T[0],List.getElem_mem hpos⟩
+  refine ⟨f,decode,fun t => Subtype.ext ?_⟩
+  simp only [f,decode,dif_pos (List.idxOf_lt_length_of_mem t.property)]
+  exact List.getElem_idxOf _
 
-private theorem prime_bound {S : System} [AlphabetFamily S] (E : EncodingParameters S) (hp : ∀ i, E.primeAt i≤65536) : PrimeBound E.cyclicOrder 65536 := by
+theorem prime_bound {S : System} [AlphabetFamily S] (E : EncodingParameters S) {P : ℕ} (hP : 35 ≤ P)
+    (hp : ∀ i, E.primeAt i ≤ P) : PrimeBound E.cyclicOrder P := by
   intro q hq
   by_cases hprime : q.Prime
   · right
     by_cases hd : q∣E.cyclicOrder
     · right
       by_contra hl
-      have hlarge : 65536<q := by omega
-      have hcop (a : ℕ) (ha : 0<a) (hb : a≤65536) : Nat.Coprime q a := by
+      have hlarge : P<q := by omega
+      have hcop (a : ℕ) (ha : 0<a) (hb : a≤P) : Nat.Coprime q a := by
         apply hprime.coprime_iff_not_dvd.mpr
         intro hh
         have := Nat.le_of_dvd ha hh
         omega
       have hR : Nat.Coprime q residueModulus := hcop _ (NeZero.pos _)
-        (by rw [residueModulus_value]; split <;> decide)
+        (by rwa [show residueModulus = 35 by norm_num [residueModulus_value,compactSeedFrame]])
       have hi (i : Channel S) : Nat.Coprime q (E.blockModulus i) := by
         have hr : Nat.Coprime q (E.r i) := by
           rw [E.r_eq_prod]
@@ -115,41 +115,49 @@ private theorem prime_bound {S : System} [AlphabetFamily S] (E : EncodingParamet
     · exact Or.inl hd
   · exact Or.inl hprime
 
-theorem tile_exists (Q : CheckedProfile) (T : LeanWang.TileSet) (hn : 0 < T.length)
-    (hcap : T.length ≤ Q.profile.radices.prod) :
+theorem tile_exists_of_volume (p : Profile) {P X : ℕ} (hP : 35 ≤ P)
+    (hv : Valid p P) (hl : Layout p) (hi : p.injectivityCheck)
+    (hsupport₀ : 35 ≤ p.radius 0)
+    (hslope₀ : ∀ i : Fin p.width, p.slope i.val ≤ 16)
+    (hordinary : ∀ i : Fin p.width,
+      2 * (p.r i.val * p.a i.val * p.b i.val) ≤ p.radius (p.slope i.val))
+    (hseed : ∀ t : Fin 2, 2 * (3-t.val) * p.r (p.width+t.val) *
+      (p.a (p.width+t.val) * p.b (p.width+t.val))^2 * 35^3 ≤ p.radius 0)
+    (hX : p.testLimit ≤ X) (hL : P + 3 ≤ 2 * X^2)
+    (T : LeanWang.TileSet) (hn : 0 < T.length) (hcap : T.length ≤ p.radices.prod) :
     ∃ U : Tile 3, U ≠ [] ∧ FaceConnected U ∧
-      (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles U) ∧ U.length ≤ 2^Q.exponent := by
-  let p := Q.profile
+      (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles U) ∧ U.length ≤
+      reservedVolumeCap 35 p.radius p.inputOrder p.mass (reservedCap X P) := by
   let C := code T p.radices.prod hn hcap
   letI : AlphabetFamily (system C) := GuardedCompiler.alphabet C
-  let S := refinement p Q.layout C
+  let S := refinement p hl C
   letI : AlphabetFamily S.system := S.family
-  let E : EncodingParameters S.system := encoding p Q.valid rfl (fun _ => rfl) Q.injective
+  let E : EncodingParameters S.system := encoding p hv rfl (fun _ => rfl) hi
   have ha (i : Channel S.system) :
       E.a i = p.a (channelEquiv p rfl i).val := rfl
   have hb (i : Channel S.system) :
       E.b i = p.b (channelEquiv p rfl i).val := rfl
   have hr (i : Channel S.system) :
       E.r i = p.r (channelEquiv p rfl i).val :=
-    encoding_r p Q.valid rfl (fun _ => rfl) Q.injective i
-  have hslope (i : Column S.system) : S.system.slope i = (p.slope i.val : ℤ) := Q.layout.slope i
+    encoding_r p hv rfl (fun _ => rfl) hi i
+  have hslope (i : Column S.system) : S.system.slope i = (p.slope i.val : ℤ) := hl.slope i
   have hsupport : PartialStrip.StripBounds E p.radius := by
-    refine ⟨Q.base, ?_, ?_, ?_⟩
+    refine ⟨hsupport₀, ?_, ?_, ?_⟩
     · intro i
       rw [hslope]
-      exact ⟨by positivity,by simpa using Q.slope i⟩
+      exact ⟨by positivity,by simpa using hslope₀ i⟩
     · intro i
       rw [ha,hb,hr,hslope,Int.natAbs_natCast]
-      exact Q.ordinary i
+      exact hordinary i
     · intro t
       have ht : (otherSeed t).val+2 = 3-t.val := by dsimp [otherSeed]; have := t.isLt; omega
       have hm : residueModulus = 35 := by norm_num [residueModulus_value,compactSeedFrame]
       rw [E.seed_a, ht, hm]
       unfold CompactSupport.B
       rw [ha,hb,hr]
-      simpa only [channel_inr p (T:=S.system) rfl t, Nat.mul_assoc] using Q.seed t
-  have hp : PrimeBound E.cyclicOrder 65536 :=
-    prime_bound E (encoding_prime p Q.valid rfl (fun _ => rfl) Q.injective)
+      simpa only [channel_inr p (T:=S.system) rfl t, Nat.mul_assoc] using hseed t
+  have hp : PrimeBound E.cyclicOrder P :=
+    prime_bound E hP (encoding_prime p hv rfl (fun _ => rfl) hi)
   have hsize : (PartialStrip.family (GuardedCompiler.refinedPatterns C S) E).length ≤ p.testLimit := by
     have h := PartialStrip.family_length_bound (GuardedCompiler.refinedPatterns C S) E
     have hp := patterns_length_bound C
@@ -159,12 +167,23 @@ theorem tile_exists (Q : CheckedProfile) (T : LeanWang.TileSet) (hn : 0 < T.leng
     change (PartialStrip.family ((GuardedCompiler.patterns C).map S.expand) E).length ≤ p.testLimit
     unfold Profile.testLimit
     omega
-  have hX : 2313 ≤ p.testLimit := by unfold Profile.testLimit; omega
-  have hL : 65536+3 ≤ 2*p.testLimit^2 := by nlinarith
-  obtain ⟨U,hne,hc,hiff,hvol⟩ := PartialStrip.exists_strip_tile _ E _ hsupport _ hp hX hsize hL
-  rw [encoding_inputOrder p Q.valid rfl (fun _ => rfl) Q.injective,
-      encoding_mass p Q.valid rfl (fun _ => rfl) Q.injective] at hvol
-  exact ⟨U,hne,hc,(GuardedCompiler.refined_deck_equiv C S E).trans hiff,hvol.trans Q.cap⟩
+  have hmin : 2313 ≤ p.testLimit := by unfold Profile.testLimit; omega
+  obtain ⟨U,hne,hc,hiff,hvol⟩ :=
+    PartialStrip.exists_strip_tile _ E _ hsupport X P (by omega) hp
+      (hmin.trans hX) (hsize.trans hX) hL
+  rw [encoding_inputOrder p hv rfl (fun _ => rfl) hi,
+      encoding_mass p hv rfl (fun _ => rfl) hi] at hvol
+  exact ⟨U,hne,hc,(GuardedCompiler.refined_deck_equiv C S E).trans hiff,hvol⟩
+
+theorem tile_exists (Q : CheckedProfile) (T : LeanWang.TileSet) (hn : 0 < T.length)
+    (hcap : T.length ≤ Q.profile.radices.prod) :
+    ∃ U : Tile 3, U ≠ [] ∧ FaceConnected U ∧
+      (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles U) ∧ U.length ≤ 2^Q.exponent := by
+  have hmin : 2313 ≤ Q.profile.testLimit := by unfold Profile.testLimit; omega
+  have hL : 65536 + 3 ≤ 2 * Q.profile.testLimit^2 := by nlinarith
+  obtain ⟨U, hne, hc, hiff, hvol⟩ := tile_exists_of_volume Q.profile (by decide : 35 ≤ 65536)
+    Q.valid Q.layout Q.injective Q.base Q.slope Q.ordinary Q.seed le_rfl hL T hn hcap
+  exact ⟨U, hne, hc, hiff, hvol.trans Q.cap⟩
 
 end
 end TranslationTiling.FiniteCompiler.Packed

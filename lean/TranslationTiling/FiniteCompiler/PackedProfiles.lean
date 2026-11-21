@@ -53,18 +53,18 @@ def Profile.testLimit (p : Profile) : ℕ :=
 def Profile.cap (p : Profile) : ℕ :=
   reservedVolumeCap 35 p.radius p.inputOrder p.mass (reservedCap p.testLimit 65536)
 
-def Valid (p : Profile) : Prop :=
+def Valid (p : Profile) (P : ℕ := 65536) : Prop :=
   p.pairs.length = p.width+2 ∧
   p.digits.length = p.width+2 ∧
   p.primes.Nodup ∧
-  (∀ q ∈ p.primes, q.Prime ∧ q ≠ 5 ∧ q ≠ 7 ∧ q ≤ 65536) ∧
+  (∀ q ∈ p.primes, q.Prime ∧ q ≠ 5 ∧ q ≠ 7 ∧ q ≤ P) ∧
   (∀ i ∈ List.range (p.width+2), (p.row i).length = p.arity i ∧
     ∀ r ∈ p.row i, 0 < r.2.1 ∧ 0 < r.2.2 ∧ r.1 = r.2.1*p.a i+r.2.2*p.b i) ∧
   (∀ t ∈ List.range 2, p.a (p.width+t) = t+2 ∧
     (1225 < p.b (p.width+t) ∨
       t=1 ∧ p.b (p.width+t)%3=2 ∧ 1225<2*p.b (p.width+t)))
 
-instance (p : Profile) : Decidable (Valid p) := by unfold Valid; infer_instance
+instance (p : Profile) (P : ℕ) : Decidable (Valid p P) := by unfold Valid; infer_instance
 
 set_option maxRecDepth 12000
 set_option maxHeartbeats 5000000

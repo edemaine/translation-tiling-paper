@@ -33,12 +33,11 @@ theorem PartialTest.matches_select (p : ∀ n : Column T, Option (Letter T n)) (
 
 variable (E : EncodingParameters T)
 
-private def testEmbedding (p : PartialTest T) : Fin p.columns.card ↪ Column T :=
-  ((Fintype.equivFinOfCardEq (by simp : Fintype.card p.columns = p.columns.card)).symm.toEmbedding).trans
-    (Function.Embedding.subtype _)
+def testEquiv (p : PartialTest T) : Fin p.columns.card ≃ p.columns :=
+  (p.columns.orderIsoOfFin rfl).toEquiv
 
-private def testEquiv (p : PartialTest T) : Fin p.columns.card ≃ p.columns :=
-  (Fintype.equivFinOfCardEq (by simp : Fintype.card p.columns = p.columns.card)).symm
+def testEmbedding (p : PartialTest T) : Fin p.columns.card ↪ Column T :=
+  (testEquiv p).toEmbedding.trans (Function.Embedding.subtype _)
 
 def partialTiles (p : PartialTest T) : Finset (Finset (Ambient E)) :=
   if hp : p.columns.Nonempty then

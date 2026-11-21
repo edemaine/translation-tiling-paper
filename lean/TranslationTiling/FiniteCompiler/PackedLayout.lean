@@ -62,39 +62,42 @@ private theorem unrestricted_wang (t : Fin 2) (i : Column (system code))
     subst i
     trivial
 
-private def oneDigit (j : Fin p.width) (v : Fin (p.arity j.val))
+def oneDigit (j : Fin p.width) (v : Fin (p.arity j.val))
     (k : p.Fibre (p.origin j)) : Fin (p.arity k.val.val) :=
   if e : j = k.val then e ▸ v else ⟨0,h.positive k.val⟩
 
-private theorem oneDigit_eq (j : Fin p.width) (hi : (p.origin j).val < 18)
+private theorem oneDigit_eq (enc : ∀ i : Column (system code), Letter (system code) i ≃
+      ((j : p.Fibre i) → Fin (p.arity j.val.val)))
+    (j : Fin p.width) (hi : (p.origin j).val < 18)
     (v : Letter (system code) (p.origin j)) :
-    oneDigit p h j (letterCode p h code (p.origin j) v ⟨j,rfl⟩) =
-      letterCode p h code (p.origin j) v := by
+    oneDigit p h j (enc (p.origin j) v ⟨j,rfl⟩) =
+      enc (p.origin j) v := by
   funext k
   rw [p.arithmetic_unique _ hi k ⟨j,rfl⟩]
   simp [oneDigit]
 
-def refinement : ColumnRefinement (system code) where
+def refinementWith (enc : ∀ i : Column (system code), Letter (system code) i ≃
+      ((j : p.Fibre i) → Fin (p.arity j.val.val))) : ColumnRefinement (system code) where
   width := p.width
   width_pos := by unfold Profile.width; omega
   origin := p.origin
   origin_surjective := h.cover
   radix j := p.arity j.val
-  code := letterCode p h code
+  code := enc
   seed t j v := if (p.origin j).val < 18 then
-    LetterSeedSet (system code) t (p.origin j) ((letterCode p h code (p.origin j)).symm (oneDigit p h j v))
+    LetterSeedSet (system code) t (p.origin j) ((enc (p.origin j)).symm (oneDigit p h j v))
     else True
   seed_iff t i v := by
     by_cases hi : i.val < 18
     · have hseed (j : p.Fibre i) :
           (if (p.origin j.val).val < 18 then
             LetterSeedSet (system code) t (p.origin j.val)
-              ((letterCode p h code (p.origin j.val)).symm
-                (oneDigit p h j.val (letterCode p h code i v j)))
+              ((enc (p.origin j.val)).symm
+                (oneDigit p h j.val (enc i v j)))
             else True) ↔ LetterSeedSet (system code) t i v := by
         obtain ⟨j,hj⟩ := j
         subst i
-        rw [ite_eq_left hi, oneDigit_eq p h code j hi v, Equiv.symm_apply_apply]
+        rw [ite_eq_left hi, oneDigit_eq p h code enc j hi v, Equiv.symm_apply_apply]
       constructor
       · intro hs j
         exact (hseed j).mpr hs
@@ -105,6 +108,10 @@ def refinement : ColumnRefinement (system code) where
       intro j
       rw [ite_eq_right (by simpa only [j.property] using hi)]
       trivial
+
+
+def refinement : ColumnRefinement (system code) :=
+  refinementWith p h code (letterCode p h code)
 
 end
 end TranslationTiling.FiniteCompiler.Packed

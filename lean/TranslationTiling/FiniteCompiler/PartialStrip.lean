@@ -30,14 +30,14 @@ attribute [local irreducible] inputOrder EncodingParameters.cyclicOrder
 
 variable {T : System} [AlphabetFamily T] (ps : List (PartialTest T)) (E : EncodingParameters T)
 
-private theorem deck_tile_nonempty {F : Finset (Ambient E)}
+theorem deck_tile_nonempty {F : Finset (Ambient E)}
     (hF : F∈partialDeck E ps) : F.Nonempty := by
   rcases (partialDeck_cases E _).mp hF with h|⟨p,_,h⟩
   · exact nonempty_of_mem_testTiles E (structural_subset E h)
   · obtain ⟨k,hk,cy,lab,hh⟩ := partialTiles_member E p h
     exact nonempty_of_mem_fixedCycleTiles E cy lab hh
 
-private theorem deck_mass {F : Finset (Ambient E)}
+theorem deck_mass {F : Finset (Ambient E)}
     (hF : F∈partialDeck E ps) : F.card≤MassSize.mass E := by
   rcases (partialDeck_cases E _).mp hF with h|⟨p,_,h⟩
   · exact MassSize.test_card E F (structural_subset E h)
@@ -189,6 +189,16 @@ private theorem compact_test_strip {H : ℕ → ℕ} (hH : StripBounds E H)
       (CompactSupport.seed_bound E t j).2.trans (by rw [compact_modulus])⟩
 
 
+theorem deck_strip {H : ℕ → ℕ} (hH : StripBounds E H)
+    {F : Finset (Ambient E)} (hF : F ∈ partialDeck E ps) {g : Ambient E} (hg : g ∈ F) :
+    TestSupportAt 35 H g.1 := by
+  rcases (partialDeck_cases E _).mp hF with hs|⟨p,_,hp⟩
+  · exact compact_test_strip E hH (structural_subset E hs) hg
+  · obtain ⟨k,hk,cy,lab,hh⟩ := partialTiles_member E p hp
+    obtain rfl := Finset.mem_singleton.mp hh
+    have he : g.1=0 := congrArg Prod.fst ((mem_offsetTile E _ _).mp hg)
+    simp [he,TestSupportAt]
+
 theorem family_strip {H : ℕ → ℕ} (hH : StripBounds E H) :
     ∀ F∈family ps E, ∀ f∈F, TestSupportAt 35 H f.1 := by
   intro F hF f hf
@@ -196,20 +206,16 @@ theorem family_strip {H : ℕ → ℕ} (hH : StripBounds E H) :
   obtain ⟨g,hg,rfl⟩ := List.mem_map.mp hf
   obtain ⟨a,ha,rfl⟩ := Finset.mem_image.mp (Finset.mem_toList.mp hg)
   rw [numericalPoint_first,ambient_first]
-  rcases (partialDeck_cases E _).mp (Finset.mem_toList.mp hG) with hs|⟨p,_,hp⟩
-  · exact compact_test_strip E hH (structural_subset E hs) ha
-  · obtain ⟨k,hk,cy,lab,hh⟩ := partialTiles_member E p hp
-    obtain rfl := Finset.mem_singleton.mp hh
-    have he : a.1=0 := congrArg Prod.fst ((mem_offsetTile E _ _).mp ha)
-    simp [he,TestSupportAt]
+  exact deck_strip ps E hH (Finset.mem_toList.mp hG) ha
 
 
 theorem exists_strip_tile (H : ℕ → ℕ) (hsupport : StripBounds E H) (X : ℕ)
-    (hp : PrimeBound E.cyclicOrder 65536) (hX : 2313 ≤ X)
-    (hsize : (family ps E).length ≤ X) (hL : 65536+3 ≤ 2*X^2) :
+    (P : ℕ) (hP : 3 < P)
+    (hp : PrimeBound E.cyclicOrder P) (hX : 2313 ≤ X)
+    (hsize : (family ps E).length ≤ X) (hL : P+3 ≤ 2*X^2) :
     ∃ U : Tile 3, U≠[] ∧ FaceConnected U ∧
       ((∃ A : Set (Ambient E), ∀ F ∈ partialDeck E ps, Tiles F A) ↔ TranslationTiling.Tiles U) ∧
-      U.length≤reservedVolumeCap 35 H (inputOrder E) (MassSize.mass E) (reservedCap X 65536) := by
+      U.length≤reservedVolumeCap 35 H (inputOrder E) (MassSize.mass E) (reservedCap X P) := by
   let Fs := family ps E
   let N := E.cyclicOrder
   have hN : 0<N := E.cyclicOrder_pos
@@ -224,7 +230,7 @@ theorem exists_strip_tile (H : ℕ → ℕ) (hsupport : StripBounds E H) (X : �
     unfold Stacking.differenceLog
     have hh := (Nat.le_log_iff_pow_le (by decide : 1<2) (by omega : 2*X≠0)).mpr (show 2^4≤2*X by omega)
     omega
-  obtain ⟨c,hcs,hhi,hr⟩ := exists_reserved_partition (Fs.length-1) 65536 X i R
+  obtain ⟨c,hcs,hhi,hr⟩ := exists_reserved_partition (Fs.length-1) P X i R
     (by rw [hs']; exact hsize) (by omega) hl hL
   let q := c.1
   have hcop := coprime_of_primeBound hN hp hcs.1 hcs.2.1
@@ -233,7 +239,7 @@ theorem exists_strip_tile (H : ℕ → ℕ) (hsupport : StripBounds E H) (X : �
   have hnq : 3*R<2*data.1 := by
     have hR : R≤N := Nat.le_of_dvd hN (inputOrder_dvd E)
     have hRpos : 0<R := inputOrder_pos E
-    have hq : 65536<q := hcs.2.1
+    have hq : P<q := hcs.2.1
     have h1 := Nat.mul_le_mul_right q hR
     have h2 : 3*R<R*q := by
       simpa only [Nat.mul_comm q R] using
@@ -242,7 +248,7 @@ theorem exists_strip_tile (H : ℕ → ℕ) (hsupport : StripBounds E H) (X : �
     omega
   have hne := stackCodes_nonempty N c Fs hs hcs (family_tile_nonempty ps E)
   have hcol : HasForwardColumn data (3*R) := by
-    apply stack_hasForwardColumn N 65536 Fs c hcs hcop hN ⟨i,hi⟩ R (inputOrder_pos E) hr
+    apply stack_hasForwardColumn N P Fs c hcs hcop hN ⟨i,hi⟩ R (inputOrder_pos E) hr
     rw [List.getD_eq_getElem _ _ hi,he]
     exact numerical_kernel_core E
   let slots := Rails.Strips.slotsAt 35 H
@@ -254,10 +260,10 @@ theorem exists_strip_tile (H : ℕ → ℕ) (hsupport : StripBounds E H) (X : �
   refine ⟨U,Rails.SlotAssembly.nonempty _ (Rails.Strips.validAt 35 H) _ _
     (integerTile_nonempty data hne),hc,?_,?_⟩
   · exact (family_solution ps E).trans
-      ((stackCodes_correct_coprime N 65536 hN Fs hs c hcs hcop).trans
+      ((stackCodes_correct_coprime N P hN Fs hs c hcs hcop).trans
         ((integerTile_correct MSS.rigidity data hpos hne).trans hU.symm))
   · exact reservedVolume data hpos 35 H R _ q _ hhi
-      (stack_mass N 65536 hN Fs hs c hcs hcop _ (family_mass ps E))
+      (stack_mass N P hN Fs hs c hcs hcop _ (family_mass ps E))
 
 
 end
