@@ -1,4 +1,5 @@
 import TranslationTiling.FiniteCompiler.Effective.SharedDeckCorrect
+import TranslationTiling.FiniteCompiler.Effective.FourValueDeckCorrect
 
 namespace TranslationTiling.FiniteCompiler.Effective
 
@@ -87,7 +88,7 @@ private theorem index_count (T : LeanWang.TileSet) (hlo : 0 < T.length) (hhi : T
 
 def packedCompile (T : LeanWang.TileSet) : Tile 3 :=
   if T.length ≤ cutoff then guardedCompile (index (nonemptyInput T)) (nonemptyInput T)
-  else Packed.sharedTailCore T
+  else Packed.fourValueTailCore T
 
 theorem packedCompile_computable : Computable packedCompile := by
   have hix : Primrec index := by
@@ -97,13 +98,13 @@ theorem packedCompile_computable : Computable packedCompile := by
   have hguard := (Primrec.fin_curry₁.mpr guardedCompile_primrec).comp hix Primrec.id
   have hm : Primrec (fun T : LeanWang.TileSet => decide (T.length≤cutoff)) := by fun_prop
   exact (hm.to_comp.cond (hguard.comp nonemptyInput_primrec).to_comp
-    Packed.sharedTailCore_computable).of_eq
+    Packed.fourValueTailCore_computable).of_eq
     (fun T => by simp only [packedCompile,Bool.cond_decide,id_eq])
 
 theorem packedCompile_facts (T : LeanWang.TileSet) :
     packedCompile T ≠ [] ∧ FaceConnected (packedCompile T) ∧
     (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles (packedCompile T)) ∧
-    ((packedCompile T).length : ℝ) ≤ Size.sharedUsefulBound T.length := by
+    ((packedCompile T).length : ℝ) ≤ Size.fourValueBound T.length := by
   by_cases hm : T.length ≤ cutoff
   · rw [packedCompile, if_pos hm]
     have hlen := nonemptyInput_length T
@@ -113,12 +114,12 @@ theorem packedCompile_facts (T : LeanWang.TileSet) :
     rw [hlen] at hsize
     exact ⟨hne,hc,(nonemptyInput_tiles T).symm.trans ht,
       (show (_ : ℝ) ≤ ((2^(guardedProfile (max 1 T.length)).exponent : ℕ) : ℝ) by exact_mod_cast hsize).trans
-        (Size.guarded_profile_shared_bound T.length)⟩
+        (Size.guarded_profile_four_value_bound T.length)⟩
   · rw [packedCompile, if_neg hm]
-    exact Packed.sharedTailCore_facts T (Nat.lt_of_not_ge hm)
+    exact Packed.fourValueTailCore_facts T (Nat.lt_of_not_ge hm)
 
 theorem packedCompile_real_bound (T : LeanWang.TileSet) :
-    ((packedCompile T).length : ℝ) ≤ Size.sharedUsefulBound T.length :=
+    ((packedCompile T).length : ℝ) ≤ Size.fourValueBound T.length :=
   (packedCompile_facts T).2.2.2
 
 /-- The same guarded construction gives a sharper count for one Wang tile. -/
@@ -146,7 +147,7 @@ namespace TranslationTiling.Compiler.Size
 theorem exists_connected_tile_packed_quasipolynomial_bound (T : LeanWang.TileSet) :
     ∃ P : Tile 3, P ≠ [] ∧ FaceConnected P ∧
       (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles P) ∧
-      (cubeCount P : ℝ) ≤ sharedUsefulBound T.toFinset.card := by
+      (cubeCount P : ℝ) ≤ fourValueBound T.toFinset.card := by
   let P := FiniteCompiler.Effective.packedCompile T.dedup
   obtain ⟨hne,hc,hi,hsize⟩ := FiniteCompiler.Effective.packedCompile_facts T.dedup
   have he : LeanWang.TilesPlane T ↔ LeanWang.TilesPlane T.dedup :=

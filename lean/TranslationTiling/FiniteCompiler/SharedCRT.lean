@@ -19,6 +19,9 @@ def firstFactors (a : ℕ) : List ℕ := if a = 1 then [] else [a]
 def rowFactors (digits : I → List ℕ) (i : I) : List ℕ :=
   digits i ++ firstFactors (L.firstSize i) ++ [L.secondSize i]
 
+def rowFactorsWith (digits seconds : I → List ℕ) (i : I) : List ℕ :=
+  digits i ++ firstFactors (L.firstSize i) ++ seconds i
+
 private theorem primeProducts_coprime {ps qs : List ℕ}
     (hp : ∀ p ∈ ps, p.Prime) (hq : ∀ q ∈ qs, q.Prime) (hdis : List.Disjoint ps qs) :
     Nat.Coprime ps.prod qs.prod := by
@@ -30,29 +33,29 @@ private theorem primeProducts_coprime {ps qs : List ℕ}
 
 /-- The prime list for each row omits the shared coordinates. Pairwise
 disjointness therefore gives a cyclic finite factor. -/
-def finiteCRT_of_rowFactors (digits : I → List ℕ)
+def finiteCRT_of_rowFactorsWith (digits seconds : I → List ℕ)
     (hprod : ∀ i, (digits i).prod = L.lowSize i)
-    (hprime : ∀ i, ∀ p ∈ rowFactors L digits i, p.Prime)
-    (hdup : ∀ i, (rowFactors L digits i).Nodup)
-    (hdis : Pairwise (fun i j => List.Disjoint (rowFactors L digits i) (rowFactors L digits j)))
-    (hfixed : ∀ i, List.Disjoint ([5,7,199,163] : List ℕ) (rowFactors L digits i)) :
+    (hsec : ∀ i, (seconds i).prod = L.secondSize i)
+    (hprime : ∀ i, ∀ p ∈ rowFactorsWith L digits seconds i, p.Prime)
+    (hdup : ∀ i, (rowFactorsWith L digits seconds i).Nodup)
+    (hdis : Pairwise (fun i j => List.Disjoint (rowFactorsWith L digits seconds i) (rowFactorsWith L digits seconds j)))
+    (hfixed : ∀ i, List.Disjoint ([5,7,199,163] : List ℕ) (rowFactorsWith L digits seconds i)) :
     ZMod (order L) ≃+* Factor L := by
-  let expanded i := digits i ++ rowFactors L digits i
-  have hmem (i : I) (p : ℕ) : p ∈ expanded i ↔ p ∈ rowFactors L digits i := by
+  let expanded i := digits i ++ rowFactorsWith L digits seconds i
+  have hmem (i : I) (p : ℕ) : p ∈ expanded i ↔ p ∈ rowFactorsWith L digits seconds i := by
     unfold expanded
     simp only [List.mem_append]
-    exact or_iff_right_of_imp (fun h => by simp [rowFactors,h])
+    exact or_iff_right_of_imp (fun h => by simp [rowFactorsWith,h])
   have hmod (i : I) : (expanded i).prod = rowModulus L i := by
-    simp only [expanded,rowFactors,List.prod_append,firstFactors_prod,List.prod_cons,
-      List.prod_nil,Nat.mul_one,hprod,rowModulus,pow_two]
+    simp only [expanded,rowFactorsWith,List.prod_append,firstFactors_prod,hsec,hprod,rowModulus,pow_two]
     ac_rfl
   have h₁ (i : I) : Nat.Coprime ((L.lowSize i)^2) (L.firstSize i) := by
     have h := hdup i
-    unfold rowFactors at h
+    unfold rowFactorsWith at h
     have hdis := (List.nodup_append'.mp (List.nodup_append'.mp h).1).2.2
     have hc : Nat.Coprime (digits i).prod (firstFactors (L.firstSize i)).prod :=
-      primeProducts_coprime (fun p h => hprime i p (by simp [rowFactors,h]))
-        (fun p h => hprime i p (by simp [rowFactors,h])) hdis
+      primeProducts_coprime (fun p h => hprime i p (by simp [rowFactorsWith,h]))
+        (fun p h => hprime i p (by simp [rowFactorsWith,h])) hdis
     rw [hprod,firstFactors_prod] at hc
     exact hc.pow_left 2
   have h₂ (i : I) : Nat.Coprime ((L.lowSize i)^2 * L.firstSize i) (L.secondSize i) := by
@@ -61,13 +64,12 @@ def finiteCRT_of_rowFactors (digits : I → List ℕ)
         p ∈ digits i ++ firstFactors (L.firstSize i) := by
       simpa only [left,List.mem_append,or_assoc,or_self] using hp
     have h := hdup i
-    unfold rowFactors at h
-    have hc : Nat.Coprime left.prod ([L.secondSize i] : List ℕ).prod :=
+    unfold rowFactorsWith at h
+    have hc : Nat.Coprime left.prod (seconds i).prod :=
       primeProducts_coprime (fun p h => hprime i p (List.mem_append_left _ (hd p h)))
         (fun p h => hprime i p (List.mem_append_right _ h))
         (fun _ hp hq => (List.nodup_append'.mp h).2.2 (hd _ hp) hq)
-    simpa only [left,List.prod_append,firstFactors_prod,List.prod_cons,List.prod_nil,
-      Nat.mul_one,hprod,pow_two] using hc
+    simpa only [left,List.prod_append,firstFactors_prod,hsec,hprod,pow_two] using hc
   have hrows : Pairwise (fun i j => Nat.Coprime (rowModulus L i) (rowModulus L j)) := by
     intro i j hij
     rw [← hmod i, ← hmod j]
@@ -86,6 +88,18 @@ def finiteCRT_of_rowFactors (digits : I → List ℕ)
       simp only [List.mem_cons,List.not_mem_nil,or_false] at hp ⊢
       tauto
   exact finiteCRT L h₁ h₂ hrows hfix
+
+/-- The common case where the second coordinate is itself prime. -/
+def finiteCRT_of_rowFactors (digits : I → List ℕ)
+    (hprod : ∀ i, (digits i).prod = L.lowSize i)
+    (hprime : ∀ i, ∀ p ∈ rowFactors L digits i, p.Prime)
+    (hdup : ∀ i, (rowFactors L digits i).Nodup)
+    (hdis : Pairwise (fun i j => List.Disjoint (rowFactors L digits i) (rowFactors L digits j)))
+    (hfixed : ∀ i, List.Disjoint ([5,7,199,163] : List ℕ) (rowFactors L digits i)) :
+    ZMod (order L) ≃+* Factor L :=
+  finiteCRT_of_rowFactorsWith L digits (fun i => [L.secondSize i]) hprod
+    (fun _ => by simp) hprime hdup hdis hfixed
+
 
 end
 end TranslationTiling.FiniteCompiler.SharedCoordinates

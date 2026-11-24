@@ -2200,7 +2200,7 @@ numerical family are checked in
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    B(n)=\max\{(n+4)^{8.83302\bigl(\lg\lg(n+4)+\lg\lg\lg(n+4)\bigr)+570},2^{2392}\}=n^{O(\log\log n)}
+    B(n)=\max\{(n+4)^{6\bigl(\lg\lg(n+4)+\lg\lg\lg(n+4)\bigr)+579},2^{2392}\}=n^{O(\log\log n)}
   $$
   unit cubes.
   For $n=1$, the same construction uses at most $2^{2112}$ unit cubes.
@@ -3269,13 +3269,13 @@ remain available. The sharper count for one Wang tile is
 
 ### Sharing a Useful Prime Across Wang Columns
 
-For $n>3^{21}$, the compiler shares one useful prime per Wang slope.
-The uniform bound is
+The ternary compiler shares one useful prime per Wang slope.
+This version gives the uniform bound
 $$
 B(n)=\max\bigl\{(n+4)^{8.83302(\lg\lg(n+4)+\lg\lg\lg(n+4))+570},
   2^{2392}\bigr\}.
 $$
-The computable compiler is in
+The ternary compiler is in
 \leanfile{FiniteCompiler/Effective/SharedTailCore.lean},
 with its correctness and size bound proved in
 \leanfile{FiniteCompiler/Effective/SharedDeckCorrect.lean}.
@@ -3321,6 +3321,52 @@ fibre of the low-coordinate projection. The stacking and assembly
 estimates give the displayed bound for $n>3^{21}$.
 For the other inputs the guarded prime tables above still fit,
 including the sharper $2^{2112}$ count when $n=1$.
+
+### One Low Prime per Wang Digit
+
+For $n>3^{21}$, encode each Wang tile index by $k=\lceil\log_4 n\rceil$
+digits. Wang digit column $i$ has one low prime $r_i$ and four private
+useful primes $b_{i,0},\ldots,b_{i,3}$, one for each value. The shared
+useful prime $a_s$ for its slope $s$ is unchanged. The dependence tests
+keep all four private outputs constant on each line for a fixed low
+input. A cycle that tests value $v$ reads just the useful coordinate
+of order $b_{i,v}$ and uses step $1$ in the low coordinate.
+
+The activation test observes these five useful coordinates. On the
+binary cube, its shift sends $z_j$ to $z_j\mathbin{\mathrm{xor}}z_{j+1}$,
+with indices modulo five and the shared coordinate at $j=0$. Outside
+the binary cube it uses the identity. Restoring any one original
+coordinate $z_j$ makes the shift bijective, because that coordinate
+and the other four shifted bits recover the entire binary word.
+For soundness, suppose all four private outputs are constant as the
+low input varies. To hit their constant values in the target, all
+four corresponding shifts must be zero. On this slice the shift
+in the shared coordinate sends $1$ to $0$ and fixes every other value.
+Uniform coverage then forces adjacent counts of the shared output
+over the low inputs to agree, which would give $a_s\mid r_i$.
+
+For completeness, each value $v$ has a partition of the low coordinate
+into blocks of sizes $a_s$ and $b_{i,v}$, with a positive number of each.
+A block of size $a_s$ outputs its local coordinate in the shared
+coordinate, and a block of size $b_{i,v}$ outputs it in the private
+coordinate for $v$. Only the private output for the chosen value
+varies. The block permutation uses the restored coordinate above.
+Contributions to the shared coordinate are summed over the Wang
+columns of that slope. In a test for one column, the other summands
+stay fixed because their low inputs stay fixed and the horizontal
+offset follows their common slope.
+
+With $P=1600\Pi(8k+136)$, the cyclic order is at most $2^{1893}P^{12k}$.
+The factor for each of the $2k$ Wang columns is
+$r_i^2\prod_{v=0}^3 b_{i,v}$. This gives leading coefficient
+$2(2+4)/\lg 4=6$. The strip radius is at most $2^{70}+256P^5$,
+and the test cap is $2048(n+4)^2$. The same guarded construction
+for $n\leq 3^{21}$ provides the small-input estimates in
+@prop:bit-channel-bound, including the sharper count when $n=1$.
+The shift, assembly, and numerical estimates are verified in
+\leanfile{FiniteCompiler/FourValueShift.lean},
+\leanfile{FiniteCompiler/Effective/FourValueDeckCorrect.lean},
+and \leanfile{Compiler/FourValueBound.lean}.
 
 ### The Remaining Cost of Cyclicity
 

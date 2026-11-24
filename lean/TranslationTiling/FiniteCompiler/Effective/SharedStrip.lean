@@ -7,7 +7,7 @@ open Compiler Compiler.Size Compiler.Effective Compiler.StripLift Effective Rail
 set_option maxRecDepth 10000
 set_option exponentiation.threshold 2000
 
-private theorem residueSearch_le (m : ℕ) (cs : CongruenceList) :
+theorem residueSearch_le (m : ℕ) (cs : CongruenceList) :
     residueSearch m cs ≤ m := by
   unfold residueSearch
   generalize ht : ((List.range m).filter fun n => decide (Congruences cs n)) = l
@@ -32,12 +32,12 @@ private theorem compactFirst_bound (z : ActivationNumbers) :
        (z.1.2.1,differenceResidue z.1.2.1 (2*Compiler.numericalRank z.2.2.2.1 z.2.2.1 z.2.2.2.2) z.2.2.2.1)]
     omega
 
-private theorem activationBatch_horizontal (z : ActivationBatchData) {f : NumericalPoint}
+theorem activationBatch_horizontal (z : ActivationBatchData) {f : NumericalPoint}
     (hf : f ∈ activationBatchCodes z) : f.1 = z.2.2.1 := by
   obtain ⟨_,_,rfl⟩ := List.mem_map.mp hf
   rfl
 
-private theorem compactCodes_strip (env : ActivationEnvironment) (s H : ℕ)
+theorem compactCodes_strip (env : ActivationEnvironment) (s H : ℕ)
     (hs : s < 17) (hH : 2*(env.2.1*env.2.2.1*env.2.2.2.1) ≤ H)
     (f : NumericalPoint) (hf : f ∈ compactCodes env s) :
     TestSupportAt 35 (fun _ => H) f.1 := by
@@ -52,7 +52,7 @@ private theorem numericalMultiplicity_le_two (a b : ℕ) :
   repeat
     first | decide | split
 
-private theorem seedFirst_bound (a b r o : ℕ) (j : SeedCode)
+theorem seedFirst_bound (a b r o : ℕ) (j : SeedCode)
     (ha : a ≤ 3) (hb : b ≤ 1229) (hr : r ≤ 1231) (ho : o ≤ 3)
     (hj : j ∈ seedIndices a b r 35) :
     (numericalSeedFirst (((a,b,r),j.1),(35,o,j.2.1,j.2.2))).natAbs ≤ 2^70 ∧ j.2.2 < 35 := by
@@ -78,7 +78,7 @@ private theorem seedFirst_bound (a b r o : ℕ) (j : SeedCode)
   rw [← Nat.cast_mul,← Nat.cast_add,Int.natAbs_natCast]
   exact (Nat.add_le_add ((residueSearch_le m _).trans hm) (Nat.mul_le_mul hm hcode)).trans (by decide : 500000000+500000000*13000000 ≤ 2^70)
 
-private theorem getD_tailSlopes_le (k i : ℕ) : (tailSlopes k).getD i 0 ≤ 16 := by
+theorem getD_tailSlopes_le (k i : ℕ) : (tailSlopes k).getD i 0 ≤ 16 := by
   by_cases h : i < (tailSlopes k).length
   · have hi : i < 18+2*k := by simpa [tailSlopes] using h
     rw [List.getD_eq_getElem _ _ h]
@@ -123,7 +123,7 @@ private theorem ordinary_radius (k i : ℕ) (hi : i < (sharedRows k).length-2) :
       _ = 400*P^3*sharedPairCap k := by ring
       _ ≤ _ := Nat.le_add_left _ _
 
-private theorem zero_strip (H : ℕ) : TestSupportAt 35 (fun _ => H) 0 := by
+theorem zero_strip (H : ℕ) : TestSupportAt 35 (fun _ => H) 0 := by
   exact Or.inl ⟨Nat.zero_le _,by decide⟩
 
 /-- All concrete shared tests lie in the strips used by the slot assembly. -/

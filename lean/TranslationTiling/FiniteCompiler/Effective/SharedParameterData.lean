@@ -262,7 +262,7 @@ theorem sharedRows_order_bound (k : ℕ) :
   rw [horder, Nat.mul_assoc (2^1893)]
   exact Nat.mul_le_mul hconst hj
 
-private theorem sharedUsefulPool_primrec : Primrec sharedUsefulPool := by
+theorem sharedUsefulPool_primrec : Primrec sharedUsefulPool := by
   unfold sharedUsefulPool
   have hmem : PrimrecPred (fun z : ℕ × ℕ => z.2 ∈ sharedReservedPrimes) := by
     apply (someList (f := fun _ : ℕ × ℕ => sharedReservedPrimes) (p := fun z p => z.2 = p)
@@ -271,7 +271,7 @@ private theorem sharedUsefulPool_primrec : Primrec sharedUsefulPool := by
     simp
   exact filterList (by fun_prop) ((nat_prime_primrec.comp Primrec.snd).and hmem.not)
 
-private theorem sharedDigitPool_primrec : Primrec sharedDigitPool := by
+theorem sharedDigitPool_primrec : Primrec sharedDigitPool := by
   unfold sharedDigitPool
   exact filterList (by fun_prop) ((nat_prime_primrec.comp Primrec.snd).and (by fun_prop))
 
