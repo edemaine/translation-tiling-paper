@@ -34,6 +34,18 @@ private theorem decode_nonempty {r : ℕ} {L : List ℕ}
   intro h0
   simp [h0] at he
 
+/-- Every forbidden pattern contains an arithmetic letter. Thus the
+Wang part of the pattern may be omitted when the Wang alphabet is a singleton. -/
+theorem patterns_has_arithmetic (p : PartialTest (system code)) (hp : p ∈ patterns code) :
+    ∃ i : Column (system code), i.val < 18 ∧ i ∈ p.columns := by
+  simp only [patterns,List.mem_append,List.mem_map] at hp
+  rcases hp with (⟨m,hm,rfl⟩ | ⟨m,hm,rfl⟩) | ⟨i,_,rfl⟩
+  · exact pattern_has_arithmetic code _ _ _ (Or.inl (digits_nonempty 5 m
+      (decode_nonempty codes5_nonempty hm)))
+  · exact pattern_has_arithmetic code _ _ _ (Or.inr (digits_nonempty 7 m
+      (decode_nonempty codes7_nonempty hm)))
+  · exact query_has_arithmetic code i
+
 private theorem arithmetic_P (w : Word (system code)) (hw : Allowed (system code) w) :
     Sudoku.PartialWord.IsArithmetic 5 (wordP code w) := by
   have hl := board_lineRule code (fun n _ => w n) (fun _ => hw)

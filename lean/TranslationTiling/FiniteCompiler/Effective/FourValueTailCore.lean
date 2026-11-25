@@ -38,6 +38,7 @@ theorem fourValueTailCore_computable : Computable fourValueTailCore := by
   have hR := product_primrec.comp (guardedModuli_primrec.comp hr)
   have hH : Primrec (fun k => fourValueRadius k) := by
     unfold fourValueRadius sharedPrimeCap sharedPairCap
+    simp only [show ∀ k : ℕ, min 1 k = 1 - (1 - k) by intro k; omega]
     fun_prop
   exact guardedAssembly_computable.comp
     (((hN.pair ((hP.comp hk).pair hX)).pair (hR.pair (hH.comp hk))).pair hF).to_comp

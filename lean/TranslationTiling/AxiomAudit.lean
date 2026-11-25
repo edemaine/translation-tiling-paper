@@ -46,6 +46,21 @@ import TranslationTiling.FiniteCompiler.CompactBounds
 import TranslationTiling.FourLayer.MSSBound
 import TranslationTiling.FourLayer.SizeBound
 import TranslationTiling.Rails.SizeBound
+import TranslationTiling.Compiler.SlotBound
+import TranslationTiling.Compiler.SlotCapacity
+import TranslationTiling.Compiler.SlotLogBound
+import TranslationTiling.Compiler.SlotComputability
+import TranslationTiling.Compiler.SlotExplicitBound
+import TranslationTiling.FiniteCompiler.Effective.SlotShiftEvaluation
+import TranslationTiling.FiniteCompiler.Effective.SlotNumericalKernel
+import TranslationTiling.FiniteCompiler.Effective.SlotNumericalActivation
+import TranslationTiling.FiniteCompiler.Effective.SlotNumericalLift
+import TranslationTiling.FiniteCompiler.Effective.SlotNumericalCycle
+import TranslationTiling.FiniteCompiler.Effective.SlotNumericalRows
+import TranslationTiling.FiniteCompiler.Effective.SlotParameterEvaluation
+import TranslationTiling.FiniteCompiler.Effective.SlotNumericalDependencies
+import TranslationTiling.FiniteCompiler.Effective.SlotNumericalBatch
+import TranslationTiling.FiniteCompiler.Effective.SlotNumericalAssembly
 import Lean.Util.CollectAxioms
 
 /-! Reject unfinished proofs, native evaluation axioms, and undeclared mathematical
@@ -54,7 +69,81 @@ All mathematical inputs to the public results are proved. -/
 
 open Lean Elab Command in
 run_cmd do
-  for name in [``TranslationTiling.Rails.fiber_connected,
+  for name in [``TranslationTiling.FiniteCompiler.SlotWords.exists_reads,
+      ``TranslationTiling.FiniteCompiler.SlotWords.reads_uses_iff,
+      ``TranslationTiling.FiniteCompiler.SlotWords.card_word,
+      ``TranslationTiling.FiniteCompiler.SlotWords.four_pow_le_weighted,
+      ``TranslationTiling.FiniteCompiler.SharedCoordinates.selectedSlotTile_of_blocks,
+      ``TranslationTiling.FiniteCompiler.SharedCoordinates.selectedSlotTile_obstructed,
+      ``TranslationTiling.FiniteCompiler.exists_slot_activation_offsets,
+      ``TranslationTiling.FiniteCompiler.tiles_product_low_kernel_iff,
+      ``TranslationTiling.FiniteCompiler.card_mul_low_eq_of_tiles_graph,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.exists_ranked_parameters,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.rankedSlotOrders_primrec,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.rankedSlotOrders_eq,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.numericalKernel_correct,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.numericalKernel_primrec,
+      ``TranslationTiling.FiniteCompiler.SlotShift.evaluate_eq_shift,
+      ``TranslationTiling.FiniteCompiler.evaluatedSlotOffset_primrec,
+      ``TranslationTiling.FiniteCompiler.Packed.numericalSlotShift_correct,
+      ``TranslationTiling.FiniteCompiler.Packed.numericalSlotRecord_primrec,
+      ``TranslationTiling.FiniteCompiler.Packed.numericalSlotActivation_primrec,
+      ``TranslationTiling.FiniteCompiler.Packed.slotLengthParameter_primrec,
+      ``TranslationTiling.FiniteCompiler.Packed.slotRadix_primrec,
+      ``TranslationTiling.FiniteCompiler.Packed.slotPackedDigits_primrec,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.numericalArithmeticLift_correct,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.numericalArithmeticLift_primrec,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.numericalInvariance_correct,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.numericalCycle_correct,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.numericalSlotRow_eq,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.numericalSlotRow_primrec,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.numericalSlotLows_mem,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.numericalSlotLows_primrec,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.numericalLowTargets_primrec,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.numericalSlotInvariance_primrec,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.numericalSlotInvariance_correct,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.numericalAnchorMasks_primrec,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.numericalAnchorMasks_correct,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.mem_numericalSlotBatch,
+      ``TranslationTiling.Compiler.Size.compileSlot_computable,
+      ``TranslationTiling.Compiler.Size.compileSlotWith_correct,
+      ``TranslationTiling.Compiler.Size.compileSlot_correct,
+      ``TranslationTiling.Compiler.Size.slot_prime_caps_scale_explicit,
+      ``TranslationTiling.Compiler.Size.slot_size_bound_explicit,
+      ``TranslationTiling.Compiler.Size.compileSlot_explicit,
+      ``TranslationTiling.Compiler.Size.compileSlot_one,
+      ``TranslationTiling.Compiler.Size.compileSlotWith_emptyWord,
+      ``TranslationTiling.Compiler.Size.compileSlotTotal_computable,
+      ``TranslationTiling.Compiler.Size.compileSlotTotal_facts,
+      ``TranslationTiling.Compiler.Size.compileSlot_logarithmic,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.numericalSlotActivationMasks_correct,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.numericalGuardFor_spec,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.numericalSeedFor_spec,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.numericalSlotTests_length,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.slot_polycube_decoded,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.order_le,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.crt,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.encodeDeck_iff,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.observe_target,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.slotOffset_spec,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.mask_forces_active,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.exists_word_at,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.model_mask,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.model_marker_active,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.exists_guardMask,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.exists_seedMask,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.encode_mass,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.kernel_column,
+      ``TranslationTiling.Compiler.Size.slot_radix_log_lower,
+      ``TranslationTiling.Compiler.Size.slot_factor_count,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.slotDeck_iff,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.slotDeck_length,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.slot_polycube,
+      ``TranslationTiling.Compiler.Size.exists_connected_tile_slot_adaptive,
+      ``TranslationTiling.Compiler.Size.slot_size_log_bound,
+      ``TranslationTiling.Compiler.Size.exists_connected_tile_slot_logarithmic,
+      ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.slot_assembly_decoded,
+      ``TranslationTiling.Rails.fiber_connected,
       ``TranslationTiling.Rails.shell_computable,
       ``TranslationTiling.Rails.shell_fundamental,
       ``TranslationTiling.Rails.shell_rigidity,

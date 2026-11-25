@@ -46,7 +46,10 @@ private theorem fourValue_wang_strip (k i : ℕ) (hi : i < 2*k) (f : NumericalPo
   simp only [fourValueRecord,Int.natAbs_natCast]
   apply (residueSearch_le _ _).trans
   exact hM.trans ((Nat.mul_le_mul_right (P^5) (by decide : 200 ≤ 256)).trans
-    (Nat.le_add_left _ _))
+    (by
+      unfold fourValueRadius
+      rw [min_eq_left (by omega : 1 ≤ k),one_mul]
+      exact Nat.le_add_left _ _))
 
 /-- All concrete shared tests lie in the strips used by the slot assembly. -/
 theorem fourValueRawDeck_strip (T : LeanWang.TileSet) (k : ℕ) :

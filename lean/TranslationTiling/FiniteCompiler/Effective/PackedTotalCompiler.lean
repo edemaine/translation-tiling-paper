@@ -52,22 +52,22 @@ private def index (T : LeanWang.TileSet) : Fin cutoff :=
 
 /-- The guarded encoder needs a nonempty alphabet. A tile with unequal opposite edge colors
 represents the empty alphabet, so the geometric construction is the same. -/
-private def nonemptyInput (T : LeanWang.TileSet) : LeanWang.TileSet :=
+def nonemptyInput (T : LeanWang.TileSet) : LeanWang.TileSet :=
   if T.length = 0 then [⟨0,1,0,0⟩] else T
 
-private theorem nonemptyInput_primrec : Primrec nonemptyInput := by
+theorem nonemptyInput_primrec : Primrec nonemptyInput := by
   have h : Primrec (fun T : LeanWang.TileSet => decide (T.length=0)) := by fun_prop
   exact (h.cond (Primrec.const [⟨0,1,0,0⟩]) Primrec.id).of_eq
     (fun T => by simp only [nonemptyInput, Bool.cond_decide, id_eq])
 
-private theorem nonemptyInput_length (T : LeanWang.TileSet) :
+theorem nonemptyInput_length (T : LeanWang.TileSet) :
     (nonemptyInput T).length = max 1 T.length := by
   unfold nonemptyInput
   split
   · simp_all
   · exact (max_eq_right (by omega)).symm
 
-private theorem nonemptyInput_tiles (T : LeanWang.TileSet) :
+theorem nonemptyInput_tiles (T : LeanWang.TileSet) :
     LeanWang.TilesPlane (nonemptyInput T) ↔ LeanWang.TilesPlane T := by
   cases T with
   | nil =>

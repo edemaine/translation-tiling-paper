@@ -303,7 +303,7 @@ def seedTemplateSet (t : Fin 2) (i v : ℕ) : Prop :=
   else if i < 18 then ∃ u : Units7, seedDigit 7 t u.val ∧ (qEquiv u).val=v
   else True
 
-private theorem originalSeed_matches {D : ℕ} (c : Code T D)
+theorem originalSeed_matches {D : ℕ} (c : Code T D)
     (t : Fin 2) (i : Column (system c)) (v : Letter (system c) i) :
     LetterSeedSet (system c) t i v ↔ seedTemplateSet t i.val v.val := by
   obtain ⟨r,rfl⟩ := roleEquiv.surjective i

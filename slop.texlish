@@ -2196,11 +2196,11 @@ numerical family are checked in
 \leanfile{FiniteCompiler/Effective/CycleSpec.lean}, and
 \leanfile{FiniteCompiler/Effective/JointFamily.lean}.
 
-: proposition[Quasipolynomial channel bound] @=prop:bit-channel-bound
+: proposition[Quasipolynomial channel bound with coefficient six] @=prop:bit-channel-bound
   A set of $n$ Wang tiles can be simulated by a nonempty
   face-connected polycube with at most
   $$
-    B(n)=\max\{(n+4)^{6\bigl(\lg\lg(n+4)+\lg\lg\lg(n+4)\bigr)+579},2^{2392}\}=n^{O(\log\log n)}
+    B_6(n)=\max\{(n+4)^{6\bigl(\lg\lg(n+4)+\lg\lg\lg(n+4)\bigr)+579},2^{2392}\}=n^{O(\log\log n)}
   $$
   unit cubes.
   For $n=1$, the same construction uses at most $2^{2112}$ unit cubes.
@@ -3272,7 +3272,7 @@ remain available. The sharper count for one Wang tile is
 The ternary compiler shares one useful prime per Wang slope.
 This version gives the uniform bound
 $$
-B(n)=\max\bigl\{(n+4)^{8.83302(\lg\lg(n+4)+\lg\lg\lg(n+4))+570},
+\max\bigl\{(n+4)^{8.83302(\lg\lg(n+4)+\lg\lg\lg(n+4))+570},
   2^{2392}\bigr\}.
 $$
 The ternary compiler is in
@@ -3367,6 +3367,52 @@ The shift, assembly, and numerical estimates are verified in
 \leanfile{FiniteCompiler/FourValueShift.lean},
 \leanfile{FiniteCompiler/Effective/FourValueDeckCorrect.lean},
 and \leanfile{Compiler/FourValueBound.lean}.
+
+### Constant-Weight Wang Digits @=sec:constant-weight
+
+Use length-$m$ words over $\{0,1,2,3\}$ with exactly $w=3m/4$
+nonzero symbols. The digit alphabet has size $D=\binom{m}{w}3^w$.
+We use enough base-$D$ digits to index the Wang tiles. Each position
+in a digit has one low prime and three private useful primes, one
+for each nonzero symbol. Two fallback primes at each position and
+slope are shared across digits.
+
+For each set of $m+1-w$ positions in a digit, a positive activation
+mask forces at least one of those positions to have a varying
+private output. Thus every line supplies at least $w$ active positions,
+and we can read a word by choosing $w$ of them and one active symbol
+at each. A forbidden combination is tested by one vertical cycle on its
+selected arithmetic rows and private outputs. The dependence masks
+make each output follow its own slope, so a cycle can test both Wang
+slopes.
+
+Choose $m=\lg\lg n+O(1)$, a positive multiple of four. Then
+$\lg D=2m-O(\lg m)$, and the number of digit positions across the
+two Wang slopes is $\lg n+O(\lg n\,\lg m/m+m)$. The cyclic order contains
+the square of the low prime and all three private useful primes for
+each position, for five prime factors in total. The logarithms of
+these primes are at most $\lg\lg n+O(\lg\lg\lg n)$. The fallback primes,
+stacking, and connectedness contribute within the remainder, giving
+at most $n^{5\lg\lg n+O(1+\lg\lg\lg n)}$ unit cubes as $n\to\infty$.
+
+The fixed arithmetic factor has all prime divisors below $2048$,
+so the fallback primes can start above $2048$.
+For $n\geq65536$, each slot prime cap is at most
+$2^{56}\lg(n+4)(\lg\lg(n+4))^4$. For $2\leq n<65536$, the
+digits have width $4$ and radix $108$. The numerical size caps
+for one, two, and three digits are $2^{8400}$, $2^{10300}$, and $2^{12200}$
+unit cubes, respectively.
+
+A one-tile alphabet needs zero digits. The forbidden patterns still
+contain arithmetic letters, so their cycles continue to enforce the
+Sudoku and query constraints. The same assembly then uses at most
+$2^{2067}$ unit cubes. Together the estimates give the explicit bound
+$$
+  B(n)=\max\bigl\{n^{8400}(n+4)^{5\lg\lg(n+4)+65\lg\lg\lg(n+4)},
+    2^{2067}\bigr\}.
+$$
+Lean verifies $B(n)$ for the computable compiler in
+\leanfile{Compiler/SlotExplicitBound.lean}.
 
 ### The Remaining Cost of Cyclicity
 
@@ -3898,9 +3944,10 @@ motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
 Each reduction theorem includes its cube bound for the same computable
-function. In dimension three, the bounds are $B(n)$ for translations and
-$64{,}000B(n)$ for arbitrary Euclidean motions, with $B(n)$ from
-@prop:bit-channel-bound.
+function. The bounds are $B(n)$ for translations and $2^{10(d+1)^2}B(n)$
+for arbitrary Euclidean motions in dimension $d\geq3$, with $B(n)$ from
+@sec:constant-weight. In dimension three, the motion bound improves to
+$64{,}000B(n)$.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[

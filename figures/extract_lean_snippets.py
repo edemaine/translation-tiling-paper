@@ -25,7 +25,7 @@ for block in re.split(r"\n\s*\n", body):
     block = block.strip("\n")
     if not block.strip():
         continue
-    m = re.match(r"(?:abbrev|def|theorem|lemma)\s+(\S+)", block)
+    m = re.match(r"(?:noncomputable\s+)?(?:abbrev|def|theorem|lemma)\s+(\S+)", block)
     if not m:
         sys.exit(f"cannot name block:\n{block}")
     if block.startswith("theorem"):  # show the statement only, not the proof

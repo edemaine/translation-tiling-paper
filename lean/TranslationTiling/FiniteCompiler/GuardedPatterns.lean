@@ -145,6 +145,21 @@ theorem pattern_nonempty (P : PVec) (Q : QVec) (C : CVec d)
     have h := (selection_some code P Q C (atC i) ⟨u.val,letterC_lt i u⟩).mpr (by rw [rawC,hu]; rfl)
     exact ⟨atC i,by simp [h]⟩
 
+theorem pattern_has_arithmetic (P : PVec) (Q : QVec) (C : CVec d)
+    (h : (∃ i, (P i).isSome) ∨ (∃ i, (Q i).isSome)) :
+    ∃ i : Column (system code), i.val < 18 ∧ i ∈ (pattern code P Q C).columns := by
+  change ∃ i : Fin 20, i.val < 18 ∧
+    i ∈ Finset.univ.filter (fun i => (selection code P Q C i).isSome)
+  rcases h with ⟨i,hi⟩ | ⟨i,hi⟩
+  · obtain ⟨u,hu⟩ := Option.isSome_iff_exists.mp hi
+    have h := (selection_some code P Q C (atP i) ⟨(pEquiv u).val,letterP_lt i u⟩).mpr
+      (by rw [rawP,hu]; rfl)
+    exact ⟨atP i,by change i.val < 18; omega,by simp [h]⟩
+  · obtain ⟨u,hu⟩ := Option.isSome_iff_exists.mp hi
+    have h := (selection_some code P Q C (atQ i) ⟨(qEquiv u).val,letterQ_lt i u⟩).mpr
+      (by rw [rawQ,hu]; rfl)
+    exact ⟨atQ i,by change 9+i.val < 18; omega,by simp [h]⟩
+
 def toUnit (r : ℕ) [Fact r.Prime] (v : ZMod r) : Option (ZMod r)ˣ :=
   if h : v≠0 then some (Units.mk0 v h) else none
 
@@ -298,6 +313,19 @@ theorem query_matches (i : QueryIndex d) (w : Word (system code)) :
 
 theorem query_nonempty (i : QueryIndex d) : (queryPattern code i).columns.Nonempty :=
   pattern_nonempty code _ _ _ (Or.inr (Or.inr ⟨0,rfl⟩))
+
+theorem query_has_arithmetic (i : QueryIndex d) :
+    ∃ n : Column (system code), n.val < 18 ∧ n ∈ (queryPattern code i).columns := by
+  apply pattern_has_arithmetic
+  left
+  let n := Sudoku.NineArithmetic.baseSample 5 0
+  let a := i.2.1.val *
+    ((querySlope i.1 : ZMod 5) * Sudoku.NineArithmetic.position 5 n + 1)
+  have ha : a ≠ 0 := mul_ne_zero (Units.ne_zero _) (query_base_unit (Or.inl rfl) i.1 0)
+  have h : queryLabels 5 i.1 i.2.1 n = some (Units.mk0 a ha) := by
+    apply (queryLabels_some 5 i.1 i.2.1 _ _).mpr
+    simp [queryValue,show ∃ b, Sudoku.NineArithmetic.baseSample 5 b = n from ⟨0,rfl⟩,a]
+  exact ⟨n,by simp [h]⟩
 
 end
 end TranslationTiling.FiniteCompiler.GuardedCompiler
