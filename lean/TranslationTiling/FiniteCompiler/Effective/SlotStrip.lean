@@ -11,7 +11,7 @@ set_option maxRecDepth 5000
 variable {k m : ℕ} (s : SlotParameters k m)
 variable [Fintype (Factor s.layout)]
 
-private theorem strip_mono {H H' : ℕ} (h : H ≤ H') {x : Plane}
+theorem strip_mono {H H' : ℕ} (h : H ≤ H') {x : Plane}
     (hx : TestSupportAt 35 (fun _ => H) x) : TestSupportAt 35 (fun _ => H') x := by
   rcases hx with ⟨ha,hb⟩ | ⟨j,hj,ha,hb⟩
   · exact Or.inl ⟨ha.trans h,hb⟩
@@ -95,10 +95,12 @@ theorem fallback_strip {H : ℕ} (hH : 1 ≤ H) (g : Bool) (i : Fin m)
       (lineStep_strip g hH) v hv
   · exact s.invariance_strip (s.observeFallback (g,i,false)) (lowStep s.layout p) (zero_strip H) v hv
 
-theorem mask_strip {Q : ℕ} (hQ : ∀ j, s.prime j ≤ Q)
+theorem mask_strip_factors {A B C : ℕ}
+    (hA : ∀ i, s.fallback i ≤ A) (hB : ∀ i j, s.marker i j ≤ B)
+    (hC : ∀ i, s.low i ≤ C) (hAB : A ≤ B)
     (g : Bool) (d : Fin k) (S : Finset (Fin m)) [NeZero (ShiftCount S)]
     (v : SharedCoordinates.Ambient s.layout) (hv : v ∈ s.mask g d S) :
-    TestSupportAt 35 (fun _ => Q^(11*m)) v.1 := by
+    TestSupportAt 35 (fun _ => (C^2*B^8*A)^S.card) v.1 := by
   unfold mask selectedSlotTile slotActivationTile at hv
   simp only [Finset.mem_biUnion,Finset.mem_univ,true_and,Finset.mem_filter,Finset.mem_map] at hv
   obtain ⟨p,⟨a,hEq⟩,_⟩ := hv
@@ -106,47 +108,46 @@ theorem mask_strip {Q : ℕ} (hQ : ∀ j, s.prime j ≤ Q)
   have hxy : (s.offset g d S z) = v.1 := congrArg Prod.fst hEq
   obtain ⟨hline,hlo,hhidden,hobs,hpos,hcap⟩ :=
     (s.slotOffset_spec g d S (slopeNumber g)).2 z
-  have hmod : ∀ i, s.offsetModuli g d S i ≤ Q := by
-    rintro (j | ⟨i,_ | _⟩)
-    · change s.shiftModulus g d S j ≤ Q
-      change s.observationPrime g d (shiftIndex S j) ≤ Q
-      rcases shiftIndex S j with ⟨i,_ | b⟩ <;> exact hQ _
-    · exact hQ _
-    · exact hQ _
-  have hcard : Fintype.card (SlotParameters.OffsetKey S) = 6*S.card := by
-    simp [OffsetKey]
-    omega
-  have hprod : (∏ i, s.offsetModuli g d S i) ≤ Q^(6*S.card) := by
-    simpa only [Finset.prod_const,Finset.card_univ,hcard] using
-      (Finset.prod_le_prod (s := Finset.univ) (g := fun _ => Q) fun i _ => hmod i)
-  have hlw : Fintype.card (s.LowShifts g d S) ≤ Q^S.card := by
-    rw [Fintype.card_pi]
-    simp only [ZMod.card]
-    have hb (i : SelectedSlot S) : s.low (g,d,i) ≤ Q := hQ (.inl ((g,d,i),none))
-    simpa only [Finset.prod_const,Finset.card_univ,Fintype.card_coe] using
-      (Finset.prod_le_prod (s := Finset.univ) (g := fun _ : SelectedSlot S => Q) fun i _ => hb i)
-  have hsw : Fintype.card (s.ShiftType g d S) ≤ Q^(S.card*4) := by
-    rw [Fintype.card_pi]
-    simp only [ZMod.card]
-    have hb (j : ZMod (ShiftCount S)) : s.shiftModulus g d S j ≤ Q := hmod (.inl j)
-    simpa only [Finset.prod_const,Finset.card_univ,ZMod.card,shiftCount_eq] using
-      (Finset.prod_le_prod (s := Finset.univ) (g := fun _ : ZMod (ShiftCount S) => Q) fun j _ => hb j)
+  have hshift (j : ZMod (ShiftCount S)) : s.shiftModulus g d S j ≤ B := by
+    change s.observationPrime g d (shiftIndex S j) ≤ B
+    rcases shiftIndex S j with ⟨i,j⟩
+    cases j with
+    | none => exact (hA _).trans hAB
+    | some j => exact hB _ j
+  have hp {I : Type} [Fintype I] (f : I → ℕ) (b : ℕ) (h : ∀ i, f i ≤ b) :
+      (∏ i, f i) ≤ b^Fintype.card I := by
+    simpa only [Finset.prod_const,Finset.card_univ] using
+      (Finset.prod_le_prod (s := Finset.univ) (g := fun _ => b) fun i _ => h i)
+  have hb : (∏ j, s.shiftModulus g d S j) ≤ B^(4*S.card) := by
+    simpa only [ZMod.card,shiftCount_eq,Nat.mul_comm 4 S.card] using
+      hp (s.shiftModulus g d S) B hshift
+  have hc : (∏ i : SelectedSlot S, s.low (g,d,i)) ≤ C^S.card := by
+    simpa only [Fintype.card_coe] using
+      hp (fun i : SelectedSlot S => s.low (g,d,i)) C (fun i => hC (g,d,i))
+  have ha : (∏ i : SelectedSlot S, s.fallback (g,i,true)) ≤ A^S.card := by
+    simpa only [Fintype.card_coe] using
+      hp (fun i : SelectedSlot S => s.fallback (g,i,true)) A (fun i => hA (g,i,true))
+  have hmod : (∏ i, s.offsetModuli g d S i) ≤ B^(4*S.card)*(C^S.card*A^S.card) := by
+    rw [Fintype.prod_sum_type,Fintype.prod_prod_type]
+    apply Nat.mul_le_mul hb
+    calc
+      _ = (∏ i : SelectedSlot S, s.low (g,d,i)) *
+          (∏ i : SelectedSlot S, s.fallback (g,i,true)) := by
+        simp only [Fintype.prod_bool,offsetModuli,Finset.prod_mul_distrib]
+        ac_rfl
+      _ ≤ _ := Nat.mul_le_mul hc ha
   have huv : (∏ i, s.offsetModuli g d S i) * Fintype.card (s.LowShifts g d S × s.ShiftType g d S) ≤
-      Q^(11*m) := by
-    rw [Fintype.card_prod]
-    apply (Nat.mul_le_mul hprod (Nat.mul_le_mul hlw hsw)).trans
-    rw [← pow_add,← pow_add]
-    have hs := Finset.card_le_card (Finset.subset_univ S)
-    rw [Finset.card_univ,Fintype.card_fin] at hs
-    apply Nat.pow_le_pow_right
-    · have : 0 < ShiftCount S := NeZero.pos _
-      rw [shiftCount_eq] at this
-      obtain ⟨i,_⟩ := Finset.card_pos.mp (by omega : 0 < S.card)
-      exact (s.prime_isPrime (.inl ((g,d,i),none))).pos.trans_le (hQ _)
-    · omega
-  have habs : ((s.offset g d S z).1).natAbs ≤ Q^(11*m) := by
+      (C^2*B^8*A)^S.card := by
+    rw [Fintype.card_prod, Fintype.card_pi, Fintype.card_pi]
+    simp only [ZMod.card]
+    refine (Nat.mul_le_mul hmod (Nat.mul_le_mul hc hb)).trans_eq ?_
+    simp only [mul_pow, ← pow_mul]
+    rw [show 8*S.card = 4*S.card+4*S.card by omega, pow_add,
+        show 2*S.card = S.card+S.card by omega, pow_add]
+    ring
+  have habs : ((s.offset g d S z).1).natAbs ≤ (C^2*B^8*A)^S.card := by
     change 0 ≤ (s.offset g d S z).1 at hpos
-    have hh : (s.offset g d S z).1 ≤ (Q^(11*m) : ℕ) :=
+    have hh : (s.offset g d S z).1 ≤ ((C^2*B^8*A)^S.card : ℕ) :=
       (le_of_lt hcap).trans (Int.ofNat_le.mpr huv)
     cases ev : (s.offset g d S z).1 with
     | ofNat j =>
@@ -158,6 +159,22 @@ theorem mask_strip {Q : ℕ} (hQ : ∀ j, s.prime j ≤ Q)
   rw [← hxy]
   refine Or.inr ⟨if g then 0 else 2,by cases g <;> decide,habs,?_⟩
   cases g <;> exact s.offset_slope _ d S z
+
+theorem mask_strip {Q : ℕ} (hQ : ∀ j, s.prime j ≤ Q)
+    (g : Bool) (d : Fin k) (S : Finset (Fin m)) [NeZero (ShiftCount S)]
+    (v : SharedCoordinates.Ambient s.layout) (hv : v ∈ s.mask g d S) :
+    TestSupportAt 35 (fun _ => Q^(11*m)) v.1 := by
+  apply strip_mono _ (s.mask_strip_factors (fun i => hQ (.inr i))
+    (fun i j => hQ (.inl (i,some j))) (fun i => hQ (.inl (i,none))) le_rfl g d S v hv)
+  rw [show Q^2*Q^8*Q = Q^11 by ring, ← pow_mul]
+  apply Nat.pow_le_pow_right
+  · have hpos := NeZero.pos (ShiftCount S)
+    rw [shiftCount_eq] at hpos
+    obtain ⟨i,_⟩ := Finset.card_pos.mp (by omega : 0 < S.card)
+    exact (s.prime_isPrime (.inl ((g,d,i),none))).pos.trans_le (hQ _)
+  · have hcard := Finset.card_le_card (Finset.subset_univ S)
+    rw [Finset.card_univ, Fintype.card_fin] at hcard
+    omega
 
 end
 end TranslationTiling.FiniteCompiler.Packed.SlotParameters

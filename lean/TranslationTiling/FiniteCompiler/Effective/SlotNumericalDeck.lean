@@ -250,11 +250,12 @@ private theorem numericalKernel_decodes :
 
 include hn hcap in
 theorem numericalSlotPolycube (hs : s.prime = rankedSlotPrime k m)
-    (hwm : w ≤ m) {P Q : ℕ}
-    (hPr : PrimeBound (order s.layout) P) (hP : 3 < P) (hQ : ∀ j, s.prime j ≤ Q) :
+    (hwm : w ≤ m) {P : ℕ}
+    (hPr : PrimeBound (order s.layout) P) (hP : 3 < P) (hA : ∀ i, s.fallback i ≤ fallbackCap m)
+    (hB : ∀ i j, s.marker i j ≤ markerCap k m) (hC : ∀ i, s.low i ≤ lowCap k m) :
     let K := numericalKernel (order s.layout) s.period
     let Fs := numericalSlotTests T (order s.layout) k m w
-    let H := slotRadius Q m
+    let H := slotAssemblyRadius k m w
     let X := stackTestCap P (K :: Fs).length
     let U := guardedAssembly (((order s.layout,P,X),s.period,H),K :: Fs)
     U ≠ [] ∧ FaceConnected U ∧ (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles U) ∧
@@ -274,19 +275,19 @@ theorem numericalSlotPolycube (hs : s.prime = rankedSlotPrime k m)
         G ∈ numericalSlotActivationMasks N k m w ∨
         G ∈ numericalSeedMasks N k m ∨ G ∈ numericalGuardMasks T N k m w := by
     simp only [L,numericalSlotTests,List.mem_append,or_assoc]
-  have hA := s.numericalArithmeticMasks_correct hs
-  have hB := s.numericalAnchorMasks_correct hs
+  have hArith := s.numericalArithmeticMasks_correct hs
+  have hAnchor := s.numericalAnchorMasks_correct hs
   have hM := s.numericalMarkerMasks_correct hs
   have hF := s.numericalFallbackMasks_correct hs
   have hV := s.numericalSlotActivationMasks_correct hs hwm
   have hDeck := s.slotDeck_membership C hwm
-  apply s.slot_polycube_related C hwm hPr hP hQ K L s.numericalKernel_decodes
+  apply s.slot_polycube_related C hwm hPr hP hA hB hC K L s.numericalKernel_decodes
   · intro G hG
     have h := (hmem G).mp hG
     rcases h with ha | hb | hm | hf | hv | ht | hp
-    · have ha' := (hA (ds G)).mp ⟨G,ha,rfl⟩
+    · have ha' := (hArith (ds G)).mp ⟨G,ha,rfl⟩
       exact ⟨ds G,(hDeck _).mpr (Or.inr (Or.inl ha')),Or.inl rfl⟩
-    · have hb' := (hB (ds G)).mp ⟨G,hb,rfl⟩
+    · have hb' := (hAnchor (ds G)).mp ⟨G,hb,rfl⟩
       exact ⟨ds G,(hDeck _).mpr (Or.inr (Or.inr (Or.inl hb'))),Or.inl rfl⟩
     · have hm' := (hM (ds G)).mp ⟨G,hm,rfl⟩
       exact ⟨ds G,(hDeck _).mpr (Or.inr (Or.inr (Or.inr (Or.inl hm')))),Or.inl rfl⟩
@@ -305,9 +306,9 @@ theorem numericalSlotPolycube (hs : s.prime = rankedSlotPrime k m)
   · intro B h
     rcases (hDeck B).mp h with hb | ha | hc | hm | hf | hv | ⟨t,i,a,ha,rfl⟩ | ⟨p,hp,rfl⟩
     · exact Or.inl hb
-    · obtain ⟨G,hG,he⟩ := (hA B).mpr ha
+    · obtain ⟨G,hG,he⟩ := (hArith B).mpr ha
       exact Or.inr ⟨G,(hmem _).mpr (Or.inl hG),Or.inl he⟩
-    · obtain ⟨G,hG,he⟩ := (hB B).mpr hc
+    · obtain ⟨G,hG,he⟩ := (hAnchor B).mpr hc
       exact Or.inr ⟨G,(hmem _).mpr (Or.inr (Or.inl hG)),Or.inl he⟩
     · obtain ⟨G,hG,he⟩ := (hM B).mpr hm
       exact Or.inr ⟨G,(hmem _).mpr (Or.inr (Or.inr (Or.inl hG))),Or.inl he⟩
@@ -330,9 +331,9 @@ theorem numericalSlotPolycube (hs : s.prime = rankedSlotPrime k m)
       exact Or.inr ⟨G,(hmem _).mpr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (ht))))))),he⟩
   · intro o h
     refine ⟨fun A ha => ?_,fun B hb => ?_,fun i j F hm => ?_⟩
-    · obtain ⟨G,hG,rfl⟩ := (hA A).mpr ha
+    · obtain ⟨G,hG,rfl⟩ := (hArith A).mpr ha
       exact h G ((hmem _).mpr (Or.inl hG))
-    · obtain ⟨G,hG,rfl⟩ := (hB B).mpr hb
+    · obtain ⟨G,hG,rfl⟩ := (hAnchor B).mpr hb
       exact h G ((hmem _).mpr (Or.inr (Or.inl hG)))
     · obtain ⟨G,hG,rfl⟩ := (hM F).mpr ⟨i,j,hm⟩
       exact h G ((hmem _).mpr (Or.inr (Or.inr (Or.inl hG))))

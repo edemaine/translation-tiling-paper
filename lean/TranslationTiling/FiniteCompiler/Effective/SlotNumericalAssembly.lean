@@ -61,8 +61,9 @@ theorem SlotMaskMatches.holds {A B : Finset (SharedCoordinates.Ambient s.layout)
   · exact Iff.rfl
   · exact h.2.2 o hd
 
-theorem slot_polycube_related (hwm : w ≤ m) {P Q : ℕ}
-    (hPr : PrimeBound (order s.layout) P) (hP : 3 < P) (hQ : ∀ j, s.prime j ≤ Q)
+theorem slot_polycube_related (hwm : w ≤ m) {P : ℕ}
+    (hPr : PrimeBound (order s.layout) P) (hP : 3 < P) (hA : ∀ i, s.fallback i ≤ fallbackCap m)
+    (hB : ∀ i j, s.marker i j ≤ markerCap k m) (hC : ∀ i, s.low i ≤ lowCap k m)
     (K : CyclicTile) (Fs : List CyclicTile)
     (hK : K.toFinset.image (decodePoint s.layout) = productKernel s.layout)
     (hforward : ∀ A ∈ Fs, ∃ B ∈ s.slotDeck c hwm,
@@ -71,7 +72,7 @@ theorem slot_polycube_related (hwm : w ≤ m) {P Q : ℕ}
       ∃ A ∈ Fs, s.SlotMaskMatches (A.toFinset.image (decodePoint s.layout)) B)
     (hdep : ∀ o, (∀ A ∈ Fs, Tiles (A.toFinset.image (decodePoint s.layout))
       (Set.range (SharedCoordinates.point s.layout o))) → s.cycleDependencies o) :
-    let H := slotRadius Q m
+    let H := slotAssemblyRadius k m w
     let X := stackTestCap P (K :: Fs).length
     let U := guardedAssembly (((order s.layout,P,X),s.period,H),K :: Fs)
     U ≠ [] ∧ FaceConnected U ∧ (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles U) ∧
@@ -79,11 +80,11 @@ theorem slot_polycube_related (hwm : w ≤ m) {P Q : ℕ}
         (reservedCap X P) := by
   let decMask (A : CyclicTile) := A.toFinset.image (decodePoint s.layout)
   let graph (o : SharedCoordinates.Outputs s.layout) := Set.range (SharedCoordinates.point s.layout o)
-  have hstrip (A : CyclicTile) (hA : A ∈ Fs) (x : SharedCoordinates.Ambient s.layout) (hx : x ∈ decMask A) :
-      TestSupportAt 35 (fun _ => slotRadius Q m) x.1 := by
-    obtain ⟨B,hB,hAB⟩ := hforward A hA
+  have hstrip (A : CyclicTile) (hmem : A ∈ Fs) (x : SharedCoordinates.Ambient s.layout) (hx : x ∈ decMask A) :
+      TestSupportAt 35 (fun _ => slotAssemblyRadius k m w) x.1 := by
+    obtain ⟨B,hB',hAB⟩ := hforward A hmem
     rcases hAB with he | h
-    · exact s.slotDeck_strip c hwm hQ B hB x (he ▸ hx)
+    · exact s.slotDeck_strip_refined c hwm hA hB hC B hB' x (he ▸ hx)
     · rw [h.1 x hx]
       exact zero_strip _
   have hmass (A : CyclicTile) (hA : A ∈ Fs) :

@@ -3398,21 +3398,31 @@ at most $n^{5\lg\lg n+O(1+\lg\lg\lg n)}$ unit cubes as $n\to\infty$.
 The fixed arithmetic factor has all prime divisors below $2048$,
 so the fallback primes can start above $2048$.
 For $n\geq65536$, each slot prime cap is at most
-$2^{56}\lg(n+4)(\lg\lg(n+4))^4$. For $2\leq n<65536$, the
-digits have width $4$ and radix $108$. The numerical size caps
-for one, two, and three digits are $2^{8400}$, $2^{10300}$, and $2^{12200}$
-unit cubes, respectively.
+$2^{56}\lg(n+4)(\lg\lg(n+4))^4$.
+The product defining the activation displacement uses only the selected
+slots. Each selected slot contributes at most the square of the low-prime
+cap, the eighth power of the marker-prime cap, and one fallback-prime cap
+multiplied together.
+For $n=2$ or $3$, one slot of weight one gives a digit of radix $3$.
+For $4\leq n<65536$, the digits have width $4$ and radix $108$.
+For these widths the horizontal support is short enough to bound the
+shell volume linearly in the number of horizontal slots.
+The size is at most $2^{2750}$ for width one, $2^{4250}$ for a single digit
+of width four, and $2^{6800}$ for up to three digits of width four.
 
 A one-tile alphabet needs zero digits. The forbidden patterns still
 contain arithmetic letters, so their cycles continue to enforce the
 Sudoku and query constraints. The same assembly then uses at most
-$2^{2067}$ unit cubes. Together the estimates give the explicit bound
+$2^{2065}$ unit cubes using arithmetic strips of radius $2^{68}$.
+Together the estimates give the explicit bound
 $$
-  B(n)=\max\bigl\{n^{8400}(n+4)^{5\lg\lg(n+4)+65\lg\lg\lg(n+4)},
-    2^{2067}\bigr\}.
+  \max\bigl\{n^{2700}(n+4)^{5\lg\lg(n+4)+65\lg\lg\lg(n+4)},
+    2^{2065}\bigr\}.
 $$
-Lean verifies $B(n)$ for the computable compiler in
-\leanfile{Compiler/SlotExplicitBound.lean}.
+Lean verifies this bound for the computable compiler in
+\leanfile{Compiler/SlotExplicitBound.lean}. The paper's general bound $B(n)$
+adds $2700$ to the exponent of $n+4$. The Lean abstract uses $B(n)$
+for $n\geq2$ and $2^{2065}$ for $n\leq1$.
 
 ### The Remaining Cost of Cyclicity
 
@@ -3943,11 +3953,10 @@ Wang reductions for translations. The corresponding statement for any set of Euc
 motions containing all translations is
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction}.
 
-Each reduction theorem includes its cube bound for the same computable
-function. The bounds are $B(n)$ for translations and $2^{10(d+1)^2}B(n)$
-for arbitrary Euclidean motions in dimension $d\geq3$, with $B(n)$ from
-@sec:constant-weight. In dimension three, the motion bound improves to
-$64{,}000B(n)$.
+Each reduction theorem includes a cube bound for the same computable
+function. The motion bounds multiply the Lean abstract's translation bound
+by $2^{10(d+1)^2}$ in
+dimension $d\geq3$ and by $64{,}000$ in dimension three.
 Here $n$ counts input Wang tiles. For the same rotation-resistant output $P$,
 \leanref{Abstract.lean}{Abstract.rigid_tiling_reduction_three} gives the latter bound and states the equivalences
 \[

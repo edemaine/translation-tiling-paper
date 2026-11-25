@@ -4,6 +4,7 @@ import TranslationTiling.FiniteCompiler.Effective.SlotAssembly
 namespace TranslationTiling.FiniteCompiler.Packed.SlotParameters
 
 open PairSmall GuardedCompiler SharedCoordinates Compiler Compiler.Effective Effective Compiler.StripLift
+open Compiler.Size
 open scoped Classical
 noncomputable section
 
@@ -14,33 +15,62 @@ variable {k m w : ℕ} {T : LeanWang.TileSet} (c : Code T ((slotRadix m w)^k))
 local instance slotPolycubeAlphabet : AlphabetFamily (system c) := GuardedCompiler.alphabet c
 variable (s : SlotParameters k m)
 
-theorem slotDeck_strip (hwm : w ≤ m) {Q : ℕ}
-    (hQ : ∀ j, s.prime j ≤ Q)
+private theorem slotDeck_strip_of (hwm : w ≤ m) {H : ℕ}
+    (hArith : fourValueRadius 0 ≤ H)
+    (hmask : ∀ (g : Bool) (d : Fin k) (S : Finset (Fin m)) (hS : S.card = m+1-w)
+      (v : SharedCoordinates.Ambient s.layout),
+      v ∈ s.activationTest g d S (selected_nonempty hwm hS) →
+        TestSupportAt 35 (fun _ => H) v.1)
     (F : Finset (SharedCoordinates.Ambient s.layout)) (hF : F ∈ s.slotDeck c hwm)
     (v : SharedCoordinates.Ambient s.layout) (hv : v ∈ F) :
-    TestSupportAt 35 (fun _ => slotRadius Q m) v.1 := by
-  let H := slotRadius Q m
-  have hH : 1 ≤ H := radius_pos Q m
+    TestSupportAt 35 (fun _ => H) v.1 := by
+  have hH : 1 ≤ H := (by decide +kernel : 1 ≤ fourValueRadius 0).trans hArith
   rcases (s.slotDeck_membership c hwm F).mp hF with
     rfl | ha | hb | ⟨i,j,hj⟩ | ⟨g,i,hi⟩ | ⟨g,d,S,hS,rfl⟩ | ⟨t,i,a,_,rfl⟩ | ⟨p,hp,rfl⟩
   · simp only [productKernel,Finset.mem_filter,Finset.mem_map,Finset.mem_univ,true_and] at hv
     obtain ⟨⟨a,ha⟩,_⟩ := hv
     have hh : (0 : Plane) = v.1 := congrArg Prod.fst ha
     exact hh ▸ zero_strip H
-  · exact s.arithmetic_strip (le_max_left ..) F ha v hv
+  · exact s.arithmetic_strip hArith F ha v hv
   · exact s.anchor_strip H F hb v hv
   · exact s.marker_strip hH i j F hj v hv
   · exact s.fallback_strip hH g i F hi v hv
-  · have := shiftCount_neZero (selected_nonempty hwm hS)
-    change v ∈ s.mask g d S at hv
-    have h := s.mask_strip hQ g d S v hv
-    rcases h with ⟨h₁,h₂⟩ | ⟨j,hj,h₁,h₂⟩
-    · exact Or.inl ⟨h₁.trans (le_max_right ..),h₂⟩
-    · exact Or.inr ⟨j,hj,h₁.trans (le_max_right ..),h₂⟩
+  · exact hmask g d S hS v hv
   · rw [(s.exists_seedMask c t i a).choose_spec.1 v hv]
     exact zero_strip H
   · rw [(s.exists_guardMask c p hp).choose_spec.1 v hv]
     exact zero_strip H
+
+theorem slotDeck_strip (hwm : w ≤ m) {Q : ℕ}
+    (hQ : ∀ j, s.prime j ≤ Q)
+    (F : Finset (SharedCoordinates.Ambient s.layout)) (hF : F ∈ s.slotDeck c hwm)
+    (v : SharedCoordinates.Ambient s.layout) (hv : v ∈ F) :
+    TestSupportAt 35 (fun _ => slotRadius Q m) v.1 := by
+  apply s.slotDeck_strip_of c hwm (le_max_left ..) _ F hF v hv
+  intro g d S hS v hv
+  have := shiftCount_neZero (selected_nonempty hwm hS)
+  exact strip_mono (le_max_right ..) (s.mask_strip hQ g d S v hv)
+
+theorem slotDeck_strip_refined (hwm : w ≤ m)
+    (hA : ∀ i, s.fallback i ≤ fallbackCap m) (hB : ∀ i j, s.marker i j ≤ markerCap k m)
+    (hC : ∀ i, s.low i ≤ lowCap k m)
+    (F : Finset (SharedCoordinates.Ambient s.layout)) (hF : F ∈ s.slotDeck c hwm)
+    (v : SharedCoordinates.Ambient s.layout) (hv : v ∈ F) :
+    TestSupportAt 35 (fun _ => slotAssemblyRadius k m w) v.1 := by
+  apply s.slotDeck_strip_of c hwm (le_max_left ..) _ F hF v hv
+  intro g d S hS v hv
+  have := shiftCount_neZero (selected_nonempty hwm hS)
+  have hcard := Finset.card_le_card (Finset.subset_univ S)
+  rw [Finset.card_univ, Fintype.card_fin] at hcard
+  have hAB : fallbackCap m ≤ markerCap k m := by
+    unfold markerCap guardedPrimeCap
+    exact (by omega : fallbackCap m ≤ 4*(fallbackCap m+6*k*m+16)).trans
+      (Nat.le_mul_of_pos_right _ (by omega))
+  have hpos : 0 < lowCap k m^2 * markerCap k m^8 * fallbackCap m := by
+    unfold lowCap markerCap fallbackCap guardedPrimeCap
+    positivity
+  exact strip_mono ((Nat.pow_le_pow_right hpos (le_min hcard hS.le)).trans
+    (le_max_right ..)) (s.mask_strip_factors hA hB hC hAB g d S v hv)
 
 private def fixedPicker : FourValuePicker 0 where
   fixed i _ _ := ⟨0,(by decide +kernel : ∀ i : FourValueRow 0,

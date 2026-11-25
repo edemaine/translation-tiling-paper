@@ -57,15 +57,15 @@ def layout : SharedCoordinates.Layout (SlotRow k m) where
 
 /-- The arithmetic frame is fixed. Each slot costs five factors, and the
 fallback primes contribute four factors per slot position. -/
-theorem order_le {P Q : ℕ} (hP : ∀ i, s.fallback i ≤ P)
-    (hQ : ∀ i, s.low i ≤ Q) (hB : ∀ i j, s.marker i j ≤ Q) :
-    order s.layout ≤ order (fourValueLayout 0) * (Q^(10*k*m) * P^(4*m)) := by
-  have hw (i : WangSlot k m) : rowModulus s.layout (.inr (.inl i)) ≤ Q^5 := by
+theorem order_le_factors {P Q B : ℕ} (hP : ∀ i, s.fallback i ≤ P)
+    (hQ : ∀ i, s.low i ≤ Q) (hB : ∀ i j, s.marker i j ≤ B) :
+    order s.layout ≤ order (fourValueLayout 0) * ((Q^2*B^3)^(2*k*m) * P^(4*m)) := by
+  have hw (i : WangSlot k m) : rowModulus s.layout (.inr (.inl i)) ≤ Q^2*B^3 := by
     change (s.low i)^2*1*(∏ j, s.marker i j) ≤ _
-    have h : (∏ j, s.marker i j) ≤ Q^3 := by
+    have h : (∏ j, s.marker i j) ≤ B^3 := by
       simpa using (Finset.prod_le_prod (s := Finset.univ) (f := s.marker i)
-        (g := fun _ => Q) (fun j _ => hB i j))
-    rw [show 5 = 2+3 from rfl,pow_add,mul_one]
+        (g := fun _ => B) (fun j _ => hB i j))
+    rw [mul_one]
     exact Nat.mul_le_mul (Nat.pow_le_pow_left (hQ i) 2) h
   have hf (i : SlotFallback m) : rowModulus s.layout (.inr (.inr i)) ≤ P := by
     simpa [rowModulus,layout] using hP i
@@ -74,13 +74,18 @@ theorem order_le {P Q : ℕ} (hP : ∀ i, s.fallback i ≤ P)
       rowModulus (fourValueLayout 0) i from fun _ => rfl]
   rw [← mul_assoc]
   refine Nat.mul_le_mul_left _ (Nat.mul_le_mul ?_ ?_)
-  · have h := Finset.prod_le_prod (s := Finset.univ) (g := fun _ : WangSlot k m => Q^5)
+  · have h := Finset.prod_le_prod (s := Finset.univ) (g := fun _ : WangSlot k m => Q^2*B^3)
       (fun i _ => hw i)
     simpa only [Finset.prod_const,Finset.card_univ,Fintype.card_prod,Fintype.card_bool,
-      Fintype.card_fin,← pow_mul,← Nat.mul_assoc,show 5*2 = 10 from rfl] using h
+      Fintype.card_fin,Nat.mul_assoc] using h
   · have h := Finset.prod_le_prod (s := Finset.univ) (g := fun _ : SlotFallback m => P)
       (fun i _ => hf i)
     simpa [Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm,show 2*2 = 4 from rfl] using h
+
+theorem order_le {P Q : ℕ} (hP : ∀ i, s.fallback i ≤ P)
+    (hQ : ∀ i, s.low i ≤ Q) (hB : ∀ i j, s.marker i j ≤ Q) :
+    order s.layout ≤ order (fourValueLayout 0) * (Q^(10*k*m) * P^(4*m)) := by
+  simpa only [← pow_add, ← pow_mul, ← Nat.mul_assoc] using s.order_le_factors hP hQ hB
 
 def slotBasePrimeCap : ℕ := 2048
 

@@ -55,7 +55,7 @@ private theorem numericalMultiplicity_le_two (a b : ℕ) :
 theorem seedFirst_bound (a b r o : ℕ) (j : SeedCode)
     (ha : a ≤ 3) (hb : b ≤ 1229) (hr : r ≤ 1231) (ho : o ≤ 3)
     (hj : j ∈ seedIndices a b r 35) :
-    (numericalSeedFirst (((a,b,r),j.1),(35,o,j.2.1,j.2.2))).natAbs ≤ 2^70 ∧ j.2.2 < 35 := by
+    (numericalSeedFirst (((a,b,r),j.1),(35,o,j.2.1,j.2.2))).natAbs ≤ 2^68 ∧ j.2.2 < 35 := by
   rcases j with ⟨j,x,y⟩
   simp only [seedIndices,List.mem_flatMap,List.mem_map,List.mem_range,Prod.mk.injEq] at hj
   obtain ⟨jj,hj,xx,hx,yy,hy,he₁,he₂,he₃⟩ := hj
@@ -76,7 +76,7 @@ theorem seedFirst_bound (a b r o : ℕ) (j : SeedCode)
   unfold numericalSeedFirst
   dsimp only
   rw [← Nat.cast_mul,← Nat.cast_add,Int.natAbs_natCast]
-  exact (Nat.add_le_add ((residueSearch_le m _).trans hm) (Nat.mul_le_mul hm hcode)).trans (by decide : 500000000+500000000*13000000 ≤ 2^70)
+  exact (Nat.add_le_add ((residueSearch_le m _).trans hm) (Nat.mul_le_mul hm hcode)).trans (by decide : 500000000+500000000*13000000 ≤ 2^68)
 
 theorem getD_tailSlopes_le (k i : ℕ) : (tailSlopes k).getD i 0 ≤ 16 := by
   by_cases h : i < (tailSlopes k).length
@@ -186,7 +186,7 @@ theorem sharedRawDeck_strip (k : ℕ) (tests : List GuardedAssignments) :
         exact (by decide : ∀ v : Fin 2, (sharedSeedRows.getD v.val (0,0,[])).2.2.prod ≤ 1231) ⟨t,ht⟩
       have hs := seedFirst_bound _ _ _ _ j (ha t ht) hb hr (ha (1-t) (by omega)) hj
       rw [hh]
-      exact Or.inl ⟨hs.1.trans (Nat.le_add_right _ _),by simpa using hs.2.le⟩
+      exact Or.inl ⟨hs.1.trans ((by decide : (2 : ℕ)^68 ≤ 2^70).trans (Nat.le_add_right _ _)),by simpa using hs.2.le⟩
   · obtain ⟨xs,_,hc⟩ := List.mem_flatMap.mp hc
     unfold sharedCycle at hc
     split at hc

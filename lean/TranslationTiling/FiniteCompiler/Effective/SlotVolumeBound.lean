@@ -38,6 +38,29 @@ theorem slotVolume_le (H R J N L : ℕ) (hR : 0 < R) (hN : J*R ≤ N) :
     _ = 2^105*N*L*(H+1)^2 := by rw [mul_pow]; ring
     _ ≤ _ := Nat.mul_le_mul_right _ (Nat.mul_le_mul_right _ (Nat.mul_le_mul_right _ (by decide)))
 
+/-- When the horizontal slots are short relative to the rails, the shell
+volume is linear in the slot count. -/
+theorem slotVolume_linear_le (H R J N L : ℕ) (hN : J*R ≤ N)
+    (hH : 4*countCapAt 35 (fun _ => H)+4229 ≤ R) :
+    reservedVolumeCap 35 (fun _ => H) R J L ≤
+      mssPieceCap*N*L*216*4222*(4*countCapAt 35 (fun _ => H)+1) := by
+  let a := countCapAt 35 (fun _ => H)
+  have hfront (a R : ℕ) (h : 4*a+4229 ≤ R) :
+      4*a+7*(railHeight (3*R+1)+2)+1 ≤ 4222*R := by
+    unfold railHeight
+    calc
+      _ = (4*a+4229)+4221*R := by ring
+      _ ≤ R+4221*R := Nat.add_le_add_right h _
+      _ = _ := by ring
+  unfold reservedVolumeCap
+  dsimp only
+  calc
+    _ ≤ mssPieceCap*(J*L)*(216*(4222*R)*(4*a+1)) := by
+      exact Nat.mul_le_mul_left _ (Nat.mul_le_mul_right _ (Nat.mul_le_mul_left _ (hfront a R hH)))
+    _ = mssPieceCap*(J*R)*L*216*4222*(4*a+1) := by ring
+    _ ≤ _ := Nat.mul_le_mul_right _ (Nat.mul_le_mul_right _ (Nat.mul_le_mul_right _
+      (Nat.mul_le_mul_right _ (Nat.mul_le_mul_left _ hN))))
+
 /-- The extra stacking modulus is polynomial in the test cap. -/
 theorem slotStack_le (X P : ℕ) (hX : 1 ≤ X) (hP : P ≤ X) :
     reservedCap X P ≤ 128*X^3 := by

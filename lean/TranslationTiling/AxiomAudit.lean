@@ -115,6 +115,7 @@ run_cmd do
       ``TranslationTiling.Compiler.Size.compileSlotWith_emptyWord,
       ``TranslationTiling.Compiler.Size.compileSlotTotal_computable,
       ``TranslationTiling.Compiler.Size.compileSlotTotal_facts,
+      ``TranslationTiling.Compiler.Size.compileSlotTotal_public_bound,
       ``TranslationTiling.Compiler.Size.compileSlot_logarithmic,
       ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.numericalSlotActivationMasks_correct,
       ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.numericalGuardFor_spec,

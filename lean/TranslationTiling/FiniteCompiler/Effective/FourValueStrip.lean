@@ -15,7 +15,7 @@ private theorem fourValue_fixed_radius (k i : ℕ) (hi : i < 18) :
   rw [fourValueRows_fixed_at hi]
   have h := (by decide +kernel : ∀ j : Fin 18,
     2*((sharedArithmeticRow j).2.2.prod*(sharedArithmeticRow j).1*(sharedArithmeticRow j).2.1) ≤
-      2^70) ⟨i,hi⟩
+      2^68) ⟨i,hi⟩
   exact h.trans (Nat.le_add_right _ _)
 
 private theorem fourValue_wang_strip (k i : ℕ) (hi : i < 2*k) (f : NumericalPoint)

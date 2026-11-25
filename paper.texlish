@@ -495,8 +495,7 @@ to recognize infeasibility.
 
 For $n$ Wang tiles, the translation-only reduction uses at most
 $$
-  B(n)=\max\bigl\{n^{8400}(n+4)^{5\lg\lg(n+4)+65\lg\lg\lg(n+4)},
-    2^{2067}\bigr\}=n^{O(\log\log n)}
+  B(n)=(n+4)^{5\lg\lg(n+4)+65\lg\lg\lg(n+4)+2700}=n^{O(\log\log n)}
 $$
 lattice points / unit cubes
 in every fixed dimension $d\geq3$, where $\lg=\log_2$.
@@ -504,7 +503,7 @@ A logarithmic number of encoding channels and sparse tests give the
 quasipolynomial dependence, and further optimizations improve the constants
 in the bound (see “Quantitative Size Bounds” in the
 [technical overview](https://edemaine.github.io/translation-tiling-paper/slop.pdf)).
-For $n=1$, the same construction uses at most $2^{2067}$ unit cubes.
+For $n=1$, the same construction uses at most $2^{2065}$ unit cubes.
 Allowing rotations and/or reflections gives bounds of $64{,}000B(n)$ in 3D
 and $2^{10(d+1)^2}B(n)$ in $d$D.
 
@@ -587,6 +586,8 @@ Here `LeanWang.TileSet` is a list of Wang tiles, and `LeanWang.TilesPlane`
 asserts that they tile the whole plane.
 List lengths count the input tiles and output cubes,
 and `Real.logb 2` denotes the base-2 logarithm $\lg$.
+The Lean bound `cubeBound` uses the sharper estimate $2^{2065}$
+for inputs with at most one tile.
 
 \leansnippet{cubeBound,tiling_reduction}
 

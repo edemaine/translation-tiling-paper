@@ -16,7 +16,7 @@ leading two iterated-logarithmic coefficients are five and sixty-five. -/
 def slotExplicitBound (n : ℕ) : ℝ :=
   let x := (n : ℝ) + 4
   let g := Real.logb 2 (Real.logb 2 x)
-  max (x^(5*g+65*Real.logb 2 g) * (n : ℝ)^(8400 : ℕ)) (2^(2067 : ℕ))
+  max (x^(5*g+65*Real.logb 2 g) * (n : ℝ)^(2700 : ℕ)) (2^(2065 : ℕ))
 
 private theorem dyadic_le {i j : ℕ} (h : i ≤ j) : (2 : ℝ)^i ≤ (2 : ℝ)^j :=
   pow_le_pow_right₀ (by norm_num) h
@@ -329,11 +329,10 @@ private theorem explicit_main_log {n : ℕ} (hn : 65536 ≤ n) :
   rw [hform]
   nlinarith only [hZ,hmain,hAA,hXL,hHL,hu]
 
--- With width four, the three possible digit counts have closed bounds.
-set_option maxHeartbeats 9000000 in
 set_option maxRecDepth 40000 in
-private theorem small_slot_size {k : ℕ} (hk₁ : 1 ≤ k) (hk : k ≤ 3) :
-    slotSizeBound k 4 3 ≤ 2^(1900*k+6500) := by
+private theorem width_four_numerical {k : ℕ} (hk₁ : 1 ≤ k) (hk : k ≤ 3) :
+    (4*Rails.Strips.countCapAt 35 (fun _ => slotAssemblyRadius k 4 3)+4229 ≤ 2^811) ∧
+      (k = 1 → slotShortEstimate k 4 3 ≤ 2^4250) ∧ slotShortEstimate k 4 3 ≤ 2^6800 := by
   have h : k = 1 ∨ k = 2 ∨ k = 3 := by omega
   rcases h with rfl | rfl | rfl <;> decide +kernel
 
@@ -369,96 +368,128 @@ private theorem slot_size_positive {k m w : ℕ} : 0 < slotSizeBound k m w := by
   unfold slotSizeBound
   positivity
 
-/-- Every input length uses the same construction. Only the numerical
-estimate switches between counting the short words and bounding the logarithms. -/
-theorem slot_size_bound_explicit {n : ℕ} (hn : 2 ≤ n) :
+private theorem le_explicit_of_log {n : ℕ} {B : ℝ} (hn : 2 ≤ n) (hB : 0 < B)
+    (h : let x := (n : ℝ)+4
+         let u := Real.logb 2 x
+         let g := Real.logb 2 u
+         Real.logb 2 B ≤ u*(5*g+65*Real.logb 2 g)+2700*Real.logb 2 (n : ℝ)) :
+    B ≤ slotExplicitBound n := by
+  have hx : 0 < (n : ℝ)+4 := by positivity
+  have hₙ : (0 : ℝ) < n := by exact_mod_cast (show 0 < n by omega)
+  apply le_trans _ (le_max_left _ _)
+  apply (Real.logb_le_logb (by norm_num : (1 : ℝ)<2) hB (by positivity)).mp
+  rw [Real.logb_mul (Real.rpow_pos_of_pos hx _).ne' (by positivity),
+    Real.logb_rpow_eq_mul_logb_of_pos hx, Real.logb_pow]
+  simpa only [Nat.cast_ofNat,mul_comm] using h
+
+theorem slot_size_bound_explicit {n : ℕ} (hn : 65536 ≤ n) :
     let t := slotLengthParameter n
     let k := slotPackedDigits n t
     (slotSizeBound k (4*t) (3*t) : ℝ) ≤ slotExplicitBound n := by
-  let x := (n : ℝ)+4
-  let u := Real.logb 2 x
+  apply le_explicit_of_log (by omega) (by exact_mod_cast slot_size_positive)
+  let u := Real.logb 2 ((n : ℝ)+4)
+  let v := Real.logb 2 (n : ℝ)
   let g := Real.logb 2 u
   let l := Real.logb 2 g
-  let t := slotLengthParameter n
-  let k := slotPackedDigits n t
-  let B := slotSizeBound k (4*t) (3*t)
-  have hN : (1 : ℝ) ≤ n := by exact_mod_cast (show 1 ≤ n by omega)
-  have hx : 0 < x := by dsimp [x]; positivity
-  have hu : 2 ≤ u := by
-    have h := lg_mono (by positivity) (show (2 : ℝ)^2 ≤ x by dsimp [x]; norm_num)
-    simpa only [lg_two_pow,Nat.cast_ofNat] using h
-  have hg : 1 ≤ g := by
-    have h := lg_mono (by norm_num : 0 < (2 : ℝ)) hu
-    rwa [Real.logb_self_eq_one (by norm_num)] at h
-  have hl : 0 ≤ l := Real.logb_nonneg (by norm_num) hg
-  have hB : 0 < (B : ℝ) := by exact_mod_cast slot_size_positive (k := k) (m := 4*t) (w := 3*t)
-  let v := Real.logb 2 (n : ℝ)
-  have hn' : (2 : ℝ) ≤ n := by exact_mod_cast hn
-  have hvpos : 0 < (n : ℝ) := by linarith
+  have hn' : (65536 : ℝ) ≤ n := by exact_mod_cast hn
+  have hv : 16 ≤ v := by
+    have h := lg_mono (by positivity : 0 < (2 : ℝ)^16)
+      (show (2 : ℝ)^16 ≤ n by rwa [show (2 : ℝ)^16 = 65536 by norm_num])
+    rwa [lg_two_pow] at h
+  have huv : u ≤ 1+v := by
+    have h := lg_mono (by positivity : 0 < (n : ℝ)+4) (show (n : ℝ)+4 ≤ 2*(n : ℝ) by linarith)
+    rw [Real.logb_mul (by norm_num) (by positivity), Real.logb_self_eq_one (by norm_num)] at h
+    exact h
+  have h := explicit_main_log hn
+  change _ ≤ u*(5*g+65*l+2000) at h
+  exact h.trans (by nlinarith only [huv,hv])
+
+private theorem small_compiler_log {T : LeanWang.TileSet} (hn : 2 ≤ T.length)
+    (hlt : T.length < 65536) (hB : 0 < ((compileSlot T).length : ℝ)) :
+    let n := (T.length : ℝ)
+    let u := Real.logb 2 (n+4)
+    let g := Real.logb 2 u
+    Real.logb 2 ((compileSlot T).length : ℝ) ≤ u*(5*g+65*Real.logb 2 g)+2700*Real.logb 2 n := by
+  let n := (T.length : ℝ)
+  let u := Real.logb 2 (n+4)
+  let g := Real.logb 2 u
+  let l := Real.logb 2 g
+  let v := Real.logb 2 n
+  have hn' : (2 : ℝ) ≤ n := by
+    change (2 : ℝ) ≤ (T.length : ℝ)
+    exact_mod_cast hn
   have hv : 1 ≤ v := by
     have h := lg_mono (by norm_num : 0 < (2 : ℝ)) hn'
     rwa [Real.logb_self_eq_one (by norm_num)] at h
-  have hlog (h : Real.logb 2 (B : ℝ) ≤ u*(5*g+65*l) + 8400*v) :
-      (B : ℝ) ≤ slotExplicitBound n := by
-    apply le_trans _ (le_max_left _ _)
-    apply (Real.logb_le_logb (by norm_num : (1 : ℝ)<2) hB (by positivity)).mp
-    rw [Real.logb_mul (Real.rpow_pos_of_pos hx _).ne' (by positivity),
-      Real.logb_rpow_eq_mul_logb_of_pos hx, Real.logb_pow, mul_comm (5*g+65*l) u]
-    simpa only [Nat.cast_ofNat] using h
-  apply hlog
-  by_cases hlarge : 65536 ≤ n
-  · have h := explicit_main_log hlarge
-    change Real.logb 2 (B : ℝ) ≤ u*(5*g+65*l+2000) at h
-    have huv : u ≤ 3*v := by
-      have h := lg_mono hx (show x ≤ 4*(n : ℝ) by dsimp [x]; linarith)
-      rw [Real.logb_mul (by norm_num) (by positivity),
-        show (4 : ℝ) = 2^2 by norm_num, lg_two_pow] at h
-      change u ≤ 2+v at h
-      linarith only [h,hv]
-    exact h.trans (by nlinarith only [huv,hv])
-  · have ht : t = 1 := small_slot_width (by omega)
-    have hb (j : ℕ) (h : k = j) : B = slotSizeBound j 4 3 := by
-      unfold B
-      rw [ht,h]
-    have hmain : 0 ≤ u*(5*g+65*l) := mul_nonneg (by linarith) (by linarith)
-    by_cases h₁ : n ≤ 108
-    · have hk : k = 1 := by
-        unfold k
-        rw [ht]
-        exact slot_digits_at_four (by decide) (by simpa using h₁) (Or.inl rfl)
-      have hcap : Real.logb 2 (B : ℝ) ≤ 8400 :=
-        dyadic_log_le (i := 8400) hB
-          (by rw [hb 1 hk]; exact_mod_cast small_slot_size (k := 1) (by decide) (by decide))
-      exact hcap.trans (by linarith)
-    · have hv₂ : 2 ≤ v := by
-        have h := lg_mono (by norm_num : 0 < (4 : ℝ))
-          (show (4 : ℝ) ≤ n by exact_mod_cast (show 4 ≤ n by omega))
-        rwa [show (4 : ℝ) = 2^2 by norm_num, lg_two_pow] at h
-      have hk : k = 2 ∨ k = 3 := by
-        unfold k
-        rw [ht]
-        by_cases h₂ : n ≤ 11664
-        · exact Or.inl (slot_digits_at_four (by decide) h₂ (Or.inr (by simpa using Nat.lt_of_not_ge h₁)))
-        · exact Or.inr (slot_digits_at_four (by decide) (by omega) (Or.inr (by omega)))
-      have hcap : Real.logb 2 (B : ℝ) ≤ 12200 := by
-        rcases hk with hk | hk
-        · apply le_trans _ (show (10300 : ℝ) ≤ 12200 by norm_num)
-          exact dyadic_log_le (i := 10300) hB
-            (by rw [hb 2 hk]; exact_mod_cast small_slot_size (k := 2) (by decide) (by decide))
-        · exact dyadic_log_le (i := 12200) hB
-            (by rw [hb 3 hk]; exact_mod_cast small_slot_size (k := 3) (by decide) (by decide))
-      exact hcap.trans (by linarith)
+  have hu : (5 : ℝ)/2 ≤ u := by
+    apply lg_lower (a := 5) (b := 2) (by decide) _ (by linarith : 0 < n+4)
+    exact (by norm_num : (2 : ℝ)^5 ≤ 6^2).trans (pow_le_pow_left₀ (by norm_num) (by linarith) _)
+  have hg : (5 : ℝ)/4 ≤ g := by
+    apply lg_lower (a := 5) (b := 4) (by decide) _ (by linarith : 0 < u)
+    exact (by norm_num : (2 : ℝ)^5 ≤ ((5 : ℝ)/2)^4).trans
+      (pow_le_pow_left₀ (by norm_num) hu _)
+  have hl : (1 : ℝ)/4 ≤ l := by
+    have hpow : (2 : ℝ)^1 ≤ g^4 := (by norm_num : (2 : ℝ)^1 ≤ ((5 : ℝ)/4)^4).trans
+      (pow_le_pow_left₀ (by norm_num) hg _)
+    simpa only [Nat.cast_one, Nat.cast_ofNat] using
+      (lg_lower (a := 1) (b := 4) (by decide) hpow (by linarith : 0 < g))
+  have hmain : 50 ≤ u*(5*g+65*l) := by
+    have h := mul_le_mul hu (show (45 : ℝ)/2 ≤ 5*g+65*l by linarith) (by norm_num) (by linarith)
+    linarith
+  change _ ≤ u*(5*g+65*l)+2700*v
+  by_cases hs : T.length ≤ 3
+  · have h : (compileSlot T).length ≤ 2^2750 :=
+      (compileSlot_smallWidth T hn hs).trans (by decide +kernel)
+    exact (dyadic_log_le (i := 2750) hB (by exact_mod_cast h)).trans
+      (by norm_num only [Nat.cast_ofNat]; linarith)
+  · have ht := small_slot_width hlt
+    let k := slotPackedDigits T.length 1
+    have hk₁ (h : T.length ≤ 108) : k = 1 :=
+      slot_digits_at_four (by decide) (by simpa using h) (Or.inl rfl)
+    have hk₂ (h : 108 < T.length) : k = 2 ∨ k = 3 := by
+      by_cases h₂ : T.length ≤ 11664
+      · exact Or.inl (slot_digits_at_four (by decide) h₂ (Or.inr (by omega)))
+      · exact Or.inr (slot_digits_at_four (by decide) (by omega) (Or.inr (by omega)))
+    have hk : k = 1 ∨ k = 2 ∨ k = 3 := by
+      by_cases h₁ : T.length ≤ 108
+      · exact Or.inl (hk₁ h₁)
+      · exact Or.inr (hk₂ (by omega))
+    obtain ⟨hH,hshort₁,hshort⟩ := width_four_numerical (by omega : 1 ≤ k) (by omega)
+    have hb := compileSlot_widthFour T (by omega) ht hH
+    by_cases h₁ : T.length ≤ 108
+    · have h : (compileSlot T).length ≤ 2^4250 := hb.trans (hshort₁ (hk₁ h₁))
+      have hv₂ : 2 ≤ v := by
+        have hn₄ : (4 : ℝ) ≤ n := by
+          change (4 : ℝ) ≤ (T.length : ℝ)
+          exact_mod_cast (show 4 ≤ T.length by omega)
+        have hv' := lg_mono (by norm_num : 0 < (2 : ℝ)^2) (show (2 : ℝ)^2 ≤ n by norm_num; exact hn₄)
+        rwa [lg_two_pow] at hv'
+      exact (dyadic_log_le (i := 4250) hB (by exact_mod_cast h)).trans
+        (by norm_num only [Nat.cast_ofNat]; linarith)
+    · have h : (compileSlot T).length ≤ 2^6800 := hb.trans hshort
+      have hv₃ : 3 ≤ v := by
+        have hn₈ : (8 : ℝ) ≤ n := by
+          change (8 : ℝ) ≤ (T.length : ℝ)
+          exact_mod_cast (show 8 ≤ T.length by omega)
+        have hv' := lg_mono (by norm_num : 0 < (2 : ℝ)^3) (show (2 : ℝ)^3 ≤ n by norm_num; exact hn₈)
+        rwa [lg_two_pow] at hv'
+      exact (dyadic_log_le (i := 6800) hB (by exact_mod_cast h)).trans
+        (by norm_num only [Nat.cast_ofNat]; linarith)
 
 /-- The uniform computable compiler meets the explicit bound. -/
 theorem compileSlot_explicit (T : LeanWang.TileSet) (hn : 0 < T.length) :
     (compileSlot T).length ≤ slotExplicitBound T.length := by
   by_cases h : T.length = 1
-  · have hb : ((compileSlot T).length : ℝ) ≤ ((2^2067 : ℕ) : ℝ) :=
+  · have hb : ((compileSlot T).length : ℝ) ≤ ((2^2065 : ℕ) : ℝ) :=
       Nat.cast_le.mpr (compileSlot_one T h)
     rw [Nat.cast_pow,Nat.cast_ofNat] at hb
     exact hb.trans (le_max_right _ _)
-  · have hb := (compileSlot_correct T hn).2.2.2
-    exact (Nat.cast_le.mpr hb).trans (slot_size_bound_explicit (by omega))
+  · by_cases hlarge : 65536 ≤ T.length
+    · have hb := (compileSlot_correct T hn).2.2.2
+      exact (Nat.cast_le.mpr hb).trans (slot_size_bound_explicit hlarge)
+    · have hp : 0 < ((compileSlot T).length : ℝ) := by
+        exact_mod_cast List.length_pos_iff.mpr (compileSlot_correct T hn).1
+      exact le_explicit_of_log (by omega) hp (small_compiler_log (by omega) (by omega) hp)
 
 /-- Totalize the compiler by encoding the empty alphabet as a single Wang tile
 that cannot tile the plane. -/
@@ -480,7 +511,7 @@ theorem compileSlotTotal_facts (T : LeanWang.TileSet) :
   refine ⟨hne,hconn,(nonemptyInput_tiles T).symm.trans hiff,?_⟩
   by_cases h : T.length = 0
   · have h₁ : (nonemptyInput T).length = 1 := by simpa only [h,max_eq_left (by decide : 0 ≤ 1)] using hlen
-    have hb : ((compileSlotTotal T).length : ℝ) ≤ ((2^2067 : ℕ) : ℝ) :=
+    have hb : ((compileSlotTotal T).length : ℝ) ≤ ((2^2065 : ℕ) : ℝ) :=
       Nat.cast_le.mpr (compileSlot_one _ h₁)
     rw [Nat.cast_pow,Nat.cast_ofNat] at hb
     exact hb.trans (le_max_right _ _)
@@ -489,6 +520,50 @@ theorem compileSlotTotal_facts (T : LeanWang.TileSet) :
     have hb := compileSlot_explicit (nonemptyInput T) hp
     rw [h₁] at hb
     exact hb
+
+/-- The public formula absorbs the polynomial factor into the exponent
+of the shifted base and retains the sharp bound for at most one tile. -/
+def slotPublicBound (n : ℕ) : ℝ :=
+  if n ≤ 1 then 2^2065 else
+  ((n : ℝ)+4)^(5*Real.logb 2 (Real.logb 2 ((n : ℝ)+4)) +
+    65*Real.logb 2 (Real.logb 2 (Real.logb 2 ((n : ℝ)+4))) + 2700)
+
+theorem compileSlotTotal_public_bound (T : LeanWang.TileSet) :
+    ((compileSlotTotal T).length : ℝ) ≤ slotPublicBound T.length := by
+  by_cases hn : T.length ≤ 1
+  · rw [slotPublicBound,ite_eq_left hn]
+    have h : (nonemptyInput T).length = 1 :=
+      (nonemptyInput_length T).trans (max_eq_left hn)
+    exact_mod_cast compileSlot_one (nonemptyInput T) h
+  · rw [slotPublicBound,ite_eq_right hn]
+    let n := (T.length : ℝ)
+    let x := n+4
+    let g := Real.logb 2 (Real.logb 2 x)
+    let a := 5*g+65*Real.logb 2 g
+    have hn₀ : 0 ≤ n := by dsimp [n]; positivity
+    have hx : 0 < x := by dsimp [x]; positivity
+    have hx₂ : (2 : ℝ) ≤ x := by dsimp [x]; linarith
+    have hg : 1 ≤ g := by
+      have h := lg_mono (by positivity : 0 < (2 : ℝ)^2)
+        (show (2 : ℝ)^2 ≤ x by norm_num; dsimp [x]; linarith)
+      rw [lg_two_pow] at h
+      have h' := lg_mono (by positivity : 0 < (2 : ℝ)) h
+      rwa [Real.logb_self_eq_one (by norm_num)] at h'
+    have ha : 0 ≤ a := by
+      dsimp [a]
+      linarith [Real.logb_nonneg (by norm_num : (1 : ℝ) < 2) hg]
+    apply (compileSlotTotal_facts T).2.2.2.trans
+    change max (x^a*n^(2700 : ℕ)) (2^(2065 : ℕ)) ≤ x^(a+2700)
+    apply max_le
+    · calc
+        _ ≤ x^a*x^(2700 : ℕ) := mul_le_mul_of_nonneg_left
+          (pow_le_pow_left₀ hn₀ (by dsimp [x]; linarith) _) (by positivity)
+        _ = _ := by
+          rw [← Real.rpow_natCast x 2700, ← Real.rpow_add hx, Nat.cast_ofNat]
+    · calc
+        _ ≤ x^(2065 : ℕ) := pow_le_pow_left₀ (by norm_num) hx₂ _
+        _ = x^(2065 : ℝ) := (Real.rpow_natCast x 2065).symm
+        _ ≤ _ := Real.rpow_le_rpow_of_exponent_le (by linarith) (by linarith)
 
 end
 end TranslationTiling.Compiler.Size

@@ -131,7 +131,7 @@ theorem four_value_stack_budget {n : ℕ} (hn : 3^21 < n) :
 
 /-- The Wang activation offsets are bounded by one product of five growing primes. -/
 def fourValueRadius (k : ℕ) : ℕ :=
-  2^70 + min 1 k * (256 * (sharedPrimeCap (4*k))^5)
+  2^68 + min 1 k * (256 * (sharedPrimeCap (4*k))^5)
 
 private theorem four_value_slots_le (k : ℕ)
     (hP : 0 < sharedPrimeCap (4*k)) :
@@ -145,12 +145,12 @@ private theorem four_value_slots_le (k : ℕ)
   have hc : ((List.range 17).map (fun s => 2*widthAt 35 s+1)).sum ≤ 400000 := by decide
   have hH' : H ≤ 2^71*Z := by
     unfold H fourValueRadius
-    change 2^70 + min 1 k * (256 * Z) ≤ 2^71*Z
+    change 2^68 + min 1 k * (256 * Z) ≤ 2^71*Z
     calc
-      _ ≤ 2^70+256*Z := by
-        simpa using Nat.add_le_add_left (Nat.mul_le_mul_right (256*Z) (min_le_left 1 k)) (2^70)
-      _ ≤ 2^70*Z+256*Z := Nat.add_le_add_right (Nat.le_mul_of_pos_right _ hZ) _
-      _ = (2^70+256)*Z := by ring
+      _ ≤ 2^68+256*Z := by
+        simpa using Nat.add_le_add_left (Nat.mul_le_mul_right (256*Z) (min_le_left 1 k)) (2^68)
+      _ ≤ 2^68*Z+256*Z := Nat.add_le_add_right (Nat.le_mul_of_pos_right _ hZ) _
+      _ = (2^68+256)*Z := by ring
       _ ≤ _ := Nat.mul_le_mul_right _ (by decide)
   calc
     _ = (2*radius H+1)*((List.range 17).map (fun s => 2*widthAt 35 s+1)).sum := by

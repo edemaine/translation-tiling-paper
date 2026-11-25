@@ -16,6 +16,26 @@ def stackTestCap (P count : ℕ) := max 2313 (max P count)
 
 def slotRadius (Q m : ℕ) := max (fourValueRadius 0) (Q^(11*m))
 
+/-- Only selected slots contribute to an activation displacement. -/
+def slotAssemblyRadius (k m w : ℕ) :=
+  max (fourValueRadius 0) ((lowCap k m^2 * markerCap k m^8 * fallbackCap m)^(min m (m+1-w)))
+
+theorem slotAssemblyRadius_le (k m w Q : ℕ) (hA : fallbackCap m ≤ Q)
+    (hB : markerCap k m ≤ Q) (hC : lowCap k m ≤ Q) :
+    slotAssemblyRadius k m w ≤ slotRadius Q m := by
+  unfold slotAssemblyRadius slotRadius
+  apply max_le_max_left
+  have h : lowCap k m^2 * markerCap k m^8 * fallbackCap m ≤ Q^11 := by
+    calc
+      _ ≤ Q^2 * Q^8 * Q := Nat.mul_le_mul
+        (Nat.mul_le_mul (Nat.pow_le_pow_left hC _) (Nat.pow_le_pow_left hB _)) hA
+      _ = Q^11 := by ring
+  rw [pow_mul]
+  exact (Nat.pow_le_pow_left h _).trans
+    (Nat.pow_le_pow_right (by
+      have hpos : 0 < fallbackCap m := by unfold fallbackCap guardedPrimeCap; positivity
+      exact pow_pos (hpos.trans_le hA) _) (min_le_left ..))
+
 theorem radius_pos (Q m : ℕ) : 1 ≤ slotRadius Q m := by
   apply le_trans _ (le_max_left _ _)
   unfold fourValueRadius
