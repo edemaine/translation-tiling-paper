@@ -107,7 +107,7 @@ theorem slot_prime_caps_scale_explicit :
     have h₂ := prime_cap_scale 1 (by omega : 0 < N+4*m+16)
       hA (show (1 : ℝ) ≤ 1 by rfl) hg (by rw [Real.logb_one]; linarith : Real.logb 2 1 ≤ g) hlg h₁
     simpa [a] using h₂
-  have hmk : (markerCap k m : ℝ) ≤ b*u*g := by
+  have hmk : (separateMarkerCap k m : ℝ) ≤ b*u*g := by
     apply (Nat.cast_le.mpr (slotSearchCap_le_guarded (fallbackCap m) (6*k*m))).trans
     have h₁ : (↑(fallbackCap m+6*k*m+16) : ℝ) ≤ B*u*g^0 := by
       push_cast
@@ -117,27 +117,73 @@ theorem slot_prime_caps_scale_explicit :
     have h₂ := prime_cap_scale 0 (by omega : 0 < fallbackCap m+6*k*m+16)
       hB hu hg hlu hlg h₁
     simpa [b] using h₂
-  have hlw : (SlotParameters.lowCap k m : ℝ) ≤ d*u*g^4 := by
-    apply (Nat.cast_le.mpr (slotSearchCap_le_guarded (fallbackCap m*markerCap k m) (2*k*m))).trans
-    have h₁ : (↑(fallbackCap m*markerCap k m+2*k*m+16) : ℝ) ≤ D*u*g^3 := by
+  have hlw : (separateLowCap k m : ℝ) ≤ d*u*g^4 := by
+    apply (Nat.cast_le.mpr (slotSearchCap_le_guarded (fallbackCap m*separateMarkerCap k m) (2*k*m))).trans
+    have h₁ : (↑(fallbackCap m*separateMarkerCap k m+2*k*m+16) : ℝ) ≤ D*u*g^3 := by
       push_cast
-      have hprod := mul_le_mul hfb hmk (show (0 : ℝ) ≤ markerCap k m by positivity)
+      have hprod := mul_le_mul hfb hmk (show (0 : ℝ) ≤ separateMarkerCap k m by positivity)
         (by positivity : 0 ≤ a*g^2)
       have hg3 : 1 ≤ g^3 := one_le_pow₀ hg
       have hu3 : u ≤ u*g^3 := by
         simpa using mul_le_mul_of_nonneg_left hg3 (show 0 ≤ u by linarith)
       dsimp [D]
       nlinarith only [hprod, hkm,hu,hu3]
-    exact prime_cap_scale 3 (by omega : 0 < fallbackCap m*markerCap k m+2*k*m+16)
+    exact prime_cap_scale 3 (by omega : 0 < fallbackCap m*separateMarkerCap k m+2*k*m+16)
       hD hu hg hlu hlg h₁
   have hg4 : g ≤ g^4 := by
     simpa using pow_le_pow_right₀ hg (show 1 ≤ (4 : ℕ) by decide)
+  have hM : (matchedSlotCap k m : ℝ) ≤ C*u*g^4 := by
+    have hA' : (fallbackCap m : ℝ) ≤ a*u := hfb.trans (by gcongr)
+    have hD' : ((matchedSlotCount k m+16 : ℕ) : ℝ) ≤ (3*a+32)*u := by
+      unfold matchedSlotCount
+      push_cast
+      nlinarith only [hA',hkm,hu]
+    have hc : 1 ≤ 3*a+32 := by linarith
+    have hc' : 3*a+32 ≤ (2 : ℝ)^20 := by linarith only [hap,show (2 : ℝ)^20 = 4*2^18 by norm_num]
+    have hB' := prime_cap_scale 0 (by omega : 0 < matchedSlotCount k m+16)
+      hc hu hg hlu hlg (by simpa using hD')
+    simp only [Nat.zero_add,pow_one,Nat.cast_zero,add_zero] at hB'
+    have hco := dyadic_prime_coefficient 20 5 hc hc' (show (0 : ℝ) ≤ 0 by norm_num)
+      (by norm_num : 2+(20 : ℝ)+0 ≤ 2^5)
+    simp only [add_zero] at hco
+    have hG : (guardedPrimeCap (matchedSlotCount k m+16) : ℝ) ≤ (2 : ℝ)^27*u*g := by
+      apply hB'.trans
+      exact mul_le_mul_of_nonneg_right
+        (mul_le_mul_of_nonneg_right (by norm_num at hco ⊢; exact hco) (by linarith)) (by linarith)
+    have hAA : (fallbackCap m : ℝ)^2 ≤ (2 : ℝ)^36*g^4 := by
+      calc
+        _ ≤ (a*g^2)^2 := by gcongr
+        _ ≤ ((2 : ℝ)^18*g^2)^2 := by gcongr
+        _ = _ := by ring
+    unfold matchedSlotCap slotWindowCap
+    push_cast
+    have h1 : (8 : ℝ)*((2 : ℝ)^36*g^4) ≤ C*u*g^4 := by
+      have h : (8 : ℝ)*2^36 ≤ C*u := (show (8 : ℝ)*2^36 ≤ C by norm_num [C]).trans (by
+        simpa only [mul_one] using mul_le_mul_of_nonneg_left hu (show 0 ≤ C by positivity))
+      rw [← mul_assoc]
+      exact mul_le_mul_of_nonneg_right h (show 0 ≤ g^4 by positivity)
+    have h2 : (8 : ℝ)*((2 : ℝ)^27*u*g) ≤ C*u*g^4 := by
+      have h : (8 : ℝ)*2^27 ≤ C := by norm_num [C]
+      calc
+        _ ≤ C*u*g := by
+          rw [← mul_assoc, ← mul_assoc]
+          gcongr
+        _ ≤ _ := by gcongr
+    apply le_trans (mul_le_mul_of_nonneg_left (max_le_max hAA hG) (by norm_num))
+    rw [mul_max_of_nonneg _ _ (by norm_num)]
+    exact max_le h1 h2
   refine ⟨hfb.trans (mul_le_mul_of_nonneg_right hCa (by positivity)), ?_, ?_⟩
-  · exact (hmk.trans (mul_le_mul_of_nonneg_right
-      (mul_le_mul_of_nonneg_right hCb (by linarith)) (by linarith))).trans
-      (mul_le_mul_of_nonneg_left hg4 (by positivity))
-  · exact hlw.trans (mul_le_mul_of_nonneg_right
-      (mul_le_mul_of_nonneg_right hCd (by linarith)) (by positivity))
+  · unfold markerCap
+    split
+    · exact hM
+    · exact (hmk.trans (mul_le_mul_of_nonneg_right
+        (mul_le_mul_of_nonneg_right hCb (by linarith)) (by linarith))).trans
+        (mul_le_mul_of_nonneg_left hg4 (by positivity))
+  · unfold SlotParameters.lowCap
+    split
+    · exact hM
+    · exact hlw.trans (mul_le_mul_of_nonneg_right
+        (mul_le_mul_of_nonneg_right hCd (by linarith)) (by positivity))
 
 theorem slot_prime_caps_scale :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ (k m : ℕ) (u g : ℝ), 1 ≤ u → 1 ≤ g → g^2 ≤ u →

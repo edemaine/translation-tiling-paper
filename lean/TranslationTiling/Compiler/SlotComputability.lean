@@ -46,12 +46,8 @@ def compileSlot (T : LeanWang.TileSet) : Tile 3 :=
 private theorem slotPrimeCap_primrec : Primrec (fun z : ℕ × ℕ => slotPrimeCap z.1 z.2) := by
   have h : Primrec (fun _ : ℕ × ℕ => order (fourValueLayout 0)) := Primrec.const _
   have hA : Primrec (fun z : ℕ × ℕ => fallbackCap z.2) := by unfold fallbackCap; fun_prop
-  have hB : Primrec (fun z : ℕ × ℕ => markerCap z.1 z.2) := by
-    unfold markerCap fallbackCap
-    fun_prop
-  have hR : Primrec (fun z : ℕ × ℕ => SlotParameters.lowCap z.1 z.2) := by
-    unfold SlotParameters.lowCap markerCap fallbackCap
-    fun_prop
+  have hB := markerCap_primrec
+  have hR := lowCap_primrec
   unfold slotPrimeCap
   exact Primrec.nat_max.comp hA (Primrec.nat_max.comp hB hR)
 
@@ -91,12 +87,10 @@ theorem compileSlotWith_computable :
     fun_prop
   have hH : Primrec H := by
     have hA : Primrec (fun z : SlotInput => fallbackCap z.2.2.1) := by unfold fallbackCap; fun_prop
-    have hB : Primrec (fun z : SlotInput => markerCap z.2.1 z.2.2.1) := by
-      unfold markerCap fallbackCap
-      fun_prop
-    have hC : Primrec (fun z : SlotInput => SlotParameters.lowCap z.2.1 z.2.2.1) := by
-      unfold SlotParameters.lowCap markerCap fallbackCap
-      fun_prop
+    have hB : Primrec (fun z : SlotInput => markerCap z.2.1 z.2.2.1) :=
+      markerCap_primrec.comp hc
+    have hC : Primrec (fun z : SlotInput => SlotParameters.lowCap z.2.1 z.2.2.1) :=
+      lowCap_primrec.comp hc
     let A (z : SlotInput) := (SlotParameters.lowCap z.2.1 z.2.2.1^2 *
       markerCap z.2.1 z.2.2.1^8 * fallbackCap z.2.2.1)^
         (min z.2.2.1 (z.2.2.1+1-z.2.2.2))
@@ -131,7 +125,7 @@ private theorem emptyWord_volume :
     let P := slotBasePrimeCap
     let X := slotStackTestCap P (slotDeckCap 0 0 1)
     reservedVolumeCap 35 (fun j => (slotAssemblyRadii 0 0 0).getD j 0) nr.2 (nr.1 / nr.2)
-      (reservedCap X P) ≤ 2^2059 := by
+      (reservedCap X P) ≤ 2^2058 := by
   dsimp only
   rw [rankedSlotOrders_zero,show slotAssemblyRadii 0 0 0 = arithmeticStripRadii by
     simp only [slotAssemblyRadii, Nat.zero_min, pow_zero]
@@ -292,7 +286,7 @@ guards, and final geometric assembly are still those of the slot compiler. -/
 theorem compileSlotWith_emptyWord (T : LeanWang.TileSet) (hn : T.length = 1) :
     let U := compileSlotWith T 0 0 0
     U ≠ [] ∧ FaceConnected U ∧ (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles U) ∧
-      U.length ≤ 2^2059 := by
+      U.length ≤ 2^2058 := by
   obtain ⟨hne,hcon,hiff,hvol⟩ := compileSlotWith_volume T (k := 0) (m := 0) (w := 0)
     (by omega) (by decide) (by simp [hn])
   refine ⟨hne,hcon,hiff,hvol.trans ?_⟩
@@ -348,7 +342,7 @@ theorem compileSlot_large (T : LeanWang.TileSet) (h : 10 ≤ T.length) :
 
 /-- The one-tile size estimate for the same compiler. -/
 theorem compileSlot_one (T : LeanWang.TileSet) (hn : T.length = 1) :
-    (compileSlot T).length ≤ 2^2059 := by
+    (compileSlot T).length ≤ 2^2058 := by
   simpa [compileSlot,slotDimensions,hn] using (compileSlotWith_emptyWord T hn).2.2.2
 
 theorem compileSlot_smallWidth (T : LeanWang.TileSet) (hlo : 2 ≤ T.length) (hhi : T.length ≤ 9)

@@ -44,7 +44,26 @@ theorem blockCounts_exist (i : WangSlot k m) (state : Option (Fin 3)) :
       cases hf
     | some j =>
       cases s.prime_injective h
-  have hr : a*b < s.low i := s.block_budget i state
+  rcases (s.block_budget i state : a*b < s.low i ∨
+      (b < s.low i ∧ s.low i % a = b % a)) with hr | ⟨hlt,hmod⟩
+  swap
+  · let r := s.low i
+    change b < r at hlt
+    have h₁ := Nat.mod_add_div b a
+    have h₂ := Nat.mod_add_div r a
+    change r % a = b % a at hmod
+    rw [hmod,mul_comm a (r/a)] at h₂
+    rw [mul_comm a (b/a)] at h₁
+    have hq : b/a < r/a := by
+      by_contra! h
+      have := Nat.mul_le_mul_right a h
+      omega
+    refine ⟨r/a-b/a,1,by omega,by decide,?_⟩
+    change r = (r/a-b/a)*a+1*b
+    rw [Nat.sub_mul,one_mul]
+    have := Nat.mul_le_mul_right a hq.le
+    omega
+  change a*b < s.low i at hr
   have hadd := Nat.add_le_mul ha.one_lt hb.one_lt
   have hmem : s.low i-a-b ∈ AddSubmonoid.closure ({a,b} : Set ℕ) := by
     by_contra hnot

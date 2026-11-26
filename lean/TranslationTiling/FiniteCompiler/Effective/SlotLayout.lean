@@ -28,7 +28,8 @@ structure SlotParameters (k m : ℕ) where
     let b := match j with
       | none => prime (.inr (i.1,i.2.2,true))
       | some j => prime (.inl (i,some j))
-    a*b < prime (.inl (i,none))
+    let r := prime (.inl (i,none))
+    a*b < r ∨ (b < r ∧ r % a = b % a)
 
 namespace SlotParameters
 
@@ -111,16 +112,54 @@ open Compiler.Size in
 def fallbackCap (m : ℕ) : ℕ := slotSearchCap slotBasePrimeCap (4*m)
 
 open Compiler.Size in
-def markerCap (k m : ℕ) : ℕ := slotSearchCap (fallbackCap m) (6*k*m)
+def separateMarkerCap (k m : ℕ) : ℕ := slotSearchCap (fallbackCap m) (6*k*m)
 
 open Compiler.Size in
-def lowCap (k m : ℕ) : ℕ := slotSearchCap (fallbackCap m*markerCap k m) (2*k*m)
+def separateLowCap (k m : ℕ) : ℕ :=
+  slotSearchCap (fallbackCap m*separateMarkerCap k m) (2*k*m)
+
+attribute [local irreducible] slotSearchCap
+
+def matchedSlotCount (k m : ℕ) : ℕ := 8*k*m+3*fallbackCap m
+
+def matchedSlotCap (k m : ℕ) : ℕ := slotWindowCap ((fallbackCap m)^2) (matchedSlotCount k m)
+
+def markerCap (k m : ℕ) : ℕ :=
+  if 24 ≤ m then matchedSlotCap k m else separateMarkerCap k m
+
+def lowCap (k m : ℕ) : ℕ :=
+  if 24 ≤ m then matchedSlotCap k m else separateLowCap k m
 
 theorem fallbackCap_pos (m : ℕ) : 0 < fallbackCap m :=
   (by decide : 0 < slotBasePrimeCap).trans_le (threshold_le_slotSearchCap ..)
 
-theorem fallbackCap_le_markerCap (k m : ℕ) : fallbackCap m ≤ markerCap k m :=
-  threshold_le_slotSearchCap ..
+theorem fallbackCap_le_matchedSlotCap (k m : ℕ) : fallbackCap m ≤ matchedSlotCap k m := by
+  have h := fallbackCap_pos m
+  unfold matchedSlotCap slotWindowCap
+  have h₁ : fallbackCap m ≤ fallbackCap m ^ 2 := by rw [pow_two]; exact Nat.le_mul_of_pos_right _ h
+  let G := Compiler.Size.guardedPrimeCap (matchedSlotCount k m+16)
+  exact h₁.trans ((le_max_left ((fallbackCap m)^2) G).trans
+    (Nat.le_mul_of_pos_left _ (by decide : 0 < (8 : ℕ))))
+
+theorem fallbackCap_le_markerCap (k m : ℕ) : fallbackCap m ≤ markerCap k m := by
+  unfold markerCap
+  split
+  · exact fallbackCap_le_matchedSlotCap k m
+  · exact threshold_le_slotSearchCap ..
+
+theorem markerCap_le_lowCap (k m : ℕ) : markerCap k m ≤ lowCap k m := by
+  unfold markerCap lowCap
+  split_ifs
+  · exact le_rfl
+  · exact (Nat.le_mul_of_pos_left _ (fallbackCap_pos m)).trans (threshold_le_slotSearchCap ..)
+
+@[fun_prop] theorem markerCap_primrec : Primrec (fun z : ℕ × ℕ => markerCap z.1 z.2) := by
+  unfold markerCap separateMarkerCap matchedSlotCap matchedSlotCount fallbackCap slotWindowCap
+  fun_prop
+
+@[fun_prop] theorem lowCap_primrec : Primrec (fun z : ℕ × ℕ => lowCap z.1 z.2) := by
+  unfold lowCap separateLowCap separateMarkerCap matchedSlotCap matchedSlotCount fallbackCap slotWindowCap
+  fun_prop
 
 end SlotParameters
 

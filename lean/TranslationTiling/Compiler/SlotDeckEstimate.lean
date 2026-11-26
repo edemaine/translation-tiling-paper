@@ -51,7 +51,7 @@ theorem slot_deck_cap_polynomial (k m D n : ℕ)
   have hn26 : n^2 ≤ n^6 := Nat.pow_le_pow_right (by omega : 0 < n) (by decide)
   unfold slotDeckCap
   have ha := Nat.mul_le_mul_left arithmeticBaseline.length h16
-  change 2600 + arithmeticBaseline.length + _ + _ + _ + _ ≤ _
+  change 2530 + arithmeticBaseline.length + _ + _ + _ + _ ≤ _
   nlinarith only [h1,h4,h5,h6,h16,hn6,hn26,ha]
 
 end TranslationTiling.Compiler.Size

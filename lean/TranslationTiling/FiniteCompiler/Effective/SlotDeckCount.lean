@@ -15,7 +15,7 @@ local instance slotDeckCountAlphabet : AlphabetFamily (system c) := GuardedCompi
 variable (s : SlotParameters k m)
 
 def slotDeckCap (k m D : ℕ) :=
-  2600 + arithmeticBaseline.length + 20*(2*k*m+4*m) +
+  2530 + arithmeticBaseline.length + 20*(2*k*m+4*m) +
     (6*k*m+2*m)*(21+2*k*m+4*m) + 2*k*2^m + 72*D^2
 
 private theorem row_card : Fintype.card (SlotRow k m) = 20+2*k*m+4*m := by

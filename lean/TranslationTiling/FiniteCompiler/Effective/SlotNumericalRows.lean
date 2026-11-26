@@ -15,37 +15,21 @@ def wangCode (k m : ℕ) (g : Bool) (d i : ℕ) : ℕ :=
 def fallbackCode (m : ℕ) (g : Bool) (i : ℕ) (b : Bool) : ℕ :=
   b.toNat + 2*i + (m*2)*g.toNat
 
-private def lowCode (k m i : ℕ) : ℕ :=
-  let A := fallbackCap m
-  let B := markerCap k m
-  slotPrimeAt (A*B) (2*k*m) i
+private abbrev lowCode := rankedLowAt
 
-def numericalMarker (k m i j : ℕ) : ℕ :=
-  let A := fallbackCap m
-  slotPrimeAt A (6*k*m) (j+3*i)
+abbrev numericalMarker := rankedMarkerAt
 
-def numericalFallback (m i : ℕ) : ℕ :=
-  slotPrimeAt (slotBasePrimeCap) (4*m) i
+abbrev numericalFallback := slotFallbackAt
 
 @[fun_prop] private theorem lowCode_primrec :
-    Primrec (fun z : ℕ × ℕ × ℕ => lowCode z.1 z.2.1 z.2.2) := by
-  let f (z : ℕ × ℕ × ℕ) :=
-    let A := fallbackCap z.2.1
-    let B := markerCap z.1 z.2.1
-    ((A*B,2*z.1*z.2.1),z.2.2)
-  have hf : Primrec f := by unfold f markerCap fallbackCap; fun_prop
-  exact slotPrimeAt_primrec.comp hf
+    Primrec (fun z : ℕ × ℕ × ℕ => lowCode z.1 z.2.1 z.2.2) := rankedLowAt_primrec
 
 @[fun_prop] theorem numericalMarker_primrec :
-    Primrec (fun z : ℕ × ℕ × ℕ × ℕ => numericalMarker z.1 z.2.1 z.2.2.1 z.2.2.2) := by
-  exact slotPrimeAt_primrec.comp (show Primrec (fun z : ℕ × ℕ × ℕ × ℕ =>
-    ((fallbackCap z.2.1,6*z.1*z.2.1),
-      z.2.2.2+3*z.2.2.1)) by unfold fallbackCap; fun_prop)
+    Primrec (fun z : ℕ × ℕ × ℕ × ℕ => numericalMarker z.1 z.2.1 z.2.2.1 z.2.2.2) :=
+  rankedMarkerAt_primrec
 
 @[fun_prop] theorem numericalFallback_primrec :
-    Primrec (fun z : ℕ × ℕ => numericalFallback z.1 z.2) := by
-  exact slotPrimeAt_primrec.comp (show Primrec (fun z : ℕ × ℕ =>
-    ((slotBasePrimeCap,4*z.1),z.2)) by fun_prop)
+    Primrec (fun z : ℕ × ℕ => numericalFallback z.1 z.2) := slotFallbackAt_primrec
 
 def slotRowNumber {k m : ℕ} : SlotRow k m → ℕ
   | .inl i => i.val

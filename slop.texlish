@@ -3397,33 +3397,46 @@ divisors of the fixed arithmetic factor. To find $c$ primes above $T$,
 we first check the short interval up to $T+32(c+1)$ when it fits the
 certified search range. An explicit prime-counting inequality lets us
 use a range ending at $8\max\{T,4(c+16)(\lfloor\lg(c+16)\rfloor+1)\}$
-for $T\geq512$. The fallback, marker, and low-prime caps for
-$n\geq65536$ are at most $2^{10}g\ell^2$, $2^{13}ug$, and
-$2^{26}ug^2\ell^2$, respectively. Each position contributes the square
-of the low prime and three marker primes to the cyclic order.
-Including the geometric and stacking costs gives an exponent of at
-most $5g+7\ell+4\lg\ell+807$ for the base $n+4$.
-The inequality $4\lg\ell\leq10^{-6}\ell+88$ for $\ell\geq2$ absorbs
-the fourth logarithm.
+for $T\geq512$. For $65536\leq n<2^{256}$, the fallback, marker, and
+low-prime caps are at most $2^{10}g\ell^2$, $2^{13}ug$, and
+$2^{26}ug^2\ell^2$, respectively. The resulting exponent is at most
+$5g+7\ell+4\lg\ell+807$, which fits the final bound throughout this range.
+
+For $n\geq2^{256}$, let $A$ be the fallback-prime cap and $N$ the number
+of slots across the two slopes. Take a pool of $4N+3A$ primes above
+$A^2$. For each slot, with first fallback prime $a$, pigeonhole gives
+four unused primes in one residue class modulo $a$. Use the largest
+as the low prime $r$ and the others as the three marker primes $b$.
+The identity $r=b+a((r-b)/a)$ gives the positive block counts for each
+active symbol. For the inactive symbol, the two fallback primes have
+product at most $A^2<r$, so the two block lengths still admit positive
+counts. The resulting marker and low primes are all at most $2^{30}ug$.
+Each slot contributes the square of its low prime and three marker
+primes to the cyclic order, giving the term $5g+5\ell$ in the exponent
+after packing the words. The remaining volume estimates fit in the
+additive constant $898$.
 
 For $2\leq n\leq9$ we use one or two radix-three digits of width one,
 and for $10\leq n<65536$ we use digits of width four and radix $108$.
 The horizontal support is short enough that the shell volume admits a
 linear bound in the number of slots. The stacking estimate needs its
 test parameter to be at least the square root of the prime cap.
-The size is at most $2^{2345}$ or $2^{2507}$ for one or two digits of
+The size is at most $2^{2344}$ or $2^{2507}$ for one or two digits of
 width one, and at most $2^{3148}$, $2^{3856}$, or $2^{4580}$ for one,
 two, or three digits of width four.
 
-One tile needs zero digits. The same assembly sizes each arithmetic
-strip according to the tests on its slope and uses at most $2^{2059}$
-unit cubes. Together the estimates give the explicit bound
+The stacking estimate counts at most $2313$ fixed guard-pattern tests,
+$216$ seed tests, and one kernel test, in addition to the arithmetic
+baseline and the slot-dependent terms.
+A one-tile alphabet needs zero digits. The same assembly sizes each
+arithmetic strip according to the tests on its slope and uses at most
+$2^{2058}$ unit cubes. Together the estimates give the explicit bound
 $$
-  B(n)=(n+4)^{5\lg\lg(n+4)+7.000001\lg\lg\lg(n+4)+900}.
+  B(n)=(n+4)^{5\lg\lg(n+4)+5\lg\lg\lg(n+4)+898}.
 $$
 Lean verifies the bound for the computable compiler in
 \leanfile{Compiler/SlotExplicitBound.lean}. The Lean abstract uses $B(n)$
-for $n\geq2$ and $2^{2059}$ for $n\leq1$.
+for $n\geq2$ and $2^{2058}$ for $n\leq1$.
 
 ### The Remaining Cost of Cyclicity
 

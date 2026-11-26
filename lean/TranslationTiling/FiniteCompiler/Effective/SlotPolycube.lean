@@ -69,7 +69,7 @@ theorem slotDeck_strip_refined (hwm : w ≤ m)
     have hApos := fallbackCap_pos m
     have hBpos := hApos.trans_le (fallbackCap_le_markerCap k m)
     have hCpos : 0 < lowCap k m :=
-      (Nat.mul_pos hApos hBpos).trans_le (threshold_le_slotSearchCap ..)
+      hBpos.trans_le (markerCap_le_lowCap k m)
     have hpos : 0 < lowCap k m^2 * markerCap k m^8 * fallbackCap m := by positivity
     apply strip_mono_at _ (s.mask_strip_factors hA hB hC (fallbackCap_le_markerCap k m) g d S v hv)
     intro j hj
