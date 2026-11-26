@@ -255,11 +255,11 @@ theorem numericalSlotPolycube (hs : s.prime = rankedSlotPrime k m)
     (hB : ∀ i j, s.marker i j ≤ markerCap k m) (hC : ∀ i, s.low i ≤ lowCap k m) :
     let K := numericalKernel (order s.layout) s.period
     let Fs := numericalSlotTests T (order s.layout) k m w
-    let H := slotAssemblyRadius k m w
-    let X := stackTestCap P (K :: Fs).length
-    let U := guardedAssembly (((order s.layout,P,X),s.period,H),K :: Fs)
+    let H := slotAssemblyRadii k m w
+    let X := slotStackTestCap P (K :: Fs).length
+    let U := guardedAssemblyBySlope (((order s.layout,P,X),s.period,H),K :: Fs)
     U ≠ [] ∧ FaceConnected U ∧ (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles U) ∧
-      U.length ≤ reservedVolumeCap 35 (fun _ => H) s.period (order s.layout / s.period)
+      U.length ≤ reservedVolumeCap 35 (fun j => H.getD j 0) s.period (order s.layout / s.period)
         (reservedCap X P) := by
   let C := numericCode hn hcap
   let N := order s.layout

@@ -110,6 +110,7 @@ run_cmd do
       ``TranslationTiling.Compiler.Size.compileSlot_correct,
       ``TranslationTiling.Compiler.Size.slot_prime_caps_scale_explicit,
       ``TranslationTiling.Compiler.Size.slot_size_bound_explicit,
+      ``TranslationTiling.Compiler.Size.slotRefinedEstimate_log,
       ``TranslationTiling.Compiler.Size.compileSlot_explicit,
       ``TranslationTiling.Compiler.Size.compileSlot_one,
       ``TranslationTiling.Compiler.Size.compileSlotWith_emptyWord,

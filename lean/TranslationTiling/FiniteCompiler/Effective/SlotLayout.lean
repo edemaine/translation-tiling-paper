@@ -1,5 +1,5 @@
 import TranslationTiling.FiniteCompiler.Effective.FourValueDependence
-import TranslationTiling.FiniteCompiler.SlotPrimes
+import TranslationTiling.FiniteCompiler.Effective.SlotPrimeSelection
 
 namespace TranslationTiling.FiniteCompiler.Packed
 
@@ -108,13 +108,19 @@ theorem slotBasePrimeBound : Effective.PrimeBound (order (fourValueLayout 0)) sl
   · exact Or.inl hp
 
 open Compiler.Size in
-def fallbackCap (m : ℕ) : ℕ := guardedPrimeCap (slotBasePrimeCap+4*m+16)
+def fallbackCap (m : ℕ) : ℕ := slotSearchCap slotBasePrimeCap (4*m)
 
 open Compiler.Size in
-def markerCap (k m : ℕ) : ℕ := guardedPrimeCap (fallbackCap m+6*k*m+16)
+def markerCap (k m : ℕ) : ℕ := slotSearchCap (fallbackCap m) (6*k*m)
 
 open Compiler.Size in
-def lowCap (k m : ℕ) : ℕ := guardedPrimeCap (fallbackCap m*markerCap k m+2*k*m+16)
+def lowCap (k m : ℕ) : ℕ := slotSearchCap (fallbackCap m*markerCap k m) (2*k*m)
+
+theorem fallbackCap_pos (m : ℕ) : 0 < fallbackCap m :=
+  (by decide : 0 < slotBasePrimeCap).trans_le (threshold_le_slotSearchCap ..)
+
+theorem fallbackCap_le_markerCap (k m : ℕ) : fallbackCap m ≤ markerCap k m :=
+  threshold_le_slotSearchCap ..
 
 end SlotParameters
 

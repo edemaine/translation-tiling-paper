@@ -138,7 +138,7 @@ theorem slot_size_log_bound :
       _ = n^3 := by ring
   obtain ⟨ha,hb,hr⟩ := hcaps k m u g hu hg hg2 le_rfl (hlg.trans (by linarith)) hm2 hkm
   have hAq : A ≤ Q := le_max_left ..
-  have hA0 : 0 < A := by unfold A fallbackCap guardedPrimeCap; positivity
+  have hA0 : 0 < A := fallbackCap_pos m
   have hQ0 : 0 < Q := hA0.trans_le hAq
   have hg4 : g^2 ≤ g^4 := pow_le_pow_right₀ hg (by decide)
   have hQ : (Q : ℝ) ≤ C*u*g^4 := by

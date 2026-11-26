@@ -17,11 +17,17 @@ theorem strip_mono {H H' : ℕ} (h : H ≤ H') {x : Plane}
   · exact Or.inl ⟨ha.trans h,hb⟩
   · exact Or.inr ⟨j,hj,ha.trans h,hb⟩
 
-theorem invariance_strip {Y : Type*} [AddCommGroup Y] {H : ℕ}
+theorem strip_mono_at {H H' : ℕ → ℕ} (h : ∀ i < 17, H i ≤ H' i) {x : Plane}
+    (hx : TestSupportAt 35 H x) : TestSupportAt 35 H' x := by
+  rcases hx with ⟨ha,hb⟩ | ⟨j,hj,ha,hb⟩
+  · exact Or.inl ⟨ha.trans (h 0 (by decide)),hb⟩
+  · exact Or.inr ⟨j,hj,ha.trans (h j hj),hb⟩
+
+theorem invariance_strip {Y : Type*} [AddCommGroup Y] {H : ℕ → ℕ}
     (ψ : Factor s.layout →+ Y) (σ : SharedCoordinates.Base s.layout)
-    (hs : TestSupportAt 35 (fun _ => H) σ.1) (v : SharedCoordinates.Ambient s.layout)
+    (hs : TestSupportAt 35 H σ.1) (v : SharedCoordinates.Ambient s.layout)
     (hv : v ∈ productInvariance s.layout ψ σ) :
-    TestSupportAt 35 (fun _ => H) v.1 := by
+    TestSupportAt 35 H v.1 := by
   simp only [productInvariance,Finset.mem_union,Finset.mem_filter,Finset.mem_map,
     Finset.mem_univ,true_and] at hv
   rcases hv with ⟨h,_⟩ | ⟨⟨a,ha⟩,_,_⟩
@@ -29,14 +35,14 @@ theorem invariance_strip {Y : Type*} [AddCommGroup Y] {H : ℕ}
       (mem_productKernel s.layout v).mp h
     have he : v.1 = 0 := congrArg Prod.fst hk
     rw [he]
-    exact zero_strip H
+    exact Or.inl (by simp)
   · have he : σ.1 = v.1 := congrArg Prod.fst ha
     exact he ▸ hs
 
 omit [Fintype (Factor s.layout)] in
-theorem arithmetic_strip {H : ℕ} (hH : fourValueRadius 0 ≤ H)
+theorem arithmetic_strip {H : ℕ → ℕ} (hH : ∀ j < 17, arithmeticStripRadii.getD j 0 ≤ H j)
     (F : Finset (SharedCoordinates.Ambient s.layout)) (hF : F ∈ s.arithmeticTiles)
-    (v : SharedCoordinates.Ambient s.layout) (hv : v ∈ F) : TestSupportAt 35 (fun _ => H) v.1 := by
+    (v : SharedCoordinates.Ambient s.layout) (hv : v ∈ F) : TestSupportAt 35 H v.1 := by
   obtain ⟨f,hf,rfl⟩ := List.mem_map.mp hF
   unfold oldTileLift at hv
   obtain ⟨z,hz,hEq⟩ := Finset.mem_map.mp hv
@@ -47,8 +53,8 @@ theorem arithmetic_strip {H : ℕ} (hH : fourValueRadius 0 ≤ H)
     unfold arithmeticBaseline at hf
     unfold fourValueRawDeck
     exact List.mem_cons_of_mem _ (List.mem_append_left _ hf)
-  apply strip_mono hH
-  have hh := fourValueRawDeck_strip [] 0 f hf' p hp'
+  apply strip_mono_at hH
+  have hh := fourValueArithmetic_strip [] f hf' p hp'
   have hpz : p.1 = z.1.1 := congrArg Prod.fst he
   have hzv : z.1.1 = v.1 := congrArg Prod.fst hEq
   have heq := hpz.trans hzv
@@ -56,8 +62,8 @@ theorem arithmetic_strip {H : ℕ} (hH : fourValueRadius 0 ≤ H)
 
 omit [Fintype (Factor s.layout)] in
 set_option linter.constructorNameAsVariable false in
-theorem anchor_strip (H : ℕ) (F : Finset (SharedCoordinates.Ambient s.layout)) (hF : F ∈ s.anchorTests)
-    (v : SharedCoordinates.Ambient s.layout) (hv : v ∈ F) : TestSupportAt 35 (fun _ => H) v.1 := by
+theorem anchor_strip (H : ℕ → ℕ) (F : Finset (SharedCoordinates.Ambient s.layout)) (hF : F ∈ s.anchorTests)
+    (v : SharedCoordinates.Ambient s.layout) (hv : v ∈ F) : TestSupportAt 35 H v.1 := by
   obtain ⟨⟨i,j⟩,_,rfl⟩ := List.mem_map.mp hF
   simp only [productInvariance,Finset.mem_union,Finset.mem_filter,Finset.mem_map,
     Finset.mem_univ,true_and] at hv
@@ -68,32 +74,32 @@ theorem anchor_strip (H : ℕ) (F : Finset (SharedCoordinates.Ambient s.layout))
       exact (congrArg Prod.fst ha).symm
     · exact (congrArg Prod.fst ha).symm
   rw [h0]
-  exact zero_strip H
+  exact Or.inl (by simp)
 
-private theorem lineStep_strip (g : Bool) {H : ℕ} (hH : 1 ≤ H) :
-    TestSupportAt 35 (fun _ => H) (1,-slopeNumber g) := by
+private theorem lineStep_strip (g : Bool) {H : ℕ → ℕ} (hH : 1 ≤ H 0) :
+    TestSupportAt 35 H (1,-slopeNumber g) := by
   apply Or.inl
   cases g <;> exact ⟨hH,by decide⟩
 
-theorem marker_strip {H : ℕ} (hH : 1 ≤ H) (i : WangSlot k m) (j : Fin 3)
+theorem marker_strip {H : ℕ → ℕ} (hH : 1 ≤ H 0) (i : WangSlot k m) (j : Fin 3)
     (F : Finset (SharedCoordinates.Ambient s.layout)) (hF : F ∈ s.markerTests i j) (v : SharedCoordinates.Ambient s.layout)
-    (hv : v ∈ F) : TestSupportAt 35 (fun _ => H) v.1 := by
+    (hv : v ∈ F) : TestSupportAt 35 H v.1 := by
   simp only [markerTests,List.mem_cons,List.mem_map,Finset.mem_toList,Finset.mem_erase,
     Finset.mem_univ,and_true] at hF
   rcases hF with rfl | ⟨p,_,rfl⟩
   · exact s.invariance_strip (s.observeMarker i j) ((1,-slopeNumber i.1),0)
       (lineStep_strip i.1 hH) v hv
-  · exact s.invariance_strip (s.observeMarker i j) (lowStep s.layout p) (zero_strip H) v hv
+  · exact s.invariance_strip (s.observeMarker i j) (lowStep s.layout p) (show TestSupportAt 35 H 0 from Or.inl (by simp)) v hv
 
-theorem fallback_strip {H : ℕ} (hH : 1 ≤ H) (g : Bool) (i : Fin m)
+theorem fallback_strip {H : ℕ → ℕ} (hH : 1 ≤ H 0) (g : Bool) (i : Fin m)
     (F : Finset (SharedCoordinates.Ambient s.layout)) (hF : F ∈ s.fallbackTests g i) (v : SharedCoordinates.Ambient s.layout)
-    (hv : v ∈ F) : TestSupportAt 35 (fun _ => H) v.1 := by
+    (hv : v ∈ F) : TestSupportAt 35 H v.1 := by
   simp only [fallbackTests,List.mem_cons,List.mem_map,Finset.mem_toList,Finset.mem_filter,
     Finset.mem_univ,true_and] at hF
   rcases hF with rfl | ⟨p,_,rfl⟩
   · exact s.invariance_strip (s.observeFallback (g,i,false)) ((1,-slopeNumber g),0)
       (lineStep_strip g hH) v hv
-  · exact s.invariance_strip (s.observeFallback (g,i,false)) (lowStep s.layout p) (zero_strip H) v hv
+  · exact s.invariance_strip (s.observeFallback (g,i,false)) (lowStep s.layout p) (show TestSupportAt 35 H 0 from Or.inl (by simp)) v hv
 
 theorem mask_strip_factors {A B C : ℕ}
     (hA : ∀ i, s.fallback i ≤ A) (hB : ∀ i j, s.marker i j ≤ B)

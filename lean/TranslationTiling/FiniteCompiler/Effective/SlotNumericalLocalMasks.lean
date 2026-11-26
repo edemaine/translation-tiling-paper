@@ -6,6 +6,7 @@ namespace TranslationTiling.FiniteCompiler.Packed.SlotParameters
 open SharedCoordinates Compiler Compiler.Effective
 
 set_option maxHeartbeats 700000
+attribute [local irreducible] slotSearchCap slotPrimeAt
 
 /-- The useful prime is constant along a line and independent of the
 low coordinates outside the selected rows. -/

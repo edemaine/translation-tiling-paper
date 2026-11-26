@@ -15,38 +15,39 @@ variable {k m w : ℕ} {T : LeanWang.TileSet} (c : Code T ((slotRadix m w)^k))
 local instance slotPolycubeAlphabet : AlphabetFamily (system c) := GuardedCompiler.alphabet c
 variable (s : SlotParameters k m)
 
-private theorem slotDeck_strip_of (hwm : w ≤ m) {H : ℕ}
-    (hArith : fourValueRadius 0 ≤ H)
+private theorem slotDeck_strip_of (hwm : w ≤ m) {H : ℕ → ℕ}
+    (hArith : ∀ j < 17, arithmeticStripRadii.getD j 0 ≤ H j)
     (hmask : ∀ (g : Bool) (d : Fin k) (S : Finset (Fin m)) (hS : S.card = m+1-w)
       (v : SharedCoordinates.Ambient s.layout),
       v ∈ s.activationTest g d S (selected_nonempty hwm hS) →
-        TestSupportAt 35 (fun _ => H) v.1)
+        TestSupportAt 35 H v.1)
     (F : Finset (SharedCoordinates.Ambient s.layout)) (hF : F ∈ s.slotDeck c hwm)
     (v : SharedCoordinates.Ambient s.layout) (hv : v ∈ F) :
-    TestSupportAt 35 (fun _ => H) v.1 := by
-  have hH : 1 ≤ H := (by decide +kernel : 1 ≤ fourValueRadius 0).trans hArith
+    TestSupportAt 35 H v.1 := by
+  have hH : 1 ≤ H 0 := (by decide : 1 ≤ arithmeticStripRadii.getD 0 0).trans (hArith 0 (by decide))
+  have hz : TestSupportAt 35 H 0 := Or.inl (by simp)
   rcases (s.slotDeck_membership c hwm F).mp hF with
     rfl | ha | hb | ⟨i,j,hj⟩ | ⟨g,i,hi⟩ | ⟨g,d,S,hS,rfl⟩ | ⟨t,i,a,_,rfl⟩ | ⟨p,hp,rfl⟩
   · simp only [productKernel,Finset.mem_filter,Finset.mem_map,Finset.mem_univ,true_and] at hv
     obtain ⟨⟨a,ha⟩,_⟩ := hv
     have hh : (0 : Plane) = v.1 := congrArg Prod.fst ha
-    exact hh ▸ zero_strip H
+    exact hh ▸ hz
   · exact s.arithmetic_strip hArith F ha v hv
   · exact s.anchor_strip H F hb v hv
   · exact s.marker_strip hH i j F hj v hv
   · exact s.fallback_strip hH g i F hi v hv
   · exact hmask g d S hS v hv
   · rw [(s.exists_seedMask c t i a).choose_spec.1 v hv]
-    exact zero_strip H
+    exact hz
   · rw [(s.exists_guardMask c p hp).choose_spec.1 v hv]
-    exact zero_strip H
+    exact hz
 
 theorem slotDeck_strip (hwm : w ≤ m) {Q : ℕ}
     (hQ : ∀ j, s.prime j ≤ Q)
     (F : Finset (SharedCoordinates.Ambient s.layout)) (hF : F ∈ s.slotDeck c hwm)
     (v : SharedCoordinates.Ambient s.layout) (hv : v ∈ F) :
     TestSupportAt 35 (fun _ => slotRadius Q m) v.1 := by
-  apply s.slotDeck_strip_of c hwm (le_max_left ..) _ F hF v hv
+  apply s.slotDeck_strip_of c hwm (fun j _ => (arithmeticStripRadii_le j).trans (le_max_left ..)) _ F hF v hv
   intro g d S hS v hv
   have := shiftCount_neZero (selected_nonempty hwm hS)
   exact strip_mono (le_max_right ..) (s.mask_strip hQ g d S v hv)
@@ -56,21 +57,24 @@ theorem slotDeck_strip_refined (hwm : w ≤ m)
     (hC : ∀ i, s.low i ≤ lowCap k m)
     (F : Finset (SharedCoordinates.Ambient s.layout)) (hF : F ∈ s.slotDeck c hwm)
     (v : SharedCoordinates.Ambient s.layout) (hv : v ∈ F) :
-    TestSupportAt 35 (fun _ => slotAssemblyRadius k m w) v.1 := by
-  apply s.slotDeck_strip_of c hwm (le_max_left ..) _ F hF v hv
-  intro g d S hS v hv
-  have := shiftCount_neZero (selected_nonempty hwm hS)
-  have hcard := Finset.card_le_card (Finset.subset_univ S)
-  rw [Finset.card_univ, Fintype.card_fin] at hcard
-  have hAB : fallbackCap m ≤ markerCap k m := by
-    unfold markerCap guardedPrimeCap
-    exact (by omega : fallbackCap m ≤ 4*(fallbackCap m+6*k*m+16)).trans
-      (Nat.le_mul_of_pos_right _ (by omega))
-  have hpos : 0 < lowCap k m^2 * markerCap k m^8 * fallbackCap m := by
-    unfold lowCap markerCap fallbackCap guardedPrimeCap
-    positivity
-  exact strip_mono ((Nat.pow_le_pow_right hpos (le_min hcard hS.le)).trans
-    (le_max_right ..)) (s.mask_strip_factors hA hB hC hAB g d S v hv)
+    TestSupportAt 35 (fun j => (slotAssemblyRadii k m w).getD j 0) v.1 := by
+  apply s.slotDeck_strip_of c hwm _ _ F hF v hv
+  · intro j hj
+    rw [slotAssemblyRadii_getD hj]
+    exact le_max_left ..
+  · intro g d S hS v hv
+    have := shiftCount_neZero (selected_nonempty hwm hS)
+    have hcard := Finset.card_le_card (Finset.subset_univ S)
+    rw [Finset.card_univ, Fintype.card_fin] at hcard
+    have hApos := fallbackCap_pos m
+    have hBpos := hApos.trans_le (fallbackCap_le_markerCap k m)
+    have hCpos : 0 < lowCap k m :=
+      (Nat.mul_pos hApos hBpos).trans_le (threshold_le_slotSearchCap ..)
+    have hpos : 0 < lowCap k m^2 * markerCap k m^8 * fallbackCap m := by positivity
+    apply strip_mono_at _ (s.mask_strip_factors hA hB hC (fallbackCap_le_markerCap k m) g d S v hv)
+    intro j hj
+    rw [slotAssemblyRadii_getD hj]
+    exact (Nat.pow_le_pow_right hpos (le_min hcard hS.le)).trans (le_max_right ..)
 
 private def fixedPicker : FourValuePicker 0 where
   fixed i _ _ := ⟨0,(by decide +kernel : ∀ i : FourValueRow 0,

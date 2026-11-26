@@ -5,6 +5,10 @@ namespace TranslationTiling.FiniteCompiler.Packed.SlotParameters
 open SharedCoordinates Compiler.Size Compiler.Effective FiniteCompiler.Effective
 open scoped BigOperators
 
+set_option maxRecDepth 10000
+set_option maxHeartbeats 2000000
+attribute [local irreducible] slotSearchCap slotPrimeAt
+
 def wangCode (k m : ℕ) (g : Bool) (d i : ℕ) : ℕ :=
   i + m*d + (k*m)*g.toNat
 
@@ -12,13 +16,12 @@ def fallbackCode (m : ℕ) (g : Bool) (i : ℕ) (b : Bool) : ℕ :=
   b.toNat + 2*i + (m*2)*g.toNat
 
 private def lowCode (k m i : ℕ) : ℕ :=
-  let N := slotBasePrimeCap
-  let A := guardedPrimeCap (N+4*m+16)
-  let B := guardedPrimeCap (A+6*k*m+16)
+  let A := fallbackCap m
+  let B := markerCap k m
   slotPrimeAt (A*B) (2*k*m) i
 
 def numericalMarker (k m i j : ℕ) : ℕ :=
-  let A := guardedPrimeCap (slotBasePrimeCap+4*m+16)
+  let A := fallbackCap m
   slotPrimeAt A (6*k*m) (j+3*i)
 
 def numericalFallback (m i : ℕ) : ℕ :=
@@ -27,17 +30,17 @@ def numericalFallback (m i : ℕ) : ℕ :=
 @[fun_prop] private theorem lowCode_primrec :
     Primrec (fun z : ℕ × ℕ × ℕ => lowCode z.1 z.2.1 z.2.2) := by
   let f (z : ℕ × ℕ × ℕ) :=
-    let A := guardedPrimeCap (slotBasePrimeCap+4*z.2.1+16)
-    let B := guardedPrimeCap (A+6*z.1*z.2.1+16)
+    let A := fallbackCap z.2.1
+    let B := markerCap z.1 z.2.1
     ((A*B,2*z.1*z.2.1),z.2.2)
-  have hf : Primrec f := by unfold f; fun_prop
+  have hf : Primrec f := by unfold f markerCap fallbackCap; fun_prop
   exact slotPrimeAt_primrec.comp hf
 
 @[fun_prop] theorem numericalMarker_primrec :
     Primrec (fun z : ℕ × ℕ × ℕ × ℕ => numericalMarker z.1 z.2.1 z.2.2.1 z.2.2.2) := by
   exact slotPrimeAt_primrec.comp (show Primrec (fun z : ℕ × ℕ × ℕ × ℕ =>
-    ((guardedPrimeCap (slotBasePrimeCap+4*z.2.1+16),6*z.1*z.2.1),
-      z.2.2.2+3*z.2.2.1)) by fun_prop)
+    ((fallbackCap z.2.1,6*z.1*z.2.1),
+      z.2.2.2+3*z.2.2.1)) by unfold fallbackCap; fun_prop)
 
 @[fun_prop] theorem numericalFallback_primrec :
     Primrec (fun z : ℕ × ℕ => numericalFallback z.1 z.2) := by

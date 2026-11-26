@@ -72,21 +72,21 @@ theorem slot_polycube_related (hwm : w ≤ m) {P : ℕ}
       ∃ A ∈ Fs, s.SlotMaskMatches (A.toFinset.image (decodePoint s.layout)) B)
     (hdep : ∀ o, (∀ A ∈ Fs, Tiles (A.toFinset.image (decodePoint s.layout))
       (Set.range (SharedCoordinates.point s.layout o))) → s.cycleDependencies o) :
-    let H := slotAssemblyRadius k m w
-    let X := stackTestCap P (K :: Fs).length
-    let U := guardedAssembly (((order s.layout,P,X),s.period,H),K :: Fs)
+    let H := slotAssemblyRadii k m w
+    let X := slotStackTestCap P (K :: Fs).length
+    let U := guardedAssemblyBySlope (((order s.layout,P,X),s.period,H),K :: Fs)
     U ≠ [] ∧ FaceConnected U ∧ (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles U) ∧
-      U.length ≤ reservedVolumeCap 35 (fun _ => H) s.period (order s.layout / s.period)
+      U.length ≤ reservedVolumeCap 35 (fun j => H.getD j 0) s.period (order s.layout / s.period)
         (reservedCap X P) := by
   let decMask (A : CyclicTile) := A.toFinset.image (decodePoint s.layout)
   let graph (o : SharedCoordinates.Outputs s.layout) := Set.range (SharedCoordinates.point s.layout o)
   have hstrip (A : CyclicTile) (hmem : A ∈ Fs) (x : SharedCoordinates.Ambient s.layout) (hx : x ∈ decMask A) :
-      TestSupportAt 35 (fun _ => slotAssemblyRadius k m w) x.1 := by
+      TestSupportAt 35 (fun j => (slotAssemblyRadii k m w).getD j 0) x.1 := by
     obtain ⟨B,hB',hAB⟩ := hforward A hmem
     rcases hAB with he | h
     · exact s.slotDeck_strip_refined c hwm hA hB hC B hB' x (he ▸ hx)
     · rw [h.1 x hx]
-      exact zero_strip _
+      exact Or.inl (by simp)
   have hmass (A : CyclicTile) (hA : A ∈ Fs) :
       ∃ o : SharedCoordinates.Outputs s.layout, Tiles (decMask A) (graph o) := by
     obtain ⟨B,hB,hAB⟩ := hforward A hA
@@ -95,7 +95,7 @@ theorem slot_polycube_related (hwm : w ≤ m) {P : ℕ}
       rw [he]
       exact s.slotDeck_has_mass c hwm B hB
     · exact h.2.1
-  obtain ⟨hu,hconn,hiff,hsize⟩ := s.slot_assembly_decoded K Fs hPr hP hK hstrip hmass
+  obtain ⟨hu,hconn,hiff,hsize⟩ := s.slot_assembly_decodedBySlope K Fs hPr hP hK hstrip hmass
   refine ⟨hu,hconn,?_,hsize⟩
   apply (s.slotDeck_iff c hwm).trans
   apply Iff.trans _ hiff

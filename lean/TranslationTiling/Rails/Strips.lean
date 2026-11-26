@@ -158,6 +158,17 @@ def slots (H : ℕ) := slotsAt 175 (fun _ => H)
 
 instance (H : ℕ) : NeZero (slots H).length := by unfold slots; infer_instance
 
+theorem listSlots_primrec :
+    Primrec (fun z : ℕ × List ℕ => slotsAt z.1 (fun s => z.2.getD s 0)) := by
+  unfold slotsAt
+  have he : Primrec (fun z : ℕ × List ℕ => stripEnum z.1 (fun s => z.2.getD s 0)) := by
+    unfold stripEnum stripRows widthAt radius point
+    have h : Primrec (fun z : (ℕ × List ℕ) × ℕ => z.1.2.getD z.2 0) :=
+      (Primrec.list_getD 0).comp (Primrec.snd.comp Primrec.fst) Primrec.snd
+    fun_prop
+  exact Primrec.list_cons.comp (Primrec.const 0)
+    (filterList (dedup_primrec.comp he) (by fun_prop))
+
 theorem uniformSlots_primrec :
     Primrec (fun z : ℕ × ℕ => slotsAt z.1 (fun _ => z.2)) := by
   unfold slotsAt

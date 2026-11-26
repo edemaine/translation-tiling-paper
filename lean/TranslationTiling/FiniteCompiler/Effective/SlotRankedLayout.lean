@@ -8,6 +8,11 @@ namespace TranslationTiling.FiniteCompiler.Packed.SlotParameters
 open SharedCoordinates Compiler.Size Compiler.Effective FiniteCompiler.Effective
 open scoped BigOperators
 
+set_option maxRecDepth 10000
+set_option maxHeartbeats 2000000
+
+attribute [local irreducible] slotSearchCap slotPrimeAt
+
 private def slotRank (k m : ℕ) : WangSlot k m ≃ Fin (2*k*m) :=
   ((finTwoEquiv.symm.prodCongr finProdFinEquiv).trans finProdFinEquiv).trans
     (finCongr (Nat.mul_assoc 2 k m).symm)
@@ -29,29 +34,25 @@ private theorem rankedPrime_injective {I : Type*} {count : ℕ} (threshold : ℕ
 private theorem rankedPrime_spec {I : Type*} {count : ℕ} (threshold : ℕ)
     (rank : I ≃ Fin count) (i : I) :
     (rankedPrime threshold rank i).Prime ∧ threshold < rankedPrime threshold rank i ∧
-      rankedPrime threshold rank i ≤ guardedPrimeCap (threshold+count+16) :=
+      rankedPrime threshold rank i ≤ slotSearchCap threshold count :=
   slotPrimeAt_spec (rank i).isLt
 
 private def baseOrder : ℕ := sharedOrder (fourValueRows 0)
 
 private def fallbackLimit (m : ℕ) : ℕ := fallbackCap m
-private def markerLimit (k m : ℕ) : ℕ := guardedPrimeCap (fallbackLimit m+6*k*m+16)
+private def markerLimit (k m : ℕ) : ℕ := markerCap k m
 
 private theorem fallbackLimit_eq (m : ℕ) : fallbackLimit m = fallbackCap m := by
   rfl
 
 private theorem markerLimit_eq (k m : ℕ) : markerLimit k m = markerCap k m := by
-  simp only [markerLimit,markerCap,fallbackLimit_eq]
+  rfl
 
 /-- Sorted bounded prime pools specify all slot moduli without finite choice. -/
 def rankedSlotPrime (k m : ℕ) : SlotPrime k m → ℕ
   | .inl (i,none) => rankedPrime (fallbackLimit m*markerLimit k m) (slotRank k m) i
   | .inl (i,some j) => rankedPrime (fallbackLimit m) (markerRank k m) (i,j)
   | .inr i => rankedPrime slotBasePrimeCap (fallbackRank m) i
-
-private theorem cap_ge (n : ℕ) : n ≤ guardedPrimeCap n := by
-  unfold guardedPrimeCap
-  exact (show n ≤ 4*n by omega).trans (Nat.le_mul_of_pos_right _ (by omega))
 
 theorem exists_ranked_parameters (k m : ℕ) :
     ∃ s : SlotParameters k m, s.prime = rankedSlotPrime k m ∧
@@ -61,14 +62,10 @@ theorem exists_ranked_parameters (k m : ℕ) :
   let N := slotBasePrimeCap
   let A := fallbackLimit m
   let B := markerLimit k m
-  let C := guardedPrimeCap (A*B+2*k*m+16)
+  let C := slotSearchCap (A*B) (2*k*m)
   have hN : 0 < N := by decide
-  have hA : N ≤ A := (Nat.le_add_right N (4*m+16)).trans (by
-    unfold A fallbackLimit fallbackCap
-    simpa [Nat.add_assoc] using cap_ge (N+(4*m+16)))
-  have hAB : A ≤ B := by
-    unfold B markerLimit
-    exact (by omega : A ≤ A+6*k*m+16).trans (cap_ge _)
+  have hA : N ≤ A := threshold_le_slotSearchCap ..
+  have hAB : A ≤ B := fallbackCap_le_markerCap k m
   have hAP : 0 < A := hN.trans_le hA
   have hBB : B ≤ A*B := by
     simpa using Nat.mul_le_mul_right B hAP
@@ -122,15 +119,10 @@ theorem exists_ranked_parameters (k m : ℕ) :
     | none => exact (ha' _).trans hAB
     | some j => exact hb' _
   · intro i
-    change a i ≤ fallbackCap m
-    rw [← fallbackLimit_eq]
     exact ha' i
   · intro i j
-    change b (i,j) ≤ markerCap k m
-    rw [← markerLimit_eq]
     exact hb' (i,j)
   · intro i
-    rw [lowCap, ← fallbackLimit_eq, ← markerLimit_eq]
     exact hr' i
 
 private def selectedProduct (threshold count : ℕ) : ℕ :=
@@ -165,8 +157,13 @@ def rankedSlotOrders (k m : ℕ) : ℕ × ℕ :=
   let F := selectedProduct slotBasePrimeCap (4*m)
   (baseOrder * (L^2*M*F), (guardedModuli (fourValueRows 0)).prod * L)
 
+theorem rankedSlotOrders_zero :
+    rankedSlotOrders 0 0 = (sharedOrder (fourValueRows 0), (guardedModuli (fourValueRows 0)).prod) := by
+  simp only [rankedSlotOrders,selectedProduct,baseOrder,Nat.mul_zero,List.range_zero,
+    List.map_nil,List.prod_nil,one_pow,mul_one]
+
 theorem rankedSlotOrders_primrec : Primrec (fun z : ℕ × ℕ => rankedSlotOrders z.1 z.2) := by
-  unfold rankedSlotOrders markerLimit fallbackLimit fallbackCap
+  unfold rankedSlotOrders markerLimit fallbackLimit markerCap fallbackCap
   have : Primrec (fun _ : ℕ × ℕ => slotBasePrimeCap) := Primrec.const _
   have : Primrec (fun _ : ℕ × ℕ => baseOrder) := Primrec.const _
   have : Primrec (fun _ : ℕ × ℕ => (guardedModuli (fourValueRows 0)).prod) := Primrec.const _

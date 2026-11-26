@@ -51,30 +51,33 @@ private theorem fourValue_wang_strip (k i : ℕ) (hi : i < 2*k) (f : NumericalPo
       rw [min_eq_left (by omega : 1 ≤ k),one_mul]
       exact Nat.le_add_left _ _))
 
-/-- All concrete shared tests lie in the strips used by the slot assembly. -/
-theorem fourValueRawDeck_strip (T : LeanWang.TileSet) (k : ℕ) :
+/-- Bound each arithmetic test in the strip of its own slope. -/
+theorem fourValueRawDeck_stripAt (T : LeanWang.TileSet) (k : ℕ) (H : ℕ → ℕ)
+    (hH : 35 ≤ H 0) (hseed : 2^53 ≤ H 0)
+    (hfixed : ∀ i < 18, 2*(rowR (fourValueRows k) i*rowA (fourValueRows k) i*
+      rowB (fourValueRows k) i) ≤ H ((tailSlopes k).getD i 0))
+    (hwang : ∀ i < 2*k, ∀ f ∈ fourValueWangActivation k i, TestSupportAt 35 H f.1) :
     ∀ F ∈ fourValueRawDeck T k, ∀ f ∈ F,
-      TestSupportAt 35 (fun _ => fourValueRadius k) f.1 := by
+      TestSupportAt 35 H f.1 := by
   let rs := fourValueRows k
-  let H := fourValueRadius k
-  have hH : 35 ≤ H := by unfold H fourValueRadius; omega
+  have hz : TestSupportAt 35 H 0 := Or.inl (by simp)
   have hinv (a b : ℕ) (h : Plane) (g : Option ℕ)
-      (hh : TestSupportAt 35 (fun _ => H) h) (f : NumericalPoint)
-      (hf : f ∈ sharedInvariance rs a b h g) : TestSupportAt 35 (fun _ => H) f.1 := by
+      (hh : TestSupportAt 35 H h) (f : NumericalPoint)
+      (hf : f ∈ sharedInvariance rs a b h g) : TestSupportAt 35 H f.1 := by
     unfold sharedInvariance invarianceCodes at hf
     rcases List.mem_append.mp hf with hf|hf
     · obtain ⟨_,_,rfl⟩ := List.mem_map.mp hf
-      exact zero_strip H
+      exact hz
     · obtain ⟨_,_,rfl⟩ := List.mem_map.mp hf
       exact hh
   intro F hF f hf
   simp only [fourValueRawDeck,List.mem_cons,List.mem_append] at hF
   rcases hF with rfl | ((hd | ha) | hc)
   · obtain ⟨_,_,rfl⟩ := List.mem_map.mp hf
-    exact zero_strip H
+    exact hz
   · simp only [sharedDependence,List.mem_append,List.mem_flatMap,List.mem_map] at hd
     rcases hd with ((⟨i,_,j,_,rfl⟩ | ⟨i,_,rfl⟩) | ⟨t,_,ht⟩) | ht
-    · exact hinv _ _ _ _ (zero_strip H) _ hf
+    · exact hinv _ _ _ _ (hz) _ hf
     · apply hinv _ _ _ _ _ _ hf
       exact Or.inl ⟨(by decide : 1 ≤ 35).trans hH,by
         simpa using (getD_tailSlopes_le k i).trans (by decide : 16 ≤ 35)⟩
@@ -88,9 +91,9 @@ theorem fourValueRawDeck_strip (T : LeanWang.TileSet) (k : ℕ) :
       · exact hinv _ _ (1,-2) _ (Or.inl ⟨(by decide : 1 ≤ 35).trans hH,by decide⟩) _ hf
   · simp only [fourValueActivation,List.mem_append,List.mem_map,List.mem_range] at ha
     rcases ha with (⟨i,hi,rfl⟩ | ⟨i,hi,rfl⟩) | ⟨t,ht,rfl⟩
-    · exact compactCodes_strip _ _ H ((getD_tailSlopes_le k i).trans_lt (by decide))
-        (fourValue_fixed_radius k i hi) f hf
-    · exact fourValue_wang_strip k i hi f hf
+    · exact compactCodes_stripAt _ _ H ((getD_tailSlopes_le k i).trans_lt (by decide))
+        (hfixed i hi) f hf
+    · exact hwang i hi f hf
     · obtain ⟨j,hj,hf⟩ := List.mem_flatMap.mp hf
       have hh := activationBatch_horizontal _ hf
       let i := (fourValueRows k).length-2+t
@@ -112,7 +115,7 @@ theorem fourValueRawDeck_strip (T : LeanWang.TileSet) (k : ℕ) :
         exact (by decide : ∀ v : Fin 2, (sharedSeedRows.getD v.val (0,0,[])).2.2.prod ≤ 1231) ⟨t,ht⟩
       have hs := seedFirst_bound _ _ _ _ j (ha t ht) hb hr (ha (1-t) (by omega)) hj
       rw [hh]
-      exact Or.inl ⟨hs.1.trans (Nat.le_add_right _ _),by simpa using hs.2.le⟩
+      exact Or.inl ⟨hs.1.trans hseed,by simpa using hs.2.le⟩
   · obtain ⟨xs,_,hc⟩ := List.mem_flatMap.mp hc
     unfold fourValueCycle at hc
     split at hc
@@ -120,6 +123,36 @@ theorem fourValueRawDeck_strip (T : LeanWang.TileSet) (k : ℕ) :
     · simp only [List.mem_singleton] at hc
       subst F
       obtain ⟨_,_,rfl⟩ := List.mem_map.mp hf
-      exact zero_strip H
+      exact hz
+
+
+/-- All concrete shared tests lie in the uniform strips used by the older assembly. -/
+theorem fourValueRawDeck_strip (T : LeanWang.TileSet) (k : ℕ) :
+    ∀ F ∈ fourValueRawDeck T k, ∀ f ∈ F,
+      TestSupportAt 35 (fun _ => fourValueRadius k) f.1 := by
+  apply fourValueRawDeck_stripAt
+  · unfold fourValueRadius; omega
+  · exact (by decide : 2^53 ≤ 2^68).trans (Nat.le_add_right _ _)
+  · exact fun i hi => fourValue_fixed_radius k i hi
+  · exact fourValue_wang_strip k
+
+def arithmeticStripRadii : List ℕ :=
+  [548813306238667462, 256497239098623202858, 35295996877359283378,
+    17151434246681869454, 20882636432023742438, 934910174984374,
+    915526189949278, 7448035205427158066, 3018500217791854246,
+    8395775330372922494, 4606958133045766, 35, 35, 35, 285541408822353346, 35, 35]
+
+theorem fourValueArithmetic_strip (T : LeanWang.TileSet) :
+    ∀ F ∈ fourValueRawDeck T 0, ∀ f ∈ F,
+      TestSupportAt 35 (fun j => arithmeticStripRadii.getD j 0) f.1 := by
+  apply fourValueRawDeck_stripAt
+  · decide
+  · decide
+  · intro i hi
+    exact (by decide +kernel : ∀ i : Fin 18, 2*(rowR (fourValueRows 0) i*
+      rowA (fourValueRows 0) i*rowB (fourValueRows 0) i) ≤
+        arithmeticStripRadii.getD ((tailSlopes 0).getD i 0) 0) ⟨i,hi⟩
+  · omega
+
 
 end TranslationTiling.FiniteCompiler.Packed

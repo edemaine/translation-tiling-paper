@@ -3386,43 +3386,44 @@ selected arithmetic rows and private outputs. The dependence masks
 make each output follow its own slope, so a cycle can test both Wang
 slopes.
 
-Choose $m=\lg\lg n+O(1)$, a positive multiple of four. Then
-$\lg D=2m-O(\lg m)$, and the number of digit positions across the
-two Wang slopes is $\lg n+O(\lg n\,\lg m/m+m)$. The cyclic order contains
-the square of the low prime and all three private useful primes for
-each position, for five prime factors in total. The logarithms of
-these primes are at most $\lg\lg n+O(\lg\lg\lg n)$. The fallback primes,
-stacking, and connectedness contribute within the remainder, giving
-at most $n^{5\lg\lg n+O(1+\lg\lg\lg n)}$ unit cubes as $n\to\infty$.
+Write $u=\lg(n+4)$, $g=\lg u$, and $\ell=\lg g$. For $n\geq65536$,
+we choose the width $m$ to be a positive multiple of four between
+$g\ell/6$ and $g\ell$. The radix satisfies $\lg D\geq 2m-\lg(m+1)$.
+With this width, the radix loss and rounding the number of digits up
+contribute only a constant to the exponent.
 
-The fixed arithmetic factor has all prime divisors below $2048$,
-so the fallback primes can start above $2048$.
-For $n\geq65536$, each slot prime cap is at most
-$2^{56}\lg(n+4)(\lg\lg(n+4))^4$.
-The product defining the activation displacement uses only the selected
-slots. Each selected slot contributes at most the square of the low-prime
-cap, the eighth power of the marker-prime cap, and one fallback-prime cap
-multiplied together.
-For $n=2$ or $3$, one slot of weight one gives a digit of radix $3$.
-For $4\leq n<65536$, the digits have width $4$ and radix $108$.
-For these widths the horizontal support is short enough to bound the
-shell volume linearly in the number of horizontal slots.
-The size is at most $2^{2750}$ for width one, $2^{4250}$ for a single digit
-of width four, and $2^{6800}$ for up to three digits of width four.
+The fallback primes start above $2048$, which exceeds the prime
+divisors of the fixed arithmetic factor. To find $c$ primes above $T$,
+we first check the short interval up to $T+32(c+1)$ when it fits the
+certified search range. An explicit prime-counting inequality lets us
+use a range ending at $8\max\{T,4(c+16)(\lfloor\lg(c+16)\rfloor+1)\}$
+for $T\geq512$. The fallback, marker, and low-prime caps for
+$n\geq65536$ are at most $2^{10}g\ell^2$, $2^{13}ug$, and
+$2^{26}ug^2\ell^2$, respectively. Each position contributes the square
+of the low prime and three marker primes to the cyclic order.
+Including the geometric and stacking costs gives an exponent of at
+most $5g+7\ell+4\lg\ell+807$ for the base $n+4$.
+The inequality $4\lg\ell\leq10^{-6}\ell+88$ for $\ell\geq2$ absorbs
+the fourth logarithm.
 
-A one-tile alphabet needs zero digits. The forbidden patterns still
-contain arithmetic letters, so their cycles continue to enforce the
-Sudoku and query constraints. The same assembly then uses at most
-$2^{2065}$ unit cubes using arithmetic strips of radius $2^{68}$.
-Together the estimates give the explicit bound
+For $2\leq n\leq9$ we use one or two radix-three digits of width one,
+and for $10\leq n<65536$ we use digits of width four and radix $108$.
+The horizontal support is short enough that the shell volume admits a
+linear bound in the number of slots. The stacking estimate needs its
+test parameter to be at least the square root of the prime cap.
+The size is at most $2^{2345}$ or $2^{2507}$ for one or two digits of
+width one, and at most $2^{3148}$, $2^{3856}$, or $2^{4580}$ for one,
+two, or three digits of width four.
+
+One tile needs zero digits. The same assembly sizes each arithmetic
+strip according to the tests on its slope and uses at most $2^{2059}$
+unit cubes. Together the estimates give the explicit bound
 $$
-  \max\bigl\{n^{2700}(n+4)^{5\lg\lg(n+4)+65\lg\lg\lg(n+4)},
-    2^{2065}\bigr\}.
+  B(n)=(n+4)^{5\lg\lg(n+4)+7.000001\lg\lg\lg(n+4)+900}.
 $$
-Lean verifies this bound for the computable compiler in
-\leanfile{Compiler/SlotExplicitBound.lean}. The paper's general bound $B(n)$
-adds $2700$ to the exponent of $n+4$. The Lean abstract uses $B(n)$
-for $n\geq2$ and $2^{2065}$ for $n\leq1$.
+Lean verifies the bound for the computable compiler in
+\leanfile{Compiler/SlotExplicitBound.lean}. The Lean abstract uses $B(n)$
+for $n\geq2$ and $2^{2059}$ for $n\leq1$.
 
 ### The Remaining Cost of Cyclicity
 

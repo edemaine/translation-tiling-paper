@@ -97,7 +97,7 @@ theorem slot_prime_caps_scale_explicit :
   have hCd : d ≤ C := hdp.trans (hpow (by decide))
   intro k m u g hu hg hgu hlu hlg hm hkm
   have hfb : (fallbackCap m : ℝ) ≤ a*g^2 := by
-    unfold fallbackCap
+    apply (Nat.cast_le.mpr (slotSearchCap_le_guarded N (4*m))).trans
     change (guardedPrimeCap (N+4*m+16) : ℝ) ≤ _
     have h₁ : (↑(N+4*m+16) : ℝ) ≤ A*1*g^1 := by
       push_cast
@@ -108,7 +108,7 @@ theorem slot_prime_caps_scale_explicit :
       hA (show (1 : ℝ) ≤ 1 by rfl) hg (by rw [Real.logb_one]; linarith : Real.logb 2 1 ≤ g) hlg h₁
     simpa [a] using h₂
   have hmk : (markerCap k m : ℝ) ≤ b*u*g := by
-    unfold markerCap
+    apply (Nat.cast_le.mpr (slotSearchCap_le_guarded (fallbackCap m) (6*k*m))).trans
     have h₁ : (↑(fallbackCap m+6*k*m+16) : ℝ) ≤ B*u*g^0 := by
       push_cast
       dsimp [B]
@@ -118,7 +118,7 @@ theorem slot_prime_caps_scale_explicit :
       hB hu hg hlu hlg h₁
     simpa [b] using h₂
   have hlw : (SlotParameters.lowCap k m : ℝ) ≤ d*u*g^4 := by
-    unfold SlotParameters.lowCap
+    apply (Nat.cast_le.mpr (slotSearchCap_le_guarded (fallbackCap m*markerCap k m) (2*k*m))).trans
     have h₁ : (↑(fallbackCap m*markerCap k m+2*k*m+16) : ℝ) ≤ D*u*g^3 := by
       push_cast
       have hprod := mul_le_mul hfb hmk (show (0 : ℝ) ≤ markerCap k m by positivity)
