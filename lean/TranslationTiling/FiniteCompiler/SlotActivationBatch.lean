@@ -84,7 +84,7 @@ def slotActivationTile (ψ : Factor L →+ Y) [Fintype (Factor L)] [Fintype J]
       (SlotActivationBatch L S ψ (h j) (e j))
 
 theorem slotActivationTile_iff (ψ : Factor L →+ Y) [Fintype (Factor L)] [Fintype J]
-    (h : J → Plane) (hh : Function.Injective h) (e : J → Y) (o : Outputs L)
+    (h : J → Plane) (e : J → Y) (hh : Function.Injective (fun j => (h j,e j))) (o : Outputs L)
     (htarget : ∀ x : Base L, ∀ y : Y × (∀ i : {i : I // i ∈ S}, Low L i), ∃ v : Ambient L,
       baseProjection L v = x ∧ (ψ v.2,fun i : {i : I // i ∈ S} => highCoordinate L i v) = y) :
     Tiles (slotActivationTile L S ψ h e) (Set.range (point L o)) ↔
@@ -92,9 +92,15 @@ theorem slotActivationTile_iff (ψ : Factor L →+ Y) [Fintype (Factor L)] [Fint
         let u := slotActivationSource L S (h j) x
         (ψ (point L o u).2 + e j, fun i : {i : I // i ∈ S} => o.high u i)) := by
   let tgt (v : Ambient L) := (ψ v.2,fun i : {i : I // i ∈ S} => highCoordinate L i v)
-  refine tiles_indexed_activation_iff _ _ (point_injective L o) (baseProjection L) tgt
-    (fun x j => slotActivationSource L S (h j) x) (fun x a b he => hh ?_) _ htarget ?_
-  · exact sub_right_inj.mp (congrArg Prod.fst he)
+  refine tiles_indexed_activation_iff_of_pair _ _ (point_injective L o) (baseProjection L) tgt
+    (fun x j => slotActivationSource L S (h j) x) _ (fun x a b he => hh ?_) htarget ?_
+  · have hs : slotActivationSource L S (h a) x = slotActivationSource L S (h b) x :=
+      congrArg Prod.fst he
+    have hz := congrArg (fun v => v.2.1) he
+    refine Prod.ext (sub_right_inj.mp (congrArg Prod.fst hs)) ?_
+    dsimp only at hz
+    rw [hs] at hz
+    exact add_left_cancel hz
   · intro v x
     have hm (f : Ambient L) : f ∈ slotActivationTile L S ψ h e ↔
         ∃ j, SlotActivationBatch L S ψ (h j) (e j) f := by

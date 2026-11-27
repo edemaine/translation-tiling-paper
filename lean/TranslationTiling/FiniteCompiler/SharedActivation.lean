@@ -93,11 +93,11 @@ theorem LabeledBlocks.privateOutput_surjective {K A B : Type*} {a b : ℕ}
 
 /-- Activation batches can leave any additional coordinates free. Coverage
 depends on the base section and the outputs that occur in the batch equations. -/
-theorem tiles_indexed_activation_iff {H X Y J : Type*} [AddCommGroup H]
+theorem tiles_indexed_activation_iff_of_pair {H X Y J : Type*} [AddCommGroup H]
     (F : Finset H) (point : X → H) (hpoint : Function.Injective point)
     (base : H → X) (target : H → Y)
-    (source : X → J → X) (hsource : ∀ x, Function.Injective (source x))
-    (testMap : X → J → Y)
+    (source : X → J → X) (testMap : X → J → Y)
+    (hsource : ∀ x, Function.Injective (fun j => (source x j,testMap x j)))
     (htarget : ∀ x y, ∃ v, base v = x ∧ target v = y)
     (hmem : ∀ v x, v - point x ∈ F ↔
       ∃ j, source (base v) j = x ∧ testMap (base v) j = target v) :
@@ -113,12 +113,24 @@ theorem tiles_indexed_activation_iff {H X Y J : Type*} [AddCommGroup H]
     rw [hv] at hj
     rw [hv,hvy] at hjy hu
     refine ⟨j,hjy,fun j' hj' => hsource x ?_⟩
-    exact (hu (source x j') ⟨j',rfl,hj'⟩).trans hj.symm
+    exact Prod.ext ((hu (source x j') ⟨j',rfl,hj'⟩).trans hj.symm) (hj'.trans hjy.symm)
   · intro h v
     obtain ⟨j,hj,hu⟩ := (h (base v)).existsUnique (target v)
     refine ⟨source (base v) j,⟨j,rfl,hj⟩,?_⟩
     rintro x ⟨j',rfl,hj'⟩
     rw [hu j' hj']
 
+
+theorem tiles_indexed_activation_iff {H X Y J : Type*} [AddCommGroup H]
+    (F : Finset H) (point : X → H) (hpoint : Function.Injective point)
+    (base : H → X) (target : H → Y)
+    (source : X → J → X) (hsource : ∀ x, Function.Injective (source x))
+    (testMap : X → J → Y)
+    (htarget : ∀ x y, ∃ v, base v = x ∧ target v = y)
+    (hmem : ∀ v x, v - point x ∈ F ↔
+      ∃ j, source (base v) j = x ∧ testMap (base v) j = target v) :
+    Tiles F (Set.range point) ↔ ∀ x, Function.Bijective (testMap x) :=
+  tiles_indexed_activation_iff_of_pair F point hpoint base target source testMap
+    (fun x _ _ e => hsource x (congrArg Prod.fst e)) htarget hmem
 
 end TranslationTiling.FiniteCompiler

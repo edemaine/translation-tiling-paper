@@ -62,8 +62,8 @@ theorem SlotMaskMatches.holds {A B : Finset (SharedCoordinates.Ambient s.layout)
   · exact h.2.2 o hd
 
 theorem slot_polycube_related (hwm : w ≤ m) {P : ℕ}
-    (hPr : PrimeBound (order s.layout) P) (hP : 3 < P) (hA : ∀ i, s.fallback i ≤ fallbackCap m)
-    (hB : ∀ i j, s.marker i j ≤ markerCap k m) (hC : ∀ i, s.low i ≤ lowCap k m)
+    (hPr : PrimeBound (order s.layout) P) (hP : 3 < P)
+    (hD : ∀ i, s.slotOffsetFactor i ≤ slotOffsetFactorCap k m)
     (K : CyclicTile) (Fs : List CyclicTile)
     (hK : K.toFinset.image (decodePoint s.layout) = productKernel s.layout)
     (hforward : ∀ A ∈ Fs, ∃ B ∈ s.slotDeck c hwm,
@@ -77,14 +77,14 @@ theorem slot_polycube_related (hwm : w ≤ m) {P : ℕ}
     let U := guardedAssemblyBySlope (((order s.layout,P,X),s.period,H),K :: Fs)
     U ≠ [] ∧ FaceConnected U ∧ (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles U) ∧
       U.length ≤ reservedVolumeCap 35 (fun j => H.getD j 0) s.period (order s.layout / s.period)
-        (reservedCap X P) := by
+        (reservedPrimeCap X P) := by
   let decMask (A : CyclicTile) := A.toFinset.image (decodePoint s.layout)
   let graph (o : SharedCoordinates.Outputs s.layout) := Set.range (SharedCoordinates.point s.layout o)
   have hstrip (A : CyclicTile) (hmem : A ∈ Fs) (x : SharedCoordinates.Ambient s.layout) (hx : x ∈ decMask A) :
       TestSupportAt 35 (fun j => (slotAssemblyRadii k m w).getD j 0) x.1 := by
     obtain ⟨B,hB',hAB⟩ := hforward A hmem
     rcases hAB with he | h
-    · exact s.slotDeck_strip_refined c hwm hA hB hC B hB' x (he ▸ hx)
+    · exact s.slotDeck_strip_refined c hwm hD B hB' x (he ▸ hx)
     · rw [h.1 x hx]
       exact Or.inl (by simp)
   have hmass (A : CyclicTile) (hA : A ∈ Fs) :

@@ -40,10 +40,12 @@ private theorem rankedPrime_spec {I : Type*} {count : ℕ} (threshold : ℕ)
 private def baseOrder : ℕ := sharedOrder (fourValueRows 0)
 
 def rankedLowAt (k m i : ℕ) : ℕ :=
+  if k = 1 ∧ m = 1 then [5557,5647].getD i 0 else
   if 24 ≤ m then matchedPrimeAt k m i 3 else
     slotPrimeAt (fallbackCap m*separateMarkerCap k m) (2*k*m) i
 
 def rankedMarkerAt (k m i j : ℕ) : ℕ :=
+  if k = 1 ∧ m = 1 then [691,751,787,677,823,857].getD (j+3*i) 0 else
   if 24 ≤ m then matchedPrimeAt k m i j else
     slotPrimeAt (fallbackCap m) (6*k*m) (j+3*i)
 
@@ -54,13 +56,15 @@ def rankedMarkerAt (k m i j : ℕ) : ℕ :=
     unfold separateMarkerCap fallbackCap
     fun_prop
   have hm : Primrec (fun z : ℕ × ℕ × ℕ => (z.1,z.2.1,z.2.2,(3 : ℕ))) := by fun_prop
-  exact Primrec.ite (by fun_prop) (matchedPrimeAt_primrec.comp hm) (slotPrimeAt_primrec.comp hf)
+  exact Primrec.ite (by fun_prop) ((Primrec.list_getD 0).comp (Primrec.const _) (by fun_prop))
+    (Primrec.ite (by fun_prop) (matchedPrimeAt_primrec.comp hm) (slotPrimeAt_primrec.comp hf))
 
 @[fun_prop] theorem rankedMarkerAt_primrec :
     Primrec (fun z : ℕ × ℕ × ℕ × ℕ => rankedMarkerAt z.1 z.2.1 z.2.2.1 z.2.2.2) := by
   have hf : Primrec (fun z : ℕ × ℕ × ℕ × ℕ =>
       ((fallbackCap z.2.1,6*z.1*z.2.1),z.2.2.2+3*z.2.2.1)) := by unfold fallbackCap; fun_prop
-  exact Primrec.ite (by fun_prop) matchedPrimeAt_primrec (slotPrimeAt_primrec.comp hf)
+  exact Primrec.ite (by fun_prop) ((Primrec.list_getD 0).comp (Primrec.const _) (by fun_prop))
+    (Primrec.ite (by fun_prop) matchedPrimeAt_primrec (slotPrimeAt_primrec.comp hf))
 
 /-- The slot moduli are specified by their numerical ranks. -/
 def rankedSlotPrime (k m : ℕ) : SlotPrime k m → ℕ
@@ -84,7 +88,8 @@ private theorem firstFallbackIndex_eq {k m : ℕ} (i : WangSlot k m) :
       (if i.val+m*d.val+(k*m)*1 < k*m then 0 else m*2) = 0+2*i.val+(m*2)*1
     simp [Nat.add_mod,Nat.mod_eq_of_lt i.isLt,show ¬ i.val+m*d.val+k*m < k*m by omega]
 
-private theorem exists_ranked_separate (k m : ℕ) (hm : ¬ 24 ≤ m) :
+private theorem exists_ranked_separate (k m : ℕ) (hm : ¬ 24 ≤ m)
+    (hsmall : ¬ (k = 1 ∧ m = 1)) :
     ∃ s : SlotParameters k m, s.prime = rankedSlotPrime k m ∧
       (∀ i, s.fallback i ≤ fallbackCap m) ∧
       (∀ i j, s.marker i j ≤ separateMarkerCap k m) ∧
@@ -99,16 +104,24 @@ private theorem exists_ranked_separate (k m : ℕ) (hm : ¬ 24 ≤ m) :
   have hAP : 0 < A := hN.trans_le hA
   have hBB : B ≤ A*B := by
     simpa using Nat.mul_le_mul_right B hAP
-  let a := rankedPrime N (fallbackRank m)
+  let a (i : SlotFallback m) := slotFallbackAt m (fallbackRank m i)
   let b := rankedPrime A (markerRank k m)
   let r := rankedPrime (A*B) (slotRank k m)
-  have hia := rankedPrime_injective N (fallbackRank m)
+  have hia : Function.Injective a := by
+    intro i j h
+    apply (fallbackRank m).injective
+    by_cases hm₁ : m = 1
+    · subst m
+      exact (by decide +kernel : ∀ i j : Fin 4,
+        slotFallbackAt 1 i = slotFallbackAt 1 j → i = j) _ _ h
+    · simp only [a,slotFallbackAt,ite_eq_right hm₁] at h
+      exact slotPrimeAt_injective _ _ h
   have hib := rankedPrime_injective A (markerRank k m)
   have hir := rankedPrime_injective (A*B) (slotRank k m)
-  have ha := rankedPrime_spec N (fallbackRank m)
+
   have hb := rankedPrime_spec A (markerRank k m)
   have hr := rankedPrime_spec (A*B) (slotRank k m)
-  have ha' (i) : a i ≤ A := (ha i).2.2
+  have ha' (i : SlotFallback m) : a i ≤ A := (slotFallbackAt_le (fallbackRank m i).isLt).2
   have hb' (i) : b i ≤ B := (hb i).2.2
   have hr' (i) : r i ≤ C := (hr i).2.2
   let p : SlotPrime k m → ℕ
@@ -118,15 +131,27 @@ private theorem exists_ranked_separate (k m : ℕ) (hm : ¬ 24 ≤ m) :
   have he : p = rankedSlotPrime k m := by
     funext i
     rcases i with ⟨i,_ | j⟩ | i
-    · simp [p,r,rankedPrime,rankedSlotPrime,rankedLowAt,hm,A,B]
+    · simp [p,r,rankedPrime,rankedSlotPrime,rankedLowAt,hsmall,hm,A,B]
     · rcases i with ⟨g,d,i⟩
-      cases g <;> simp only [p,b,rankedPrime,rankedSlotPrime,rankedMarkerAt,ite_eq_right hm,A] <;> rfl
+      cases g <;> simp only [p,b,rankedPrime,rankedSlotPrime,rankedMarkerAt,ite_eq_right hsmall,ite_eq_right hm,A] <;> rfl
     · rfl
-  have hp (i) : (p i).Prime ∧ N < p i := by
+  have primeCoprime (v : ℕ) (hp : v.Prime) (h : N < v) :
+      v.Prime ∧ v.Coprime (order (fourValueLayout 0)) :=
+    ⟨hp,(coprime_of_primeBound (fourValueOrder_pos 0) slotBasePrimeBound hp h).symm⟩
+  have hp (i) : (p i).Prime ∧ (p i).Coprime (order (fourValueLayout 0)) := by
     rcases i with ⟨i,_ | j⟩ | i
-    · exact ⟨(hr i).1,((hA.trans hAB).trans hBB).trans_lt (hr i).2.1⟩
-    · exact ⟨(hb _).1,hA.trans_lt (hb _).2.1⟩
-    · exact ⟨(ha i).1,(ha i).2.1⟩
+    · exact primeCoprime _ (hr i).1 (((hA.trans hAB).trans hBB).trans_lt (hr i).2.1)
+    · exact primeCoprime _ (hb _).1 (hA.trans_lt (hb _).2.1)
+    · by_cases hm₁ : m = 1
+      · subst m
+        rw [fourValueLayout_order]
+        have h := (by decide +kernel : ∀ i : Fin 4,
+          (2 ≤ slotFallbackAt 1 i ∧ (slotFallbackAt 1 i).minFac = slotFallbackAt 1 i) ∧
+            (slotFallbackAt 1 i).Coprime baseOrder) (fallbackRank 1 i)
+        exact ⟨Nat.prime_def_minFac.mpr h.1,h.2⟩
+      · have h := rankedPrime_spec N (fallbackRank m) i
+        simpa only [p,a,slotFallbackAt,ite_eq_right hm₁,rankedPrime] using
+          primeCoprime _ h.1 h.2.1
   have hinj : Function.Injective p := by
     intro i j he
     rcases i with ⟨i,_ | i'⟩ | i <;> rcases j with ⟨j,_ | j'⟩ | j
@@ -147,9 +172,7 @@ private theorem exists_ranked_separate (k m : ℕ) (hm : ¬ 24 ≤ m) :
     · change a i = b (j,j') at he
       exact ((ha' i).not_gt (he.symm ▸ (hb (j,j')).2.1)).elim
     · exact congrArg Sum.inr (hia he)
-  refine ⟨⟨p,fun i => (hp i).1,hinj,fun i => ?_,?_⟩,he,?_,?_,?_⟩
-  · exact (coprime_of_primeBound (fourValueOrder_pos 0) slotBasePrimeBound
-      (hp i).1 (hp i).2).symm
+  refine ⟨⟨p,fun i => (hp i).1,hinj,fun i => (hp i).2,?_⟩,he,?_,?_,?_⟩
   · intro i j
     apply Or.inl
     change a (i.1,i.2.2,false) *
@@ -166,13 +189,86 @@ private theorem exists_ranked_separate (k m : ℕ) (hm : ¬ 24 ≤ m) :
   · intro i
     exact hr' i
 
+private def smallBlockCounts (g : Bool) (j : Option (Fin 3)) : ℕ × ℕ :=
+  let i := j.elim 0 (fun j => j.val+1)
+  (if g then [(22,1),(4,7),(14,3),(6,5)] else [(4,9),(6,1),(5,2),(2,5)]).getD i (0,0)
+
+private theorem rankedSmall_prime (i : SlotPrime 1 1) :
+    (rankedSlotPrime 1 1 i).Prime ∧ (rankedSlotPrime 1 1 i).Coprime baseOrder := by
+  have h := (by decide +kernel : ∀ i : SlotPrime 1 1,
+    let p := rankedSlotPrime 1 1 i
+    (2 ≤ p ∧ p.minFac = p) ∧ p.Coprime baseOrder) i
+  exact ⟨Nat.prime_def_minFac.mpr h.1,h.2⟩
+
+private theorem rankedSmall_injective :
+    Function.Injective (rankedSlotPrime 1 1) := by
+  intro i j
+  exact (by decide +kernel : ∀ i j : SlotPrime 1 1,
+    rankedSlotPrime 1 1 i = rankedSlotPrime 1 1 j → i = j) i j
+
+private theorem rankedSmall_blocks :
+    ∀ (i : WangSlot 1 1) (j : Option (Fin 3)),
+      let p := rankedSlotPrime 1 1
+      let (u,v) := smallBlockCounts i.1 j
+      let a := p (.inr (i.1,i.2.2,false))
+      let b := j.elim (p (.inr (i.1,i.2.2,true))) (fun j => p (.inl (i,some j)))
+      0 < u ∧ 0 < v ∧ p (.inl (i,none)) = u*a+v*b := by decide +kernel
+
+private theorem exists_ranked_small :
+    ∃ s : SlotParameters 1 1, s.prime = rankedSlotPrime 1 1 ∧
+      (∀ i, s.fallback i ≤ fallbackCap 1) ∧
+      (∀ i j, s.marker i j ≤ markerCap 1 1) ∧
+      (∀ i, s.low i ≤ lowCap 1 1) := by
+  let s : SlotParameters 1 1 := {
+    prime := rankedSlotPrime 1 1
+    prime_isPrime := fun i => (rankedSmall_prime i).1
+    prime_injective := rankedSmall_injective
+    coprime_arithmetic := fun i => by
+      rw [fourValueLayout_order]
+      exact (rankedSmall_prime i).2
+    block_budget := fun i j => by
+      right
+      right
+      refine ⟨(smallBlockCounts i.1 j).1,(smallBlockCounts i.1 j).2,?_⟩
+      cases j with
+      | none => exact rankedSmall_blocks i none
+      | some j => exact rankedSmall_blocks i (some j)
+  }
+  have ha : slotBasePrimeCap ≤ fallbackCap 1 := threshold_le_slotSearchCap slotBasePrimeCap 4
+  have hb := ha.trans (fallbackCap_le_markerCap 1 1)
+  have hb' : slotBasePrimeCap ≤ separateMarkerCap 1 1 :=
+    ha.trans (threshold_le_slotSearchCap (fallbackCap 1) 6)
+  have hc : slotBasePrimeCap^2 ≤ lowCap 1 1 := by
+    rw [lowCap,ite_eq_right (by decide : ¬24 ≤ (1 : ℕ)),separateLowCap,pow_two]
+    exact (Nat.mul_le_mul ha hb').trans
+      (threshold_le_slotSearchCap (fallbackCap 1*separateMarkerCap 1 1) 2)
+  refine ⟨s,rfl,?_,?_,?_⟩
+  · intro i
+    apply Nat.le_trans _ ha
+    change rankedSlotPrime 1 1 (.inr i) ≤ slotBasePrimeCap
+    exact (by decide +kernel : ∀ i : SlotFallback 1, rankedSlotPrime 1 1 (.inr i) ≤ slotBasePrimeCap) i
+  · intro i j
+    apply Nat.le_trans _ hb
+    change rankedSlotPrime 1 1 (.inl (i,some j)) ≤ slotBasePrimeCap
+    exact (by decide +kernel : ∀ (i : WangSlot 1 1) (j : Fin 3),
+      rankedSlotPrime 1 1 (.inl (i,some j)) ≤ slotBasePrimeCap) i j
+  · intro i
+    apply Nat.le_trans _ hc
+    change rankedSlotPrime 1 1 (.inl (i,none)) ≤ slotBasePrimeCap^2
+    exact (by decide +kernel : ∀ i : WangSlot 1 1,
+      rankedSlotPrime 1 1 (.inl (i,none)) ≤ slotBasePrimeCap^2) i
+
 theorem exists_ranked_parameters (k m : ℕ) :
     ∃ s : SlotParameters k m, s.prime = rankedSlotPrime k m ∧
       (∀ i, s.fallback i ≤ fallbackCap m) ∧
       (∀ i j, s.marker i j ≤ markerCap k m) ∧
       (∀ i, s.low i ≤ lowCap k m) := by
+  by_cases hsmall : k = 1 ∧ m = 1
+  · obtain ⟨rfl,rfl⟩ := hsmall
+    exact exists_ranked_small
   by_cases hm : 24 ≤ m
-  · let a := rankedPrime slotBasePrimeCap (fallbackRank m)
+  · have hm₁ : m ≠ 1 := by omega
+    let a := rankedPrime slotBasePrimeCap (fallbackRank m)
     let q (i : WangSlot k m) (j : ℕ) := matchedPrimeAt k m (slotRank k m i) j
     let p : SlotPrime k m → ℕ
       | .inl (i,none) => q i 3
@@ -181,7 +277,7 @@ theorem exists_ranked_parameters (k m : ℕ) :
     have he : p = rankedSlotPrime k m := by
       funext i
       rcases i with ⟨i,_ | j⟩ | i <;>
-        simp [p,q,rankedSlotPrime,rankedLowAt,rankedMarkerAt,hm,a,rankedPrime,slotFallbackAt]
+        simp [p,q,rankedSlotPrime,rankedLowAt,rankedMarkerAt,hm,a,rankedPrime,slotFallbackAt,hm₁]
     have ha := rankedPrime_spec slotBasePrimeCap (fallbackRank m)
     have hia := rankedPrime_injective slotBasePrimeCap (fallbackRank m)
     have hA : slotBasePrimeCap ≤ fallbackCap m := threshold_le_slotSearchCap ..
@@ -234,9 +330,10 @@ theorem exists_ranked_parameters (k m : ℕ) :
           exact Nat.mul_le_mul (ha _).2.2 (ha _).2.2
         exact h.trans_lt (hq i (by decide : 3 < 4)).2.1
       | some j =>
-        apply Or.inr
+        right
+        left
         have hh := matchedPrimeAt_congruent (slotRank k m i).isLt j.isLt
-        rw [firstFallbackIndex_eq i] at hh
+        rw [firstFallbackIndex_eq i,slotFallbackAt,ite_eq_right hm₁] at hh
         exact hh
     · exact fun i => (ha i).2.2
     · intro i j
@@ -245,7 +342,7 @@ theorem exists_ranked_parameters (k m : ℕ) :
     · intro i
       rw [lowCap,ite_eq_left hm]
       exact (hq i (by decide : 3 < 4)).2.2
-  · simpa [markerCap,lowCap,hm] using exists_ranked_separate k m hm
+  · simpa [markerCap,lowCap,hm] using exists_ranked_separate k m hm hsmall
 
 private theorem indexedProduct_eq {I : Type*} [Fintype I] {count : ℕ}
     (f : ℕ → ℕ) (rank : I ≃ Fin count) :

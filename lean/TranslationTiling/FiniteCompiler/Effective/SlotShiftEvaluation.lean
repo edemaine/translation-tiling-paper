@@ -53,17 +53,16 @@ namespace TranslationTiling.FiniteCompiler
 
 open Compiler.Effective
 
-/-- The search selects the common residue and the quotient records the
-batch index, keeping displacements for different indices distinct. -/
-def evaluatedSlotOffset (modulus : ℕ) (cs : CongruenceList) (index : ℕ) (slope : ℤ) : Plane :=
-  let a : ℤ := (residueSearch modulus cs + modulus*index : ℕ)
+/-- The search selects the common residue for the displacement. -/
+def evaluatedSlotOffset (modulus : ℕ) (cs : CongruenceList) (slope : ℤ) : Plane :=
+  let a : ℤ := (residueSearch modulus cs : ℕ)
   (a,-slope*a)
 
 theorem evaluatedSlotOffset_primrec :
-    Primrec (fun z : (ℕ × CongruenceList) × ℕ × ℤ =>
-      evaluatedSlotOffset z.1.1 z.1.2 z.2.1 z.2.2) := by
+    Primrec (fun z : (ℕ × CongruenceList) × ℤ =>
+      evaluatedSlotOffset z.1.1 z.1.2 z.2) := by
   unfold evaluatedSlotOffset
-  have : Primrec (fun z : (ℕ × CongruenceList) × ℕ × ℤ => residueSearch z.1.1 z.1.2) :=
+  have : Primrec (fun z : (ℕ × CongruenceList) × ℤ => residueSearch z.1.1 z.1.2) :=
     residueSearch_primrec.comp Primrec.fst
   fun_prop
 

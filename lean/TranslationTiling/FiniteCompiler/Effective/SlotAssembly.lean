@@ -9,6 +9,7 @@ noncomputable section
 
 set_option maxRecDepth 5000
 set_option maxHeartbeats 2500000
+attribute [local irreducible] slotSearchCap
 variable {k m : ℕ} (s : SlotParameters k m)
 local instance : DecidableEq (SharedCoordinates.Ambient s.layout) :=
   fun a b => Classical.propDecidable (a = b)
@@ -23,19 +24,44 @@ theorem slotStackTestCap_le {P count : ℕ} (hP : 1 < P) :
 
 def slotRadius (Q m : ℕ) := max (fourValueRadius 0) (Q^(11*m))
 
+/-- One horizontal CRT factor for each selected slot. -/
+def slotOffsetFactorCap (k m : ℕ) : ℕ :=
+  if k = 1 ∧ m = 1 then 473028263936385713 else
+    lowCap k m * markerCap k m^3 * fallbackCap m^2
+
+theorem slotOffsetFactorCap_le (k m : ℕ) :
+    slotOffsetFactorCap k m ≤ lowCap k m * markerCap k m^3 * fallbackCap m^2 := by
+  by_cases h : k = 1 ∧ m = 1
+  · rw [slotOffsetFactorCap,ite_eq_left h]
+    have ha : slotBasePrimeCap ≤ fallbackCap m := threshold_le_slotSearchCap slotBasePrimeCap (4*m)
+    have hb := ha.trans (fallbackCap_le_markerCap k m)
+    have hc := hb.trans (markerCap_le_lowCap k m)
+    exact (by decide : 473028263936385713 ≤ slotBasePrimeCap*slotBasePrimeCap^3*slotBasePrimeCap^2).trans
+      (Nat.mul_le_mul (Nat.mul_le_mul hc (Nat.pow_le_pow_left hb _)) (Nat.pow_le_pow_left ha _))
+  · rw [slotOffsetFactorCap,ite_eq_right h]
+
+theorem slotOffsetFactorCap_pos (k m : ℕ) : 0 < slotOffsetFactorCap k m := by
+  unfold slotOffsetFactorCap
+  split
+  · decide
+  · have ha := fallbackCap_pos m
+    have hb := ha.trans_le (fallbackCap_le_markerCap k m)
+    have hc := hb.trans_le (markerCap_le_lowCap k m)
+    exact Nat.mul_pos (Nat.mul_pos hc (pow_pos hb _)) (pow_pos ha _)
+
 /-- Only selected slots contribute to an activation displacement. -/
 def slotAssemblyRadius (k m w : ℕ) :=
-  max (fourValueRadius 0) ((lowCap k m^2 * markerCap k m^8 * fallbackCap m)^(min m (m+1-w)))
+  max (fourValueRadius 0) ((slotOffsetFactorCap k m)^(min m (m+1-w)))
 
 /-- The fixed arithmetic tests use their own strip widths. -/
 def slotAssemblyRadii (k m w : ℕ) : List ℕ :=
-  let A := (lowCap k m^2 * markerCap k m^8 * fallbackCap m)^(min m (m+1-w))
+  let A := (slotOffsetFactorCap k m)^(min m (m+1-w))
   arithmeticStripRadii.map (fun x => max x A)
 
 theorem slotAssemblyRadii_getD {k m w j : ℕ} (hj : j < 17) :
     (slotAssemblyRadii k m w).getD j 0 =
       max (arithmeticStripRadii.getD j 0)
-        ((lowCap k m^2 * markerCap k m^8 * fallbackCap m)^(min m (m+1-w))) := by
+        ((slotOffsetFactorCap k m)^(min m (m+1-w))) := by
   have h : j < arithmeticStripRadii.length := by simpa [arithmeticStripRadii] using hj
   simp [slotAssemblyRadii,List.getD_eq_getElem?_getD,List.getElem?_eq_getElem,h]
 
@@ -55,11 +81,14 @@ theorem slotAssemblyRadius_le (k m w Q : ℕ) (hA : fallbackCap m ≤ Q)
     slotAssemblyRadius k m w ≤ slotRadius Q m := by
   unfold slotAssemblyRadius slotRadius
   apply max_le_max_left
-  have h : lowCap k m^2 * markerCap k m^8 * fallbackCap m ≤ Q^11 := by
+  have hQ := (fallbackCap_pos m).trans_le hA
+  have h : slotOffsetFactorCap k m ≤ Q^11 := by
     calc
-      _ ≤ Q^2 * Q^8 * Q := Nat.mul_le_mul
-        (Nat.mul_le_mul (Nat.pow_le_pow_left hC _) (Nat.pow_le_pow_left hB _)) hA
-      _ = Q^11 := by ring
+      _ ≤ _ := slotOffsetFactorCap_le k m
+      _ ≤ Q * Q^3 * Q^2 := Nat.mul_le_mul
+        (Nat.mul_le_mul hC (Nat.pow_le_pow_left hB _)) (Nat.pow_le_pow_left hA _)
+      _ = Q^6 := by ring
+      _ ≤ Q^11 := Nat.pow_le_pow_right hQ (by decide)
   rw [pow_mul]
   exact (Nat.pow_le_pow_left h _).trans
     (Nat.pow_le_pow_right (by
@@ -74,7 +103,7 @@ theorem radius_pos (Q m : ℕ) : 1 ≤ slotRadius Q m := by
 /-- A numerical deck can be assembled directly when decoding its lists
 recovers the kernel and the required graph masks. -/
 private theorem slot_assembly_decodedWith (assemble : List CyclicTile → Tile 3)
-    (K : CyclicTile) (Fs : List CyclicTile) {P X : ℕ} {H : ℕ → ℕ}
+    (K : CyclicTile) (Fs : List CyclicTile) {L : ℕ} {H : ℕ → ℕ}
     (hassemble : ∀ J, (∀ F ∈ K :: Fs, (cyclicTileSet (order s.layout) F).card ≤ J) →
       (∀ F ∈ K :: Fs, F ≠ []) → (∀ F ∈ K :: Fs, ∀ v ∈ F, TestSupportAt 35 H v.1) →
       (∀ j : ℤ, (((0 : Plane),((s.period : ℤ)*j : ℤ)) : Plane × ZMod (order s.layout)) ∈
@@ -84,7 +113,7 @@ private theorem slot_assembly_decodedWith (assemble : List CyclicTile → Tile 3
       ((∃ B : Set (Plane × ZMod (order s.layout)), ∀ i : Fin (K :: Fs).length,
         FiniteCompiler.Tiles (cyclicTileSet (order s.layout) ((K :: Fs).getD i.val [])) B) ↔
         TranslationTiling.Tiles U) ∧
-      U.length ≤ reservedVolumeCap 35 H s.period J (reservedCap X P))
+      U.length ≤ reservedVolumeCap 35 H s.period J L)
     (hK : K.toFinset.image (decodePoint s.layout) = productKernel s.layout)
     (hs : ∀ F ∈ Fs, ∀ v ∈ F.toFinset.image (decodePoint s.layout),
       TestSupportAt 35 H v.1)
@@ -96,7 +125,7 @@ private theorem slot_assembly_decodedWith (assemble : List CyclicTile → Tile 3
       ((∃ A : Set (SharedCoordinates.Ambient s.layout), ∀ F ∈ Cs,
         Tiles (F.toFinset.image (decodePoint s.layout)) A) ↔ TranslationTiling.Tiles U) ∧
       U.length ≤ reservedVolumeCap 35 H s.period (order s.layout / s.period)
-        (reservedCap X P) := by
+        L := by
   let Cs := K :: Fs
   have mass (F : CyclicTile) (hmem : F ∈ Cs) :
       (cyclicTileSet (order s.layout) F).card * s.period = order s.layout := by
@@ -175,7 +204,7 @@ theorem slot_assembly_decoded (K : CyclicTile) (Fs : List CyclicTile) {P H : ℕ
     simpa using Nat.mul_le_mul_left X (show 1 ≤ X by omega)
   have hP₂ := hPX.trans hXX
   exact s.slot_assembly_decodedWith (fun L => guardedAssembly (((order s.layout,P,X),s.period,H),L))
-    K Fs (P := P) (X := X) (H := fun _ => H) (fun J hm hn ht hk =>
+    K Fs (L := reservedCap X P) (H := fun _ => H) (fun J hm hn ht hk =>
     guardedAssembly_facts (J := J) s.positive_order hP hX hPrime hP₂
       (by omega) s.period_pos (Nat.le_of_dvd s.positive_order s.period_dvd)
       (by simp) hcount hn hm ht hk) hK hs hF
@@ -194,7 +223,7 @@ theorem slot_assembly_decodedBySlope (K : CyclicTile) (Fs : List CyclicTile) {P 
       ((∃ A : Set (SharedCoordinates.Ambient s.layout), ∀ F ∈ Cs,
         Tiles (F.toFinset.image (decodePoint s.layout)) A) ↔ TranslationTiling.Tiles U) ∧
       U.length ≤ reservedVolumeCap 35 (fun j => H.getD j 0) s.period (order s.layout / s.period)
-        (reservedCap X P) := by
+        (reservedPrimeCap X P) := by
   dsimp only
   let X := slotStackTestCap P (K :: Fs).length
   have hX : 2313 ≤ X := le_max_left ..
@@ -203,7 +232,7 @@ theorem slot_assembly_decodedBySlope (K : CyclicTile) (Fs : List CyclicTile) {P 
   have hP₂ : P ≤ X^2 := (Nat.lt_succ_sqrt' P).le.trans (Nat.pow_le_pow_left hroot _)
   have hX₂ : 3 ≤ X^2 := by nlinarith
   exact s.slot_assembly_decodedWith (fun L => guardedAssemblyBySlope (((order s.layout,P,X),s.period,H),L))
-    K Fs (P := P) (X := X) (H := fun j => H.getD j 0) (fun J hm hn ht hk =>
+    K Fs (L := reservedPrimeCap X P) (H := fun j => H.getD j 0) (fun J hm hn ht hk =>
     guardedAssemblyBySlope_facts (J := J) s.positive_order hP hX hPrime hP₂
       (by omega) s.period_pos (Nat.le_of_dvd s.positive_order s.period_dvd)
       (by simp) hcount hn hm ht hk) hK hs hF

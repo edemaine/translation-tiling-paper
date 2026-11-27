@@ -3386,14 +3386,22 @@ selected arithmetic rows and private outputs. The dependence masks
 make each output follow its own slope, so a cycle can test both Wang
 slopes.
 
+Each horizontal displacement is the least nonnegative CRT representative
+of its low-coordinate shifts and observed-coordinate differences. At a
+fixed target base, the displacement determines the source base. The graph
+output there and the prescribed target output determine the shift of the
+observed coordinates. The shift and the CRT residues recover the full test
+index. Thus each selected slot contributes at most $CB^3A^2$ to the modulus,
+where $A$, $B$, and $C$ cap the fallback, marker, and low primes.
+
 Write $u=\lg(n+4)$, $g=\lg u$, and $\ell=\lg g$. For $n\geq65536$,
 we choose the width $m$ to be a positive multiple of four between
 $g\ell/6$ and $g\ell$. The radix satisfies $\lg D\geq 2m-\lg(m+1)$.
 With this width, the radix loss and rounding the number of digits up
 contribute only a constant to the exponent.
 
-The fallback primes start above $2048$, which exceeds the prime
-divisors of the fixed arithmetic factor. To find $c$ primes above $T$,
+For these widths, the fallback primes start above $2048$, which exceeds
+the prime divisors of the fixed arithmetic factor. To find $c$ primes above $T$,
 we first check the short interval up to $T+32(c+1)$ when it fits the
 certified search range. An explicit prime-counting inequality lets us
 use a range ending at $8\max\{T,4(c+16)(\lfloor\lg(c+16)\rfloor+1)\}$
@@ -3414,29 +3422,33 @@ counts. The resulting marker and low primes are all at most $2^{30}ug$.
 Each slot contributes the square of its low prime and three marker
 primes to the cyclic order, giving the term $5g+5\ell$ in the exponent
 after packing the words. The remaining volume estimates fit in the
-additive constant $898$.
+additive constant $842$.
 
 For $2\leq n\leq9$ we use one or two radix-three digits of width one,
 and for $10\leq n<65536$ we use digits of width four and radix $108$.
-The horizontal support is short enough that the shell volume admits a
-linear bound in the number of slots. The stacking estimate needs its
-test parameter to be at least the square root of the prime cap.
-The size is at most $2^{2344}$ or $2^{2507}$ for one or two digits of
-width one, and at most $2^{3148}$, $2^{3856}$, or $2^{4580}$ for one,
-two, or three digits of width four.
+With one digit of width one, we use two fixed prime rows with certified
+positive block counts, one for each slope. This gives at most $2^{2199}$
+unit cubes. For the other small inputs, the short horizontal supports
+give a shell volume bound linear in the number of geometric slots.
+The resulting size is at most $2^{2439}$ for two digits of width one,
+and at most $2^{3007}$, $2^{3711}$, or $2^{4432}$ for one, two, or three
+digits of width four.
 
-The stacking estimate counts at most $2313$ fixed guard-pattern tests,
-$216$ seed tests, and one kernel test, in addition to the arithmetic
-baseline and the slot-dependent terms.
-A one-tile alphabet needs zero digits. The same assembly sizes each
-arithmetic strip according to the tests on its slope and uses at most
-$2^{2058}$ unit cubes. Together the estimates give the explicit bound
+We center each compact arithmetic mask in the strip of its slope,
+halving the radius bound for that mask. Stacking uses the least
+prime above the threshold in the partition theorem. The threshold uses
+a test parameter at least the square root of the prime cap and counts
+at most $2313$ fixed guard-pattern tests, $216$ seed tests, and one kernel
+test, in addition to the arithmetic baseline and the slot-dependent terms.
+A one-tile alphabet needs zero digits in the same construction. Its
+stacking prime is at most $2{,}380{,}737{,}823$, giving at most $2^{2056}$
+unit cubes. Together the estimates give the explicit bound
 $$
-  B(n)=(n+4)^{5\lg\lg(n+4)+5\lg\lg\lg(n+4)+898}.
+  B(n)=(n+4)^{5\lg\lg(n+4)+5\lg\lg\lg(n+4)+842}.
 $$
 Lean verifies the bound for the computable compiler in
 \leanfile{Compiler/SlotExplicitBound.lean}. The Lean abstract uses $B(n)$
-for $n\geq2$ and $2^{2058}$ for $n\leq1$.
+for $n\geq2$ and $2^{2056}$ for $n\leq1$.
 
 ### The Remaining Cost of Cyclicity
 

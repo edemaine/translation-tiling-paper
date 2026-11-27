@@ -53,8 +53,7 @@ theorem slotDeck_strip (hwm : w ≤ m) {Q : ℕ}
   exact strip_mono (le_max_right ..) (s.mask_strip hQ g d S v hv)
 
 theorem slotDeck_strip_refined (hwm : w ≤ m)
-    (hA : ∀ i, s.fallback i ≤ fallbackCap m) (hB : ∀ i j, s.marker i j ≤ markerCap k m)
-    (hC : ∀ i, s.low i ≤ lowCap k m)
+    (hD : ∀ i, s.slotOffsetFactor i ≤ slotOffsetFactorCap k m)
     (F : Finset (SharedCoordinates.Ambient s.layout)) (hF : F ∈ s.slotDeck c hwm)
     (v : SharedCoordinates.Ambient s.layout) (hv : v ∈ F) :
     TestSupportAt 35 (fun j => (slotAssemblyRadii k m w).getD j 0) v.1 := by
@@ -66,15 +65,10 @@ theorem slotDeck_strip_refined (hwm : w ≤ m)
     have := shiftCount_neZero (selected_nonempty hwm hS)
     have hcard := Finset.card_le_card (Finset.subset_univ S)
     rw [Finset.card_univ, Fintype.card_fin] at hcard
-    have hApos := fallbackCap_pos m
-    have hBpos := hApos.trans_le (fallbackCap_le_markerCap k m)
-    have hCpos : 0 < lowCap k m :=
-      hBpos.trans_le (markerCap_le_lowCap k m)
-    have hpos : 0 < lowCap k m^2 * markerCap k m^8 * fallbackCap m := by positivity
-    apply strip_mono_at _ (s.mask_strip_factors hA hB hC (fallbackCap_le_markerCap k m) g d S v hv)
+    apply strip_mono_at _ (s.mask_strip_factors hD g d S v hv)
     intro j hj
     rw [slotAssemblyRadii_getD hj]
-    exact (Nat.pow_le_pow_right hpos (le_min hcard hS.le)).trans (le_max_right ..)
+    exact (Nat.pow_le_pow_right (slotOffsetFactorCap_pos k m) (le_min hcard hS.le)).trans (le_max_right ..)
 
 private def fixedPicker : FourValuePicker 0 where
   fixed i _ _ := ⟨0,(by decide +kernel : ∀ i : FourValueRow 0,

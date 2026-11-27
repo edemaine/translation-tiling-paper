@@ -66,30 +66,42 @@ theorem projection_target (x : SharedCoordinates.Base s.layout)
 
 def offset := s.slotOffset g d S (slopeNumber g)
 
-theorem offset_injective : Function.Injective (s.offset g d S) :=
-  (s.slotOffset_spec g d S _).1
-
 theorem offset_slope (v : LowShifts s g d S × ShiftType s g d S) :
     (s.offset g d S v).2 = -slopeNumber g * (s.offset g d S v).1 :=
-  ((s.slotOffset_spec g d S _).2 v).1
+  (s.slotOffset_spec g d S _ v).1
 
 theorem offset_low (v : LowShifts s g d S × ShiftType s g d S) (i : SelectedSlot S) :
     ((s.offset g d S v).1 : ZMod (s.low (g,d,i))) = v.1 i :=
-  ((s.slotOffset_spec g d S _).2 v).2.1 i
+  (s.slotOffset_spec g d S _ v).2.1 i
 
 theorem offset_hidden (v : LowShifts s g d S × ShiftType s g d S) (i : SelectedSlot S) :
     ((s.offset g d S v).1 : ZMod (s.fallback (g,i,true))) = 0 :=
-  ((s.slotOffset_spec g d S _).2 v).2.2.1 i
+  (s.slotOffset_spec g d S _ v).2.2.1 i
 
 theorem offset_observed (v : LowShifts s g d S × ShiftType s g d S) (j : ZMod (ShiftCount S)) :
     ((s.offset g d S v).1 : ZMod (s.shiftModulus g d S j)) = v.2 j - SlotShift.shift v.2 j :=
-  ((s.slotOffset_spec g d S _).2 v).2.2.2.1 j
+  (s.slotOffset_spec g d S _ v).2.2.2.1 j
 
 def liftedOffset (v : SlotHigh s.layout (selectedRows g d S) × ShiftType s g d S) : Plane :=
   s.offset g d S ((s.highEquiv g d S).symm v.1,v.2)
 
-theorem liftedOffset_injective : Function.Injective (s.liftedOffset g d S) :=
-  (s.offset_injective g d S).comp (((s.highEquiv g d S).symm.prodCongr (.refl _)).injective)
+theorem liftedOffset_shift_injective :
+    Function.Injective (fun v => (s.liftedOffset g d S v,SlotShift.shift v.2)) := by
+  intro u v h
+  have he : s.liftedOffset g d S u = s.liftedOffset g d S v := congrArg Prod.fst h
+  have hs : SlotShift.shift u.2 = SlotShift.shift v.2 := congrArg Prod.snd h
+  apply Prod.ext
+  · apply (s.highEquiv g d S).symm.injective
+    funext i
+    exact (s.offset_low g d S _ i).symm.trans
+      ((congrArg (fun p : Plane => (p.1 : ZMod (s.low (g,d,i)))) he).trans
+        (s.offset_low g d S _ i))
+  · funext j
+    have hh := (s.offset_observed g d S ((s.highEquiv g d S).symm u.1,u.2) j).symm.trans
+      ((congrArg (fun p : Plane => (p.1 : ZMod (s.shiftModulus g d S j))) he).trans
+        (s.offset_observed g d S ((s.highEquiv g d S).symm v.1,v.2) j))
+    rw [congrFun hs j] at hh
+    exact sub_left_inj.mp hh
 
 def source (x : SharedCoordinates.Base s.layout) (v : LowShifts s g d S × ShiftType s g d S) :=
   slotActivationSource s.layout (selectedRows g d S) (s.offset g d S v) x
@@ -122,7 +134,7 @@ theorem mask_iff [Fintype (Factor s.layout)] (o : SharedCoordinates.Outputs s.la
         let u := s.source g d S x v
         (s.projection g d S (SharedCoordinates.point s.layout o u).2 + SlotShift.shift v.2,
           fun i : SelectedSlot S => o.high u (wangRow (g,d,i)))) := by
-  rw [mask, selectedSlotTile_iff _ _ _ _ (s.liftedOffset_injective g d S) _ (s.projection_target g d S)]
+  rw [mask, selectedSlotTile_iff_of_pair _ _ _ _ (s.liftedOffset_shift_injective g d S) _ (s.projection_target g d S)]
   apply forall_congr'
   intro x
   let e := (s.highEquiv g d S).prodCongr (Equiv.refl (ShiftType s g d S))

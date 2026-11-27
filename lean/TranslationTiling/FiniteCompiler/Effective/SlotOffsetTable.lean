@@ -155,77 +155,33 @@ def offsetResidues (v : ShiftPair s g d S) : ∀ i : OffsetKey S, ZMod (s.offset
   | .inr (i,false) => v.1 i
   | .inr (_,true) => 0
 
-def offsetIndex (v : ShiftPair s g d S) : ℕ :=
-  ((s.lowShiftCRT g d S).symm v.1).val * s.outputShiftOrder g d S +
-    ((s.outputShiftCRT g d S).symm v.2).val
-
-private theorem offsetIndex_injective : Function.Injective (s.offsetIndex g d S) := by
-  intro u v h
-  unfold offsetIndex at h
-  have hB := NeZero.pos (s.outputShiftOrder g d S)
-  apply Prod.ext
-  · apply (s.lowShiftCRT g d S).symm.injective
-    apply ZMod.val_injective
-    simpa only [Nat.mul_comm _ (s.outputShiftOrder g d S),Nat.mul_add_div hB,
-      Nat.div_eq_of_lt (ZMod.val_lt _),Nat.add_zero] using
-      congrArg (· / s.outputShiftOrder g d S) h
-  · apply (s.outputShiftCRT g d S).symm.injective
-    apply ZMod.val_injective
-    simpa only [Nat.mul_add_mod_self_right,Nat.mod_eq_of_lt (ZMod.val_lt _)] using
-      congrArg (· % s.outputShiftOrder g d S) h
-
-private theorem offsetIndex_lt (v : ShiftPair s g d S) :
-    s.offsetIndex g d S v < Fintype.card (ShiftPair s g d S) := by
-  have h := Nat.add_lt_add_left (ZMod.val_lt ((s.outputShiftCRT g d S).symm v.2))
-    (((s.lowShiftCRT g d S).symm v.1).val * s.outputShiftOrder g d S)
-  rw [Fintype.card_prod, ← Fintype.card_congr (s.lowShiftCRT g d S).toEquiv,
-    ← Fintype.card_congr (s.outputShiftCRT g d S).toEquiv, ZMod.card, ZMod.card]
-  apply h.trans_le
-  rw [← Nat.succ_mul]
-  exact Nat.mul_le_mul_right _ (ZMod.val_lt ((s.lowShiftCRT g d S).symm v.1))
-
-/-- The CRT representative fixes the displacement modulo the product,
-and the packed low and output indices fix its quotient. -/
+/-- The horizontal displacement stores the CRT residues of the low shifts
+and the changes in the observed coordinates. -/
 def slotOffset (slope : ℤ) (v : ShiftPair s g d S) : Plane :=
-  let a := separatedResidueLift (s.offsetOrder g d S)
-    (fun u => (s.offsetCRT g d S).symm (s.offsetResidues g d S u)) (s.offsetIndex g d S) v
+  let a : ℤ := ((s.offsetCRT g d S).symm (s.offsetResidues g d S v)).val
   (a,-slope*a)
 
-theorem slotOffset_spec (slope : ℤ) :
-      Function.Injective (s.slotOffset g d S slope) ∧ ∀ v,
+theorem slotOffset_spec (slope : ℤ) (v : ShiftPair s g d S) :
       (s.slotOffset g d S slope v).2 = -slope * (s.slotOffset g d S slope v).1 ∧
       (∀ i : SelectedSlot S, ((s.slotOffset g d S slope v).1 : ZMod (s.low (g,d,i))) = v.1 i) ∧
       (∀ i : SelectedSlot S, ((s.slotOffset g d S slope v).1 : ZMod (s.fallback (g,i,true))) = 0) ∧
       (∀ j, ((s.slotOffset g d S slope v).1 : ZMod (s.shiftModulus g d S j)) = v.2 j-SlotShift.shift v.2 j) ∧
-      0 ≤ (s.slotOffset g d S slope v).1 ∧ (s.slotOffset g d S slope v).1 <
-        ((s.offsetOrder g d S) * Fintype.card (ShiftPair s g d S) : ℕ) := by
-  let M := s.offsetOrder g d S
+      ((s.slotOffset g d S slope v).1).natAbs < s.offsetOrder g d S := by
   let e := s.offsetCRT g d S
-  let val (v : ShiftPair s g d S) := e.symm (s.offsetResidues g d S v)
-  let index := s.offsetIndex g d S
-  let a := separatedResidueLift M val index
-  have hc (v : ShiftPair s g d S) (i : OffsetKey S) : ((a v : ℤ) : ZMod (s.offsetModuli g d S i)) =
+  let r := e.symm (s.offsetResidues g d S v)
+  let a : ℤ := r.val
+  have hc (i : OffsetKey S) : (a : ZMod (s.offsetModuli g d S i)) =
       s.offsetResidues g d S v i := by
-    have he : e (a v : ZMod M) = s.offsetResidues g d S v := by
-      rw [separatedResidueLift_cast]
+    have he : e (a : ZMod (s.offsetOrder g d S)) = s.offsetResidues g d S v := by
+      change e ((↑(r.val) : ℤ) : ZMod (s.offsetOrder g d S)) = _
+      rw [Int.cast_natCast,ZMod.natCast_zmod_val]
       exact e.apply_symm_apply _
     have h := congrFun he i
     rwa [map_intCast] at h
-  refine ⟨fun i j h => separatedResidueLift_injective M val index
-    (s.offsetIndex_injective g d S) (congrArg Prod.fst h),fun v => ⟨rfl,?_,?_,?_,?_,?_⟩⟩
-  · exact fun i => hc v (.inr (i,false))
-  · exact fun i => hc v (.inr (i,true))
-  · exact fun j => hc v (.inl j)
-  · change 0 ≤ a v
-    unfold a separatedResidueLift
-    positivity
-  · have hb : (val v).val + M * index v < M * Fintype.card (ShiftPair s g d S) := by
-      calc
-        _ < M + M * index v := Nat.add_lt_add_right (ZMod.val_lt (val v)) _
-        _ = M * (index v+1) := by rw [Nat.mul_succ,Nat.add_comm]
-        _ ≤ _ := Nat.mul_le_mul_left _ (s.offsetIndex_lt g d S v)
-    change ((val v).val : ℤ) + (M : ℤ) * (index v : ℤ) < _
-    exact_mod_cast hb
+  refine ⟨rfl,fun i => hc (.inr (i,false)),fun i => hc (.inr (i,true)),
+    fun j => hc (.inl j),?_⟩
+  change (Int.ofNat r.val).natAbs < _
+  exact ZMod.val_lt r
 
 end Offsets
 

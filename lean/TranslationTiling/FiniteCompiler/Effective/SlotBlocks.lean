@@ -45,7 +45,9 @@ theorem blockCounts_exist (i : WangSlot k m) (state : Option (Fin 3)) :
     | some j =>
       cases s.prime_injective h
   rcases (s.block_budget i state : a*b < s.low i ∨
-      (b < s.low i ∧ s.low i % a = b % a)) with hr | ⟨hlt,hmod⟩
+      (b < s.low i ∧ s.low i % a = b % a) ∨
+      (∃ u v : ℕ, 0 < u ∧ 0 < v ∧ s.low i = u*a+v*b)) with hr | ⟨hlt,hmod⟩ | h
+  case inr.inr => exact h
   swap
   · let r := s.low i
     change b < r at hlt

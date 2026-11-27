@@ -29,7 +29,8 @@ structure SlotParameters (k m : ℕ) where
       | none => prime (.inr (i.1,i.2.2,true))
       | some j => prime (.inl (i,some j))
     let r := prime (.inl (i,none))
-    a*b < r ∨ (b < r ∧ r % a = b % a)
+    a*b < r ∨ (b < r ∧ r % a = b % a) ∨
+      (∃ u v : ℕ, 0 < u ∧ 0 < v ∧ r = u*a + v*b)
 
 namespace SlotParameters
 

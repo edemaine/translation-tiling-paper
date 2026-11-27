@@ -67,7 +67,7 @@ theorem numericalSlotRecord_correct
     (hhP : hidden.prod = ∏ i : SelectedSlot S, s.fallback (g,i,true))
     (hl : ∀ r, r ∈ selected ↔ ∃ i : SelectedSlot S, s.low (g,d,i) = r)
     (hh : ∀ r, r ∈ hidden ↔ ∃ i : SelectedSlot S, s.fallback (g,i,true) = r)
-    {low output : ℕ} (hlo : low < selected.prod) (hout : output < (s.observedModuli g d S).prod) :
+    {low output : ℕ} (_hlo : low < selected.prod) (_hout : output < (s.observedModuli g d S).prod) :
     let observed := s.observedModuli g d S
     let b : NumericalSlotBatch := (order s.layout,slopeNumber g,selected,remaining,observed,hidden)
     let v : ShiftPair s g d S :=
@@ -91,11 +91,6 @@ theorem numericalSlotRecord_correct
   have hmod : selected.prod * observed.prod * hidden.prod = s.offsetOrder g d S := by
     rw [hlP,s.observedModuli_prod]
     exact s.offsetOrder_product g d S hidden.prod hhP
-  have hindex : s.offsetIndex g d S v = low*observed.prod+output := by
-    unfold offsetIndex v
-    rw [RingEquiv.symm_apply_apply,RingEquiv.symm_apply_apply,ZMod.val_natCast,ZMod.val_natCast,
-      Nat.mod_eq_of_lt (hlP ▸ hlo),Nat.mod_eq_of_lt (s.observedModuli_prod g d S ▸ hout),
-      s.observedModuli_prod]
   have hget (j : ZMod (ShiftCount S)) : coords.getD j.val 0 = (v.2 j).val := by
     rw [show coords = List.ofFn (fun i : Fin (ShiftCount S) =>
       (v.2 (i.val : ZMod (ShiftCount S))).val) from s.observedModuli_coords g d S output]
@@ -171,17 +166,16 @@ theorem numericalSlotRecord_correct
       · have hj : (n : ZMod (s.shiftModulus g d S j)) = v.2 j-SlotShift.shift v.2 j := he (.inl j)
         simpa only [ZMod.val_natCast] using congrArg ZMod.val hj
   have heval : evaluatedSlotOffset (selected.prod*observed.prod*hidden.prod) cs
-      (low*observed.prod+output) (slopeNumber g) = s.offset g d S v := by
-    rw [hmod,← hindex]
-    unfold evaluatedSlotOffset offset slotOffset separatedResidueLift
+      (slopeNumber g) = s.offset g d S v := by
+    rw [hmod]
+    unfold evaluatedSlotOffset offset slotOffset
     rw [residueSearch_of_equiv (s.offsetCRT g d S).toEquiv
       (s.offsetResidues g d S v) cs hcong]
-    push_cast
     rfl
   dsimp only [numericalSlotRecord]
   change _ = _ ∧
     (selected.map fun r => (r^2,((evaluatedSlotOffset (selected.prod*observed.prod*hidden.prod) cs
-      (low*observed.prod+output) (slopeNumber g)).1 % (r^2 : ℕ)).toNat)) ++ _ ++ _ = _
+      (slopeNumber g)).1 % (r^2 : ℕ)).toNat)) ++ _ ++ _ = _
   exact ⟨heval,by rw [heval]⟩
 
 private theorem shiftCongruences_mem (out : ℕ) (c : ℕ × ℕ) :

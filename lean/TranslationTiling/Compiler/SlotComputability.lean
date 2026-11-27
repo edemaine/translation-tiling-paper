@@ -1,5 +1,6 @@
 import TranslationTiling.FiniteCompiler.Effective.SlotNumericalDeck
 import TranslationTiling.Compiler.SlotLogBound
+import TranslationTiling.FiniteCompiler.Effective.SlotSmallPrimeCertificates
 
 namespace TranslationTiling.Compiler.Size
 
@@ -91,9 +92,11 @@ theorem compileSlotWith_computable :
       markerCap_primrec.comp hc
     have hC : Primrec (fun z : SlotInput => SlotParameters.lowCap z.2.1 z.2.2.1) :=
       lowCap_primrec.comp hc
-    let A (z : SlotInput) := (SlotParameters.lowCap z.2.1 z.2.2.1^2 *
-      markerCap z.2.1 z.2.2.1^8 * fallbackCap z.2.2.1)^
-        (min z.2.2.1 (z.2.2.1+1-z.2.2.2))
+    let D (z : SlotInput) := slotOffsetFactorCap z.2.1 z.2.2.1
+    have hD : Primrec D := by
+      unfold D slotOffsetFactorCap
+      fun_prop
+    let A (z : SlotInput) := D z ^ (min z.2.2.1 (z.2.2.1+1-z.2.2.2))
     have h : Primrec A := by
       unfold A
       simp only [show ∀ a b : ℕ, min a b = a-(a-b) by intro a b; omega]
@@ -120,16 +123,31 @@ theorem compileSlot_computable : Computable compileSlot := by
   exact (compileSlotWith_computable.comp (Primrec.id.pair hdim).to_comp).of_eq
     (by intro T; rfl)
 
+private theorem arithmeticBaseline_length_exact : arithmeticBaseline.length = 424 := by
+  decide +kernel
+
+private theorem singletonStackPrime : Nat.Prime 2380737823 := by
+  rw [Nat.prime_def_minFac]
+  decide +kernel
+
+private theorem oneSlotStackPrime : Nat.Prime 4045604611 := by
+  rw [Nat.prime_def_minFac]
+  decide +kernel
+
 private theorem emptyWord_volume :
     let nr := rankedSlotOrders 0 0
-    let P := slotBasePrimeCap
-    let X := slotStackTestCap P (slotDeckCap 0 0 1)
     reservedVolumeCap 35 (fun j => (slotAssemblyRadii 0 0 0).getD j 0) nr.2 (nr.1 / nr.2)
-      (reservedCap X P) ≤ 2^2058 := by
+      2380737823 ≤ 2^2056 := by
   dsimp only
   rw [rankedSlotOrders_zero,show slotAssemblyRadii 0 0 0 = arithmeticStripRadii by
     simp only [slotAssemblyRadii, Nat.zero_min, pow_zero]
     decide]
+  decide +kernel
+
+private theorem oneSlot_volume :
+    let nr := rankedSlotOrders 1 1
+    reservedVolumeCap 35 (fun j => (slotAssemblyRadii 1 1 1).getD j 0) nr.2 (nr.1 / nr.2)
+      4045604611 ≤ 2^2199 := by
   decide +kernel
 
 private theorem compileSlotWith_volume (T : LeanWang.TileSet) {k m w : ℕ}
@@ -141,7 +159,7 @@ private theorem compileSlotWith_volume (T : LeanWang.TileSet) {k m w : ℕ}
     let U := compileSlotWith T k m w
     U ≠ [] ∧ FaceConnected U ∧ (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles U) ∧
       U.length ≤ reservedVolumeCap 35 (fun j => (slotAssemblyRadii k m w).getD j 0) nr.2 (nr.1 / nr.2)
-        (reservedCap X P) := by
+        (reservedPrimeCap X P) := by
   obtain ⟨s,hs,hA,hB,hR⟩ := exists_ranked_parameters k m
   let Q := slotPrimeCap k m
   let P := assemblyPrimeCap m Q
@@ -166,12 +184,15 @@ private theorem compileSlotWith_volume (T : LeanWang.TileSet) {k m w : ℕ}
   rw [rankedSlotOrders_eq s hs]
   exact s.numericalSlotPolycube hn hcap hs hwm (s.primeBound hb hPrime) hP hA hB hR
 
-private theorem reservedCap_mono {X Y : ℕ} (P : ℕ) (hXY : X ≤ Y) :
-    reservedCap X P ≤ reservedCap Y P := by
+private theorem reservedThreshold_mono {X Y : ℕ} (P : ℕ) (hXY : X ≤ Y) :
+    reservedThreshold X P ≤ reservedThreshold Y P := by
   have hlog : Stacking.differenceLog X ≤ Stacking.differenceLog Y :=
     Nat.add_le_add_right (Nat.log_mono_right (Nat.mul_le_mul_left _ hXY)) _
-  unfold reservedCap reservedThreshold
+  unfold reservedThreshold
   gcongr
+
+private theorem reservedCap_mono {X Y : ℕ} (P : ℕ) (hXY : X ≤ Y) :
+    reservedCap X P ≤ reservedCap Y P := Nat.mul_le_mul_left _ (reservedThreshold_mono P hXY)
 
 private theorem countCapAt_mono {H H' : ℕ → ℕ} (h : ∀ j < 17, H j ≤ H' j) :
     Rails.Strips.countCapAt 35 H ≤ Rails.Strips.countCapAt 35 H' := by
@@ -224,7 +245,8 @@ theorem compileSlotWith_correct (T : LeanWang.TileSet) {k m w : ℕ}
   have hN := s.order_le_factors hA hC hB
   have hL := (reservedCap_mono P hX).trans (slotStack_le X P hXpos hPX)
   simp only [assemblyPrimeCap,ite_eq_right hm.ne'] at hvol
-  apply hvol.trans ((uniformSlotVolume k m w _ _ _).trans (hV.trans ?_))
+  apply hvol.trans ((reservedVolumeCap_mono (reservedPrimeCap_le_reservedCap _ _)).trans
+    ((uniformSlotVolume k m w _ _ _).trans (hV.trans ?_)))
   unfold slotRefinedEstimate
   calc
     _ ≤ 10^32*_*(128*X^3)*(H+1)^2 :=
@@ -276,7 +298,9 @@ theorem compileSlotWith_short (T : LeanWang.TileSet) {k m w : ℕ}
   have hX : X ≤ X' := max_le_max_left _ (max_le_max_left _ (numericalSlotTests_length T _ k m w))
   have hv := (compileSlotWith_volume T hn hwm hcap).2.2.2
   rw [he] at hv
-  apply hv.trans ((uniformSlotVolume k m w _ _ _).trans ((slotVolume_linear_le _ _ _ _ _ (Nat.div_mul_le_self _ _) (hH.trans hR)).trans ?_))
+  apply hv.trans ((reservedVolumeCap_mono (reservedPrimeCap_le_reservedCap _ _)).trans
+    ((uniformSlotVolume k m w _ _ _).trans
+      ((slotVolume_linear_le _ _ _ _ _ (Nat.div_mul_le_self _ _) (hH.trans hR)).trans ?_)))
   unfold slotShortEstimate
   exact Nat.mul_le_mul_right _ (Nat.mul_le_mul_right _ (Nat.mul_le_mul_right _
     (Nat.mul_le_mul (Nat.mul_le_mul_left _ hN) (reservedCap_mono P hX))))
@@ -286,23 +310,53 @@ guards, and final geometric assembly are still those of the slot compiler. -/
 theorem compileSlotWith_emptyWord (T : LeanWang.TileSet) (hn : T.length = 1) :
     let U := compileSlotWith T 0 0 0
     U ≠ [] ∧ FaceConnected U ∧ (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles U) ∧
-      U.length ≤ 2^2058 := by
+      U.length ≤ 2^2056 := by
   obtain ⟨hne,hcon,hiff,hvol⟩ := compileSlotWith_volume T (k := 0) (m := 0) (w := 0)
     (by omega) (by decide) (by simp [hn])
   refine ⟨hne,hcon,hiff,hvol.trans ?_⟩
   let nr := rankedSlotOrders 0 0
   let P := slotBasePrimeCap
-  let Q := slotPrimeCap 0 0
   let X := slotStackTestCap P (numericalSlotTests T nr.1 0 0 0).length.succ
   let X' := slotStackTestCap P (slotDeckCap 0 0 1)
   have hX : X ≤ X' := max_le_max_left _ (max_le_max_left _ (by
     simpa only [pow_zero] using numericalSlotTests_length T nr.1 0 0 0))
-  have hL := reservedCap_mono P hX
-  have hV : reservedVolumeCap 35 (fun j => (slotAssemblyRadii 0 0 0).getD j 0) nr.2 (nr.1/nr.2) (reservedCap X P) ≤
-      reservedVolumeCap 35 (fun j => (slotAssemblyRadii 0 0 0).getD j 0) nr.2 (nr.1/nr.2) (reservedCap X' P) := by
-    unfold reservedVolumeCap
-    exact Nat.mul_le_mul_right _ (Nat.mul_le_mul_left _ (Nat.mul_le_mul_left _ hL))
-  exact hV.trans emptyWord_volume
+  have hM : reservedThreshold X' P < 2380737823 := by
+    change reservedThreshold (slotStackTestCap slotBasePrimeCap (slotDeckCap 0 0 1)) slotBasePrimeCap < _
+    simp only [slotDeckCap,arithmeticBaseline_length_exact]
+    decide +kernel
+  exact (reservedVolumeCap_mono
+    (reservedPrimeCap_le_of_prime singletonStackPrime ((reservedThreshold_mono P hX).trans_lt hM))).trans
+    emptyWord_volume
+
+theorem compileSlot_twoOrThree (T : LeanWang.TileSet) (hlo : 2 ≤ T.length)
+    (hhi : T.length ≤ 3) : (compileSlot T).length ≤ 2^2199 := by
+  have hv := (compileSlotWith_volume T (k := 1) (m := 1) (w := 1) (by omega) (by decide)
+    (by exact hhi)).2.2.2
+  let nr := rankedSlotOrders 1 1
+  let P := assemblyPrimeCap 1 (slotPrimeCap 1 1)
+  let X := slotStackTestCap P (numericalSlotTests T nr.1 1 1 1).length.succ
+  let X' := slotStackTestCap P (slotDeckCap 1 1 3)
+  have hX : X ≤ X' := max_le_max_left _ (max_le_max_left _ (numericalSlotTests_length T nr.1 1 1 1))
+  have hA : fallbackCap 1 = 2208 := slotSearchCap_2048_4
+  have hB : separateMarkerCap 1 1 = 2432 := by
+    rw [separateMarkerCap,hA]
+    exact slotSearchCap_2208_6
+  have hC : separateLowCap 1 1 = 5369952 := by
+    rw [separateLowCap,hA,hB]
+    exact slotSearchCap_5369856_2
+  have hP : P = 5369952 := by
+    simp only [P,assemblyPrimeCap,slotPrimeCap,slotStackPrimeCap,markerCap,SlotParameters.lowCap,
+      show ¬ 24 ≤ (1 : ℕ) by decide,show (1 : ℕ) ≠ 0 by decide,ite_eq_right,hA,hB,hC]
+    decide
+  have hM : reservedThreshold X' P < 4045604611 := by
+    unfold X'
+    rw [hP]
+    simp only [slotDeckCap,arithmeticBaseline_length_exact]
+    decide +kernel
+  have hvol := hv.trans ((reservedVolumeCap_mono
+    (reservedPrimeCap_le_of_prime oneSlotStackPrime ((reservedThreshold_mono P hX).trans_lt hM))).trans oneSlot_volume)
+  simpa only [compileSlot,slotDimensions,ite_eq_right (by omega : ¬ T.length ≤ 1),
+    ite_eq_left (show T.length ≤ 9 by omega),ite_eq_left hhi] using hvol
 
 theorem compileSlot_correct (T : LeanWang.TileSet) (hn : 0 < T.length) :
     let U := compileSlot T
@@ -342,7 +396,7 @@ theorem compileSlot_large (T : LeanWang.TileSet) (h : 10 ≤ T.length) :
 
 /-- The one-tile size estimate for the same compiler. -/
 theorem compileSlot_one (T : LeanWang.TileSet) (hn : T.length = 1) :
-    (compileSlot T).length ≤ 2^2058 := by
+    (compileSlot T).length ≤ 2^2056 := by
   simpa [compileSlot,slotDimensions,hn] using (compileSlotWith_emptyWord T hn).2.2.2
 
 theorem compileSlot_smallWidth (T : LeanWang.TileSet) (hlo : 2 ≤ T.length) (hhi : T.length ≤ 9)

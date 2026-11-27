@@ -46,6 +46,33 @@ theorem compactCodes_stripAt (env : ActivationEnvironment) (s : ℕ) (H : ℕ �
   rw [activationBatch_horizontal _ hj]
   exact Or.inr ⟨s,hs,(compactFirst_bound _).trans hH,rfl⟩
 
+theorem compactFirst_centered (z : ActivationNumbers) :
+    (compactFirst z - (z.1.2.2*z.1.1*z.1.2.1 : ℕ)).natAbs ≤ z.1.2.2*z.1.1*z.1.2.1 := by
+  let M := z.1.2.2*z.1.1*z.1.2.1
+  have h := compactFirst_bound z
+  have hp : 0 ≤ compactFirst z := by unfold compactFirst; positivity
+  have hle : compactFirst z ≤ 2*(M : ℤ) := by
+    have hcast : ((compactFirst z).natAbs : ℤ) ≤ 2*(M : ℤ) := by
+      exact_mod_cast (show (compactFirst z).natAbs ≤ 2*M from h)
+    rwa [Int.natAbs_of_nonneg hp] at hcast
+  change (compactFirst z - (M : ℤ)).natAbs ≤ M
+  omega
+
+theorem compactCodes_centered_stripAt (env : ActivationEnvironment) (s : ℕ) (H : ℕ → ℕ)
+    (hs : s < 17) (hH : env.2.1*env.2.2.1*env.2.2.2.1 ≤ H s)
+    (f : NumericalPoint) (hf : f ∈ compactCodes env s) :
+    let M : ℤ := (env.2.1*env.2.2.1*env.2.2.2.1 : ℕ)
+    TestSupportAt 35 H (f.1+(-M,(s : ℤ)*M)) := by
+  obtain ⟨j,_,hj⟩ := List.mem_flatMap.mp hf
+  simp only [compactBatch] at hj
+  rw [activationBatch_horizontal _ hj]
+  refine Or.inr ⟨s,hs,?_,?_⟩
+  · change (_ + -_).natAbs ≤ H s
+    rw [← sub_eq_add_neg]
+    exact (compactFirst_centered _).trans hH
+  · change -_ * _ + _ * _ = -_ * (_ + -_)
+    ring
+
 theorem compactCodes_strip (env : ActivationEnvironment) (s H : ℕ)
     (hs : s < 17) (hH : 2*(env.2.1*env.2.2.1*env.2.2.2.1) ≤ H)
     (f : NumericalPoint) (hf : f ∈ compactCodes env s) :

@@ -340,35 +340,13 @@ private theorem wide_mode {n : ℕ} (hn : 65536 ≤ n) :
     change 24 ≤ 4*max 1 (b*Nat.log 2 b/4)
     omega
 
-private theorem wide_square {u g : ℝ} (hgl : Real.logb 2 u = g) (hu : 0 < u) (hg : 8 ≤ g) :
-    g^2 ≤ u/2 := by
-  let j := ⌊g⌋₊
-  have hj : 8 ≤ j := Nat.le_floor (by exact hg : (↑(8 : ℕ) : ℝ) ≤ g)
-  have hjl : (j : ℝ) ≤ g := Nat.floor_le (by linarith)
-  have hjh : g ≤ (j : ℝ)+1 := (Nat.lt_floor_add_one g).le
-  have hp : (2 : ℝ)^j ≤ u := (Real.logb_le_logb (by norm_num : (1 : ℝ) < 2)
-    (by positivity) hu).mp (by rwa [lg_two_pow,hgl])
-  have hnum (j : ℕ) (h : 8 ≤ j) : 2*(j+1)^2 ≤ 2^j := by
-    induction j,h using Nat.le_induction with
-    | base => decide
-    | succ i hi ih =>
-      rw [pow_succ]
-      have hi' : (8 : ℝ) ≤ i := by exact_mod_cast hi
-      have hh : (2 : ℝ)*((i : ℝ)+1+1)^2 ≤ 2*(2*((i : ℝ)+1)^2) := by
-        nlinarith only [hi',sq_nonneg ((i : ℝ)-1)]
-      exact (show 2*(i+1+1)^2 ≤ 2*(2*(i+1)^2) by exact_mod_cast hh).trans
-        ((Nat.mul_le_mul_left 2 ih).trans_eq (Nat.mul_comm ..))
-  have hc : (2 : ℝ)*((j : ℝ)+1)^2 ≤ (2 : ℝ)^j := by exact_mod_cast hnum j hj
-  have hs : g^2 ≤ ((j : ℝ)+1)^2 := by gcongr
-  linarith only [hp,hc,hs]
-
 theorem slotRefinedEstimate_log {n : ℕ} (hn : 65536 ≤ n) :
     let u := Real.logb 2 ((n : ℝ)+4)
     let g := Real.logb 2 u
     let l := Real.logb 2 g
     let t := wideSlotLength n
     let k := slotPackedDigits n t
-    Real.logb 2 (slotRefinedEstimate k (4*t) (3*t) : ℝ) ≤ u*(5*g+5*l+898) := by
+    Real.logb 2 (slotRefinedEstimate k (4*t) (3*t) : ℝ) ≤ u*(5*g+5*l+842) := by
   let x := (n : ℝ)+4
   let u := Real.logb 2 x
   let g := Real.logb 2 u
@@ -519,16 +497,6 @@ theorem slotRefinedEstimate_log {n : ℕ} (hn : 65536 ≤ n) :
   have hBC : B ≤ C := markerCap_le_lowCap k m
   have hC₀ := hB₀.trans_le hBC
   have hmode : 24 ≤ m ↔ 2^256 ≤ n := wide_mode hn
-  have hlargeG (h : 24 ≤ m) : 8 ≤ g := by
-    have hx' : (2 : ℝ)^256 ≤ x := by
-      have hn' : (2 : ℝ)^256 ≤ (n : ℝ) := by exact_mod_cast hmode.mp h
-      dsimp [x]
-      linarith
-    have hu' := lg_mono (show (0 : ℝ) < 2^256 by positivity) hx'
-    rw [lg_two_pow] at hu'
-    have hg' := lg_mono (show (0 : ℝ) < 2^8 by positivity)
-      (show (2 : ℝ)^8 ≤ u by norm_num at hu' ⊢; exact hu')
-    simpa only [lg_two_pow,Nat.cast_ofNat] using hg'
   have hsmallG (h : ¬ 24 ≤ m) : g ≤ 9 := by
     have hn' : (n : ℝ) ≤ 2^256 := by exact_mod_cast le_of_not_ge (mt hmode.mpr h)
     have hx' : x ≤ (2 : ℝ)^257 := by
@@ -685,11 +653,11 @@ theorem slotRefinedEstimate_log {n : ℕ} (hn : 65536 ≤ n) :
     have h₁ := mul_le_mul_of_nonneg_left hxa (show 0 ≤ (m : ℝ) by positivity)
     have h₂ := mul_le_mul_of_nonneg_left hh (show 0 ≤ (m : ℝ) by positivity)
     nlinarith only [h₁,h₂,hmu,hml']
-  let Z := (C : ℝ)^2*(B : ℝ)^8*(A : ℝ)
+  let Z := (C : ℝ)*(B : ℝ)^3*(A : ℝ)^2
   let r := min m (m+1-3*t)
-  have hZ : Real.logb 2 Z = 2*Real.logb 2 (C : ℝ)+8*Real.logb 2 (B : ℝ)+Real.logb 2 (A : ℝ) := by
+  have hZ : Real.logb 2 Z = Real.logb 2 (C : ℝ)+3*Real.logb 2 (B : ℝ)+2*Real.logb 2 (A : ℝ) := by
     unfold Z
-    rw [Real.logb_mul (by positivity) ha.ne',Real.logb_mul (by positivity) (by positivity),
+    rw [Real.logb_mul (by positivity) (by positivity),Real.logb_mul (by positivity) (by positivity),
       Real.logb_pow,Real.logb_pow]
     norm_num
   have hr : 2*(r : ℝ) ≤ m := by
@@ -703,18 +671,19 @@ theorem slotRefinedEstimate_log {n : ℕ} (hn : 65536 ≤ n) :
     have hb' : 1 ≤ (B : ℝ) := by exact_mod_cast hB₀
     have hc' : 1 ≤ (C : ℝ) := by exact_mod_cast hC₀
     exact one_le_mul_of_one_le_of_one_le
-      (one_le_mul_of_one_le_of_one_le (one_le_pow₀ hc') (one_le_pow₀ hb')) ha'
+      (one_le_mul_of_one_le_of_one_le hc' (one_le_pow₀ hb')) (one_le_pow₀ ha')
   have hH : (H : ℝ)+1 ≤ (2 : ℝ)^70*Z^r := by
     have h : (fourValueRadius 0 : ℝ) = 2^68 := by
       rw [show fourValueRadius 0 = 2^68 by decide]
       norm_num
     have hZr : 1 ≤ Z^r := one_le_pow₀ hZ₁
-    change (↑(max (fourValueRadius 0) ((SlotParameters.lowCap k m^2*markerCap k m^8*fallbackCap m)^r)) : ℝ)+1 ≤ _
+    change (↑(max (fourValueRadius 0) (slotOffsetFactorCap k m^r)) : ℝ)+1 ≤ _
+    rw [slotOffsetFactorCap,ite_eq_right (by omega : ¬ (k = 1 ∧ m = 1))]
     simp only [Nat.cast_max,Nat.cast_pow,Nat.cast_mul,h,← max_add_add_right]
     change max ((2 : ℝ)^68+1) (Z^r+1) ≤ _
     norm_num
     constructor <;> linarith
-  have hHL : 2*Real.logb 2 ((H : ℝ)+1) ≤ 170*u := by
+  have hHL : 2*Real.logb 2 ((H : ℝ)+1) ≤ 115*u := by
     have he := lg_mono (by positivity : 0 < (H : ℝ)+1) hH
     rw [Real.logb_mul (by positivity) (by positivity),lg_two_pow,Real.logb_pow] at he
     have hz₀ : 0 ≤ Real.logb 2 Z := Real.logb_nonneg (by norm_num) hZ₁
@@ -723,16 +692,12 @@ theorem slotRefinedEstimate_log {n : ℕ} (hn : 65536 ≤ n) :
     simp only [Nat.cast_ofNat] at he
     by_cases hm' : 24 ≤ m
     · rw [ite_eq_left hm'] at hlogs
-      have hgs := wide_square (u := u) rfl hu₀ (hlargeG hm')
-      have hms : (m : ℝ) ≤ u/4 := by
-        have hx := mul_le_mul_of_nonneg_left hlg hg₀.le
-        nlinarith only [hml,hx,hgs]
-      have hz : Real.logb 2 Z ≤ 310+10*g+11*l+2*h := by
+      have hz : Real.logb 2 Z ≤ 140+4*g+6*l+4*h := by
         rw [hZ]; linarith [hlogs.1,hlogs.2,hxa]
       have h₂ := mul_le_mul_of_nonneg_left hz (show 0 ≤ (m : ℝ) by positivity)
-      nlinarith only [he,h₁,h₂,h₃,hms,hmg,hml',hu]
+      nlinarith only [he,h₁,h₂,h₃,hmu,hmg,hml',hu]
     · rw [ite_eq_right hm'] at hlogs
-      have hz : Real.logb 2 Z ≤ 166+10*g+13*l+6*h := by
+      have hz : Real.logb 2 Z ≤ 85+4*g+7*l+6*h := by
         rw [hZ]; linarith [hlogs.1,hlogs.2,hxa]
       have h₂ := mul_le_mul_of_nonneg_left hz (show 0 ≤ (m : ℝ) by positivity)
       nlinarith only [he,h₁,h₂,h₃,hmu,hmg,hml',hu]
@@ -751,7 +716,7 @@ theorem slotRefinedEstimate_log {n : ℕ} (hn : 65536 ≤ n) :
   have he := slot_log_bound_factors (c := 10^35*(N : ℝ)) (by positivity)
     (show 0 < W by positivity) ha (show 0 < (X : ℝ) by exact_mod_cast hX0)
     (by positivity : 0 < (H : ℝ)+1) (2*k*m) (4*m)
-  change Real.logb 2 (slotRefinedEstimate k m (3*t) : ℝ) ≤ u*(5*g+5*l+898)
+  change Real.logb 2 (slotRefinedEstimate k m (3*t) : ℝ) ≤ u*(5*g+5*l+842)
   rw [hsize,he]
   push_cast
   nlinarith only [hW',hFA,hHL,hXL,hconst,hu]

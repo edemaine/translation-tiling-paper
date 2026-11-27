@@ -39,7 +39,12 @@ theorem model_dependencies (pick₀ : FourValuePicker 0) (pick : SlotPicker k m)
     apply (s.oldTileLift_iff _ o).mpr
     intro v
     rw [s.slice_model o₀ pick v]
-    exact fourValueBaseline_holds 0 pick₀ f (List.mem_cons_of_mem _ hf)
+    obtain ⟨⟨d,G⟩,hrecord,rfl⟩ := List.mem_map.mp hf
+    apply (fourValueHolds_shift d G o₀).mpr
+    apply fourValueBaseline_holds 0 pick₀ G
+    apply List.mem_cons_of_mem
+    rw [← arithmeticMaskRecords_original]
+    exact List.mem_map.mpr ⟨(d,G),hrecord,rfl⟩
   · intro F hF
     obtain ⟨⟨i,j⟩,_,rfl⟩ := List.mem_map.mp hF
     apply (productInvariance_iff _ _ _ o).mpr

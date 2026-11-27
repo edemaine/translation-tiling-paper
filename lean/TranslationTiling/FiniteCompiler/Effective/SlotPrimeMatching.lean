@@ -160,12 +160,27 @@ private theorem allocate_spec (as pool : List ℕ) (A : ℕ)
 def slotFirstFallbackIndex (k m i : ℕ) : ℕ :=
   2*(i % m) + if i < k*m then 0 else m*2
 
-def slotFallbackAt (m i : ℕ) : ℕ := slotPrimeAt slotBasePrimeCap (4*m) i
+def slotFallbackAt (m i : ℕ) : ℕ :=
+  if m = 1 then [811,257,227,653].getD i 0
+  else slotPrimeAt slotBasePrimeCap (4*m) i
+
+theorem slotFallbackAt_le {m i : ℕ} (hi : i < 4*m) :
+    0 < slotFallbackAt m i ∧ slotFallbackAt m i ≤ fallbackCap m := by
+  by_cases h : m = 1
+  · subst m
+    have h := (by decide +kernel : ∀ i : Fin 4,
+      0 < slotFallbackAt 1 i ∧ slotFallbackAt 1 i ≤ slotBasePrimeCap) ⟨i,hi⟩
+    exact ⟨h.1,h.2.trans (threshold_le_slotSearchCap ..)⟩
+  · rw [slotFallbackAt,ite_eq_right h]
+    have hp := slotPrimeAt_spec hi (threshold := slotBasePrimeCap)
+    exact ⟨hp.1.pos,hp.2.2⟩
 
 @[fun_prop] theorem slotFallbackAt_primrec :
     Primrec (fun z : ℕ × ℕ => slotFallbackAt z.1 z.2) :=
-  slotPrimeAt_primrec.comp (show Primrec (fun z : ℕ × ℕ => ((slotBasePrimeCap,4*z.1),z.2)) by
-    fun_prop)
+  Primrec.ite (by fun_prop)
+    ((Primrec.list_getD 0).comp (Primrec.const _) Primrec.snd)
+    (slotPrimeAt_primrec.comp (show Primrec (fun z : ℕ × ℕ => ((slotBasePrimeCap,4*z.1),z.2)) by
+      fun_prop))
 
 private def slotFallbacks (k m : ℕ) : List ℕ :=
   (List.range (2*k*m)).map (fun i => slotFallbackAt m (slotFirstFallbackIndex k m i))
@@ -215,9 +230,7 @@ private theorem matchedPrimes_valid (k m : ℕ) :
   have ha : ∀ a ∈ slotFallbacks k m, 0 < a ∧ a ≤ fallbackCap m := by
     intro a ha
     obtain ⟨i,hi,rfl⟩ := List.mem_map.mp ha
-    have h := slotPrimeAt_spec (threshold := slotBasePrimeCap)
-      (slotFallbackIndex_lt (List.mem_range.mp hi))
-    exact ⟨h.1.pos,h.2.2⟩
+    exact slotFallbackAt_le (slotFallbackIndex_lt (List.mem_range.mp hi))
   have hlen : (slotFallbacks k m).length = 2*k*m := by simp [slotFallbacks]
   have hc : 512 ≤ (fallbackCap m)^2 := by
     have h : 2048 ≤ fallbackCap m := threshold_le_slotSearchCap ..

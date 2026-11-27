@@ -21,6 +21,17 @@ def selectedSlotTile [Fintype (Factor L)]
     Finset (Ambient L) :=
   slotActivationTile L S ψ h (fun v => SlotShift.shift v.2)
 
+theorem selectedSlotTile_iff_of_pair [Fintype (Factor L)]
+    (ψ : Factor L →+ SlotShift.Shift m) (h : SlotHigh L S × SlotShift.Shift m → Plane)
+    (hh : Function.Injective (fun v => (h v, SlotShift.shift v.2))) (o : Outputs L)
+    (htarget : ∀ x : Base L, ∀ y : SlotShift.Shift m × SlotHigh L S, ∃ v : Ambient L,
+      baseProjection L v = x ∧ (ψ v.2,fun i : {i : I // i ∈ S} => highCoordinate L i v) = y) :
+    Tiles (selectedSlotTile L S ψ h) (Set.range (point L o)) ↔
+      ∀ x, Function.Bijective (fun v =>
+        let u := slotActivationSource L S (h v) x
+        (ψ (point L o u).2 + SlotShift.shift v.2, fun i : {i : I // i ∈ S} => o.high u i)) :=
+  slotActivationTile_iff L S ψ h _ hh o htarget
+
 theorem selectedSlotTile_iff [Fintype (Factor L)]
     (ψ : Factor L →+ SlotShift.Shift m) (h : SlotHigh L S × SlotShift.Shift m → Plane)
     (hh : Function.Injective h) (o : Outputs L)
@@ -30,7 +41,7 @@ theorem selectedSlotTile_iff [Fintype (Factor L)]
       ∀ x, Function.Bijective (fun v =>
         let u := slotActivationSource L S (h v) x
         (ψ (point L o u).2 + SlotShift.shift v.2, fun i : {i : I // i ∈ S} => o.high u i)) :=
-  slotActivationTile_iff L S ψ h hh _ o htarget
+  selectedSlotTile_iff_of_pair L S ψ h (fun _ _ e => hh (congrArg Prod.fst e)) o htarget
 
 /-- The mask tiles when the high outputs identify blocks whose
 observed coordinates restore a nonempty set of the shift coordinates. -/

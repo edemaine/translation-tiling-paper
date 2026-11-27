@@ -260,7 +260,7 @@ theorem numericalSlotPolycube (hs : s.prime = rankedSlotPrime k m)
     let U := guardedAssemblyBySlope (((order s.layout,P,X),s.period,H),K :: Fs)
     U ≠ [] ∧ FaceConnected U ∧ (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles U) ∧
       U.length ≤ reservedVolumeCap 35 (fun j => H.getD j 0) s.period (order s.layout / s.period)
-        (reservedCap X P) := by
+        (reservedPrimeCap X P) := by
   let C := numericCode hn hcap
   let N := order s.layout
   let K := numericalKernel N s.period
@@ -281,7 +281,19 @@ theorem numericalSlotPolycube (hs : s.prime = rankedSlotPrime k m)
   have hF := s.numericalFallbackMasks_correct hs
   have hV := s.numericalSlotActivationMasks_correct hs hwm
   have hDeck := s.slotDeck_membership C hwm
-  apply s.slot_polycube_related C hwm hPr hP hA hB hC K L s.numericalKernel_decodes
+  have hD (i : WangSlot k m) : s.slotOffsetFactor i ≤ slotOffsetFactorCap k m := by
+    by_cases h : k = 1 ∧ m = 1
+    · obtain ⟨rfl,rfl⟩ := h
+      unfold slotOffsetFactor low marker fallback
+      simp only [hs]
+      exact (by decide +kernel : ∀ i : WangSlot 1 1,
+        rankedSlotPrime 1 1 (.inl (i,none)) *
+          (∏ j : Fin 3, rankedSlotPrime 1 1 (.inl (i,some j))) *
+          rankedSlotPrime 1 1 (.inr (i.1,i.2.2,false)) *
+          rankedSlotPrime 1 1 (.inr (i.1,i.2.2,true)) ≤ slotOffsetFactorCap 1 1) i
+    · rw [slotOffsetFactorCap,ite_eq_right h]
+      exact s.slotOffsetFactor_le hA hB hC i
+  apply s.slot_polycube_related C hwm hPr hP hD K L s.numericalKernel_decodes
   · intro G hG
     have h := (hmem G).mp hG
     rcases h with ha | hb | hm | hf | hv | ht | hp

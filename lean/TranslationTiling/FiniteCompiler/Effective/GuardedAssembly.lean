@@ -77,7 +77,7 @@ private theorem guardedAssemblyWith_facts {N P X R J : ℕ} {H : ℕ → ℕ} {F
       ((∃ B : Set (Plane × ZMod N),
         ∀ i : Fin Fs.length, FiniteCompiler.Tiles (cyclicTileSet N (Fs.getD i.val [])) B) ↔
         TranslationTiling.Tiles U) ∧
-      U.length ≤ reservedVolumeCap 35 H R J (reservedCap X P) := by
+      U.length ≤ reservedVolumeCap 35 H R J (reservedPrimeCap X P) := by
   let z : GuardedAssemblyData := (((N,P,X),R,0),Fs)
   let d := guardedReserveData z
   have hl : 5 ≤ Stacking.differenceLog X := by
@@ -90,7 +90,7 @@ private theorem guardedAssemblyWith_facts {N P X R J : ℕ} {H : ℕ → ℕ} {F
       by change 0 < Fs.length-1+1; omega,hl,hP₂⟩
   let c := reservedPartition d
   let data := (N*c.1, stackCodes (N,c,Fs))
-  obtain ⟨hc,hcop,hbound,hres⟩ := reservedPartition_spec d hd
+  obtain ⟨hc,hcop,hbound,hres⟩ := reservedPartition_prime_spec d hd
   have hq : P < c.1 := hc.2.1
   have hpos : 0 < data.1 := Nat.mul_pos hN hc.1.pos
   have hnq : 3*R < 2*data.1 := by
@@ -128,8 +128,10 @@ theorem guardedAssembly_facts {N P X R H J : ℕ} {Fs : List CyclicTile}
       ((∃ B : Set (Plane × ZMod N),
         ∀ i : Fin Fs.length, FiniteCompiler.Tiles (cyclicTileSet N (Fs.getD i.val [])) B) ↔
         TranslationTiling.Tiles U) ∧
-      U.length ≤ reservedVolumeCap 35 (fun _ => H) R J (reservedCap X P) := guardedAssemblyWith_facts (H := fun _ => H) hN hP hX hpr hP₁ hP₂
+      U.length ≤ reservedVolumeCap 35 (fun _ => H) R J (reservedCap X P) := by
+  obtain ⟨hne,hc,he,hv⟩ := guardedAssemblyWith_facts (H := fun _ => H) hN hP hX hpr hP₁ hP₂
     hR hRN hs hsX hne hmass hstrip hker
+  exact ⟨hne,hc,he,hv.trans (reservedVolumeCap_mono (reservedPrimeCap_le_reservedCap X P))⟩
 
 theorem guardedAssemblyBySlope_facts {N P X R J : ℕ} {H : List ℕ} {Fs : List CyclicTile}
     (hN : 0 < N) (hP : 3 < P) (hX : 2313 ≤ X) (hpr : PrimeBound N P)
@@ -145,7 +147,7 @@ theorem guardedAssemblyBySlope_facts {N P X R J : ℕ} {H : List ℕ} {Fs : List
       ((∃ B : Set (Plane × ZMod N),
         ∀ i : Fin Fs.length, FiniteCompiler.Tiles (cyclicTileSet N (Fs.getD i.val [])) B) ↔
         TranslationTiling.Tiles U) ∧
-      U.length ≤ reservedVolumeCap 35 (fun s => H.getD s 0) R J (reservedCap X P) := guardedAssemblyWith_facts (H := fun s => H.getD s 0) hN hP hX hpr hP₁ hP₂
+      U.length ≤ reservedVolumeCap 35 (fun s => H.getD s 0) R J (reservedPrimeCap X P) := guardedAssemblyWith_facts (H := fun s => H.getD s 0) hN hP hX hpr hP₁ hP₂
     hR hRN hs hsX hne hmass hstrip hker
 
 end

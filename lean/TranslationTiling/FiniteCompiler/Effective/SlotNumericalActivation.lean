@@ -40,7 +40,7 @@ def numericalSlotRecord (b : NumericalSlotBatch) (low output : ℕ) : Plane × C
     ((selected.map fun p => (p,low % p)) ++ (hidden.map (·,0)) ++
       indices.map (fun j => (observed.getD j 0,
         differenceResidue (observed.getD j 0) (coords.getD j 0) (shifts.getD j 0))))
-    (low*observed.prod+output) b.2.1
+    b.2.1
   (h,(selected.map fun r => (r^2,(h.1 % (r^2 : ℕ)).toNat)) ++
     (remaining.map (·,0)) ++ indices.map (fun j => (observed.getD j 0,shifts.getD j 0)))
 
@@ -81,9 +81,9 @@ private abbrev SlotRecordInput := NumericalSlotBatch × ℕ × ℕ
     unfold cs
     exact appendList (appendList (mapList hs (by fun_prop)) (mapList hh (by fun_prop))) hdiff
   let offset (z : SlotRecordInput) :=
-    evaluatedSlotOffset (moduli z) (cs z) (z.2.1*(observed z).prod+z.2.2) z.1.2.1
+    evaluatedSlotOffset (moduli z) (cs z) z.1.2.1
   have hargs : Primrec (fun z : SlotRecordInput =>
-      ((moduli z,cs z),z.2.1*(observed z).prod+z.2.2,z.1.2.1)) := by fun_prop
+      ((moduli z,cs z),z.1.2.1)) := by fun_prop
   have hoffset : Primrec offset := evaluatedSlotOffset_primrec.comp hargs
   change Primrec (fun z : SlotRecordInput => (offset z,
     ((selected z).map fun r => (r^2,((offset z).1 % (r^2 : ℕ)).toNat)) ++
@@ -109,7 +109,7 @@ private theorem numericalBatchPoints_primrec :
   exact mapList hf ((Primrec.fst.comp (Primrec.snd.comp Primrec.fst)).pair Primrec.snd)
 
 /-- One batch per low vector and observed vector, each encoded by its CRT
-representative. This uses the same separated-offset bound as the slot mask. -/
+representative of its displacement. -/
 def numericalSlotActivation (b : NumericalSlotBatch) : CyclicTile :=
   (List.range b.2.2.1.prod).flatMap fun low =>
     (List.range b.2.2.2.2.1.prod).flatMap fun output =>

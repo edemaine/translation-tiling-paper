@@ -33,6 +33,11 @@ def reservedVolumeCap (M : ℕ) (H : ℕ → ℕ) (R J L : ℕ) : ℕ :=
   let B := railHeight (3*R+1)
   Size.mssPieceCap*(J*L)*(216*(4*a+7*(B+2)+1)*(4*a+1))
 
+theorem reservedVolumeCap_mono {M R J L L' : ℕ} {H : ℕ → ℕ} (h : L ≤ L') :
+    reservedVolumeCap M H R J L ≤ reservedVolumeCap M H R J L' := by
+  unfold reservedVolumeCap
+  exact Nat.mul_le_mul_right _ (Nat.mul_le_mul_left _ (Nat.mul_le_mul_left _ h))
+
 theorem reservedVolume (d : CyclicTileData) (hQ : 0<d.1) (M : ℕ) (H : ℕ → ℕ)
     (R J q L : ℕ) (hq : q≤L) (hm : (cyclicTileSet d.1 d.2).card≤J*q) :
     (SlotAssembly.assemble (integerTile d) (slotsAt M H) (railHeight (3*R+1))).length≤
