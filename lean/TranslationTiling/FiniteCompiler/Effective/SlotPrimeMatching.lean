@@ -16,115 +16,115 @@ private def bucket (a : ℕ) (pool : List ℕ) (r : ℕ) : List ℕ :=
   unfold bucket
   exact filterList (by fun_prop) (by fun_prop)
 
-private def quartet (a : ℕ) (pool : List ℕ) : List ℕ :=
-  let r := (List.range a).findIdx fun r => decide (4 ≤ (bucket a pool r).length)
-  (bucket a pool r).take 4
+private def primeGroup (extra a : ℕ) (pool : List ℕ) : List ℕ :=
+  let r := (List.range a).findIdx fun r => decide (extra+1 ≤ (bucket a pool r).length)
+  (bucket a pool r).take (extra+1)
 
-@[fun_prop] private theorem quartet_primrec :
-    Primrec (fun z : ℕ × List ℕ => quartet z.1 z.2) := by
+@[fun_prop] private theorem primeGroup_primrec (extra : ℕ) :
+    Primrec (fun z : ℕ × List ℕ => primeGroup extra z.1 z.2) := by
   have hr : Primrec (fun z : ℕ × List ℕ =>
-      (List.range z.1).findIdx fun r => decide (4 ≤ (bucket z.1 z.2 r).length)) :=
+      (List.range z.1).findIdx fun r => decide (extra+1 ≤ (bucket z.1 z.2 r).length)) :=
     Primrec.list_findIdx (by fun_prop) (by
-      change Primrec (fun z : (ℕ × List ℕ) × ℕ => decide (4 ≤ (bucket z.1.1 z.1.2 z.2).length))
+      change Primrec (fun z : (ℕ × List ℕ) × ℕ => decide (extra+1 ≤ (bucket z.1.1 z.1.2 z.2).length))
       fun_prop)
-  unfold quartet
-  exact Primrec.list_take.comp (Primrec.const 4) (bucket_primrec.comp (Primrec.fst.pair (Primrec.snd.pair hr)))
+  unfold primeGroup
+  exact Primrec.list_take.comp (Primrec.const (extra+1)) (bucket_primrec.comp (Primrec.fst.pair (Primrec.snd.pair hr)))
 
-private theorem quartet_spec (a : ℕ) (pool : List ℕ) (ha : 0 < a)
-    (hp : pool.Pairwise (· < ·)) (hlen : 3*a < pool.length) :
-    let q := quartet a pool
-    q.length = 4 ∧ q.Pairwise (· < ·) ∧ (∀ p ∈ q, p ∈ pool) ∧
+private theorem primeGroup_spec (extra a : ℕ) (pool : List ℕ) (ha : 0 < a)
+    (hp : pool.Pairwise (· < ·)) (hlen : extra*a < pool.length) :
+    let q := primeGroup extra a pool
+    q.length = extra+1 ∧ q.Pairwise (· < ·) ∧ (∀ p ∈ q, p ∈ pool) ∧
       ∀ p ∈ q, ∀ t ∈ q, p % a = t % a := by
   have hn := hp.imp (fun h => Nat.ne_of_lt h)
   have ⟨r,hr,hcard⟩ := Finset.exists_lt_card_fiber_of_mul_lt_card_of_maps_to
-    (f := fun p : ℕ => p % a) (s := pool.toFinset) (t := Finset.range a) (n := 3)
+    (f := fun p : ℕ => p % a) (s := pool.toFinset) (t := Finset.range a) (n := extra)
     (fun p _ => Finset.mem_range.mpr (Nat.mod_lt p ha))
     (by simpa [List.toFinset_card_of_nodup hn, Nat.mul_comm] using hlen)
   have hbucket (r : ℕ) :
       (bucket a pool r).toFinset = pool.toFinset.filter (fun p => p % a = r) := by
     ext p
     simp [bucket]
-  have hr' : 4 ≤ (bucket a pool r).length := by
+  have hr' : extra+1 ≤ (bucket a pool r).length := by
     rw [← hbucket] at hcard
-    exact hcard.trans_le (List.toFinset_card_le _)
-  let j := (List.range a).findIdx fun r => decide (4 ≤ (bucket a pool r).length)
+    exact (Nat.succ_le_of_lt hcard).trans (List.toFinset_card_le _)
+  let j := (List.range a).findIdx fun r => decide (extra+1 ≤ (bucket a pool r).length)
   have hj : j < (List.range a).length :=
     List.findIdx_lt_length_of_exists ⟨r,List.mem_range.mpr (Finset.mem_range.mp hr),by simp [hr']⟩
-  have hgood : 4 ≤ (bucket a pool j).length := by
+  have hgood : extra+1 ≤ (bucket a pool j).length := by
     have h := List.findIdx_getElem (xs := List.range a)
-      (p := fun r => decide (4 ≤ (bucket a pool r).length)) (w := hj)
+      (p := fun r => decide (extra+1 ≤ (bucket a pool r).length)) (w := hj)
     simpa [j] using h
-  have hsub : ((bucket a pool j).take 4).Sublist (bucket a pool j) := List.take_sublist ..
+  have hsub : ((bucket a pool j).take (extra+1)).Sublist (bucket a pool j) := List.take_sublist ..
   have hfilter : (bucket a pool j).Sublist pool := List.filter_sublist ..
-  refine ⟨by simp [quartet,j,min_eq_left hgood], hp.sublist (hsub.trans hfilter),
+  refine ⟨by erw [List.length_take]; exact min_eq_left hgood, hp.sublist (hsub.trans hfilter),
     fun p h => (hsub.trans hfilter).subset h, ?_⟩
   intro p hp' t ht
   have h₁ := (List.mem_filter.mp (hsub.subset hp')).2
   have h₂ := (List.mem_filter.mp (hsub.subset ht)).2
   exact (of_decide_eq_true h₁).trans (of_decide_eq_true h₂).symm
 
-private def allocate (as pool : List ℕ) : List ℕ × List ℕ :=
+/-- Allocate sorted groups of `extra+1` primes having a common residue
+modulo each requested modulus. -/
+def allocatePrimeGroups (extra : ℕ) (as pool : List ℕ) : List ℕ × List ℕ :=
   as.foldr (fun a acc =>
-    let group := quartet a acc.1
+    let group := primeGroup extra a acc.1
     (acc.1.filter (fun p => decide (∀ q ∈ group, q ≠ p)), group ++ acc.2)) (pool, [])
 
-private theorem allocate_primrec : Primrec (fun z : List ℕ × List ℕ => allocate z.1 z.2) := by
-  unfold allocate
+theorem allocatePrimeGroups_primrec (extra : ℕ) : Primrec (fun z : List ℕ × List ℕ => allocatePrimeGroups extra z.1 z.2) := by
+  unfold allocatePrimeGroups
   apply Primrec.list_foldr (h := fun _ (z : ℕ × List ℕ × List ℕ) =>
-    let group := quartet z.1 z.2.1
+    let group := primeGroup extra z.1 z.2.1
     (z.2.1.filter (fun p => decide (∀ q ∈ group, q ≠ p)), group ++ z.2.2))
     Primrec.fst (Primrec.snd.pair (Primrec.const []))
   change Primrec (fun z : (List ℕ × List ℕ) × ℕ × List ℕ × List ℕ =>
-    let group := quartet z.2.1 z.2.2.1
+    let group := primeGroup extra z.2.1 z.2.2.1
     (z.2.2.1.filter (fun p => decide (∀ q ∈ group, q ≠ p)), group ++ z.2.2.2))
   have hq : Primrec (fun z : (List ℕ × List ℕ) × ℕ × List ℕ × List ℕ =>
-    quartet z.2.1 z.2.2.1) := by fun_prop
+    primeGroup extra z.2.1 z.2.2.1) := by fun_prop
   apply Primrec.pair _ (by fun_prop)
   apply filterList (f := fun z : (List ℕ × List ℕ) × ℕ × List ℕ × List ℕ => z.2.2.1)
-    (p := fun z p => ∀ q ∈ quartet z.2.1 z.2.2.1, q ≠ p) (by fun_prop)
+    (p := fun z p => ∀ q ∈ primeGroup extra z.2.1 z.2.2.1, q ≠ p) (by fun_prop)
   apply allList (hq.comp Primrec.fst)
   fun_prop
 
-private theorem allocate_spec (as pool : List ℕ) (A : ℕ)
+theorem allocatePrimeGroups_spec (extra : ℕ) (as pool : List ℕ) (A : ℕ)
     (ha : ∀ a ∈ as, 0 < a ∧ a ≤ A) (hp : pool.Pairwise (· < ·))
-    (hpool : 4*as.length + 3*A ≤ pool.length) :
-    let R := (allocate as pool).1
-    let L := (allocate as pool).2
-    (R ++ L).Perm pool ∧ R.Pairwise (· < ·) ∧ L.length = 4*as.length ∧
-    ∀ i < as.length, ∀ j < 3,
-      L.getD (4*i+j) 0 < L.getD (4*i+3) 0 ∧
-      L.getD (4*i+3) 0 % as.getD i 0 = L.getD (4*i+j) 0 % as.getD i 0 := by
+    (hpool : (extra+1)*as.length + extra*A ≤ pool.length) :
+    let R := (allocatePrimeGroups extra as pool).1
+    let L := (allocatePrimeGroups extra as pool).2
+    (R ++ L).Perm pool ∧ R.Pairwise (· < ·) ∧ L.length = (extra+1)*as.length ∧
+    ∀ i < as.length, ∀ j j' : ℕ, j < j' → j' < extra+1 →
+      L.getD ((extra+1)*i+j) 0 < L.getD ((extra+1)*i+j') 0 ∧
+      L.getD ((extra+1)*i+j') 0 % as.getD i 0 = L.getD ((extra+1)*i+j) 0 % as.getD i 0 := by
   induction as with
-  | nil => simp [allocate,hp]
+  | nil => simp [allocatePrimeGroups,hp]
   | cons a as ih =>
     have h₀ := ha a (by simp)
-    obtain ⟨hperm,hsort,hlen,hrows⟩ := ih (fun b hb => ha b (by simp [hb])) (by simpa only [List.length_cons] using (show 4*as.length + 3*A ≤ pool.length by simp only [List.length_cons] at hpool; omega))
-    let R := (allocate as pool).1
-    let L := (allocate as pool).2
-    let Q := quartet a R
+    simp only [List.length_cons, Nat.mul_succ] at hpool
+    obtain ⟨hperm,hsort,hlen,hrows⟩ := ih (fun b hb => ha b (by simp [hb])) (by omega)
+    let R := (allocatePrimeGroups extra as pool).1
+    let L := (allocatePrimeGroups extra as pool).2
+    let Q := primeGroup extra a R
     let U := R.filter (fun p => decide (∀ q ∈ Q, q ≠ p))
     have hlenR := hperm.length_eq
     simp only [List.length_append,hlen] at hlenR
-    change R.length + 4*as.length = pool.length at hlenR
-    change L.length = 4*as.length at hlen
-    obtain ⟨hQ,hsQ,hQR,hmod⟩ := quartet_spec a R h₀.1 hsort (by
-      have := h₀.2
-      simp only [List.length_cons] at hpool
-      omega)
-    change Q.length = 4 at hQ
+    change R.length + (extra+1)*as.length = pool.length at hlenR
+    change L.length = (extra+1)*as.length at hlen
+    have hreserve := Nat.mul_le_mul_left extra h₀.2
+    obtain ⟨hQ,hsQ,hQR,hmod⟩ := primeGroup_spec extra a R h₀.1 hsort (by omega)
+    change Q.length = extra+1 at hQ
     change Q.Pairwise (· < ·) at hsQ
     change ∀ p ∈ Q, p ∈ R at hQR
     change ∀ p ∈ Q, ∀ t ∈ Q, p % a = t % a at hmod
-    have he : allocate (a::as) pool = (U,Q ++ L) := by
-      rw [allocate,List.foldr_cons]
+    have he : allocatePrimeGroups extra (a::as) pool = (U,Q ++ L) := by
+      rw [allocatePrimeGroups,List.foldr_cons]
       rfl
     dsimp only
     rw [he]
     have hUR : (U ++ Q).Perm R := by
       apply (List.perm_ext_iff_of_nodup ?_ (hsort.imp (fun h => Nat.ne_of_lt h))).mpr
       · intro p
-        simp only [List.mem_append,U,List.mem_filter]
-        simp only [decide_eq_true_eq]
+        simp only [List.mem_append,U,List.mem_filter,decide_eq_true_eq]
         have hmem : (∀ q ∈ Q, q ≠ p) ↔ p ∉ Q := by
           constructor
           · exact fun hn hp' => hn p hp' rfl
@@ -137,25 +137,25 @@ private theorem allocate_spec (as pool : List ℕ) (A : ℕ)
       · apply List.nodup_append'.mpr
         refine ⟨(hsort.imp (fun h => Nat.ne_of_lt h)).filter _, hsQ.imp (fun h => Nat.ne_of_lt h), ?_⟩
         intro p hp' hq
-        have hh := of_decide_eq_true (List.mem_filter.mp hp').2
-        exact hh p hq rfl
+        exact of_decide_eq_true (List.mem_filter.mp hp').2 p hq rfl
     refine ⟨(by rw [← List.append_assoc]; exact (hUR.append_right L).trans hperm),
-      hsort.sublist (List.filter_sublist ..),by simp [hQ,hlen]; omega,?_⟩
-    intro i hi j hj
+      hsort.sublist (List.filter_sublist ..),by simp [hQ,hlen,Nat.mul_succ,Nat.add_comm],?_⟩
+    intro i hi j j' hj hj'
     cases i with
     | zero =>
-      have hj' : j < Q.length := by omega
-      have h3 : 3 < Q.length := by omega
-      have hlt := (List.pairwise_iff_getElem.mp hsQ) j 3 hj' h3 hj
-      have hh := hmod _ (List.getElem_mem h3) _ (List.getElem_mem hj')
-      simpa [List.getD_eq_getElem?_getD,List.getElem?_append_left,hj',h3] using And.intro hlt hh
+      have hleft : j < Q.length := by omega
+      have hright : j' < Q.length := by omega
+      have hlt := (List.pairwise_iff_getElem.mp hsQ) j j' hleft hright hj
+      have hh := hmod _ (List.getElem_mem hright) _ (List.getElem_mem hleft)
+      simpa [List.getD_eq_getElem?_getD,List.getElem?_append_left,hleft,hright] using And.intro hlt hh
     | succ i =>
-      have hj' : Q.length ≤ 4*(i+1)+j := by omega
-      have h3 : Q.length ≤ 4*(i+1)+3 := by omega
-      simpa only [List.getD_eq_getElem?_getD,List.getElem?_append_right hj',
-        List.getElem?_append_right h3,List.getElem?_cons_succ,
-        show 4*(i+1)+j-Q.length = 4*i+j by omega,
-        show 4*(i+1)+3-Q.length = 4*i+3 by omega] using hrows i (by simpa using hi) j hj
+      have hleft : Q.length ≤ (extra+1)*(i+1)+j := by rw [Nat.mul_succ,hQ]; omega
+      have hright : Q.length ≤ (extra+1)*(i+1)+j' := by rw [Nat.mul_succ,hQ]; omega
+      simpa only [List.getD_eq_getElem?_getD,List.getElem?_append_right hleft,
+        List.getElem?_append_right hright,List.getElem?_cons_succ,
+        show (extra+1)*(i+1)+j-Q.length = (extra+1)*i+j by rw [Nat.mul_succ,hQ]; omega,
+        show (extra+1)*(i+1)+j'-Q.length = (extra+1)*i+j' by rw [Nat.mul_succ,hQ]; omega]
+        using hrows i (by simpa using hi) j j' hj hj'
 
 def slotFirstFallbackIndex (k m i : ℕ) : ℕ :=
   2*(i % m) + if i < k*m then 0 else m*2
@@ -189,7 +189,7 @@ private def matchedPool (k m : ℕ) : List ℕ :=
   slotPrimeInterval ((fallbackCap m)^2) (matchedSlotCap k m)
 
 private def matchedPrimes (k m : ℕ) : List ℕ :=
-  (allocate (slotFallbacks k m) (matchedPool k m)).2
+  (allocatePrimeGroups 3 (slotFallbacks k m) (matchedPool k m)).2
 
 def matchedPrimeAt (k m i j : ℕ) : ℕ := (matchedPrimes k m).getD (4*i+j) 0
 
@@ -202,7 +202,7 @@ def matchedPrimeAt (k m i j : ℕ) : ℕ := (matchedPrimes k m).getD (4*i+j) 0
     unfold slotFallbacks slotFirstFallbackIndex
     fun_prop
   have hm : Primrec (fun z : ℕ × ℕ => matchedPrimes z.1 z.2) :=
-    Primrec.snd.comp (allocate_primrec.comp (hf.pair hp))
+    Primrec.snd.comp ((allocatePrimeGroups_primrec 3).comp (hf.pair hp))
   unfold matchedPrimeAt
   exact (Primrec.list_getD 0).comp (hm.comp (show Primrec
     (fun z : ℕ × ℕ × ℕ × ℕ => (z.1,z.2.1)) by fun_prop)) (by fun_prop)
@@ -241,7 +241,7 @@ private theorem matchedPrimes_valid (k m : ℕ) :
     have h := slotWindowCap_count (count := matchedSlotCount k m) hc
     rw [show 4*(2*k*m)+3*fallbackCap m = matchedSlotCount k m by unfold matchedSlotCount; ring]
     omega
-  obtain ⟨hperm,_,hlen',hrow⟩ := allocate_spec _ _ _ ha (matchedPool_sorted k m) hpool
+  obtain ⟨hperm,_,hlen',hrow⟩ := allocatePrimeGroups_spec 3 _ _ _ ha (matchedPool_sorted k m) hpool
   refine ⟨by simpa [matchedPrimes,hlen] using hlen',
     (List.nodup_append'.mp (hperm.nodup_iff.mpr
       ((matchedPool_sorted k m).imp fun h => Nat.ne_of_lt h))).2.1,
@@ -249,7 +249,7 @@ private theorem matchedPrimes_valid (k m : ℕ) :
   intro i hi j hj
   simpa [matchedPrimeAt,matchedPrimes,slotFallbacks,List.getD_eq_getElem?_getD,
     List.getElem?_map,List.getElem?_eq_getElem (show i < (List.range (2*k*m)).length by simpa using hi)]
-    using hrow i (hlen.symm ▸ hi) j hj
+    using hrow i (hlen.symm ▸ hi) j 3 hj (by decide)
 
 theorem matchedPrimeAt_spec {k m i j : ℕ} (hi : i < 2*k*m) (hj : j < 4) :
     (matchedPrimeAt k m i j).Prime ∧ (fallbackCap m)^2 < matchedPrimeAt k m i j ∧

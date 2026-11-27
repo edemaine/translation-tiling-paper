@@ -3460,13 +3460,32 @@ fixed guard-pattern tests, $216$ seed tests, and one kernel test, in
 addition to the arithmetic baseline and the slot-dependent terms.
 A one-tile alphabet needs zero digits in the same construction. Its
 stacking prime is at most $1{,}190{,}369{,}951$, giving at most
-$2^{2055}$ unit cubes. For $n\geq2$, the estimates give the bound
+$2^{2055}$ unit cubes.
+
+For $n\geq 2^{2^{48}}$, we use two Chinese remainder axes per Wang slot,
+sharing three marker primes between the axes. Each active label picks
+one axis and one marker. Its vertical-cycle test varies the chosen axis
+and reads the chosen marker. The activation masks use fallback outputs
+to ensure that enough slots have a nonconstant marker. Each slot contributes
+the squares of its two low primes and the three marker primes to the
+cyclic order. The radix at width $m$ is at least $7^m/(m+1)$, using six
+active labels and one inactive label and requiring exactly six sevenths
+of the slots to be active. The seven prime factors per slot and the two
+Wang slopes give a coefficient of $14/\lg 7$ on both logarithmic terms.
+Rounding it up gives a bound of
 $$
-  B(n)=(n+4)^{5\lg\lg(n+4)+5\lg\lg\lg(n+4)+330+\frac{1322}{\lg(n+4)}}.
+  (n+4)^{4.986901(\lg\lg(n+4)+\lg\lg\lg(n+4))+64}
 $$
-Lean verifies the bound for the computable compiler in
-\leanfile{Compiler/SlotExplicitBound.lean}. The Lean abstract uses $B(n)$
-for $n\geq2$ and $2^{2055}$ for $n\leq1$.
+unit cubes for these inputs.
+
+Below this cutoff we use the one-axis layout estimated above. The
+uniform bound for $n\geq2$ is
+$$
+  B(n)=(n+4)^{4.986901(\lg\lg(n+4)+\lg\lg\lg(n+4))+331+\frac{1322}{\lg(n+4)}}.
+$$
+Lean verifies the bound and computability of the reduction in
+\leanfile{Compiler/AxisSlotExplicitBound.lean}. The Lean abstract uses
+$B(n)$ for $n\geq2$ and $2^{2055}$ for $n\leq1$.
 
 ### The Remaining Cost of Cyclicity
 

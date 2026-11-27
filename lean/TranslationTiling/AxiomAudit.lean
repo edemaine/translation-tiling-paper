@@ -50,7 +50,7 @@ import TranslationTiling.Compiler.SlotBound
 import TranslationTiling.Compiler.SlotCapacity
 import TranslationTiling.Compiler.SlotLogBound
 import TranslationTiling.Compiler.SlotComputability
-import TranslationTiling.Compiler.SlotExplicitBound
+import TranslationTiling.Compiler.AxisSlotExplicitBound
 import TranslationTiling.FiniteCompiler.Effective.SlotShiftEvaluation
 import TranslationTiling.FiniteCompiler.Effective.SlotNumericalKernel
 import TranslationTiling.FiniteCompiler.Effective.SlotNumericalActivation
@@ -117,6 +117,13 @@ run_cmd do
       ``TranslationTiling.Compiler.Size.compileSlotTotal_computable,
       ``TranslationTiling.Compiler.Size.compileSlotTotal_facts,
       ``TranslationTiling.Compiler.Size.compileSlotTotal_public_bound,
+      ``TranslationTiling.Compiler.Size.axis_coefficient_le_decimal,
+      ``TranslationTiling.Compiler.Size.axisInputLog_cutoff,
+      ``TranslationTiling.Compiler.Size.axisEstimate_log,
+      ``TranslationTiling.Compiler.Size.compileAxis_explicit,
+      ``TranslationTiling.Compiler.Size.compileAxisTotal_computable,
+      ``TranslationTiling.Compiler.Size.compileAxisTotal_facts,
+      ``TranslationTiling.Compiler.Size.compileAxisTotal_public_bound,
       ``TranslationTiling.Compiler.Size.compileSlot_logarithmic,
       ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.numericalSlotActivationMasks_correct,
       ``TranslationTiling.FiniteCompiler.Packed.SlotParameters.numericalGuardFor_spec,

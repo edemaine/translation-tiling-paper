@@ -16,7 +16,7 @@ private theorem factorial_primrec : Primrec Nat.factorial := by
   | zero => rfl
   | succ n ih => change (n+1)*_ = _; rw [Nat.factorial_succ,← ih]; rfl
 
-private theorem choose_primrec : Primrec (fun z : ℕ × ℕ => Nat.choose z.1 z.2) := by
+theorem choose_primrec : Primrec (fun z : ℕ × ℕ => Nat.choose z.1 z.2) := by
   let f := fun z : ℕ × ℕ =>
     if z.2 ≤ z.1 then z.1.factorial / (z.2.factorial * (z.1-z.2).factorial) else 0
   have hf : Primrec f := by
@@ -32,7 +32,7 @@ private theorem choose_primrec : Primrec (fun z : ℕ × ℕ => Nat.choose z.1 z
     simp [f,h]
   · simp [f,h,Nat.choose_eq_zero_of_lt (Nat.lt_of_not_ge h)]
 
-private theorem clog_primrec : Primrec (fun z : ℕ × ℕ => Nat.clog z.1 z.2) := by
+theorem clog_primrec : Primrec (fun z : ℕ × ℕ => Nat.clog z.1 z.2) := by
   have hbound : Primrec.PrimrecBounded (fun z : ℕ × ℕ => Nat.clog z.1 z.2) := by
     refine ⟨fun z => z.2, Primrec.snd, ?_⟩
     intro z
