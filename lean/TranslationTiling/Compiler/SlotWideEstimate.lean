@@ -1,4 +1,5 @@
 import TranslationTiling.Compiler.SlotComputability
+import TranslationTiling.FiniteCompiler.Effective.SlotSmallPrimeCertificates
 
 namespace TranslationTiling.Compiler.Size
 
@@ -340,13 +341,238 @@ private theorem wide_mode {n : ℕ} (hn : 65536 ≤ n) :
     change 24 ≤ 4*max 1 (b*Nat.log 2 b/4)
     omega
 
+private theorem lg_cubed_large {u : ℝ} (hu : 0 < u) (hg : 16 ≤ Real.logb 2 u) :
+    8*(Real.logb 2 u)^3 ≤ u := by
+  let g := Real.logb 2 u
+  let j := ⌊g⌋₊
+  have hj : 16 ≤ j := Nat.le_floor hg
+  have h : ∀ i ≥ 16, 8*(i+1)^3 ≤ 2^i := by
+    intro i hi
+    induction i,hi using Nat.le_induction with
+    | base => decide
+    | succ i hi ih =>
+        rw [pow_succ]
+        have hs : 8*(i+1+1)^3 ≤ 2*(8*(i+1)^3) := by
+          nlinarith only [hi,Nat.mul_le_mul_right i hi,Nat.mul_le_mul_right (i*i) hi]
+        exact hs.trans (by omega)
+  have h₁ : (j : ℝ) ≤ g := Nat.floor_le (by linarith)
+  have h₂ : g ≤ (j : ℝ)+1 := (Nat.lt_floor_add_one _).le
+  have hp : (2 : ℝ)^j ≤ u :=
+    (Real.logb_le_logb (by norm_num : (1 : ℝ) < 2) (by positivity) hu).mp (by rwa [lg_two_pow])
+  have hc : 8*((j:ℝ)+1)^3 ≤ (2:ℝ)^j := by exact_mod_cast h j hj
+  exact ((mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by linarith) h₂ 3) (by norm_num)).trans hc).trans hp
+
+private theorem wideFraction_le_eighth {m : ℕ} (hm : 64≤m) :
+    Real.logb 2 ((m:ℝ)+1)/(m:ℝ) ≤ 1/8 := by
+  let j := m/8
+  have hj : 8≤j := by dsimp [j]; omega
+  have h : ∀ i ≥ 8, 8*(i+1) ≤ 2^i := by
+    intro i hi
+    induction i,hi using Nat.le_induction with
+    | base => decide
+    | succ i hi ih => rw [pow_succ]; omega
+  have hc : (m:ℝ)+1 ≤ (2:ℝ)^j := by
+    exact_mod_cast (show m+1≤2^j from (show m+1≤8*(j+1) by dsimp [j]; omega).trans (h j hj))
+  have hl := dyadic_log_le (by positivity) hc
+  have hm' : (8:ℝ)*j ≤ m := by exact_mod_cast (show 8*j≤m by dsimp [j]; omega)
+  exact (div_le_iff₀ (by exact_mod_cast (by omega : 0<m))).mpr (by linarith)
+
+private def moderateWidth (b : ℕ) := 4*(b*Nat.log 2 b/4)
+private def moderateRadixLog (b : ℕ) :=
+  Nat.log 2 (slotRadix (moderateWidth b) (3*(b*Nat.log 2 b/4)))
+private def moderateA (b : ℕ) :=
+  if b=4 then 3104 else slotWindowCap 2048 (4*moderateWidth b)
+private def moderateB (b k : ℕ) :=
+  let m := moderateWidth b
+  let A := moderateA b
+  if 24 ≤ m then slotWindowCap (A^2) (8*k*m+3*A) else slotWindowCap A (6*k*m)
+private def moderateC (b k : ℕ) :=
+  let m := moderateWidth b
+  if 24 ≤ m then moderateB b k else slotWindowCap (moderateA b*moderateB b k) (2*k*m)
+
+private def moderateMaximum (b : ℕ) :=
+  1+(2^(b+1)-1)/moderateRadixLog b
+
+private def moderateBase (b : ℕ) :=
+  let k := moderateMaximum b
+  let m := moderateWidth b
+  let a := Nat.clog 2 (moderateA b)
+  let c := Nat.clog 2 (moderateC b k)
+  let d := Nat.clog 2 (moderateB b k)
+  let h := max 68 ((m/4+1)*(c+3*d+2*a))
+  2181+4*m*a+2*(h+1)
+
+private def moderateSlope (b : ℕ) :=
+  let k := moderateMaximum b
+  2*moderateWidth b*(2*Nat.clog 2 (moderateC b k)+3*Nat.clog 2 (moderateB b k))
+
+private def moderateRate (b : ℕ) := 312+5*b+5*Nat.log 2 b
+
+private def moderateCheck (b k : ℕ) : Prop :=
+  moderateBase b+moderateSlope b*k ≤
+    1322+moderateRate b*max (2^b) ((k-1)*moderateRadixLog b)
+
+private instance (b k : ℕ) : Decidable (moderateCheck b k) := by
+  unfold moderateCheck
+  infer_instance
+
+private theorem moderateCheck_cert (b : ℕ) (hb : 4≤b) (hb' : b<16) :
+    let d := moderateRadixLog b
+    let j := 1+2^b/d
+    0<d ∧ moderateCheck b j ∧ moderateCheck b (j+1) ∧
+      moderateSlope b ≤ moderateRate b*d := by
+  interval_cases b <;> decide +kernel
+
+private theorem moderateCheck_of {b : ℕ} (hb : 4≤b) (hb' : b<16) (k : ℕ) :
+    moderateCheck b k := by
+  let d := moderateRadixLog b
+  let j := 1+2^b/d
+  obtain ⟨hd,hl,hr,hs⟩ := moderateCheck_cert b hb hb'
+  change 0<d at hd
+  change moderateCheck b j at hl
+  change moderateCheck b (j+1) at hr
+  change moderateSlope b ≤ moderateRate b*d at hs
+  unfold moderateCheck at *
+  by_cases hk : k≤j
+  · have h : (j-1)*d≤2^b := by
+      have hm := Nat.div_mul_le_self (2^b) d
+      change (1+2^b/d-1)*d≤2^b
+      simpa only [Nat.add_sub_cancel_left] using hm
+    rw [max_eq_left h] at hl
+    exact ((Nat.add_le_add_left (Nat.mul_le_mul_left _ hk) _).trans hl).trans
+      (Nat.add_le_add_left (Nat.mul_le_mul_left _ (le_max_left ..)) _)
+  · have hj : 2^b≤(j+1-1)*d := by
+      have h := (Nat.div_lt_iff_lt_mul hd).mp (show 2^b/d<j by dsimp [j]; omega)
+      simpa only [Nat.add_sub_cancel] using h.le
+    rw [max_eq_right hj,Nat.add_sub_cancel] at hr
+    have he : j+1 ≤ k := by omega
+    obtain ⟨i,rfl⟩ := Nat.exists_eq_add_of_le he
+    have hi : (j+1+i-1)*d=(j+i)*d := by
+      rw [show j+1+i=j+i+1 by ac_rfl,Nat.add_sub_cancel]
+    refine le_trans ?_ (Nat.add_le_add_left (Nat.mul_le_mul_left _ (le_max_right ..)) _)
+    rw [hi]
+    calc
+      _ = (moderateBase b+moderateSlope b*(j+1))+moderateSlope b*i := by ring
+      _ ≤ (1322+moderateRate b*(j*d))+(moderateRate b*d)*i :=
+        Nat.add_le_add hr (Nat.mul_le_mul_right _ hs)
+      _ = _ := by ring
+
+private theorem slotWindowCap_mono {t c t' c' : ℕ} (ht : t ≤ t') (hc : c ≤ c') :
+    slotWindowCap t c ≤ slotWindowCap t' c' := by
+  unfold slotWindowCap guardedPrimeCap
+  gcongr
+
+private theorem moderateCaps (b k : ℕ) (hb : 4≤b) :
+    fallbackCap (moderateWidth b) ≤ moderateA b ∧
+    markerCap k (moderateWidth b) ≤ moderateB b k ∧
+    SlotParameters.lowCap k (moderateWidth b) ≤ moderateC b k := by
+  let m := moderateWidth b
+  let A := fallbackCap m
+  let B := separateMarkerCap k m
+  have ha : A≤moderateA b := by
+    by_cases he : b=4
+    · subst b
+      simp only [A,m,moderateA,show moderateWidth 4=8 by decide,
+        fallbackCap,show slotBasePrimeCap=2048 by decide,show 4*8=32 by decide,slotSearchCap_2048_32,ite_true,le_rfl]
+    · exact (slotSearchCap_le_window (by decide : 512≤slotBasePrimeCap)).trans_eq
+        (by simp only [moderateA,ite_eq_right he]; rfl)
+  have ha0 : 2048≤A := threshold_le_slotSearchCap ..
+  have hb0 : A≤B := threshold_le_slotSearchCap ..
+  refine ⟨ha,?_⟩
+  by_cases hh : 24≤moderateWidth b
+  · have hm : matchedSlotCap k m≤moderateB b k := by
+      simp only [moderateB,matchedSlotCap,matchedSlotCount,ite_eq_left hh]
+      exact slotWindowCap_mono (Nat.pow_le_pow_left ha _) (Nat.add_le_add_left (Nat.mul_le_mul_left 3 ha) _)
+    simpa only [markerCap,SlotParameters.lowCap,moderateC,ite_eq_left hh] using And.intro hm hm
+  · have hm : B≤moderateB b k := by
+      exact (slotSearchCap_le_window (by omega : 512≤A)).trans (by
+        simp only [moderateB,ite_eq_right hh]
+        exact slotWindowCap_mono ha le_rfl)
+    have hp : 512 ≤ A*B :=
+      (by decide : 512≤2048*2048).trans (Nat.mul_le_mul ha0 (ha0.trans hb0))
+    have hC : separateLowCap k m≤moderateC b k := by
+      exact (slotSearchCap_le_window hp).trans (by
+        simp only [moderateC,ite_eq_right hh]
+        exact slotWindowCap_mono (Nat.mul_le_mul ha hm) le_rfl)
+    simpa only [markerCap,SlotParameters.lowCap,ite_eq_right hh] using And.intro hm hC
+
+private theorem wideDyadicFloors {n : ℕ} (hn : 65536≤n) :
+    let b := Nat.log 2 (Nat.log 2 n)
+    let u := Real.logb 2 ((n:ℝ)+4)
+    let g := Real.logb 2 u
+    let l := Real.logb 2 g
+    4≤b ∧ (2:ℝ)^b≤u ∧ (b:ℝ)≤g ∧ (Nat.log 2 b:ℝ)≤l := by
+  let b := Nat.log 2 (Nat.log 2 n)
+  let u := Real.logb 2 ((n:ℝ)+4)
+  let g := Real.logb 2 u
+  have hn₀ : 0<n := by omega
+  have hp : 16≤Nat.log 2 n := (Nat.le_log_iff_pow_le (by decide) (by omega)).mpr hn
+  have hb : 4≤b := (Nat.le_log_iff_pow_le (by decide) (by omega)).mpr hp
+  have hu : (2:ℝ)^b≤u := by
+    have h : (2:ℝ)^b ≤ Nat.log 2 n := by exact_mod_cast Nat.pow_log_le_self 2 (by omega : Nat.log 2 n ≠ 0)
+    exact (h.trans (lg_natLog_le hn₀)).trans (lg_mono (by positivity : 0<(n:ℝ)) (by linarith : (n:ℝ)≤(n:ℝ)+4))
+  have hg : (b:ℝ)≤g := by
+    simpa only [lg_two_pow] using lg_mono (by positivity : 0 < (2:ℝ)^b) hu
+  have hl : (Nat.log 2 b:ℝ)≤Real.logb 2 g :=
+    (lg_natLog_le (by omega : 0<b)).trans (lg_mono (by positivity) hg)
+  exact ⟨hb,hu,hg,hl⟩
+
+private theorem moderateBudget {n : ℕ} (hn : 65536≤n)
+    (hb' : Nat.log 2 (Nat.log 2 n)<16) :
+    let b := Nat.log 2 (Nat.log 2 n)
+    let u := Real.logb 2 ((n:ℝ)+4)
+    let k := slotPackedDigits n (wideSlotLength n)
+    let v := max (2^b) ((k-1)*moderateRadixLog b)
+    v ≤ u ∧ k ≤ moderateMaximum b ∧ moderateCheck b k := by
+  let b := Nat.log 2 (Nat.log 2 n)
+  let t := wideSlotLength n
+  let R := slotRadix (4*t) (3*t)
+  let k := slotPackedDigits n t
+  let d := moderateRadixLog b
+  obtain ⟨hb,hu,_,_⟩ := wideDyadicFloors hn
+  have hd := (moderateCheck_cert b hb hb').1
+  change 0<d at hd
+  have ht : t=b*Nat.log 2 b/4 := by
+    have h : 1≤Nat.log 2 b := (Nat.le_log_iff_pow_le (by decide) (by omega : b≠0)).mpr (by norm_num; omega)
+    have hh := Nat.mul_le_mul (show 4≤b from hb) h
+    change max 1 (b*Nat.log 2 b/4) = b*Nat.log 2 b/4
+    exact max_eq_right (by omega)
+  have hdR : d=Nat.log 2 R := by
+    simp only [d,moderateRadixLog,moderateWidth,R,ht]
+  have hR : 1<R := by
+    rw [hdR] at hd
+    by_contra! he
+    interval_cases R <;> simp at hd
+  have hpow : R^(k-1)≤n := by
+    by_cases hk : k≤1
+    · rw [Nat.sub_eq_zero_of_le hk,pow_zero]
+      omega
+    · have hk' : k=Nat.clog R n := max_eq_right (by unfold k slotPackedDigits at hk; omega)
+      have hcl : ¬ Nat.clog R n≤k-1 := by omega
+      have h := mt (Nat.clog_le_iff_le_pow hR).mpr hcl
+      omega
+  have hpow' : 2^((k-1)*d)≤n := by
+    rw [mul_comm, pow_mul]
+    exact (Nat.pow_le_pow_left (by rw [hdR]; exact Nat.pow_log_le_self _ (by omega)) _).trans hpow
+  have hlog := (Nat.le_log_iff_pow_le (by decide : 1<2) (by omega : n≠0)).mpr hpow'
+  have hk₂ : (k-1)*d<2^(b+1) := hlog.trans_lt (Nat.lt_pow_succ_log_self (by decide) _)
+  have hk₃ : k≤1+(2^(b+1)-1)/d := by
+    have h := (Nat.le_div_iff_mul_le hd).mpr (show (k-1)*d≤2^(b+1)-1 by omega)
+    omega
+  refine ⟨?_,?_⟩
+  · rw [Nat.cast_max,Nat.cast_pow,Nat.cast_ofNat]
+    refine max_le hu (?_ : (((k-1)*d:ℕ):ℝ)≤_)
+    exact (Nat.cast_le.mpr hlog).trans ((lg_natLog_le (by omega : 0<n)).trans
+      (lg_mono (by positivity : 0<(n:ℝ)) (by linarith : (n:ℝ)≤(n:ℝ)+4)))
+  · exact ⟨hk₃,moderateCheck_of hb hb' k⟩
+
 theorem slotRefinedEstimate_log {n : ℕ} (hn : 65536 ≤ n) :
     let u := Real.logb 2 ((n : ℝ)+4)
     let g := Real.logb 2 u
     let l := Real.logb 2 g
     let t := wideSlotLength n
     let k := slotPackedDigits n t
-    Real.logb 2 (slotRefinedEstimate k (4*t) (3*t) : ℝ) ≤ u*(5*g+5*l+842) := by
+    Real.logb 2 (slotRefinedEstimate k (4*t) (3*t) : ℝ) ≤ 1322+u*(5*g+5*l+330) := by
   let x := (n : ℝ)+4
   let u := Real.logb 2 x
   let g := Real.logb 2 u
@@ -465,19 +691,6 @@ theorem slotRefinedEstimate_log {n : ℕ} (hn : 65536 ≤ n) :
       apply le_of_mul_le_mul_right _ (show 0 < 2-f by linarith)
       nlinarith only [hj',he']
     linarith only [hs₀,hx]
-  have hsg : s*g ≤ 5*u*g+100*u := by
-    have he := mul_le_mul_of_nonneg_right hsc (show 0 ≤ g by linarith)
-    have hf' := mul_le_mul_of_nonneg_right hfg (show 0 ≤ 4*u by linarith)
-    nlinarith only [he,hf',hmg]
-  have hsl : s*l ≤ 5*u*l+50*u := by
-    have he := mul_le_mul_of_nonneg_right hsc (show 0 ≤ l by linarith)
-    have hf' := mul_le_mul_of_nonneg_right hfl (show 0 ≤ 4*u by linarith)
-    nlinarith only [he,hf',hml']
-  have hsh : s*h ≤ 5*u*h+50*u := by
-    by_cases he : 5*u ≤ s
-    · have hp := mul_le_mul_of_nonneg_left hh (sub_nonneg.mpr he)
-      nlinarith only [hp,hsl]
-    · exact (mul_le_mul_of_nonneg_right (le_of_not_ge he) hh₀).trans (by linarith)
   have hkm : (k : ℝ)*m ≤ 2*u := by unfold s at hs; linarith
   obtain ⟨hA,hBsep,hCsep⟩ := widePrimeCaps hu hg hl hgu hl2 hm₄ hml hkm rfl rfl hh
   let A := fallbackCap m
@@ -496,20 +709,6 @@ theorem slotRefinedEstimate_log {n : ℕ} (hn : 65536 ≤ n) :
   have hB₀ := hA₀.trans_le hAB
   have hBC : B ≤ C := markerCap_le_lowCap k m
   have hC₀ := hB₀.trans_le hBC
-  have hmode : 24 ≤ m ↔ 2^256 ≤ n := wide_mode hn
-  have hsmallG (h : ¬ 24 ≤ m) : g ≤ 9 := by
-    have hn' : (n : ℝ) ≤ 2^256 := by exact_mod_cast le_of_not_ge (mt hmode.mpr h)
-    have hx' : x ≤ (2 : ℝ)^257 := by
-      dsimp [x]
-      rw [show (2 : ℝ)^257 = 2^256+2^256 by rw [show (257 : ℕ) = 256+1 by decide,pow_succ,mul_two]]
-      have h₄ : (4 : ℝ) ≤ 2^256 := by
-        simpa only [show (2 : ℝ)^2 = 4 by norm_num] using
-          (dyadic_le (i := 2) (j := 256) (by decide))
-      linarith
-    have hu' := lg_mono (by dsimp [x]; positivity : 0 < x) hx'
-    rw [lg_two_pow] at hu'
-    have hg' := lg_mono hu₀ (show u ≤ (2 : ℝ)^9 by norm_num at hu' ⊢; linarith)
-    simpa only [lg_two_pow,Nat.cast_ofNat] using hg'
   have hmatched := matched_wide_caps hu hg hg2 hg3 hl2 hkm hA rfl
   have hxu : 2*u ≤ x := by
     have h := lg_ratio (b := 2) (by decide) (show (2 : ℝ)^2 ≤ x by dsimp [x]; linarith)
@@ -628,31 +827,6 @@ theorem slotRefinedEstimate_log {n : ℕ} (hn : 65536 ≤ n) :
     unfold W
     rw [Real.logb_mul (by positivity) (by positivity),Real.logb_pow,Real.logb_pow]
     norm_num
-  have hW' : (2*(k : ℝ)*(m : ℝ))*Real.logb 2 W ≤ u*(5*g+5*l+525) := by
-    rw [show (2 : ℝ)*k*m=s/5 by unfold s; ring, hW]
-    by_cases hm' : 24 ≤ m
-    · rw [ite_eq_left hm'] at hlogs
-      have h₁ : 2*Real.logb 2 (C : ℝ)+3*Real.logb 2 (B : ℝ) ≤ 5*(30+g+l) := by linarith [hlogs.1,hlogs.2]
-      have h₂ := mul_le_mul_of_nonneg_left h₁ (show 0 ≤ s/5 by dsimp [s]; positivity)
-      nlinarith only [h₂,hsg,hsl,hs]
-    · rw [ite_eq_right hm'] at hlogs
-      have hg' := hsmallG hm'
-      have hl' : l ≤ 4 := by
-        have h := lg_mono hg₀ (show g ≤ (2 : ℝ)^4 by norm_num; linarith)
-        rwa [lg_two_pow] at h
-      have hh' : h ≤ 2 := by
-        have h' := lg_mono hl₀ (show l ≤ (2 : ℝ)^2 by norm_num; exact hl')
-        rwa [lg_two_pow] at h'
-      have h₁ : 2*Real.logb 2 (C : ℝ)+3*Real.logb 2 (B : ℝ) ≤ 91+5*g+7*l+4*h := by
-        linarith [hlogs.1,hlogs.2]
-      have h₂ := mul_le_mul_of_nonneg_left h₁ (show 0 ≤ s/5 by dsimp [s]; positivity)
-      have h₃ := mul_le_mul_of_nonneg_left (show 2*l+4*h ≤ 16 by linarith)
-        (show 0 ≤ u by linarith)
-      nlinarith only [h₂,hsg,hsl,hsh,hs,h₃,hu]
-  have hFA : 4*(m : ℝ)*Real.logb 2 (A : ℝ) ≤ 44*u := by
-    have h₁ := mul_le_mul_of_nonneg_left hxa (show 0 ≤ (m : ℝ) by positivity)
-    have h₂ := mul_le_mul_of_nonneg_left hh (show 0 ≤ (m : ℝ) by positivity)
-    nlinarith only [h₁,h₂,hmu,hml']
   let Z := (C : ℝ)*(B : ℝ)^3*(A : ℝ)^2
   let r := min m (m+1-3*t)
   have hZ : Real.logb 2 Z = Real.logb 2 (C : ℝ)+3*Real.logb 2 (B : ℝ)+2*Real.logb 2 (A : ℝ) := by
@@ -678,29 +852,12 @@ theorem slotRefinedEstimate_log {n : ℕ} (hn : 65536 ≤ n) :
       norm_num
     have hZr : 1 ≤ Z^r := one_le_pow₀ hZ₁
     change (↑(max (fourValueRadius 0) (slotOffsetFactorCap k m^r)) : ℝ)+1 ≤ _
-    rw [slotOffsetFactorCap,ite_eq_right (by omega : ¬ (k = 1 ∧ m = 1))]
+    rw [slotOffsetFactorCap,ite_eq_right (by omega : ¬ (k = 1 ∧ m = 1)),
+      ite_eq_right (by omega : ¬ (k = 2 ∧ m = 1))]
     simp only [Nat.cast_max,Nat.cast_pow,Nat.cast_mul,h,← max_add_add_right]
     change max ((2 : ℝ)^68+1) (Z^r+1) ≤ _
     norm_num
     constructor <;> linarith
-  have hHL : 2*Real.logb 2 ((H : ℝ)+1) ≤ 115*u := by
-    have he := lg_mono (by positivity : 0 < (H : ℝ)+1) hH
-    rw [Real.logb_mul (by positivity) (by positivity),lg_two_pow,Real.logb_pow] at he
-    have hz₀ : 0 ≤ Real.logb 2 Z := Real.logb_nonneg (by norm_num) hZ₁
-    have h₁ := mul_le_mul_of_nonneg_right hr hz₀
-    have h₃ := mul_le_mul_of_nonneg_left hh (show 0 ≤ (m : ℝ) by positivity)
-    simp only [Nat.cast_ofNat] at he
-    by_cases hm' : 24 ≤ m
-    · rw [ite_eq_left hm'] at hlogs
-      have hz : Real.logb 2 Z ≤ 140+4*g+6*l+4*h := by
-        rw [hZ]; linarith [hlogs.1,hlogs.2,hxa]
-      have h₂ := mul_le_mul_of_nonneg_left hz (show 0 ≤ (m : ℝ) by positivity)
-      nlinarith only [he,h₁,h₂,h₃,hmu,hmg,hml',hu]
-    · rw [ite_eq_right hm'] at hlogs
-      have hz : Real.logb 2 Z ≤ 85+4*g+7*l+6*h := by
-        rw [hZ]; linarith [hlogs.1,hlogs.2,hxa]
-      have h₂ := mul_le_mul_of_nonneg_left hz (show 0 ≤ (m : ℝ) by positivity)
-      nlinarith only [he,h₁,h₂,h₃,hmu,hmg,hml',hu]
   have hN : N ≤ 2^1893 := arithmetic_order_le
   have hNr : (N : ℝ) ≤ (2 : ℝ)^1893 := by exact_mod_cast hN
   have hN₀ : 0 < (N : ℝ) := by exact_mod_cast fourValueOrder_pos 0
@@ -716,10 +873,148 @@ theorem slotRefinedEstimate_log {n : ℕ} (hn : 65536 ≤ n) :
   have he := slot_log_bound_factors (c := 10^35*(N : ℝ)) (by positivity)
     (show 0 < W by positivity) ha (show 0 < (X : ℝ) by exact_mod_cast hX0)
     (by positivity : 0 < (H : ℝ)+1) (2*k*m) (4*m)
-  change Real.logb 2 (slotRefinedEstimate k m (3*t) : ℝ) ≤ u*(5*g+5*l+842)
+  change Real.logb 2 (slotRefinedEstimate k m (3*t) : ℝ) ≤ 1322+u*(5*g+5*l+330)
   rw [hsize,he]
   push_cast
-  nlinarith only [hW',hFA,hHL,hXL,hconst,hu]
+  let b := Nat.log 2 (Nat.log 2 n)
+  obtain ⟨hb₄,hub,hgb,hlb⟩ := wideDyadicFloors hn
+  have hbB := hb
+  by_cases hb : b<16
+  · obtain ⟨hv,hkM,hcheck⟩ := moderateBudget hn hb
+    have ht' : t=b*Nat.log 2 b/4 := by
+      have hol : 1≤Nat.log 2 b := (Nat.le_log_iff_pow_le (by decide) (by omega : b≠0)).mpr (by norm_num; omega)
+      have := Nat.mul_le_mul (show 4≤b from hb₄) hol
+      change max 1 (b*Nat.log 2 b/4) = b*Nat.log 2 b/4
+      exact max_eq_right (by omega)
+    have hm' : m=moderateWidth b := by simp only [m,ht',moderateWidth]
+    let K := moderateMaximum b
+    obtain ⟨ha',hb',hc'⟩ := moderateCaps b k hb₄
+    have hkK : k≤K := hkM
+    have monoB : moderateB b k ≤ moderateB b K := by
+      by_cases h : 24≤moderateWidth b
+      · simp only [moderateB,ite_eq_left h]
+        exact slotWindowCap_mono le_rfl (by gcongr)
+      · simp only [moderateB,ite_eq_right h]
+        exact slotWindowCap_mono le_rfl (by gcongr)
+    have monoC : moderateC b k ≤ moderateC b K := by
+      by_cases h : 24≤moderateWidth b
+      · simpa only [moderateC,ite_eq_left h] using monoB
+      · simp only [moderateC,ite_eq_right h]
+        exact slotWindowCap_mono (Nat.mul_le_mul_left _ monoB) (by gcongr)
+    rw [←hm'] at ha' hb' hc'
+    let da := Nat.clog 2 (moderateA b)
+    let db := Nat.clog 2 (moderateB b K)
+    let dc := Nat.clog 2 (moderateC b K)
+    let dh := max 68 ((m/4+1)*(dc+3*db+2*da))
+    let v := max (2^b) ((k-1)*moderateRadixLog b)
+    have ceiling (a : ℕ) : a ≤ 2^Nat.clog 2 a :=
+      (Nat.clog_le_iff_le_pow (by decide)).mp le_rfl
+    have ha₂ : A≤2^da := ha'.trans (ceiling _)
+    have hb₂ : B≤2^db := hb'.trans (monoB.trans (ceiling _))
+    have hc₂ : C≤2^dc := hc'.trans (monoC.trans (ceiling _))
+    have hAL := dyadic_log_le ha (by exact_mod_cast ha₂)
+    have hBL := dyadic_log_le hbB (by exact_mod_cast hb₂)
+    have hCL := dyadic_log_le hc (by exact_mod_cast hc₂)
+    have hWL : Real.logb 2 W ≤ 2*(dc:ℝ)+3*(db:ℝ) := by rw [hW]; linarith
+    have hH₂ : H ≤ 2^dh := by
+      change max (fourValueRadius 0) (slotOffsetFactorCap k m^r) ≤ _
+      rw [show fourValueRadius 0 = 2^68 by decide]
+      apply max_le (Nat.pow_le_pow_right (by decide) (le_max_left ..))
+      have hz := (slotOffsetFactorCap_le k m).trans
+        (Nat.mul_le_mul (Nat.mul_le_mul hc₂ (Nat.pow_le_pow_left hb₂ 3)) (Nat.pow_le_pow_left ha₂ 2))
+      change slotOffsetFactorCap k m ≤ 2^dc*(2^db)^3*(2^da)^2 at hz
+      rw [←pow_mul,←pow_mul,←pow_add,←pow_add,mul_comm db 3,mul_comm da 2] at hz
+      have hr' : r ≤ m/4+1 := by
+        have hx := min_le_right m (m+1-3*t)
+        unfold r m at *
+        omega
+      apply (Nat.pow_le_pow_left hz r).trans
+      rw [←pow_mul,mul_comm]
+      exact Nat.pow_le_pow_right (by decide) ((Nat.mul_le_mul_right _ hr').trans (le_max_right ..))
+    have hH₃ : (H:ℝ)+1 ≤ (2:ℝ)^(dh+1) := by
+      have h₁ : (H:ℝ)≤(2:ℝ)^dh := by exact_mod_cast hH₂
+      have h₂ : (1:ℝ)≤(2:ℝ)^dh := one_le_pow₀ (by norm_num)
+      rw [pow_succ]
+      linarith
+    have hHL := dyadic_log_le (by positivity : 0<(H:ℝ)+1) hH₃
+    have hnum : (2181:ℝ)+2*(k:ℝ)*m*(2*(dc:ℝ)+3*(db:ℝ))+4*(m:ℝ)*da+18*v+2*((dh:ℝ)+1) ≤
+        1322+(330+5*(b:ℝ)+5*(Nat.log 2 b:ℝ))*v := by
+      have h' : 2181+2*k*m*(2*dc+3*db)+4*m*da+18*v+2*(dh+1) ≤
+          1322+(330+5*b+5*Nat.log 2 b)*v := by
+        change moderateCheck b k at hcheck
+        unfold moderateCheck moderateBase moderateSlope moderateRate at hcheck
+        rw [←hm'] at hcheck
+        change 2181+4*m*da+2*(dh+1)+(2*m*(2*dc+3*db))*k ≤
+          1322+(312+5*b+5*Nat.log 2 b)*v at hcheck
+        calc
+          _ = (2181+4*m*da+2*(dh+1)+(2*m*(2*dc+3*db))*k)+18*v := by ring
+          _ ≤ (1322+(312+5*b+5*Nat.log 2 b)*v)+18*v := Nat.add_le_add_right hcheck _
+          _ = _ := by ring
+      exact_mod_cast h'
+    have hV : (v:ℝ)≤u := hv
+    have hfix : (330:ℝ)+5*(b:ℝ)+5*(Nat.log 2 b:ℝ)-18 ≤ 330+5*g+5*l-18 := by linarith
+    have ht := mul_le_mul hfix hV (by positivity) (by linarith : 0≤330+5*g+5*l-18)
+    have hw := mul_le_mul_of_nonneg_left hWL (show 0≤2*(k:ℝ)*m by positivity)
+    have ha := mul_le_mul_of_nonneg_left hAL (show 0≤4*(m:ℝ) by positivity)
+    push_cast at hHL
+    nlinarith only [ht,hnum,hw,ha,hHL,hXL,hconst]
+  · have hb : 16 ≤ b := by omega
+    have hu16 : (2:ℝ)^16 ≤ u := (dyadic_le hb).trans hub
+    have hg16 : 16 ≤ g := (by exact_mod_cast hb : (16:ℝ) ≤ b).trans hgb
+    have hl4 : 4 ≤ l := (by exact_mod_cast
+      (Nat.le_log_iff_pow_le (by decide : 1<2) (by omega : b≠0)).mpr hb : (4:ℝ) ≤ Nat.log 2 b).trans hlb
+    have hm64 : 64≤m := by
+      have hj : 4≤Nat.log 2 b := (Nat.le_log_iff_pow_le (by decide) (by omega : b≠0)).mpr hb
+      have hm' := Nat.mul_le_mul hb hj
+      change 64 ≤ 4*max 1 (b * Nat.log 2 b / 4)
+      omega
+    have hstrong := lg_cubed_large hu₀ hg16
+    change 8*g^3 ≤ u at hstrong
+    have hmg' : (m:ℝ)*g≤u/16 := by
+      have h₁ := mul_le_mul_of_nonneg_right hml hg₀.le
+      have h₂ := mul_le_mul_of_nonneg_right hlg (show 0≤g^2 by positivity)
+      nlinarith only [h₁,h₂,hstrong]
+    have hmu' : (m:ℝ)≤u/256 := by
+      nlinarith only [hmg',mul_le_mul_of_nonneg_left hg16 (show 0≤(m:ℝ) by positivity)]
+    have hml'' : (m:ℝ)*l≤u/32 := by
+      nlinarith only [hmg',mul_le_mul_of_nonneg_left hlg (show 0≤(m:ℝ) by positivity)]
+    have hf' : f ≤ 1/8 := wideFraction_le_eighth hm64
+    have hs' : s≤6*u := by
+      have h₁ := mul_le_mul_of_nonneg_right hf' hu₀.le
+      nlinarith only [h₁,hsc,hmu',hu₀]
+    have hsg' : s*g≤5*u*g+61*u := by
+      have h₁ := mul_le_mul_of_nonneg_right hsc hg₀.le
+      have h₂ := mul_le_mul_of_nonneg_right hfg (show 0 ≤ 4*u by linarith)
+      nlinarith only [h₁,h₂,hmg',hu₀]
+    have hsl' : s*l≤5*u*l+31*u := by
+      have h₁ := mul_le_mul_of_nonneg_right hsc hl₀.le
+      have h₂ := mul_le_mul_of_nonneg_right hfl (show 0 ≤ 4*u by linarith)
+      nlinarith only [h₁,h₂,hml'',hu₀]
+    have hm' : 24 ≤ m := by omega
+    rw [ite_eq_left hm'] at hlogs
+    obtain ⟨hBL,hCL⟩ := hlogs
+    have hWlarge : (2*(k:ℝ)*(m:ℝ))*Real.logb 2 W ≤ u*(5*g+5*l+272) := by
+      rw [show (2:ℝ)*k*m=s/5 by unfold s; ring,hW]
+      have h₁ : 2*Real.logb 2 (C:ℝ)+3*Real.logb 2 (B:ℝ)≤5*(30+g+l) := by linarith
+      have h₂ := mul_le_mul_of_nonneg_left h₁ (show 0≤s/5 by dsimp [s]; positivity)
+      nlinarith only [h₂,hs',hsg',hsl']
+    have hAlarge : 4*(m:ℝ)*Real.logb 2 (A:ℝ)≤u := by
+      have h₁ := mul_le_mul_of_nonneg_left hxa (show 0≤(m:ℝ) by positivity)
+      have h₂ := mul_le_mul_of_nonneg_left hh (show 0≤(m:ℝ) by positivity)
+      nlinarith only [h₁,h₂,hmu',hml'',hu₀]
+    have hHlarge : 2*Real.logb 2 ((H:ℝ)+1)≤2*u := by
+      have he := lg_mono (by positivity : 0 < (H:ℝ)+1) hH
+      rw [Real.logb_mul (by positivity) (by positivity),lg_two_pow,Real.logb_pow] at he
+      have hz₀ := Real.logb_nonneg (by norm_num : (1:ℝ)<2) hZ₁
+      have h₁ := mul_le_mul_of_nonneg_right hr hz₀
+      have hz : Real.logb 2 Z≤140+4*g+10*l := by rw [hZ]; linarith
+      have h₂ := mul_le_mul_of_nonneg_left hz (show 0≤(m:ℝ) by positivity)
+      simp only [Nat.cast_ofNat] at he
+      have hu65536 : 65536≤u := by simpa only [show (2:ℝ)^16=65536 by norm_num] using hu16
+      nlinarith only [he,h₁,h₂,hmu',hmg',hml'',hu65536]
+    have hu65536 : 65536≤u := by simpa only [show (2:ℝ)^16=65536 by norm_num] using hu16
+    nlinarith only [hWlarge,hAlarge,hHlarge,hXL,hconst,hu65536]
+
 
 end
 end TranslationTiling.Compiler.Size

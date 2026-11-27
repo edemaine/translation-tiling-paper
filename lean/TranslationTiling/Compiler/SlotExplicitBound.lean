@@ -13,9 +13,9 @@ set_option maxRecDepth 40000
 attribute [local irreducible] slotSearchCap slotPrimeAt
 
 def slotExplicitBound (n : ℕ) : ℝ :=
-  if n ≤ 1 then 2^2056 else
+  if n ≤ 1 then 2^2055 else
     ((n : ℝ)+4)^(5*Real.logb 2 (Real.logb 2 ((n : ℝ)+4)) +
-      5*Real.logb 2 (Real.logb 2 (Real.logb 2 ((n : ℝ)+4)))+842)
+      5*Real.logb 2 (Real.logb 2 (Real.logb 2 ((n : ℝ)+4)))+330+1322/Real.logb 2 ((n : ℝ)+4))
 
 abbrev slotPublicBound := slotExplicitBound
 
@@ -63,34 +63,34 @@ private def shortVolumeCheck (k m w A B C e : ℕ) : Prop :=
     mssPieceCap*(2^1893*((C^2*B^3)^(2*k*m)*A^(4*m)))*reservedCap X P*216*4222*(S+1) ≤ 2^e
 
 private theorem shortSize_of {k m w A B C e : ℕ}
-    (hm : m ≠ 0) (hs : ¬ (k = 1 ∧ m = 1)) (ha : fallbackCap m = A) (hb : markerCap k m = B)
+    (hm : m ≠ 0) (hs : ¬ (k = 1 ∧ m = 1)) (hs₂ : ¬ (k = 2 ∧ m = 1)) (ha : fallbackCap m = A) (hb : markerCap k m = B)
     (hc : SlotParameters.lowCap k m = C) (h : shortVolumeCheck k m w A B C e) :
     (4*Rails.Strips.countCapAt 35 (fun _ => slotAssemblyRadius k m w)+4229 ≤ 2^811) ∧
       slotShortEstimate k m w ≤ 2^e := by
-  simpa only [shortVolumeCheck,slotAssemblyRadius,slotOffsetFactorCap,ite_eq_right hs,slotShortEstimate,assemblyPrimeCap,slotPrimeCap,
+  simpa only [shortVolumeCheck,slotAssemblyRadius,slotOffsetFactorCap,ite_eq_right hs,ite_eq_right hs₂,slotShortEstimate,assemblyPrimeCap,slotPrimeCap,
     slotStackPrimeCap,ite_eq_right hm,ha,hb,hc,
     show fourValueRadius 0 = 2^68 by decide] using h
 
 private theorem shortVolumeChecks :
-    shortVolumeCheck 2 1 1 2208 2624 5793952 2439 ∧
+    shortVolumeCheck 3 1 1 2208 2816 6217952 2606 ∧
     shortVolumeCheck 1 4 3 2592 3392 8792352 3007 ∧
     shortVolumeCheck 2 4 3 2592 4160 10783264 3711 ∧
     shortVolumeCheck 3 4 3 2592 4928 12774176 4432 := by
   simp only [shortVolumeCheck,slotDeckCap,arithmeticBaseline_length_exact]
   decide +kernel
 
-private theorem shortSize_2_1 :
-    (4*Rails.Strips.countCapAt 35 (fun _ => slotAssemblyRadius 2 1 1)+4229 ≤ 2^811) ∧
-      slotShortEstimate 2 1 1 ≤ 2^2439 := by
+private theorem shortSize_3_1 :
+    (4*Rails.Strips.countCapAt 35 (fun _ => slotAssemblyRadius 3 1 1)+4229 ≤ 2^811) ∧
+      slotShortEstimate 3 1 1 ≤ 2^2606 := by
   have hA : fallbackCap 1 = 2208 := slotSearchCap_2048_4
   have hm : ¬ 24 ≤ (1 : ℕ) := by decide
-  have hB : separateMarkerCap 2 1 = 2624 := by
+  have hB : separateMarkerCap 3 1 = 2816 := by
     rw [separateMarkerCap,hA]
-    exact slotSearchCap_2208_12
-  have hC : separateLowCap 2 1 = 5793952 := by
+    exact slotSearchCap_2208_18
+  have hC : separateLowCap 3 1 = 6217952 := by
     rw [separateLowCap,hA,hB]
-    exact slotSearchCap_5793792_4
-  exact shortSize_of (by decide) (by decide) hA
+    exact slotSearchCap_6217728_6
+  exact shortSize_of (by decide) (by decide) (by decide) hA
     (by simpa only [markerCap,ite_eq_right hm] using hB)
     (by simpa only [SlotParameters.lowCap,ite_eq_right hm] using hC) shortVolumeChecks.1
 
@@ -105,7 +105,7 @@ private theorem shortSize_1_4 :
   have hC : separateLowCap 1 4 = 8792352 := by
     rw [separateLowCap,hA,hB]
     exact slotSearchCap_8792064_8
-  exact shortSize_of (by decide) (by decide) hA
+  exact shortSize_of (by decide) (by decide) (by decide) hA
     (by simpa only [markerCap,ite_eq_right hm] using hB)
     (by simpa only [SlotParameters.lowCap,ite_eq_right hm] using hC) shortVolumeChecks.2.1
 
@@ -120,7 +120,7 @@ private theorem shortSize_2_4 :
   have hC : separateLowCap 2 4 = 10783264 := by
     rw [separateLowCap,hA,hB]
     exact slotSearchCap_10782720_16
-  exact shortSize_of (by decide) (by decide) hA
+  exact shortSize_of (by decide) (by decide) (by decide) hA
     (by simpa only [markerCap,ite_eq_right hm] using hB)
     (by simpa only [SlotParameters.lowCap,ite_eq_right hm] using hC) shortVolumeChecks.2.2.1
 
@@ -135,7 +135,7 @@ private theorem shortSize_3_4 :
   have hC : separateLowCap 3 4 = 12774176 := by
     rw [separateLowCap,hA,hB]
     exact slotSearchCap_12773376_24
-  exact shortSize_of (by decide) (by decide) hA
+  exact shortSize_of (by decide) (by decide) (by decide) hA
     (by simpa only [markerCap,ite_eq_right hm] using hB)
     (by simpa only [SlotParameters.lowCap,ite_eq_right hm] using hC) shortVolumeChecks.2.2.2
 
@@ -143,77 +143,87 @@ private theorem small_slot_log {T : LeanWang.TileSet} (hn : 2 ≤ T.length)
     (hlt : T.length < 65536) (hB : 0 < ((compileSlot T).length : ℝ)) :
     let u := Real.logb 2 ((T.length : ℝ)+4)
     let g := Real.logb 2 u
-    Real.logb 2 ((compileSlot T).length : ℝ) ≤ u*(5*g+5*Real.logb 2 g+842) := by
+    Real.logb 2 ((compileSlot T).length : ℝ) ≤ 1322+u*(5*g+5*Real.logb 2 g+330) := by
   let x := (T.length : ℝ)+4
   let u := Real.logb 2 x
   let g := Real.logb 2 u
   let l := Real.logb 2 g
-  have hnr : (2 : ℝ) ≤ T.length := by exact_mod_cast hn
-  have hu : (137 : ℝ)/53 ≤ u := by
-    apply lg_lower (a := 137) (b := 53) (by decide) _ (by dsimp [x]; positivity)
-    exact (by norm_num : (2 : ℝ)^137 ≤ 6^53).trans
-      (pow_le_pow_left₀ (by norm_num) (by dsimp [x]; linarith) _)
-  have hg : (41 : ℝ)/30 ≤ g := by
-    apply lg_lower (a := 41) (b := 30) (by decide) _ (by linarith : 0 < u)
-    exact (by norm_num : (2 : ℝ)^41 ≤ ((137 : ℝ)/53)^30).trans
-      (pow_le_pow_left₀ (by norm_num) hu _)
-  have hl : (9 : ℝ)/20 ≤ l := by
-    apply lg_lower (a := 9) (b := 20) (by decide) _ (by linarith : 0 < g)
-    exact (by norm_num : (2 : ℝ)^9 ≤ ((41 : ℝ)/30)^20).trans
-      (pow_le_pow_left₀ (by norm_num) hg _)
-  have hmain : (2199 : ℝ) ≤ u*(5*g+5*l+842) := by
-    have h := mul_le_mul hu (show (10213 : ℝ)/12 ≤ 5*g+5*l+842 by norm_num; linarith)
-      (by norm_num) (by linarith)
-    linarith
-  have hu842 : 842*u ≤ u*(5*g+5*l+842) := by
-    have h := mul_le_mul_of_nonneg_left (show (842 : ℝ) ≤ 5*g+5*l+842 by
-      norm_num
-      linarith) (show 0 ≤ u by linarith)
-    linarith
-  have dyadic {e : ℕ} (he : (compileSlot T).length ≤ 2^e)
-      (h : (e : ℝ) ≤ u*(5*g+5*l+842)) :
-      Real.logb 2 ((compileSlot T).length : ℝ) ≤ u*(5*g+5*l+842) :=
-    (dyadic_log_le hB (by exact_mod_cast he)).trans h
-  have log_lower {d : ℕ} (hd : 2^d ≤ T.length+4) : (d : ℝ) ≤ u := by
-    have hh := lg_mono (by positivity : 0 < (2 : ℝ)^d)
-      (show (2 : ℝ)^d ≤ x by dsimp [x]; exact_mod_cast hd)
-    rwa [lg_two_pow] at hh
-  change _ ≤ u*(5*g+5*l+842)
-  by_cases hs : T.length ≤ 9
-  · by_cases h₃ : T.length ≤ 3
-    · exact dyadic (compileSlot_twoOrThree T hn h₃) (by simpa only [Nat.cast_ofNat] using hmain)
-    · have hb := compileSlot_smallWidth T hn hs (by simpa only [ite_eq_right h₃] using shortSize_2_1.1)
-      rw [ite_eq_right h₃] at hb
-      have h := log_lower (d := 3) (by omega)
-      exact dyadic (hb.trans shortSize_2_1.2) (by norm_num at h ⊢; linarith)
-  · have ht := explicit_small_width hlt
-    let k := slotPackedDigits T.length 1
-    have bound {j : ℕ} (hj : k = j)
-        (hf : 4*Rails.Strips.countCapAt 35 (fun _ => slotAssemblyRadius j 4 3)+4229 ≤ 2^811) :
-        (compileSlot T).length ≤ slotShortEstimate j 4 3 := by
-      have hb := compileSlot_widthFour T (by omega) ht (show
-        4*Rails.Strips.countCapAt 35 (fun _ => slotAssemblyRadius k 4 3)+4229 ≤ 2^811 by
-          rw [hj]
-          exact hf)
-      change (compileSlot T).length ≤ slotShortEstimate k 4 3 at hb
-      rwa [hj] at hb
-    by_cases h₁ : T.length ≤ 108
-    · have hk : k = 1 := slot_digits_at_four (by decide) (by simpa using h₁) (Or.inl rfl)
-      have hb := bound hk shortSize_1_4.1
-      have hu' : (15 : ℝ)/4 ≤ u := by
-        apply lg_lower (a := 15) (b := 4) (by decide) _ (by dsimp [x]; positivity)
-        have hn' : (10 : ℝ) ≤ T.length := by exact_mod_cast (show 10 ≤ T.length by omega)
-        exact (by norm_num : (2 : ℝ)^15 ≤ 14^4).trans
-          (pow_le_pow_left₀ (by norm_num) (by dsimp [x]; linarith) _)
-      exact dyadic (hb.trans shortSize_1_4.2) (by norm_num; linarith)
-    · have hv := log_lower (d := 6) (by omega)
-      by_cases h₂ : T.length ≤ 11664
-      · have hk : k = 2 := slot_digits_at_four (by decide) h₂ (Or.inr (by omega))
-        have hb := bound hk shortSize_2_4.1
-        exact dyadic (hb.trans shortSize_2_4.2) (by norm_num at hv ⊢; linarith)
-      · have hk : k = 3 := slot_digits_at_four (by decide) (by omega) (Or.inr (by omega))
-        have hb := bound hk shortSize_3_4.1
-        exact dyadic (hb.trans shortSize_3_4.2) (by norm_num at hv ⊢; linarith)
+  have hx : 0<x := by dsimp [x]; positivity
+  have lower {a b c d e f h : ℕ} (hb : 0<b) (hd : 0<d) (hf : 0<f)
+      (hh : h≤T.length+4) (ha : 2^a≤h^b)
+      (hc : (2:ℝ)^c≤((a:ℝ)/b)^d) (he : (2:ℝ)^e≤((c:ℝ)/d)^f)
+      (ha₀ : 0<a) (hc₀ : 0<c) :
+      (a:ℝ)/b ≤ u ∧ (c:ℝ)/d ≤ g ∧ (e:ℝ)/f ≤ l := by
+    have ha' : (a:ℝ)/b ≤ u := by
+      apply lg_lower hb _ hx
+      have hh' : (h:ℝ)≤x := by dsimp [x]; exact_mod_cast hh
+      exact (by exact_mod_cast ha : (2:ℝ)^a≤(h:ℝ)^b).trans
+        (pow_le_pow_left₀ (by positivity) hh' _)
+    have hapos : 0<(a:ℝ)/b := div_pos (Nat.cast_pos.mpr ha₀) (Nat.cast_pos.mpr hb)
+    have hc' : (c:ℝ)/d ≤ g :=
+      lg_lower hd (hc.trans (pow_le_pow_left₀ hapos.le ha' _)) (hapos.trans_le ha')
+    have hcpos : 0<(c:ℝ)/d := div_pos (Nat.cast_pos.mpr hc₀) (Nat.cast_pos.mpr hd)
+    exact ⟨ha',hc',lg_lower hf (he.trans (pow_le_pow_left₀ hcpos.le hc' _)) (hcpos.trans_le hc')⟩
+  have dyadic {E : ℕ} {U G L : ℝ} (he : (compileSlot T).length ≤ 2^E)
+      (hlower : U≤u ∧ G≤g ∧ L≤l) (hU : 0≤U) (hE : (E:ℝ)≤1322+U*(5*G+5*L+330))
+      (hP : 0≤5*G+5*L+330) :
+      Real.logb 2 ((compileSlot T).length : ℝ) ≤ 1322+u*(5*g+5*l+330) := by
+    refine (dyadic_log_le hB (by exact_mod_cast he)).trans (hE.trans ?_)
+    have htail : 5*G+5*L+330≤5*g+5*l+330 := by linarith [hlower.2.1,hlower.2.2]
+    exact add_le_add_right (mul_le_mul hlower.1 htail hP (hU.trans hlower.1)) _
+  change _≤1322+u*(5*g+5*l+330)
+  by_cases h₃ : T.length≤3
+  · refine dyadic (compileSlot_twoOrThree T hn h₃) (U:=137/53) (G:=41/30) (L:=9/20) ?_ (by norm_num) (by norm_num) (by norm_num)
+    exact lower (a:=137) (b:=53) (c:=41) (d:=30) (e:=9) (f:=20) (h:=6)
+      (by decide) (by decide) (by decide) (by omega) (by decide) (by norm_num) (by norm_num) (by decide) (by decide)
+  by_cases h₉ : T.length≤9
+  · refine dyadic (compileSlot_fourToNine T (by omega) h₉) (U:=3) (G:=1) (L:=0) ?_ (by norm_num) (by norm_num) (by norm_num)
+    simpa using (lower (a:=3) (b:=1) (c:=1) (d:=1) (e:=0) (f:=1) (h:=8)
+      (by decide) (by decide) (by decide) (by omega) (by decide) (by norm_num) (by norm_num) (by decide) (by decide))
+  by_cases h₂₇ : T.length≤27
+  · have h := (compileSlot_widthOneThree T (by omega) h₂₇ shortSize_3_1.1).trans shortSize_3_1.2
+    refine dyadic h (U:=19/5) (G:=7/4) (L:=3/4) ?_ (by norm_num) (by norm_num) (by norm_num)
+    exact lower (a:=19) (b:=5) (c:=7) (d:=4) (e:=3) (f:=4) (h:=14)
+      (by decide) (by decide) (by decide) (by omega) (by decide) (by norm_num) (by norm_num) (by decide) (by decide)
+  have ht := explicit_small_width hlt
+  let k := slotPackedDigits T.length 1
+  have bound {j : ℕ} (hj : k = j)
+      (hf : 4*Rails.Strips.countCapAt 35 (fun _ => slotAssemblyRadius j 4 3)+4229 ≤ 2^811) :
+      (compileSlot T).length ≤ slotShortEstimate j 4 3 := by
+    have hb := compileSlot_widthFour T (by omega) ht (show
+      4*Rails.Strips.countCapAt 35 (fun _ => slotAssemblyRadius k 4 3)+4229 ≤ 2^811 by
+        rw [hj]
+        exact hf)
+    change (compileSlot T).length ≤ slotShortEstimate k 4 3 at hb
+    rwa [hj] at hb
+  by_cases h₁ : T.length ≤ 108
+  · have hk : k = 1 := slot_digits_at_four (by decide) (by simpa using h₁) (Or.inl rfl)
+    have hb := (bound hk shortSize_1_4.1).trans shortSize_1_4.2
+    refine dyadic hb (U:=5) (G:=2) (L:=1) ?_ (by norm_num) (by norm_num) (by norm_num)
+    simpa using (lower (a:=5) (b:=1) (c:=2) (d:=1) (e:=1) (f:=1) (h:=32)
+      (by decide) (by decide) (by decide) (by omega) (by decide) (by norm_num) (by norm_num) (by decide) (by decide))
+  by_cases h₂ : T.length ≤ 11664
+  · have hk : k = 2 := slot_digits_at_four (by decide) h₂ (Or.inr (by omega))
+    have hb := (bound hk shortSize_2_4.1).trans shortSize_2_4.2
+    refine dyadic hb (U:=109/16) (G:=11/4) (L:=7/5) ?_ (by norm_num) (by norm_num) (by norm_num)
+    exact lower (a:=109) (b:=16) (c:=11) (d:=4) (e:=7) (f:=5) (h:=113)
+      (by decide) (by decide) (by decide) (by omega) (by decide) (by norm_num) (by norm_num) (by decide) (by decide)
+  · have hk : k = 3 := slot_digits_at_four (by decide) (by omega) (Or.inr (by omega))
+    have hb := (bound hk shortSize_3_4.1).trans shortSize_3_4.2
+    refine dyadic hb (U:=13) (G:=1) (L:=0) ?_ (by norm_num) (by norm_num) (by norm_num)
+    simpa using (lower (a:=13) (b:=1) (c:=1) (d:=1) (e:=0) (f:=1) (h:=8192)
+      (by decide) (by decide) (by decide) (by omega) (by decide) (by norm_num) (by norm_num) (by decide) (by decide))
+
+private theorem slotBoundLog {x : ℝ} (hx : 4<x) :
+    let u := Real.logb 2 x
+    let g := Real.logb 2 u
+    Real.logb 2 (x^(5*g+5*Real.logb 2 g+330+1322/u)) =
+      1322+u*(5*g+5*Real.logb 2 g+330) := by
+  have h : 0<Real.logb 2 x := Real.logb_pos (by norm_num) (by linarith)
+  dsimp only
+  rw [Real.logb_rpow_eq_mul_logb_of_pos (by linarith : 0<x)]
+  field_simp
+  <;> ring
 
 theorem slot_size_bound_explicit {n : ℕ} (hn : 65536 ≤ n) :
     let t := wideSlotLength n
@@ -225,14 +235,18 @@ theorem slot_size_bound_explicit {n : ℕ} (hn : 65536 ≤ n) :
   let S := slotRefinedEstimate (slotPackedDigits n (wideSlotLength n))
     (4*wideSlotLength n) (3*wideSlotLength n)
   have hx : 0 < x := by dsimp [x]; positivity
-  have hlog : Real.logb 2 (S : ℝ) ≤ u*(5*g+5*l+842) :=
+  have hlog : Real.logb 2 (S : ℝ) ≤ 1322+u*(5*g+5*l+330) :=
     slotRefinedEstimate_log hn
   change (S : ℝ) ≤ slotExplicitBound n
   rw [slotExplicitBound,ite_eq_right (by omega : ¬ n ≤ 1)]
-  change (S : ℝ) ≤ x^(5*g+5*l+842)
+  change (S : ℝ) ≤ x^(5*g+5*l+330+1322/u)
   by_cases hS : 0 < (S : ℝ)
   · apply (Real.logb_le_logb (by norm_num : (1 : ℝ)<2) hS (Real.rpow_pos_of_pos hx _)).mp
-    rw [Real.logb_rpow_eq_mul_logb_of_pos hx,mul_comm]
+    have hx' : 4 < x := by
+      have h : (0:ℝ)<n := by exact_mod_cast (show 0<n by omega)
+      dsimp [x]
+      linarith
+    rw [slotBoundLog hx']
     exact hlog
   · exact (le_of_not_gt hS).trans (Real.rpow_nonneg hx.le _)
 
@@ -249,7 +263,10 @@ theorem compileSlot_explicit (T : LeanWang.TileSet) (hn : 0 < T.length) :
       rw [slotExplicitBound,ite_eq_right h]
       have hx : 0 < (T.length : ℝ)+4 := by positivity
       apply (Real.logb_le_logb (by norm_num : (1 : ℝ)<2) hp (Real.rpow_pos_of_pos hx _)).mp
-      rw [Real.logb_rpow_eq_mul_logb_of_pos hx,mul_comm]
+      have hx' : (4:ℝ)<(T.length:ℝ)+4 := by
+        have hp' : (0:ℝ)<T.length := by exact_mod_cast hn
+        linarith
+      rw [slotBoundLog hx']
       exact small_slot_log (by omega) (by omega) hp
 
 /-- Asymptotic size of the computable slot compiler. -/
@@ -313,13 +330,21 @@ theorem compileSlot_logarithmic :
   refine ⟨hne,hconn,hiff,?_⟩
   apply (compileSlot_explicit T (by omega)).trans
   rw [slotExplicitBound,ite_eq_right (by omega : ¬ T.length ≤ 1)]
-  change x^(5*g+5*l+842) ≤ n^(5*g₀+2000*(1+l₀))
+  change x^(5*g+5*l+330+1322/u) ≤ n^(5*g₀+2000*(1+l₀))
   have hx : 0 < x := by dsimp [x]; linarith
   have hn₀ : 0 < n := by linarith
   apply (Real.logb_le_logb (by norm_num : (1 : ℝ) < 2)
     (Real.rpow_pos_of_pos hx _) (Real.rpow_pos_of_pos hn₀ _)).mp
-  rw [Real.logb_rpow_eq_mul_logb_of_pos hx,Real.logb_rpow_eq_mul_logb_of_pos hn₀]
-  simpa only [mul_comm] using hfinal
+  rw [slotBoundLog (by dsimp [x]; linarith),Real.logb_rpow_eq_mul_logb_of_pos hn₀]
+  have hu₀ : 0 < u := Real.logb_pos (by norm_num) (by dsimp [x]; linarith)
+  have hu₄ : 4 ≤ u := by
+    have hp : (2:ℝ)^4 ≤ u :=
+      (Real.logb_le_logb (by norm_num : (1:ℝ)<2) (by positivity) hu₀).mp
+        (by rw [lg_two_pow]; norm_num; linarith [hg₀g])
+    norm_num at hp
+    linarith
+  change 1322+u*(5*g+5*l+330) ≤ (5*g₀+2000*(1+l₀))*v
+  nlinarith only [hfinal,hu₄]
 
 /-- Totalize the compiler by encoding the empty alphabet as a single Wang tile
 that cannot tile the plane. -/

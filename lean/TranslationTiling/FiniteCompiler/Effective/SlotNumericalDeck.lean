@@ -291,8 +291,16 @@ theorem numericalSlotPolycube (hs : s.prime = rankedSlotPrime k m)
           (∏ j : Fin 3, rankedSlotPrime 1 1 (.inl (i,some j))) *
           rankedSlotPrime 1 1 (.inr (i.1,i.2.2,false)) *
           rankedSlotPrime 1 1 (.inr (i.1,i.2.2,true)) ≤ slotOffsetFactorCap 1 1) i
-    · rw [slotOffsetFactorCap,ite_eq_right h]
-      exact s.slotOffsetFactor_le hA hB hC i
+    · by_cases h₂ : k = 2 ∧ m = 1
+      · obtain ⟨rfl,rfl⟩ := h₂
+        unfold slotOffsetFactor low marker fallback
+        simp only [hs]
+        rcases i with ⟨g,i,t⟩
+        have ht : t=0 := Subsingleton.elim ..
+        subst t
+        cases g <;> fin_cases i <;> decide +kernel
+      · rw [slotOffsetFactorCap,ite_eq_right h,ite_eq_right h₂]
+        exact s.slotOffsetFactor_le hA hB hC i
   apply s.slot_polycube_related C hwm hPr hP hD K L s.numericalKernel_decodes
   · intro G hG
     have h := (hmem G).mp hG

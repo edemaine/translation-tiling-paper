@@ -159,4 +159,34 @@ theorem slotSearchCap_12773376_24 : slotSearchCap 12773376 24 = 12774176 := by
   · decide
   · decide
 
+theorem slotSearchCap_2208_18 : slotSearchCap 2208 18 = 2816 := by
+  apply certifiedShortCap _ _ [2213, 2221, 2237, 2239, 2243, 2251, 2267, 2269, 2273, 2281, 2287, 2293, 2297, 2309, 2311, 2333, 2339, 2341]
+  · decide
+  · decide
+  · decide
+  · simp only [List.forall_mem_cons,List.not_mem_nil,IsEmpty.forall_iff,implies_true]
+    norm_num
+  · decide
+  · decide
+
+theorem slotSearchCap_6217728_6 : slotSearchCap 6217728 6 = 6217952 := by
+  apply certifiedShortCap _ _ [6217741, 6217747, 6217777, 6217789, 6217811, 6217817]
+  · decide
+  · decide
+  · decide
+  · simp only [List.forall_mem_cons,List.not_mem_nil,IsEmpty.forall_iff,implies_true]
+    norm_num
+  · decide
+  · decide
+
+theorem slotSearchCap_2048_32 : slotSearchCap 2048 32 = 3104 := by
+  apply certifiedShortCap _ _ [2053, 2063, 2069, 2081, 2083, 2087, 2089, 2099, 2111, 2113, 2129, 2131, 2137, 2141, 2143, 2153, 2161, 2179, 2203, 2207, 2213, 2221, 2237, 2239, 2243, 2251, 2267, 2269, 2273, 2281, 2287, 2293]
+  · decide
+  · decide
+  · decide
+  · simp only [List.forall_mem_cons,List.not_mem_nil,IsEmpty.forall_iff,implies_true]
+    norm_num
+  · decide
+  · decide
+
 end TranslationTiling.FiniteCompiler.Packed

@@ -27,21 +27,26 @@ def slotRadius (Q m : ℕ) := max (fourValueRadius 0) (Q^(11*m))
 /-- One horizontal CRT factor for each selected slot. -/
 def slotOffsetFactorCap (k m : ℕ) : ℕ :=
   if k = 1 ∧ m = 1 then 473028263936385713 else
+  if k = 2 ∧ m = 1 then 4492167808878468487 else
     lowCap k m * markerCap k m^3 * fallbackCap m^2
 
 theorem slotOffsetFactorCap_le (k m : ℕ) :
     slotOffsetFactorCap k m ≤ lowCap k m * markerCap k m^3 * fallbackCap m^2 := by
-  by_cases h : k = 1 ∧ m = 1
-  · rw [slotOffsetFactorCap,ite_eq_left h]
-    have ha : slotBasePrimeCap ≤ fallbackCap m := threshold_le_slotSearchCap slotBasePrimeCap (4*m)
-    have hb := ha.trans (fallbackCap_le_markerCap k m)
-    have hc := hb.trans (markerCap_le_lowCap k m)
-    exact (by decide : 473028263936385713 ≤ slotBasePrimeCap*slotBasePrimeCap^3*slotBasePrimeCap^2).trans
-      (Nat.mul_le_mul (Nat.mul_le_mul hc (Nat.pow_le_pow_left hb _)) (Nat.pow_le_pow_left ha _))
-  · rw [slotOffsetFactorCap,ite_eq_right h]
+  have ha : slotBasePrimeCap ≤ fallbackCap m := threshold_le_slotSearchCap slotBasePrimeCap (4*m)
+  have hb := ha.trans (fallbackCap_le_markerCap k m)
+  have hc := hb.trans (markerCap_le_lowCap k m)
+  have hprod := Nat.mul_le_mul (Nat.mul_le_mul hc (Nat.pow_le_pow_left hb 3)) (Nat.pow_le_pow_left ha 2)
+  unfold slotOffsetFactorCap
+  split
+  · exact (by decide : 473028263936385713 ≤ slotBasePrimeCap*slotBasePrimeCap^3*slotBasePrimeCap^2).trans hprod
+  split
+  · exact (by decide : 4492167808878468487 ≤ slotBasePrimeCap*slotBasePrimeCap^3*slotBasePrimeCap^2).trans hprod
+  · exact le_rfl
 
 theorem slotOffsetFactorCap_pos (k m : ℕ) : 0 < slotOffsetFactorCap k m := by
   unfold slotOffsetFactorCap
+  split
+  · decide
   split
   · decide
   · have ha := fallbackCap_pos m
