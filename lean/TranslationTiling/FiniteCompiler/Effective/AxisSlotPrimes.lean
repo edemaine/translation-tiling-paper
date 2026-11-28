@@ -1,19 +1,112 @@
 import TranslationTiling.FiniteCompiler.Effective.SlotPrimeMatching
 import TranslationTiling.FiniteCompiler.Effective.AxisSlotLayout
 import TranslationTiling.FiniteCompiler.Effective.SlotNumericalRows
+import TranslationTiling.FiniteCompiler.Effective.MixedInput
 
 namespace TranslationTiling.FiniteCompiler.Packed.AxisParameters
 
-open Compiler.Size Compiler.Effective SlotParameters
+open Compiler.Size Compiler.Effective SlotParameters FiniteCompiler.Effective
 
 set_option maxRecDepth 10000
+set_option maxHeartbeats 1500000
 attribute [local irreducible] slotSearchCap slotPrimeAt
 
 
 def axisFallbackCap (m : ℕ) := slotSearchCap slotBasePrimeCap (8*m)
 
 def axisPrimeCap (m count : ℕ) :=
-  slotWindowCap ((axisFallbackCap m)^2) (5*count+4*(axisFallbackCap m)^2)
+  let J := 5*count+5*(axisFallbackCap m)^2+16
+  let h := Nat.log 2 J+1
+  let j := Nat.log 2 h+1
+  J*(h+2*j+4)
+
+theorem axisPrimeCap_square_le (m count : ℕ) : (axisFallbackCap m)^2 ≤ axisPrimeCap m count := by
+  unfold axisPrimeCap
+  dsimp only
+  apply le_trans (by omega : (axisFallbackCap m)^2 ≤ 5*count+5*(axisFallbackCap m)^2+16)
+  exact Nat.le_mul_of_pos_right _ (by omega)
+
+@[fun_prop] theorem axisPrimeCap_primrec :
+    Primrec (fun v : ℕ × ℕ => axisPrimeCap v.1 v.2) := by
+  have hl := FiniteCompiler.Effective.natLog_primrec 2 (by decide)
+  unfold axisPrimeCap axisFallbackCap
+  dsimp only
+  fun_prop
+
+private theorem primeCap_le_pow (J : ℕ) :
+    let h := Nat.log 2 J+1
+    let j := Nat.log 2 h+1
+    let L := h+2*j+4
+    J*L ≤ 2^L := by
+  let h := Nat.log 2 J+1
+  let j := Nat.log 2 h+1
+  let L := h+2*j+4
+  have hh : h ≤ 2^j := (Nat.lt_pow_succ_log_self (by decide) h).le
+  have hj_aux (v : ℕ) : v ≤ (2:ℕ)^v := by
+    induction v with
+    | zero => decide
+    | succ n ih =>
+      rw [pow_succ]
+      have hpos : (0:ℕ) < 2^n := by positivity
+      omega
+  have hj := hj_aux j
+  have hx : L ≤ 2^(j+4) := by
+    rw [pow_add]
+    have hpos : (0:ℕ) < 2^j := by positivity
+    dsimp only [L]
+    norm_num
+    omega
+  show J*L ≤ 2^L
+  rw [show (2:ℕ)^L = 2^h*2^(j+4)*2^j by
+      rw [show L = (h+(j+4))+j by dsimp [L]; omega,pow_add,pow_add]]
+  have hJ' : J ≤ 2^h := (Nat.lt_pow_succ_log_self (by decide) J).le
+  calc
+    J * L ≤ 2^h * 2^(j+4) := Nat.mul_le_mul hJ' hx
+    _ ≤ _ := Nat.le_mul_of_pos_right _ (by positivity)
+
+private theorem primeCounting_of_pow {J L : ℕ} (hJ : 16 ≤ J) (hL : 0 < L)
+    (hpow : J*L ≤ 2^L) : J ≤ Nat.primeCounting (J*L)+2 := by
+  let P := J*L
+  have hP : P = J*L := rfl
+  have hP0 : 16 ≤ P := hJ.trans (Nat.le_mul_of_pos_right _ hL)
+  have hp' : (16:ℝ) ≤ P := by exact_mod_cast hP0
+  have hlog := lg_mono (show 0 < (P:ℝ) by linarith)
+    (show (P:ℝ) ≤ (2:ℝ)^L by exact_mod_cast hpow)
+  rw [lg_two_pow] at hlog
+  have hp1 := lg_mono (show 0 < (P:ℝ)+1 by positivity)
+    (show (P:ℝ)+1 ≤ (P:ℝ)^2 by nlinarith)
+  rw [Real.logb_pow] at hp1
+  norm_num only [Nat.cast_ofNat] at hp1
+  have hp2 := (div_le_iff₀ (Real.log_pos (show 1 < (P:ℝ) by linarith))).mp (Chebyshev.pi_ge P)
+  have hcount : (P:ℝ) ≤ ((Nat.primeCounting P:ℝ)+2)*Real.logb 2 P := by
+    have hl : (P:ℝ) ≤ (Nat.primeCounting P:ℝ)*Real.logb 2 P + Real.logb 2 ((P:ℝ)+1) := by
+      simp only [Real.logb, ← mul_div_assoc, ← add_div]
+      exact (le_div_iff₀ (Real.log_pos (by norm_num : (1:ℝ)<2))).mpr (by linarith only [hp2])
+    nlinarith only [hl,hp1]
+  have hJR : (J:ℝ) ≤ (Nat.primeCounting P:ℝ)+2 := by
+    have h := mul_le_mul_of_nonneg_left hlog (show 0 ≤ (Nat.primeCounting P:ℝ)+2 by positivity)
+    have he : (P:ℝ) = (J:ℝ)*L := by exact_mod_cast hP
+    apply le_of_mul_le_mul_right _ (show (0:ℝ)<L by exact_mod_cast hL)
+    linarith only [h,hcount,he]
+  exact_mod_cast hJR
+
+private theorem axisPrimeCap_count (m count : ℕ) :
+    5*count+4*(axisFallbackCap m)^2+Nat.primeCounting ((axisFallbackCap m)^2) ≤
+      Nat.primeCounting (axisPrimeCap m count) := by
+  let A := (axisFallbackCap m)^2
+  let J := 5*count+5*A+16
+  let h := Nat.log 2 J+1
+  let j := Nat.log 2 h+1
+  let L := h+2*j+4
+  have hJ : 16 ≤ J := by dsimp only [J]; omega
+  have hh : 0 < L := by dsimp only [L]; omega
+  have h := primeCounting_of_pow hJ hh (primeCap_le_pow J)
+  change 5*count+4*A+Nat.primeCounting A ≤ Nat.primeCounting (J*L)
+  have hA : Nat.primeCounting A ≤ A+1 := by
+    rw [← Nat.primesLE_card_eq_primeCounting,Nat.primesLE_eq_filter_range]
+    simpa using (Finset.card_filter_le (s := Finset.range (A+1)) Nat.Prime)
+  change 5*count+5*A+16 ≤ Nat.primeCounting (J*L)+2 at h
+  omega
 
 def axisPrimePool (m count : ℕ) :=
   slotPrimeInterval ((axisFallbackCap m)^2) (axisPrimeCap m count)
@@ -25,7 +118,8 @@ set_option maxHeartbeats 1000000 in
 theorem axisPrimeTable_primrec :
     Primrec (fun z : ℕ × List ℕ => axisPrimeTable z.1 z.2) := by
   have hp : Primrec (fun z : ℕ × List ℕ => axisPrimePool z.1 z.2.length) := by
-    unfold axisPrimePool axisPrimeCap axisFallbackCap slotWindowCap
+    unfold axisPrimePool
+    have h : Primrec axisFallbackCap := by unfold axisFallbackCap; fun_prop
     fun_prop
   exact Primrec.snd.comp ((allocatePrimeGroups_primrec 4).comp (Primrec.snd.pair hp))
 
@@ -43,13 +137,10 @@ theorem axisPrimeTable_spec (m : ℕ) (moduli : List ℕ)
     apply List.Pairwise.filter
     rw [List.pairwise_map]
     exact (List.sortedLT_range _).pairwise.imp (fun h => by omega)
-  have hc : 512 ≤ (axisFallbackCap m)^2 := by
-    have h : 2048 ≤ axisFallbackCap m := threshold_le_slotSearchCap ..
-    exact (by decide : 512 ≤ 2048^2).trans (Nat.pow_le_pow_left h 2)
   have hplen : 5*moduli.length+4*(axisFallbackCap m)^2 ≤ P.length := by
-    unfold P axisPrimePool axisPrimeCap
+    unfold P axisPrimePool
     rw [slotPrimeInterval_length]
-    have h := slotWindowCap_count (count := 5*moduli.length+4*(axisFallbackCap m)^2) hc
+    have h := axisPrimeCap_count m moduli.length
     omega
   obtain ⟨hp,_,hlen,h⟩ := allocatePrimeGroups_spec 4 moduli P _ hmod hsort hplen
   refine ⟨hlen,(List.nodup_append'.mp (hp.nodup_iff.mpr (hsort.imp fun h => Nat.ne_of_lt h))).2.1,

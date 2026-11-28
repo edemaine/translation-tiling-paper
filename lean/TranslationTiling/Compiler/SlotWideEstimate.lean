@@ -406,7 +406,7 @@ private def moderateSlope (b : ℕ) :=
   let k := moderateMaximum b
   2*moderateWidth b*(2*Nat.clog 2 (moderateC b k)+3*Nat.clog 2 (moderateB b k))
 
-private def moderateOffset (b : ℕ) : ℕ := if b = 4 then 330 else 246
+private def moderateOffset (b : ℕ) : ℕ := if b = 4 then 330 else if b = 5 then 246 else 191
 
 private def moderateRate (b : ℕ) := moderateOffset b - 18 + 5*b+5*Nat.log 2 b
 
@@ -576,7 +576,7 @@ theorem slotRefinedEstimate_log_at {n : ℕ} (hn : 65536 ≤ n) :
     let k := slotPackedDigits n t
     let b := Nat.log 2 (Nat.log 2 n)
     Real.logb 2 (slotRefinedEstimate k (4*t) (3*t) : ℝ) ≤
-      1322+u*(5*g+5*l+(if 5 ≤ b ∧ b < 48 then 246 else 330)) := by
+      1322+u*(5*g+5*l+(if b < 48 then (moderateOffset b : ℝ) else 330)) := by
   let x := (n : ℝ)+4
   let u := Real.logb 2 x
   let g := Real.logb 2 u
@@ -877,11 +877,11 @@ theorem slotRefinedEstimate_log_at {n : ℕ} (hn : 65536 ≤ n) :
   have he := slot_log_bound_factors (c := 10^35*(N : ℝ)) (by positivity)
     (show 0 < W by positivity) ha (show 0 < (X : ℝ) by exact_mod_cast hX0)
     (by positivity : 0 < (H : ℝ)+1) (2*k*m) (4*m)
-  let C₀ : ℝ := if 5 ≤ Nat.log 2 (Nat.log 2 n) ∧ Nat.log 2 (Nat.log 2 n) < 48 then 246 else 330
+  let b := Nat.log 2 (Nat.log 2 n)
+  let C₀ : ℝ := if b < 48 then (moderateOffset b : ℝ) else 330
   change Real.logb 2 (slotRefinedEstimate k m (3*t) : ℝ) ≤ 1322+u*(5*g+5*l+C₀)
   rw [hsize,he]
   push_cast
-  let b := Nat.log 2 (Nat.log 2 n)
   obtain ⟨hb₄,hub,hgb,hlb⟩ := wideDyadicFloors hn
   have hbB := hb
   by_cases hb : b<48
@@ -942,12 +942,8 @@ theorem slotRefinedEstimate_log_at {n : ℕ} (hn : 65536 ≤ n) :
       rw [pow_succ]
       linarith
     have hHL := dyadic_log_le (by positivity : 0<(H:ℝ)+1) hH₃
-    have hoff : 18 ≤ moderateOffset b := by unfold moderateOffset; split <;> decide
-    have hCeq : C₀ = moderateOffset b := by
-      change (if 5 ≤ b ∧ b < 48 then (246:ℝ) else 330) = _
-      by_cases he : b = 4
-      · simp [moderateOffset,he]
-      · simp [moderateOffset,he,show 5 ≤ b ∧ b < 48 from ⟨by omega,hb⟩]
+    have hoff : 18 ≤ moderateOffset b := by unfold moderateOffset; split <;> norm_num; split <;> decide
+    have hCeq : C₀ = moderateOffset b := if_pos hb
     have hnum : (2181:ℝ)+2*(k:ℝ)*m*(2*(dc:ℝ)+3*(db:ℝ))+4*(m:ℝ)*da+18*v+2*((dh:ℝ)+1) ≤
         1322+((moderateOffset b:ℝ)+5*(b:ℝ)+5*(Nat.log 2 b:ℝ))*v := by
       have h' : 2181+2*k*m*(2*dc+3*db)+4*m*da+18*v+2*(dh+1) ≤
@@ -974,7 +970,7 @@ theorem slotRefinedEstimate_log_at {n : ℕ} (hn : 65536 ≤ n) :
     have ha := mul_le_mul_of_nonneg_left hAL (show 0≤4*(m:ℝ) by positivity)
     push_cast at hHL
     nlinarith only [ht,hnum,hw,ha,hHL,hXL,hconst]
-  · have hCB : C₀ = 330 := if_neg (by change ¬ (5 ≤ b ∧ b < 48); omega)
+  · have hCB : C₀ = 330 := if_neg (by omega)
     rw [hCB]
     have hb : 16 ≤ b := by omega
     have hu16 : (2:ℝ)^16 ≤ u := (dyadic_le hb).trans hub
@@ -1035,6 +1031,17 @@ theorem slotRefinedEstimate_log_at {n : ℕ} (hn : 65536 ≤ n) :
 
 
 
+theorem slotRefinedEstimate_moderate_log {n : ℕ} (hn : 65536 ≤ n)
+    (hb : 6 ≤ Nat.log 2 (Nat.log 2 n)) (hb' : Nat.log 2 (Nat.log 2 n) < 48) :
+    let u := Real.logb 2 ((n : ℝ)+4)
+    let g := Real.logb 2 u
+    let t := wideSlotLength n
+    Real.logb 2 (slotRefinedEstimate (slotPackedDigits n t) (4*t) (3*t) : ℝ) ≤
+      1322+u*(5*g+5*Real.logb 2 g+191) := by
+  simpa only [ite_eq_left hb',moderateOffset,ite_eq_right (by omega :
+    Nat.log 2 (Nat.log 2 n) ≠ 4),ite_eq_right (by omega : Nat.log 2 (Nat.log 2 n) ≠ 5),
+    Nat.cast_ofNat] using slotRefinedEstimate_log_at hn
+
 theorem slotRefinedEstimate_log {n : ℕ} (hn : 65536 ≤ n) :
     let u := Real.logb 2 ((n : ℝ)+4)
     let g := Real.logb 2 u
@@ -1046,7 +1053,11 @@ theorem slotRefinedEstimate_log {n : ℕ} (hn : 65536 ≤ n) :
   apply (slotRefinedEstimate_log_at hn).trans
   gcongr
   · exact Real.logb_nonneg (by norm_num) (by linarith [Nat.cast_nonneg (α := ℝ) n])
-  · split <;> norm_num
+  · split
+    · unfold moderateOffset
+      split <;> norm_num
+      split <;> norm_num
+    · norm_num
 
 end
 end TranslationTiling.Compiler.Size

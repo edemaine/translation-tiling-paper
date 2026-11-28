@@ -11,8 +11,8 @@ def axisEstimate (k m w : ℕ) :=
   let P := axisPrimeCap m (2*k*m)
   let X := SlotParameters.stackTestCap P (axisDeckCap k m ((axisRadix m w)^k))
   let H := axisRadius P m w
-  10^35 * (order (fourValueLayout 0) * (P^(7*(2*k*m))*(axisFallbackCap m)^(8*m))) *
-    X^3*(H+1)^2
+  10^32 * (order (fourValueLayout 0) * (P^(7*(2*k*m))*(axisFallbackCap m)^(8*m))) *
+    reservedCap X P*(H+1)^2
 
 private theorem axisStack_mono {P X Y : ℕ} (h : X ≤ Y) :
     reservedCap X P ≤ reservedCap Y P := by
@@ -29,19 +29,14 @@ theorem axis_size_from_volume {P X H R N k m w : ℕ}
     (hN : N ≤ order (fourValueLayout 0) * (P^(7*(2*k*m))*(axisFallbackCap m)^(8*m))) :
     reservedVolumeCap 35 (fun _ => H) R (N/R) (reservedCap X P) ≤ axisEstimate k m w := by
   let Y := SlotParameters.stackTestCap P (axisDeckCap k m ((axisRadix m w)^k))
-  have hY : 1 ≤ Y := (by decide : 1 ≤ 2313).trans (le_max_left ..)
-  have hp : P ≤ Y := (le_max_left ..).trans (le_max_right ..)
   change X ≤ Y at hX
-  have hStack := (axisStack_mono hX).trans (slotStack_le Y P hY hp)
+  have hStack := axisStack_mono (P:=P) hX
   let M := order (fourValueLayout 0) * (P^(7*(2*k*m))*(axisFallbackCap m)^(8*m))
   have hV := slotVolume_le H R (N/R) N (reservedCap X P) hR hNX
   refine hV.trans ?_
   calc
-    _ ≤ (10^32*M*(128*Y^3))*(H+1)^2 :=
+    _ ≤ (10^32*M*reservedCap Y P)*(H+1)^2 :=
       Nat.mul_le_mul_right _ (Nat.mul_le_mul (Nat.mul_le_mul_left _ hN) hStack)
-    _ = (128*10^32)*M*Y^3*(H+1)^2 := by ring
-    _ ≤ 10^35*M*Y^3*(H+1)^2 :=
-      Nat.mul_le_mul_right _ (Nat.mul_le_mul_right _ (Nat.mul_le_mul_right _ (by decide)))
     _ = _ := by subst H; subst P; rfl
 
 end TranslationTiling.Compiler.Size

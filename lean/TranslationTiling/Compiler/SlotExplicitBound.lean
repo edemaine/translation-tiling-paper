@@ -517,7 +517,7 @@ theorem compileCompactSlot_small_log {T : LeanWang.TileSet} (hn : 2 ≤ T.length
     (hlt : T.length < 65536) :
     let u := Real.logb 2 ((T.length : ℝ)+4)
     let g := Real.logb 2 u
-    Real.logb 2 ((compileCompactSlot T).length : ℝ) ≤ 1539+u*(4.986901*(g+Real.logb 2 g)+247) := by
+    Real.logb 2 ((compileCompactSlot T).length : ℝ) ≤ u*(4.986901*(g+Real.logb 2 g)+192)+1880*(u/(u+0.31)) := by
   let u := Real.logb 2 ((T.length : ℝ)+4)
   let g := Real.logb 2 u
   let l := Real.logb 2 g
@@ -526,15 +526,19 @@ theorem compileCompactSlot_small_log {T : LeanWang.TileSet} (hn : 2 ≤ T.length
     exact_mod_cast List.length_pos_iff.mpr (compileCompactSlot_correct T).1
   have compare {E A G L : ℝ} (he : Real.logb 2 (U.length:ℝ) ≤ E)
       (hlo : A≤u ∧ G≤g ∧ L≤l) (hA : 0≤A)
-      (hE : E≤1539+A*(4.986901*(G+L)+247)) (hP : 0≤4.986901*(G+L)+247) :
-      Real.logb 2 (U.length:ℝ) ≤ 1539+u*(4.986901*(g+l)+247) := by
-    have hP' : 4.986901*(G+L)+247 ≤ 4.986901*(g+l)+247 := by linarith [hlo.2.1,hlo.2.2]
-    exact he.trans (hE.trans (add_le_add_right (mul_le_mul hlo.1 hP' hP (hA.trans hlo.1)) _))
+      (hE : E≤A*(4.986901*(G+L)+192)+1880*(A/(A+0.31))) (hP : 0≤4.986901*(G+L)+192) :
+      Real.logb 2 (U.length:ℝ) ≤ u*(4.986901*(g+l)+192)+1880*(u/(u+0.31)) := by
+    have hP' : 4.986901*(G+L)+192 ≤ 4.986901*(g+l)+192 := by linarith [hlo.2.1,hlo.2.2]
+    have hratio : A/(A+0.31) ≤ u/(u+0.31) := by
+      apply (div_le_div_iff₀ (by linarith) (by linarith [hlo.1])).mpr
+      nlinarith only [hlo.1]
+    exact he.trans (hE.trans (add_le_add (mul_le_mul hlo.1 hP' hP (hA.trans hlo.1))
+      (mul_le_mul_of_nonneg_left hratio (by norm_num))))
   have dyad {e : ℕ} (h : U.length ≤ 2^e) : Real.logb 2 (U.length:ℝ) ≤ e :=
     dyadic_log_le hU (by exact_mod_cast h)
   have hsame (hn' : ¬ (10 ≤ T.length ∧ T.length ≤ 729)) : U = compileSlot T := by
     simp [U,compileCompactSlot,compileSlotTotal,hn',nonemptyInput,show T.length ≠ 0 by omega]
-  change Real.logb 2 (U.length:ℝ) ≤ 1539+u*(4.986901*(g+l)+247)
+  change Real.logb 2 (U.length:ℝ) ≤ u*(4.986901*(g+l)+192)+1880*(u/(u+0.31))
   by_cases h₃ : T.length ≤ 3
   · have he := compileSlot_twoOrThree T hn h₃
     rw [← hsame (by omega)] at he
@@ -550,9 +554,9 @@ theorem compileCompactSlot_small_log {T : LeanWang.TileSet} (hn : 2 ≤ T.length
     have hh := dyadic_log_le (pow_pos hU 2) hpow
     rw [Real.logb_pow] at hh
     have hE : Real.logb 2 (U.length:ℝ) ≤ (4627:ℝ)/2 := by norm_num at hh; linarith
-    refine compare hE (A:=3/1) (G:=19/12) (L:=33/50)
+    refine compare hE (A:=3/1) (G:=84/53) (L:=33/50)
       ?_ (by norm_num) (by norm_num) (by norm_num)
-    simpa only [Nat.cast_ofNat,Nat.cast_one,Nat.cast_zero,div_one] using (input_logs_lower (n:=T.length) (h:=8) (a:=3) (b:=1) (c:=19) (d:=12) (e:=33) (f:=50)
+    simpa only [Nat.cast_ofNat,Nat.cast_one,Nat.cast_zero,div_one] using (input_logs_lower (n:=T.length) (h:=8) (a:=3) (b:=1) (c:=84) (d:=53) (e:=33) (f:=50)
       (by decide) (by decide) (by decide) (by omega) (by decide)
       (by norm_num) (by norm_num) (by decide) (by decide))
   by_cases h₇ : T.length ≤ 729
@@ -599,9 +603,9 @@ theorem compileCompactSlot_small_log {T : LeanWang.TileSet} (hn : 2 ≤ T.length
       (by norm_num) (by norm_num) (by decide) (by decide))
   · have hk : k = 3 := slot_digits_at_four (by decide) (by omega) (Or.inr (by omega))
     have he : U.length ≤ 2^4432 := by rw [hsame (by omega)]; exact (bound hk shortSize_3_4.1).trans shortSize_3_4.2
-    refine compare (dyad he) (A:=13/1) (G:=1/1) (L:=0/1)
+    refine compare (dyad he) (A:=27/2) (G:=15/4) (L:=19/10)
       ?_ (by norm_num) (by norm_num) (by norm_num)
-    simpa only [Nat.cast_ofNat,Nat.cast_one,Nat.cast_zero,div_one] using (input_logs_lower (n:=T.length) (h:=11669) (a:=13) (b:=1) (c:=1) (d:=1) (e:=0) (f:=1)
+    simpa only [Nat.cast_ofNat,Nat.cast_one,Nat.cast_zero,div_one] using (input_logs_lower (n:=T.length) (h:=11669) (a:=27) (b:=2) (c:=15) (d:=4) (e:=19) (f:=10)
       (by decide) (by decide) (by decide) (by omega) (by decide)
       (by norm_num) (by norm_num) (by decide) (by decide))
 

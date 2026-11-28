@@ -495,7 +495,7 @@ to recognize infeasibility.
 
 For $n\geq2$ Wang tiles, the translation-only reduction uses at most
 $$
-  B(n)=(n+4)^{4.986901(\lg\lg(n+4)+\lg\lg\lg(n+4))+247+\frac{1539}{\lg(n+4)}}=n^{O(\log\log n)}
+  B(n)=(n+4)^{4.986901(\lg\lg(n+4)+\lg\lg\lg(n+4))+192+\frac{1880}{\lg(n+4)+0.31}}=n^{O(\log\log n)}
 $$
 lattice points / unit cubes
 in every fixed dimension $d\geq3$, where $\lg=\log_2$.

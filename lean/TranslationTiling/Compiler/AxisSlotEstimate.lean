@@ -20,10 +20,7 @@ theorem rankedAxisPrime_caps (k m : ℕ) :
     have hm : 1 ≤ axisFallbackCap m :=
       (by decide : 1 ≤ SlotParameters.slotBasePrimeCap).trans (threshold_le_slotSearchCap ..)
     simpa [pow_two] using Nat.mul_le_mul_right (axisFallbackCap m) hm
-  have hQ : (axisFallbackCap m)^2 ≤ axisPrimeCap m (2*k*m) := by
-    unfold axisPrimeCap slotWindowCap
-    apply le_trans (le_max_left ..)
-    exact Nat.le_mul_of_pos_left _ (by decide : 0 < 8)
+  have hQ := axisPrimeCap_square_le m (2*k*m)
   have hfb (i : AxisFallback m) : (rankedAxisParameters k m).fallback i ≤ axisFallbackCap m :=
     (slotPrimeAt_spec (axisFallbackRank m i).isLt).2.2
   exact ⟨hfb,fun i => by
@@ -63,7 +60,7 @@ theorem axis_order_le {k m A P : ℕ} (s : AxisParameters k m)
 
 theorem axis_digit_log_bound {n t : ℕ} (hn : 0 < n) (ht : 0 < t) :
     (((axisPackedDigits n t)-1 : ℕ) : ℝ) *
-      (7*(t : ℝ)*Real.logb 2 7 - Real.logb 2 (7*(t : ℝ)+1)) ≤ Real.logb 2 (n : ℝ) := by
+      (7*(t : ℝ)*Real.logb 2 7 - (1+Real.logb 2 (7*(t:ℝ))/2)) ≤ Real.logb 2 (n : ℝ) := by
   let D := axisRadix (7*t) (6*t)
   let d := axisPackedDigits n t-1
   have hD : 1 < D := axisRadix_one_lt ht
@@ -78,8 +75,8 @@ theorem axis_digit_log_bound {n t : ℕ} (hn : 0 < n) (ht : 0 < t) :
   have hpos : (0 : ℝ) < D := by exact_mod_cast (show 0 < D by omega)
   have hl := lg_mono (pow_pos hpos d) (show (D : ℝ)^d ≤ n by exact_mod_cast hp)
   rw [Real.logb_pow] at hl
-  have hradix : 7*(t : ℝ)*Real.logb 2 7 - Real.logb 2 (7*(t : ℝ)+1) ≤ Real.logb 2 (D : ℝ) := by
-    simpa only [D,axisRadix,SlotWords.card_word] using axis_radix_log_lower t
+  have hradix : 7*(t : ℝ)*Real.logb 2 7 - (1+Real.logb 2 (7*(t:ℝ))/2) ≤ Real.logb 2 (D : ℝ) := by
+    simpa only [D,axisRadix,SlotWords.card_word] using axis_radix_log_lower_sharp ht
   exact (mul_le_mul_of_nonneg_left hradix (Nat.cast_nonneg d)).trans hl
 
 end TranslationTiling.Compiler.Size

@@ -71,13 +71,13 @@ theorem tiling_undecidable (d : ℕ) (hd : 3 ≤ d) :
   AbstractBridge.connected_undecidable d hd
 
 /-- For at most one Wang tile, the cube bound is `2^2055`. For `n ≥ 2`
-it is `(n + 4)^(4.986901 * (lg lg (n + 4) + lg lg lg (n + 4)) + 247 + 1539 / lg (n + 4))`,
+it is `(n + 4)^(4.986901 * (lg lg (n + 4) + lg lg lg (n + 4)) + 192 + 1880 / (lg (n + 4) + 0.31))`,
 where `lg` is the base-two logarithm (`Real.logb 2` in Lean). -/
 noncomputable def cubeBound (n : ℕ) : ℝ :=
   if n ≤ 1 then 2 ^ 2055 else
     (n + 4) ^ (4.986901 * (Real.logb 2 (Real.logb 2 (n + 4)) +
       Real.logb 2 (Real.logb 2 (Real.logb 2 (n + 4)))) +
-      247 + 1539 / Real.logb 2 (n + 4))
+      192 + 1880 / (Real.logb 2 (n + 4) + 0.31))
 
 /-- **Theorem.** For each fixed `d ≥ 3`, a computable reduction maps Wang tiling
 to translational tiling by a nonempty connected polycube with at most

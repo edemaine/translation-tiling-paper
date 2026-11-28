@@ -3427,13 +3427,15 @@ certify the positive block counts for smaller prime tables and count
 the cyclic order directly. For $730\leq n<65536$, two or three
 width-four digits of radix $108$ give bounds of $2^{3711}$ and $2^{4432}$.
 
-For $65536\leq n<2^{32}$, we certify shorter prime intervals for the
-width-eight digits. The horizontal support is short relative to the
-rail length, so the shell volume is linear in the horizontal slot
-count. The resulting bounds are $2^{5500}$ for two digits and
-$2^{7020}$ for three digits.
+For $65536\leq n<2^{64}$, width-eight digits have radix $20412$.
+For two digits, we bound the cyclic order using the products of
+certified lists of small fallback and marker primes.
+The rail length dominates the horizontal slot count, so the shell volume
+is linear in that count. This gives at most $2^{5392}$ unit cubes.
+The finite volume estimates for three, four, and five digits give
+$2^{7500}$, $2^{9500}$, and $2^{11500}$ unit cubes, respectively.
 
-For $2^{32}\leq n<2^{2^{48}}$, we certify the volume on each interval
+For $2^{64}\leq n<2^{2^{48}}$, we certify the volume on each interval
 of fixed $b=\lfloor\lg\lfloor\lg n\rfloor\rfloor$. The width $m$ and
 radix $D$ are fixed on that interval. An upper bound on the digit count
 $k$ bounds the prime sizes. The logarithmic volume estimate is affine
@@ -3441,7 +3443,7 @@ in $k$ after removing its term $18u$. We use
 $u\geq\max\{2^b,(k-1)\lfloor\lg D\rfloor\}$, so it suffices to check the
 two integer values of $k$ around the change of slope and compare the
 slopes beyond that point. This gives an exponent of at most
-$5g+5\ell+246+1322/u$ in this range.
+$5g+5\ell+191+1322/u$ in this range.
 
 We center each compact arithmetic mask in the strip of its slope,
 halving the radius bound for that mask. For stacking, we improve the
@@ -3470,20 +3472,25 @@ one axis and one marker. Its vertical-cycle test varies the chosen axis
 and reads the chosen marker. The activation masks use fallback outputs
 to ensure that enough slots have a nonconstant marker. Each slot contributes
 the squares of its two low primes and the three marker primes to the
-cyclic order. The radix at width $m$ is at least $7^m/(m+1)$, using six
-active labels and one inactive label and requiring exactly six sevenths
-of the slots to be active. The seven prime factors per slot and the two
-Wang slopes give a coefficient of $14/\lg 7$ on both logarithmic terms.
-Rounding it up gives a bound of
+cyclic order. Explicit Stirling bounds give a radix of at least
+$7^m/(2\sqrt m)$ at width $m$, using six active labels and one inactive
+label and requiring exactly six sevenths of the slots to be active.
+The seven prime factors per slot and the two Wang slopes give a
+coefficient of $14/\lg 7$ on both logarithmic terms.
+
+For $N$ slots and fallback-prime cap $A$, it suffices to find
+$5N+4A^2$ primes above $A^2$. The prime-counting lower bound
+$\pi(P)\geq P/\lg P-2$ gives a search cap $P\leq5.25ug$.
+Using the stacking bound of order $X^2\lg X$ gives
 $$
-  (n+4)^{4.986901(\lg\lg(n+4)+\lg\lg\lg(n+4))+64}
+  (n+4)^{4.986901(\lg\lg(n+4)+\lg\lg\lg(n+4))+19}
 $$
 unit cubes for these inputs.
 
 Below this cutoff we use the one-axis layout estimated above. The
 uniform bound for $n\geq2$ is
 $$
-  B(n)=(n+4)^{4.986901(\lg\lg(n+4)+\lg\lg\lg(n+4))+247+\frac{1539}{\lg(n+4)}}.
+  B(n)=(n+4)^{4.986901(\lg\lg(n+4)+\lg\lg\lg(n+4))+192+\frac{1880}{\lg(n+4)+0.31}}.
 $$
 Lean verifies the bound and computability of the reduction in
 \leanfile{Compiler/AxisSlotExplicitBound.lean}. The Lean abstract uses

@@ -1,6 +1,7 @@
 import TranslationTiling.FiniteCompiler.Effective.SlotNumericalDeck
 import TranslationTiling.Compiler.SlotLogBound
 import TranslationTiling.FiniteCompiler.Effective.SlotSmallPrimeCertificates
+import Mathlib.Data.List.NodupEquivFin
 
 namespace TranslationTiling.Compiler.Size
 
@@ -550,6 +551,233 @@ theorem compileSlotWith_widthOne_bound (T : LeanWang.TileSet) {k : ℕ}
   have hvol : (compileSlotWith T k 1 1).length ≤ widthOneVolume k :=
     hv.trans (reservedVolumeCap_mono hq)
   exact ⟨hne,hconn,hiff,hvol.trans (widthOneVolumeCheck hk hk')⟩
+
+def widthEightExponent (k : ℕ) : ℕ :=
+  if k = 2 then 5392 else if k = 3 then 7500 else if k = 4 then 9500 else 11500
+
+private theorem slotPrimeAt_le_of_sorted {t c C : ℕ} {L : List ℕ}
+    (hC : slotSearchCap t c = C) (hL : L.Pairwise (· < ·))
+    (hp : ∀ p ∈ L, p.Prime ∧ t < p ∧ p ≤ C) {i : ℕ} (hi : i < L.length) :
+    slotPrimeAt t c i ≤ L.getD i 0 := by
+  let K := slotPrimeInterval t C
+  have hs : K.Pairwise (· < ·) := by
+    unfold K slotPrimeInterval
+    apply List.Pairwise.filter
+    rw [List.pairwise_map]
+    exact (List.sortedLT_range _).pairwise.imp (fun h => by omega)
+  have hsub : List.Sublist L K := List.sublist_of_subperm_of_pairwise (r := (· ≤ ·))
+    (List.subperm_of_subset hL.nodup (fun p hp' => mem_slotPrimeInterval.mpr (hp p hp')))
+    (hL.imp (fun h => Nat.le_of_lt h)) (hs.imp (fun h => Nat.le_of_lt h))
+  obtain ⟨f,hf⟩ := List.sublist_iff_exists_orderEmbedding_getElem?_eq.mp hsub
+  have hi' : i < K.length := hi.trans_le hsub.length_le
+  have hfi : f i < K.length := by
+    specialize hf i
+    rw [List.getElem?_eq_getElem hi,eq_comm,List.getElem?_eq_some_iff] at hf
+    exact hf.choose
+  have hle : K[i] ≤ K[f i] := by
+    have hm : i ≤ f i := f.strictMono.id_le i
+    rcases eq_or_lt_of_le hm with h | h
+    · simpa only [← h] using (le_rfl : K[i] ≤ K[i])
+    · exact (List.pairwise_iff_getElem.mp hs _ _ _ _ h).le
+  simp only [slotPrimeAt,slotPrimePool,hC,← show K = slotPrimeInterval t C by rfl,
+    List.getD_eq_getElem?_getD,List.getElem?_eq_getElem hi,List.getElem?_eq_getElem hi',
+    Option.getD_some]
+  have he := hf i
+  rw [List.getElem?_eq_getElem hi,List.getElem?_eq_getElem hfi,Option.some.injEq] at he
+  exact hle.trans_eq he.symm
+
+private theorem widthEightSmallArithmetic :
+    let H := max (fourValueRadius 0) ((19270688*6208^3*3104^2)^3)
+    let X := slotStackTestCap 19270688 (slotDeckCap 2 8 (20412^2))
+    let S := 4*Rails.Strips.countCapAt 35 (fun _ => H)
+    S+4229 ≤ 2^811 ∧
+      mssPieceCap*(2^4927)*(2*reservedPrimeThreshold X 19270688)*216*4222*(S+1) ≤ 2^5392 := by
+  simp only [slotDeckCap,arithmeticBaseline_length_exact]
+  decide +kernel
+
+private def widthEightFallbackWitnesses : List ℕ :=
+  [2053, 2063, 2069, 2081, 2083, 2087, 2089, 2099, 2111, 2113,
+    2129, 2131, 2137, 2141, 2143, 2153, 2161, 2179, 2203, 2207,
+    2213, 2221, 2237, 2239, 2243, 2251, 2267, 2269, 2273, 2281,
+    2287, 2293]
+
+private def widthEightMarkerWitnesses : List ℕ :=
+  [3109, 3119, 3121, 3137, 3163, 3167, 3169, 3181, 3187, 3191,
+    3203, 3209, 3217, 3221, 3229, 3251, 3253, 3257, 3259, 3271,
+    3299, 3301, 3307, 3313, 3319, 3323, 3329, 3331, 3343, 3347,
+    3359, 3361, 3371, 3373, 3389, 3391, 3407, 3413, 3433, 3449,
+    3457, 3461, 3463, 3467, 3469, 3491, 3499, 3511, 3517, 3527,
+    3529, 3533, 3539, 3541, 3547, 3557, 3559, 3571, 3581, 3583,
+    3593, 3607, 3613, 3617, 3623, 3631, 3637, 3643, 3659, 3671,
+    3673, 3677, 3691, 3697, 3701, 3709, 3719, 3727, 3733, 3739,
+    3761, 3767, 3769, 3779, 3793, 3797, 3803, 3821, 3823, 3833,
+    3847, 3851, 3853, 3863, 3877, 3881]
+
+private theorem widthEightFallbackCap_eq : fallbackCap 8 = 3104 := slotSearchCap_2048_32
+
+private theorem widthEightMarkerCap_eq : separateMarkerCap 2 8 = 6208 := by
+  rw [separateMarkerCap,widthEightFallbackCap_eq]
+  exact slotSearchCap_3104_96
+
+private theorem widthEightLowCap_eq : separateLowCap 2 8 = 19270688 := by
+  rw [separateLowCap,widthEightFallbackCap_eq,widthEightMarkerCap_eq]
+  exact slotSearchCap_19269632_32
+
+private theorem rankedSlotOrder_le_products {k m L M F : ℕ}
+    (hl : ((List.range (2*k*m)).map (rankedLowAt k m)).prod ≤ L)
+    (hm : ((List.range (2*k*m)).map (fun i =>
+      rankedMarkerAt k m i 0 * rankedMarkerAt k m i 1 * rankedMarkerAt k m i 2)).prod ≤ M)
+    (hf : ((List.range (4*m)).map (slotFallbackAt m)).prod ≤ F) :
+    (rankedSlotOrders k m).1 ≤ 2^1893*(L^2*M*F) := by
+  have hbase : (rankedSlotOrders 0 0).1 ≤ 2^1893 := by
+    rw [rankedSlotOrders_zero]
+    simpa only [Nat.mul_zero,pow_zero,Nat.mul_one] using fourValueRows_order_bound 0
+  exact Nat.mul_le_mul hbase (Nat.mul_le_mul (Nat.mul_le_mul (Nat.pow_le_pow_left hl 2) hm) hf)
+
+private theorem widthEight_order :
+    (rankedSlotOrders 2 8).1 ≤ 2^4927 := by
+  let f := widthEightFallbackWitnesses
+  let b := widthEightMarkerWitnesses
+  have hf : ∀ p ∈ f, p.Prime ∧ 2048 < p ∧ p ≤ 3104 := by
+    simp only [f,widthEightFallbackWitnesses,List.forall_mem_cons,List.not_mem_nil,IsEmpty.forall_iff,implies_true]
+    norm_num
+  have hb : ∀ p ∈ b, p.Prime ∧ 3104 < p ∧ p ≤ 6208 := by
+    simp only [b,widthEightMarkerWitnesses,List.forall_mem_cons,List.not_mem_nil,IsEmpty.forall_iff,implies_true]
+    norm_num
+  have hA := widthEightFallbackCap_eq
+  have hB := widthEightMarkerCap_eq
+  have qf (i : ℕ) (hi : i < 32) : slotFallbackAt 8 i ≤ f.getD i 0 := by
+    simp only [slotFallbackAt,show (8:ℕ) ≠ 1 by decide,ite_false]
+    exact slotPrimeAt_le_of_sorted slotSearchCap_2048_32 (by decide +kernel) hf hi
+  have qb (i j : ℕ) (hi : i < 32) (hj : j < 3) :
+      rankedMarkerAt 2 8 i j ≤ b.getD (j+3*i) 0 := by
+    simp only [rankedMarkerAt,show (8:ℕ) ≠ 1 by decide,and_false,false_and,ite_false,
+      show ¬ 24 ≤ (8:ℕ) by decide,hA,Nat.reduceMul]
+    exact slotPrimeAt_le_of_sorted slotSearchCap_3104_96 (by decide +kernel) hb (by change j+3*i < 96; omega)
+  have ql (i : ℕ) (hi : i < 32) : rankedLowAt 2 8 i ≤ 19270688 := by
+    simp only [rankedLowAt,show (8:ℕ) ≠ 1 by decide,and_false,false_and,ite_false,
+      show ¬ 24 ≤ (8:ℕ) by decide,hA,hB,Nat.reduceMul]
+    exact (slotPrimeAt_spec hi).2.2.trans_eq slotSearchCap_19269632_32
+  have prod_le {l : List ℕ} {v w : ℕ → ℕ} (h : ∀ i ∈ l, v i ≤ w i) :
+      (l.map v).prod ≤ (l.map w).prod := by
+    induction l with
+    | nil => simp
+    | cons i l ih =>
+      exact Nat.mul_le_mul (h i (by simp)) (ih (fun j hj => h j (by simp [hj])))
+  have hl := prod_le (l := List.range 32) (w := Function.const ℕ 19270688)
+    (fun i hi => ql i (List.mem_range.mp hi))
+  rw [List.map_const,List.prod_replicate,List.length_range] at hl
+  have hf := prod_le (l := List.range 32) (fun i hi => qf i (List.mem_range.mp hi))
+  have hb := prod_le (l := List.range 32) (fun i hi => Nat.mul_le_mul
+    (Nat.mul_le_mul (qb i 0 (List.mem_range.mp hi) (by decide)) (qb i 1 (List.mem_range.mp hi) (by decide)))
+    (qb i 2 (List.mem_range.mp hi) (by decide)))
+  apply (rankedSlotOrder_le_products (k:=2) (m:=8) hl hb hf).trans
+  dsimp only [f,b,widthEightFallbackWitnesses,widthEightMarkerWitnesses]
+  decide +kernel
+
+private theorem widthEightVolumeCheck (T : LeanWang.TileSet) (hn : 0 < T.length)
+    (hcap : T.length ≤ (slotRadix 8 6)^2) :
+    (compileSlotWith T 2 8 6).length ≤ 2^5392 := by
+  let nr := rankedSlotOrders 2 8
+  have hN : nr.1 ≤ 2^4927 := widthEight_order
+  have hA := widthEightFallbackCap_eq
+  have hB := widthEightMarkerCap_eq
+  have hC := widthEightLowCap_eq
+  let H := slotAssemblyRadius 2 8 6
+  let P := assemblyPrimeCap 8 (slotPrimeCap 2 8)
+  let X := slotStackTestCap P (numericalSlotTests T nr.1 2 8 6).length.succ
+  let Y := slotStackTestCap P (slotDeckCap 2 8 ((slotRadix 8 6)^2))
+  have hP : P = 19270688 := by
+    simp only [P,assemblyPrimeCap,slotStackPrimeCap,slotPrimeCap,markerCap,SlotParameters.lowCap,
+      show (8:ℕ) ≠ 0 by decide,show ¬24 ≤ (8:ℕ) by decide,ite_false,hA,hB,hC]
+    decide
+  have hH : H = max (fourValueRadius 0) ((19270688*6208^3*3104^2)^3) := by
+    simp only [H,slotAssemblyRadius,slotOffsetFactorCap,markerCap,SlotParameters.lowCap,
+      show (8:ℕ) ≠ 1 by decide,show ¬24 ≤ (8:ℕ) by decide,and_false,ite_false,hA,hB,hC,
+      show min 8 (8+1-6) = 3 by decide]
+  have hs : 4*Rails.Strips.countCapAt 35 (fun _ => H)+4229 ≤ 2^811 ∧
+      mssPieceCap*(2^4927)*(2*reservedPrimeThreshold Y P)*216*4222*
+        (4*Rails.Strips.countCapAt 35 (fun _ => H)+1) ≤ 2^5392 := by
+    change _ ∧ mssPieceCap*(2^4927)*(2*reservedPrimeThreshold
+      (slotStackTestCap P (slotDeckCap 2 8 ((slotRadix 8 6)^2))) P)*216*4222*_ ≤ _
+    rw [hP,hH,show slotRadix 8 6 = 20412 by decide]
+    exact widthEightSmallArithmetic
+  have hR : 2^811 ≤ nr.2 := by
+    obtain ⟨s,he,_,_,_⟩ := exists_ranked_parameters 2 8
+    change 2^811 ≤ (rankedSlotOrders 2 8).2
+    rw [rankedSlotOrders_eq s he]
+    have hbase : 2^811 ≤ (guardedModuli (fourValueRows 0)).prod := by decide +kernel
+    apply hbase.trans
+    rw [fourValueInputOrder_eq]
+    unfold period
+    rw [Fintype.prod_sum_type]
+    exact Nat.le_mul_of_pos_right _ (Finset.prod_pos fun i _ => s.layout.lowSize_pos _)
+  have hXY : X ≤ Y := max_le_max_left _ (max_le_max_left _ (numericalSlotTests_length T _ _ _ _))
+  have hq : reservedPrimeCap X P ≤ 2*reservedPrimeThreshold Y P :=
+    (reservedPrimeCap_le_twice_threshold X P).trans
+      (Nat.mul_le_mul_left 2 (reservedPrimeThreshold_mono P (le_max_left ..) hXY))
+  exact (compileSlotWith_volume T hn (by decide) hcap).2.2.2.trans
+    ((reservedVolumeCap_mono hq).trans ((uniformSlotVolume _ _ _ _ _ _).trans
+      ((slotVolume_linear_le H nr.2 (nr.1/nr.2) (2^4927) _
+        ((Nat.div_mul_le_self ..).trans hN) (hs.1.trans hR)).trans hs.2)))
+
+private def widthEightEstimateValue (k A B C : ℕ) :=
+  let P := max 4 (max slotBasePrimeCap (max A (max B C)))
+  let X := stackTestCap P (slotDeckCap k 8 (20412^k))
+  let H := max (fourValueRadius 0) ((C*B^3*A^2)^3)
+  let N := order (fourValueLayout 0)*((C^2*B^3)^(16*k)*A^32)
+  10^35*N*X^3*(H+1)^2
+
+private theorem slotRefinedEstimate_widthEight_eq {k B C : ℕ}
+    (hB : separateMarkerCap k 8 = B) (hC : separateLowCap k 8 = C) :
+    slotRefinedEstimate k 8 6 = widthEightEstimateValue k 3104 B C := by
+  have hA : fallbackCap 8 = 3104 := slotSearchCap_2048_32
+  have hcount : 2*k*8 = 16*k := by omega
+  simp only [slotRefinedEstimate,widthEightEstimateValue,slotStackPrimeCap,slotPrimeCap,
+    slotAssemblyRadius,slotOffsetFactorCap,markerCap,SlotParameters.lowCap,
+    show (8:ℕ) ≠ 1 by decide,show ¬ 24 ≤ (8:ℕ) by decide,and_false,ite_false,
+    hA,hB,hC,hcount,show slotRadix 8 6 = 20412 by decide,show min 8 (8+1-6) = 3 by decide,
+    show 4*8 = 32 by decide]
+
+private theorem widthEightEstimateValues :
+    widthEightEstimateValue 3 3104 7744 24038944 ≤ 2^7500 ∧
+    widthEightEstimateValue 4 3104 9280 28807200 ≤ 2^9500 ∧
+    widthEightEstimateValue 5 3104 10816 33575456 ≤ 2^11500 := by
+  simp only [widthEightEstimateValue,slotDeckCap,arithmeticBaseline_length_exact]
+  decide +kernel
+
+theorem slotRefinedEstimate_widthEight {k : ℕ} (hk : 3 ≤ k) (hk' : k ≤ 5) :
+    slotRefinedEstimate k 8 6 ≤ 2^widthEightExponent k := by
+  have hA : fallbackCap 8 = 3104 := slotSearchCap_2048_32
+  interval_cases k
+  · have hB : separateMarkerCap 3 8 = 7744 := by
+      rw [separateMarkerCap,hA]
+      exact slotSearchCap_3104_144
+    have hC : separateLowCap 3 8 = 24038944 := by
+      rw [separateLowCap,hA,hB]
+      exact slotSearchCap_24037376_48
+    rw [slotRefinedEstimate_widthEight_eq hB hC]
+    exact widthEightEstimateValues.1
+  · have hB : separateMarkerCap 4 8 = 9280 := by
+      rw [separateMarkerCap,hA]
+      exact slotSearchCap_3104_192
+    have hC : separateLowCap 4 8 = 28807200 := by
+      rw [separateLowCap,hA,hB]
+      exact slotSearchCap_28805120_64
+    rw [slotRefinedEstimate_widthEight_eq hB hC]
+    exact widthEightEstimateValues.2.1
+  · have hB : separateMarkerCap 5 8 = 10816 := by
+      rw [separateMarkerCap,hA]
+      exact slotSearchCap_3104_240
+    have hC : separateLowCap 5 8 = 33575456 := by
+      rw [separateLowCap,hA,hB]
+      exact slotSearchCap_33572864_80
+    rw [slotRefinedEstimate_widthEight_eq hB hC]
+    exact widthEightEstimateValues.2.2
+
+theorem compileSlotWith_widthEight_bound (T : LeanWang.TileSet) (hn : 0 < T.length)
+    (hcap : T.length ≤ 20412^2) : (compileSlotWith T 2 8 6).length ≤ 2^widthEightExponent 2 :=
+  widthEightVolumeCheck T hn (by simpa only [show slotRadix 8 6 = 20412 by decide] using hcap)
 
 theorem compileSlot_correct (T : LeanWang.TileSet) (hn : 0 < T.length) :
     let U := compileSlot T

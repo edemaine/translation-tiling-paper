@@ -1,6 +1,7 @@
 import TranslationTiling.Compiler.GuardedLogBound
 import TranslationTiling.FiniteCompiler.SlotWords
 import Mathlib.Analysis.Complex.ExponentialBounds
+import Mathlib.Analysis.SpecialFunctions.Stirling
 
 namespace TranslationTiling.FiniteCompiler.SlotWords
 
@@ -76,6 +77,71 @@ theorem axis_radix_log_lower (t : ℕ) :
   push_cast at hlog
   change _ ≤ Real.logb 2 (R : ℝ)
   linarith
+
+private theorem log_factorial_eq (n : ℕ) (hn : 0 < n) :
+    Real.log (n.factorial:ℝ) = Real.log (Stirling.stirlingSeq n) +
+      Real.log (2*(n:ℝ))/2 + n*(Real.log n-1) := by
+  have h := Stirling.log_stirlingSeq_formula n
+  rw [Real.log_div (by exact_mod_cast hn.ne') (by positivity),Real.log_exp] at h
+  linarith only [h]
+
+/-- The largest weighted layer loses at most one bit plus half the logarithm
+of the number of positions, by explicit bounds for the Stirling sequence. -/
+theorem axis_radix_log_lower_sharp {t : ℕ} (ht : 0 < t) :
+    7*(t:ℝ)*Real.logb 2 7 - (1 + Real.logb 2 (7*(t:ℝ))/2) ≤
+      Real.logb 2 (Fintype.card (Word (7*t) (6*t) 6)) := by
+  rw [card_word]
+  have hchoose : 0 < (7*t).choose (6*t) := Nat.choose_pos (by omega)
+  have hf : ((7*t).choose (6*t):ℝ)*((6*t).factorial:ℝ)*(t.factorial:ℝ) =
+      ((7*t).factorial:ℝ) := by
+    exact_mod_cast (show (7*t).choose (6*t)*(6*t).factorial*t.factorial = (7*t).factorial by
+      have h := Nat.choose_mul_factorial_mul_factorial (n:=7*t) (k:=6*t) (by omega)
+      rw [show 7*t-6*t = t by omega] at h
+      exact h)
+  have hlog := congrArg Real.log hf
+  rw [Real.log_mul (by positivity) (by positivity),
+    Real.log_mul (by exact_mod_cast hchoose.ne') (by positivity),
+    log_factorial_eq t ht, log_factorial_eq (6*t) (by omega),
+    log_factorial_eq (7*t) (by omega)] at hlog
+  have lo (n : ℕ) (hn : 0 < n) :
+      1-1/12-Real.log 2/2 ≤ Real.log (Stirling.stirlingSeq n) := by
+    cases n with
+    | zero => omega
+    | succ n => simpa only [one_div] using Stirling.log_stirlingSeq_bounded_by_constant n
+  have hi (n : ℕ) (hn : 0 < n) :
+      Real.log (Stirling.stirlingSeq n) ≤ 1-Real.log 2/2 := by
+    cases n with
+    | zero => omega
+    | succ n =>
+      have h := Stirling.log_stirlingSeq'_antitone (show 0 ≤ n by omega)
+      change _ ≤ Real.log (Stirling.stirlingSeq 1) at h
+      rwa [Stirling.stirlingSeq_one, Real.log_div (by positivity) (by positivity),
+        Real.log_exp,Real.log_sqrt (by norm_num)] at h
+  have htR : 0 < (t:ℝ) := by exact_mod_cast ht
+  have hgeom : 2*Real.log 2 ≤ Real.log 7*2-(Real.log 2+Real.log 6) := by
+    have h := Real.log_le_log (show (0:ℝ)<4*12 by norm_num) (show (4*12:ℝ) ≤ 7^2 by norm_num)
+    rw [Real.log_mul (x := 4) (by norm_num) (by norm_num),Real.log_pow,
+      show (4:ℝ) = 2^2 by norm_num,Real.log_pow,
+      show (12:ℝ) = 2*6 by norm_num,Real.log_mul (x := 2) (by norm_num) (by norm_num)] at h
+    norm_num at h
+    linarith only [h]
+  rw [Real.logb,Real.logb,Real.logb]
+  have h2 := Real.log_pos (show (1:ℝ)<2 by norm_num)
+  apply (le_div_iff₀ h2).mpr
+  have hcleared : (7*(t:ℝ)*(Real.log 7/Real.log 2) -
+      (1+Real.log (7*(t:ℝ))/Real.log 2/2))*Real.log 2 =
+      7*(t:ℝ)*Real.log 7 - Real.log 2 - Real.log (7*(t:ℝ))/2 := by
+    field_simp
+    <;> ring
+  rw [hcleared]
+  push_cast at hlog ⊢
+  rw [Real.log_mul (x := ((7*t).choose (6*t):ℝ)) (by exact_mod_cast hchoose.ne') (by positivity),
+    Real.log_pow]
+  repeat rw [Real.log_mul (x := 2) (by norm_num) (by positivity)] at hlog
+  rw [Real.log_mul (x := 7) (by norm_num) htR.ne'] at hlog ⊢
+  rw [Real.log_mul (x := 6) (by norm_num) htR.ne'] at hlog
+  norm_num at hlog ⊢
+  nlinarith only [hlog,hgeom,lo (7*t) (by omega),hi (6*t) (by omega),hi t ht,Real.log_two_gt_d9]
 
 /-- The decimal coefficient rounds (14/log_2 7) upward. -/
 theorem axis_coefficient_le_decimal : 14 / Real.logb 2 7 ≤ (4.986901 : ℝ) := by

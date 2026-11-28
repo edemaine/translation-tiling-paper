@@ -15,11 +15,6 @@ set_option maxHeartbeats 2500000
 set_option maxRecDepth 10000
 attribute [local irreducible] slotSearchCap slotPrimeAt
 
-private theorem axisPrimeCap_primrec :
-    Primrec (fun v : ℕ × ℕ => axisPrimeCap v.1 v.2) := by
-  unfold axisPrimeCap axisFallbackCap slotWindowCap
-  fun_prop
-
 private theorem axisRadius_primrec :
     Primrec (fun v : ℕ × ℕ × ℕ => axisRadius v.1 v.2.1 v.2.2) := by
   unfold axisRadius
@@ -98,7 +93,7 @@ theorem compileAxisWith_correct (T : LeanWang.TileSet) {k m w : ℕ}
     have hA : 2048 ≤ axisFallbackCap m := threshold_le_slotSearchCap ..
     have hAA : 2048 ≤ (axisFallbackCap m)^2 :=
       (by decide : 2048 ≤ 2048^2).trans (Nat.pow_le_pow_left hA 2)
-    exact hAA.trans ((le_max_left ..).trans (Nat.le_mul_of_pos_left _ (by decide : 0 < 8)))
+    exact hAA.trans (axisPrimeCap_square_le m (2*k*m))
   have h3 : 3 < P := (by decide : 3 < SlotParameters.slotBasePrimeCap).trans_le hP
   have hs : s.prime = rankedAxisPrime k m := rfl
   obtain ⟨hA,hQ⟩ := rankedAxisPrime_caps k m
