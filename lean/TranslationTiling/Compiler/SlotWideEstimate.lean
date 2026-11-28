@@ -406,7 +406,9 @@ private def moderateSlope (b : ℕ) :=
   let k := moderateMaximum b
   2*moderateWidth b*(2*Nat.clog 2 (moderateC b k)+3*Nat.clog 2 (moderateB b k))
 
-private def moderateRate (b : ℕ) := 312+5*b+5*Nat.log 2 b
+private def moderateOffset (b : ℕ) : ℕ := if b = 4 then 330 else 246
+
+private def moderateRate (b : ℕ) := moderateOffset b - 18 + 5*b+5*Nat.log 2 b
 
 private def moderateCheck (b k : ℕ) : Prop :=
   moderateBase b+moderateSlope b*k ≤
@@ -416,14 +418,14 @@ private instance (b k : ℕ) : Decidable (moderateCheck b k) := by
   unfold moderateCheck
   infer_instance
 
-private theorem moderateCheck_cert (b : ℕ) (hb : 4≤b) (hb' : b<16) :
+private theorem moderateCheck_cert (b : ℕ) (hb : 4≤b) (hb' : b<48) :
     let d := moderateRadixLog b
     let j := 1+2^b/d
     0<d ∧ moderateCheck b j ∧ moderateCheck b (j+1) ∧
       moderateSlope b ≤ moderateRate b*d := by
   interval_cases b <;> decide +kernel
 
-private theorem moderateCheck_of {b : ℕ} (hb : 4≤b) (hb' : b<16) (k : ℕ) :
+private theorem moderateCheck_of {b : ℕ} (hb : 4≤b) (hb' : b<48) (k : ℕ) :
     moderateCheck b k := by
   let d := moderateRadixLog b
   let j := 1+2^b/d
@@ -518,7 +520,7 @@ private theorem wideDyadicFloors {n : ℕ} (hn : 65536≤n) :
   exact ⟨hb,hu,hg,hl⟩
 
 private theorem moderateBudget {n : ℕ} (hn : 65536≤n)
-    (hb' : Nat.log 2 (Nat.log 2 n)<16) :
+    (hb' : Nat.log 2 (Nat.log 2 n)<48) :
     let b := Nat.log 2 (Nat.log 2 n)
     let u := Real.logb 2 ((n:ℝ)+4)
     let k := slotPackedDigits n (wideSlotLength n)
@@ -566,13 +568,15 @@ private theorem moderateBudget {n : ℕ} (hn : 65536≤n)
       (lg_mono (by positivity : 0<(n:ℝ)) (by linarith : (n:ℝ)≤(n:ℝ)+4)))
   · exact ⟨hk₃,moderateCheck_of hb hb' k⟩
 
-theorem slotRefinedEstimate_log {n : ℕ} (hn : 65536 ≤ n) :
+theorem slotRefinedEstimate_log_at {n : ℕ} (hn : 65536 ≤ n) :
     let u := Real.logb 2 ((n : ℝ)+4)
     let g := Real.logb 2 u
     let l := Real.logb 2 g
     let t := wideSlotLength n
     let k := slotPackedDigits n t
-    Real.logb 2 (slotRefinedEstimate k (4*t) (3*t) : ℝ) ≤ 1322+u*(5*g+5*l+330) := by
+    let b := Nat.log 2 (Nat.log 2 n)
+    Real.logb 2 (slotRefinedEstimate k (4*t) (3*t) : ℝ) ≤
+      1322+u*(5*g+5*l+(if 5 ≤ b ∧ b < 48 then 246 else 330)) := by
   let x := (n : ℝ)+4
   let u := Real.logb 2 x
   let g := Real.logb 2 u
@@ -873,13 +877,14 @@ theorem slotRefinedEstimate_log {n : ℕ} (hn : 65536 ≤ n) :
   have he := slot_log_bound_factors (c := 10^35*(N : ℝ)) (by positivity)
     (show 0 < W by positivity) ha (show 0 < (X : ℝ) by exact_mod_cast hX0)
     (by positivity : 0 < (H : ℝ)+1) (2*k*m) (4*m)
-  change Real.logb 2 (slotRefinedEstimate k m (3*t) : ℝ) ≤ 1322+u*(5*g+5*l+330)
+  let C₀ : ℝ := if 5 ≤ Nat.log 2 (Nat.log 2 n) ∧ Nat.log 2 (Nat.log 2 n) < 48 then 246 else 330
+  change Real.logb 2 (slotRefinedEstimate k m (3*t) : ℝ) ≤ 1322+u*(5*g+5*l+C₀)
   rw [hsize,he]
   push_cast
   let b := Nat.log 2 (Nat.log 2 n)
   obtain ⟨hb₄,hub,hgb,hlb⟩ := wideDyadicFloors hn
   have hbB := hb
-  by_cases hb : b<16
+  by_cases hb : b<48
   · obtain ⟨hv,hkM,hcheck⟩ := moderateBudget hn hb
     have ht' : t=b*Nat.log 2 b/4 := by
       have hol : 1≤Nat.log 2 b := (Nat.le_log_iff_pow_le (by decide) (by omega : b≠0)).mpr (by norm_num; omega)
@@ -937,28 +942,41 @@ theorem slotRefinedEstimate_log {n : ℕ} (hn : 65536 ≤ n) :
       rw [pow_succ]
       linarith
     have hHL := dyadic_log_le (by positivity : 0<(H:ℝ)+1) hH₃
+    have hoff : 18 ≤ moderateOffset b := by unfold moderateOffset; split <;> decide
+    have hCeq : C₀ = moderateOffset b := by
+      change (if 5 ≤ b ∧ b < 48 then (246:ℝ) else 330) = _
+      by_cases he : b = 4
+      · simp [moderateOffset,he]
+      · simp [moderateOffset,he,show 5 ≤ b ∧ b < 48 from ⟨by omega,hb⟩]
     have hnum : (2181:ℝ)+2*(k:ℝ)*m*(2*(dc:ℝ)+3*(db:ℝ))+4*(m:ℝ)*da+18*v+2*((dh:ℝ)+1) ≤
-        1322+(330+5*(b:ℝ)+5*(Nat.log 2 b:ℝ))*v := by
+        1322+((moderateOffset b:ℝ)+5*(b:ℝ)+5*(Nat.log 2 b:ℝ))*v := by
       have h' : 2181+2*k*m*(2*dc+3*db)+4*m*da+18*v+2*(dh+1) ≤
-          1322+(330+5*b+5*Nat.log 2 b)*v := by
+          1322+(moderateOffset b+5*b+5*Nat.log 2 b)*v := by
         change moderateCheck b k at hcheck
         unfold moderateCheck moderateBase moderateSlope moderateRate at hcheck
         rw [←hm'] at hcheck
         change 2181+4*m*da+2*(dh+1)+(2*m*(2*dc+3*db))*k ≤
-          1322+(312+5*b+5*Nat.log 2 b)*v at hcheck
+          1322+(moderateOffset b-18+5*b+5*Nat.log 2 b)*v at hcheck
         calc
           _ = (2181+4*m*da+2*(dh+1)+(2*m*(2*dc+3*db))*k)+18*v := by ring
-          _ ≤ (1322+(312+5*b+5*Nat.log 2 b)*v)+18*v := Nat.add_le_add_right hcheck _
-          _ = _ := by ring
+          _ ≤ (1322+(moderateOffset b-18+5*b+5*Nat.log 2 b)*v)+18*v :=
+            Nat.add_le_add_right hcheck _
+          _ = 1322+(moderateOffset b-18+5*b+5*Nat.log 2 b+18)*v := by ring
+          _ = _ := by rw [show moderateOffset b-18+5*b+5*Nat.log 2 b+18 =
+            moderateOffset b+5*b+5*Nat.log 2 b by omega]
       exact_mod_cast h'
     have hV : (v:ℝ)≤u := hv
-    have hfix : (330:ℝ)+5*(b:ℝ)+5*(Nat.log 2 b:ℝ)-18 ≤ 330+5*g+5*l-18 := by linarith
-    have ht := mul_le_mul hfix hV (by positivity) (by linarith : 0≤330+5*g+5*l-18)
+    have hfix : (moderateOffset b:ℝ)+5*(b:ℝ)+5*(Nat.log 2 b:ℝ)-18 ≤ C₀+5*g+5*l-18 := by
+      rw [hCeq]; linarith
+    have ho : (18:ℝ) ≤ C₀ := by rw [hCeq]; exact_mod_cast hoff
+    have ht := mul_le_mul hfix hV (by positivity) (by linarith : 0≤C₀+5*g+5*l-18)
     have hw := mul_le_mul_of_nonneg_left hWL (show 0≤2*(k:ℝ)*m by positivity)
     have ha := mul_le_mul_of_nonneg_left hAL (show 0≤4*(m:ℝ) by positivity)
     push_cast at hHL
     nlinarith only [ht,hnum,hw,ha,hHL,hXL,hconst]
-  · have hb : 16 ≤ b := by omega
+  · have hCB : C₀ = 330 := if_neg (by change ¬ (5 ≤ b ∧ b < 48); omega)
+    rw [hCB]
+    have hb : 16 ≤ b := by omega
     have hu16 : (2:ℝ)^16 ≤ u := (dyadic_le hb).trans hub
     have hg16 : 16 ≤ g := (by exact_mod_cast hb : (16:ℝ) ≤ b).trans hgb
     have hl4 : 4 ≤ l := (by exact_mod_cast
@@ -1015,6 +1033,20 @@ theorem slotRefinedEstimate_log {n : ℕ} (hn : 65536 ≤ n) :
     have hu65536 : 65536≤u := by simpa only [show (2:ℝ)^16=65536 by norm_num] using hu16
     nlinarith only [hWlarge,hAlarge,hHlarge,hXL,hconst,hu65536]
 
+
+
+theorem slotRefinedEstimate_log {n : ℕ} (hn : 65536 ≤ n) :
+    let u := Real.logb 2 ((n : ℝ)+4)
+    let g := Real.logb 2 u
+    let l := Real.logb 2 g
+    let t := wideSlotLength n
+    let k := slotPackedDigits n t
+    Real.logb 2 (slotRefinedEstimate k (4*t) (3*t) : ℝ) ≤ 1322+u*(5*g+5*l+330) := by
+  dsimp only
+  apply (slotRefinedEstimate_log_at hn).trans
+  gcongr
+  · exact Real.logb_nonneg (by norm_num) (by linarith [Nat.cast_nonneg (α := ℝ) n])
+  · split <;> norm_num
 
 end
 end TranslationTiling.Compiler.Size

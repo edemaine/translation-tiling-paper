@@ -3420,26 +3420,28 @@ Each slot contributes the square of its low prime and three marker
 primes to the cyclic order, giving the term $5g+5\ell$ in the exponent
 after packing the words.
 
-For $65536\leq n<2^{65536}$, we certify the volume on each interval
-of fixed $b=\lfloor\lg\lfloor\lg n\rfloor\rfloor$. The width $m$ and
-radix $D$ are then fixed. We use an upper bound on the digit count $k$
-in the interval to bound the prime sizes. The resulting logarithmic
-volume estimate is affine in $k$ after removing its term $18u$.
-We use $u\geq\max\{2^b,(k-1)\lfloor\lg D\rfloor\}$, so it suffices to
-check the two integer values of $k$ around the change of slope and
-compare the slopes beyond that point.
-For $n\geq2^{65536}$, the larger width and the inequalities
-$8g^3\leq u$ and $\lg(m+1)/m\leq1/8$ give an exponent of at most
-$5g+5\ell+294$.
+For $2\leq n\leq9$, one or two radix-three digits of width one give
+bounds of $2^{2198}$ and $2^{2314}$ unit cubes, respectively. For
+$10\leq n\leq729$, we use three to six digits of the same width. We
+certify the positive block counts for smaller prime tables and count
+the cyclic order directly. For $730\leq n<65536$, two or three
+width-four digits of radix $108$ give bounds of $2^{3711}$ and $2^{4432}$.
 
-For $2\leq n\leq27$ we use one, two, or three radix-three digits
-of width one. With one or two digits, fixed prime tables with certified
-positive block counts give volume bounds of $2^{2198}$ and $2^{2316}$,
-respectively. With three digits, the short horizontal supports give
-a shell volume bound linear in the number of geometric slots and a
-total of at most $2^{2606}$ unit cubes. For $28\leq n<65536$,
-digits of width four and radix $108$ give bounds of $2^{3007}$,
-$2^{3711}$, or $2^{4432}$ for one, two, or three digits, respectively.
+For $65536\leq n<2^{32}$, we certify shorter prime intervals for the
+width-eight digits. The horizontal support is short relative to the
+rail length, so the shell volume is linear in the horizontal slot
+count. The resulting bounds are $2^{5500}$ for two digits and
+$2^{7020}$ for three digits.
+
+For $2^{32}\leq n<2^{2^{48}}$, we certify the volume on each interval
+of fixed $b=\lfloor\lg\lfloor\lg n\rfloor\rfloor$. The width $m$ and
+radix $D$ are fixed on that interval. An upper bound on the digit count
+$k$ bounds the prime sizes. The logarithmic volume estimate is affine
+in $k$ after removing its term $18u$. We use
+$u\geq\max\{2^b,(k-1)\lfloor\lg D\rfloor\}$, so it suffices to check the
+two integer values of $k$ around the change of slope and compare the
+slopes beyond that point. This gives an exponent of at most
+$5g+5\ell+246+1322/u$ in this range.
 
 We center each compact arithmetic mask in the strip of its slope,
 halving the radius bound for that mask. For stacking, we improve the
@@ -3481,7 +3483,7 @@ unit cubes for these inputs.
 Below this cutoff we use the one-axis layout estimated above. The
 uniform bound for $n\geq2$ is
 $$
-  B(n)=(n+4)^{4.986901(\lg\lg(n+4)+\lg\lg\lg(n+4))+331+\frac{1322}{\lg(n+4)}}.
+  B(n)=(n+4)^{4.986901(\lg\lg(n+4)+\lg\lg\lg(n+4))+247+\frac{1539}{\lg(n+4)}}.
 $$
 Lean verifies the bound and computability of the reduction in
 \leanfile{Compiler/AxisSlotExplicitBound.lean}. The Lean abstract uses

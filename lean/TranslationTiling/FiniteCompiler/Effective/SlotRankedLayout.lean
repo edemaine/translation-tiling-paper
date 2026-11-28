@@ -45,15 +45,43 @@ private def twoDigitLows : List ℕ := [5557,9949,4229,5647]
 private def twoDigitMarkers : List ℕ :=
   [691,751,787,757,1523,1879,887,1051,1093,677,823,857]
 
+private def shortDigitPrimes : List (ℕ × List ℕ) :=
+  [(5557, [691, 751, 787]),
+   (13781, [809, 1013, 1297]),
+   (19949, [641, 883, 919]),
+   (9949, [757, 1523, 1879]),
+   (15877, [863, 967, 1279]),
+   (25169, [677, 839, 877]),
+   (4229, [887, 1051, 1093]),
+   (5647, [823, 857, 1277]),
+   (8999, [827, 881, 983]),
+   (6359, [911, 1181, 1931]),
+   (6869, [829, 1283, 1987]),
+   (9733, [761, 1031, 1433])]
+
+private def shortDigitIndex (k i : ℕ) : ℕ := if i < k then i else 6+(i-k)
+
+private def shortDigitRow (k i : ℕ) : ℕ × List ℕ :=
+  shortDigitPrimes.getD (shortDigitIndex k i) (0,[])
+
+private theorem shortDigitIndex_primrec : Primrec (fun z : ℕ × ℕ => shortDigitIndex z.1 z.2) := by
+  unfold shortDigitIndex
+  fun_prop
+
+private theorem shortDigitRow_primrec : Primrec (fun z : ℕ × ℕ => shortDigitRow z.1 z.2) :=
+  (Primrec.list_getD (0,[])).comp (Primrec.const _) shortDigitIndex_primrec
+
 def rankedLowAt (k m i : ℕ) : ℕ :=
   if k = 1 ∧ m = 1 then [5557,5647].getD i 0 else
   if k = 2 ∧ m = 1 then twoDigitLows.getD i 0 else
+  if m = 1 ∧ 3 ≤ k ∧ k ≤ 6 then (shortDigitRow k i).1 else
   if 24 ≤ m then matchedPrimeAt k m i 3 else
     slotPrimeAt (fallbackCap m*separateMarkerCap k m) (2*k*m) i
 
 def rankedMarkerAt (k m i j : ℕ) : ℕ :=
   if k = 1 ∧ m = 1 then [691,751,787,677,823,857].getD (j+3*i) 0 else
   if k = 2 ∧ m = 1 then twoDigitMarkers.getD (j+3*i) 0 else
+  if m = 1 ∧ 3 ≤ k ∧ k ≤ 6 then (shortDigitRow k i).2.getD j 0 else
   if 24 ≤ m then matchedPrimeAt k m i j else
     slotPrimeAt (fallbackCap m) (6*k*m) (j+3*i)
 
@@ -63,18 +91,23 @@ def rankedMarkerAt (k m i j : ℕ) : ℕ :=
       ((fallbackCap z.2.1*separateMarkerCap z.1 z.2.1,2*z.1*z.2.1),z.2.2)) := by
     unfold separateMarkerCap fallbackCap
     fun_prop
+  have hs : Primrec (fun z : ℕ × ℕ × ℕ => (z.1,z.2.2)) := by fun_prop
   have hm : Primrec (fun z : ℕ × ℕ × ℕ => (z.1,z.2.1,z.2.2,(3 : ℕ))) := by fun_prop
   exact Primrec.ite (by fun_prop) ((Primrec.list_getD 0).comp (Primrec.const _) (by fun_prop))
     (Primrec.ite (by fun_prop) ((Primrec.list_getD 0).comp (Primrec.const _) (by fun_prop))
-      (Primrec.ite (by fun_prop) (matchedPrimeAt_primrec.comp hm) (slotPrimeAt_primrec.comp hf)))
+      (Primrec.ite (by fun_prop) (Primrec.fst.comp (shortDigitRow_primrec.comp hs))
+        (Primrec.ite (by fun_prop) (matchedPrimeAt_primrec.comp hm) (slotPrimeAt_primrec.comp hf))))
 
 @[fun_prop] theorem rankedMarkerAt_primrec :
     Primrec (fun z : ℕ × ℕ × ℕ × ℕ => rankedMarkerAt z.1 z.2.1 z.2.2.1 z.2.2.2) := by
   have hf : Primrec (fun z : ℕ × ℕ × ℕ × ℕ =>
       ((fallbackCap z.2.1,6*z.1*z.2.1),z.2.2.2+3*z.2.2.1)) := by unfold fallbackCap; fun_prop
+  have hs : Primrec (fun z : ℕ × ℕ × ℕ × ℕ => (z.1,z.2.2.1)) := by fun_prop
   exact Primrec.ite (by fun_prop) ((Primrec.list_getD 0).comp (Primrec.const _) (by fun_prop))
     (Primrec.ite (by fun_prop) ((Primrec.list_getD 0).comp (Primrec.const _) (by fun_prop))
-      (Primrec.ite (by fun_prop) matchedPrimeAt_primrec (slotPrimeAt_primrec.comp hf)))
+      (Primrec.ite (by fun_prop) ((Primrec.list_getD 0).comp
+          (Primrec.snd.comp (shortDigitRow_primrec.comp hs)) (by fun_prop))
+        (Primrec.ite (by fun_prop) matchedPrimeAt_primrec (slotPrimeAt_primrec.comp hf))))
 
 /-- The slot moduli are specified by their numerical ranks. -/
 def rankedSlotPrime (k m : ℕ) : SlotPrime k m → ℕ
@@ -99,7 +132,8 @@ private theorem firstFallbackIndex_eq {k m : ℕ} (i : WangSlot k m) :
     simp [Nat.add_mod,Nat.mod_eq_of_lt i.isLt,show ¬ i.val+m*d.val+k*m < k*m by omega]
 
 private theorem exists_ranked_separate (k m : ℕ) (hm : ¬ 24 ≤ m)
-    (hsmall : ¬ (k = 1 ∧ m = 1)) (hsmall₂ : ¬ (k = 2 ∧ m = 1)) :
+    (hsmall : ¬ (k = 1 ∧ m = 1)) (hsmall₂ : ¬ (k = 2 ∧ m = 1))
+    (hshort : ¬ (m = 1 ∧ 3 ≤ k ∧ k ≤ 6)) :
     ∃ s : SlotParameters k m, s.prime = rankedSlotPrime k m ∧
       (∀ i, s.fallback i ≤ fallbackCap m) ∧
       (∀ i j, s.marker i j ≤ separateMarkerCap k m) ∧
@@ -141,9 +175,9 @@ private theorem exists_ranked_separate (k m : ℕ) (hm : ¬ 24 ≤ m)
   have he : p = rankedSlotPrime k m := by
     funext i
     rcases i with ⟨i,_ | j⟩ | i
-    · simp [p,r,rankedPrime,rankedSlotPrime,rankedLowAt,hsmall,hsmall₂,hm,A,B]
+    · simp [p,r,rankedPrime,rankedSlotPrime,rankedLowAt,hsmall,hsmall₂,hshort,hm,A,B]
     · rcases i with ⟨g,d,i⟩
-      cases g <;> simp only [p,b,rankedPrime,rankedSlotPrime,rankedMarkerAt,ite_eq_right hsmall,ite_eq_right hsmall₂,ite_eq_right hm,A] <;> rfl
+      cases g <;> simp only [p,b,rankedPrime,rankedSlotPrime,rankedMarkerAt,ite_eq_right hsmall,ite_eq_right hsmall₂,ite_eq_right hshort,ite_eq_right hm,A] <;> rfl
     · rfl
   have primeCoprime (v : ℕ) (hp : v.Prime) (h : N < v) :
       v.Prime ∧ v.Coprime (order (fourValueLayout 0)) :=
@@ -424,6 +458,138 @@ private theorem exists_ranked_two :
       (∀ i, s.low i ≤ lowCap 2 1) :=
   ⟨twoDigitParameters,rfl,twoDigitFallback_le,twoDigitMarker_le,twoDigitLow_le⟩
 
+private def shortDigitCounts (i j : ℕ) : ℕ × ℕ :=
+  ([[(4,9), (6,1), (5,2), (2,5)],
+    [(4,41), (14,3), (7,8), (1,10)],
+    [(4,65), (8,21), (5,18), (11,12)],
+    [(11,4), (2,11), (1,6), (3,4)],
+    [(5,46), (10,9), (16,3), (18,1)],
+    [(6,79), (11,24), (30,1), (4,25)],
+    [(10,3), (3,4), (14,1), (9,2)],
+    [(22,1), (14,3), (6,5), (8,3)],
+    [(8,11), (36,1), (28,3), (5,8)],
+    [(5,8), (24,1), (2,5), (11,2)],
+    [(13,6), (12,5), (2,5), (4,3)],
+    [(40,1), (6,11), (2,9), (5,6)]] : List (List (ℕ × ℕ))).getD i [] |>.getD j (0,0)
+
+private def shortPrimeList : List ℕ :=
+  shortDigitPrimes.flatMap (fun row => row.1 :: row.2) ++ [811,257,227,653]
+
+private def shortPrimeIndex (k : ℕ) : SlotPrime k 1 → ℕ
+  | .inl (i,j) => 4*shortDigitIndex k (slotRank k 1 i).val+j.elim 0 (fun j => j.val+1)
+  | .inr i => 48+(fallbackRank 1 i).val
+
+private theorem shortPrimeIndex_lt {k : ℕ} (hk : k ≤ 6) (i : SlotPrime k 1) :
+    shortPrimeIndex k i < shortPrimeList.length := by
+  change shortPrimeIndex k i < 52
+  rcases i with ⟨i,j⟩ | i
+  · have hr := (slotRank k 1 i).isLt
+    have hs : shortDigitIndex k (slotRank k 1 i).val < 12 := by
+      unfold shortDigitIndex
+      split <;> omega
+    cases j
+    · simp only [shortPrimeIndex,Option.elim]
+      omega
+    · rename_i j
+      have hj := j.isLt
+      simp only [shortPrimeIndex,Option.elim]
+      omega
+  · have hi := (fallbackRank 1 i).isLt
+    simp only [shortPrimeIndex]
+    omega
+
+private theorem shortPrimeIndex_injective {k : ℕ} (hk : k ≤ 6) :
+    Function.Injective (shortPrimeIndex k) := by
+  have hr (i : WangSlot k 1) : (slotRank k 1 i).val < 2*k*1 := (slotRank k 1 i).isLt
+  have hd (i : WangSlot k 1) : shortDigitIndex k (slotRank k 1 i).val < 12 := by
+    unfold shortDigitIndex
+    have hi := hr i
+    split <;> omega
+  have hi {i j : WangSlot k 1}
+      (h : shortDigitIndex k (slotRank k 1 i).val = shortDigitIndex k (slotRank k 1 j).val) : i = j := by
+    apply (slotRank k 1).injective
+    apply Fin.ext
+    have h₁ := hr i
+    have h₂ := hr j
+    unfold shortDigitIndex at h
+    split at h <;> split at h <;> omega
+  rintro (⟨i,_ | a⟩ | i) (⟨j,_ | b⟩ | j) h
+  all_goals simp only [shortPrimeIndex,Option.elim] at h
+  · exact congrArg (fun s => Sum.inl (s,none)) (hi (by omega))
+  · have hb := b.isLt
+    omega
+  · have hd' := hd i
+    omega
+  · have ha := a.isLt
+    omega
+  · have ha := a.isLt
+    have hb := b.isLt
+    have he : i = j := hi (by omega)
+    have hab : a = b := Fin.ext (by omega)
+    subst j
+    subst b
+    rfl
+  · have ha := a.isLt
+    have hd' := hd i
+    omega
+  · have hd' := hd j
+    omega
+  · have hb := b.isLt
+    have hd' := hd j
+    omega
+  · exact congrArg Sum.inr ((fallbackRank 1).injective (Fin.ext (by omega)))
+
+private def ShortDigitCertificate (k : ℕ) : Prop :=
+  (∀ i : SlotPrime k 1, let p := rankedSlotPrime k 1 i
+    (2 ≤ p ∧ p.minFac = p) ∧ p.Coprime baseOrder) ∧
+  (∀ i : SlotPrime k 1, rankedSlotPrime k 1 i = shortPrimeList.getD (shortPrimeIndex k i) 0) ∧
+  (∀ i : WangSlot k 1, rankedSlotPrime k 1 (.inl (i,none)) ≤ slotBasePrimeCap^2) ∧
+  (∀ (i : WangSlot k 1) (j : Fin 3), rankedSlotPrime k 1 (.inl (i,some j)) ≤ slotBasePrimeCap) ∧
+  ∀ (i : WangSlot k 1) (j : Option (Fin 3)),
+    let p := rankedSlotPrime k 1
+    let uv := shortDigitCounts (shortDigitIndex k (slotRank k 1 i).val)
+      (j.elim 0 (fun j => j.val+1))
+    let a := p (.inr (i.1,i.2.2,false))
+    let b := j.elim (p (.inr (i.1,i.2.2,true))) (fun j => p (.inl (i,some j)))
+    0 < uv.1 ∧ 0 < uv.2 ∧ p (.inl (i,none)) = uv.1*a+uv.2*b
+
+set_option maxRecDepth 40000 in
+set_option maxHeartbeats 10000000 in
+private theorem shortDigitCertificate {k : ℕ} (hk : 3 ≤ k) (hk' : k ≤ 6) :
+    ShortDigitCertificate k := by
+  unfold ShortDigitCertificate
+  interval_cases k <;> refine ⟨?_,?_,?_,?_,?_⟩ <;> decide +kernel
+
+private theorem exists_ranked_short {k : ℕ} (hk : 3 ≤ k) (hk' : k ≤ 6) :
+    ∃ s : SlotParameters k 1, s.prime = rankedSlotPrime k 1 ∧
+      (∀ i, s.fallback i ≤ fallbackCap 1) ∧
+      (∀ i j, s.marker i j ≤ markerCap k 1) ∧
+      (∀ i, s.low i ≤ lowCap k 1) := by
+  obtain ⟨hp,heq,hl,hm,hb⟩ := shortDigitCertificate hk hk'
+  let s : SlotParameters k 1 := {
+    prime := rankedSlotPrime k 1
+    prime_isPrime := fun i => Nat.prime_def_minFac.mpr (hp i).1
+    prime_injective := by
+      intro i j h
+      rw [heq i,heq j,List.getD_eq_getElem _ _ (shortPrimeIndex_lt hk' i),
+        List.getD_eq_getElem _ _ (shortPrimeIndex_lt hk' j)] at h
+      exact shortPrimeIndex_injective hk' ((List.Nodup.getElem_inj_iff (by decide)).mp h)
+    coprime_arithmetic := fun i => by rw [fourValueLayout_order]; exact (hp i).2
+    block_budget := fun i j => by
+      let uv := shortDigitCounts (shortDigitIndex k (slotRank k 1 i).val)
+        (j.elim 0 (fun j => j.val+1))
+      refine Or.inr (Or.inr ⟨uv.1,uv.2,?_⟩)
+      cases j <;> exact hb i _
+  }
+  have ha : slotBasePrimeCap ≤ fallbackCap 1 := threshold_le_slotSearchCap slotBasePrimeCap 4
+  have hc : slotBasePrimeCap^2 ≤ lowCap k 1 := by
+    rw [lowCap,ite_eq_right (by decide : ¬24 ≤ (1:ℕ)),separateLowCap,pow_two]
+    exact (Nat.mul_le_mul ha (ha.trans (threshold_le_slotSearchCap ..))).trans
+      (threshold_le_slotSearchCap ..)
+  exact ⟨s,rfl,fun i => (slotFallbackAt_le (fallbackRank 1 i).isLt).2,
+    fun i j => (hm i j).trans (ha.trans (fallbackCap_le_markerCap k 1)),
+    fun i => (hl i).trans hc⟩
+
 theorem exists_ranked_parameters (k m : ℕ) :
     ∃ s : SlotParameters k m, s.prime = rankedSlotPrime k m ∧
       (∀ i, s.fallback i ≤ fallbackCap m) ∧
@@ -435,6 +601,9 @@ theorem exists_ranked_parameters (k m : ℕ) :
   by_cases hsmall₂ : k = 2 ∧ m = 1
   · obtain ⟨rfl,rfl⟩ := hsmall₂
     exact exists_ranked_two
+  by_cases hshort : m = 1 ∧ 3 ≤ k ∧ k ≤ 6
+  · obtain ⟨rfl,hk,hk'⟩ := hshort
+    exact exists_ranked_short hk hk'
   by_cases hm : 24 ≤ m
   · have hm₁ : m ≠ 1 := by omega
     let a := rankedPrime slotBasePrimeCap (fallbackRank m)
@@ -446,8 +615,8 @@ theorem exists_ranked_parameters (k m : ℕ) :
     have he : p = rankedSlotPrime k m := by
       funext i
       rcases i with ⟨i,_ | j⟩ | i
-      · simp only [p,q,rankedSlotPrime,rankedLowAt,ite_eq_right hsmall,ite_eq_right hsmall₂,ite_eq_left hm]
-      · simp only [p,q,rankedSlotPrime,rankedMarkerAt,ite_eq_right hsmall,ite_eq_right hsmall₂,ite_eq_left hm]
+      · simp only [p,q,rankedSlotPrime,rankedLowAt,ite_eq_right hsmall,ite_eq_right hsmall₂,ite_eq_right hshort,ite_eq_left hm]
+      · simp only [p,q,rankedSlotPrime,rankedMarkerAt,ite_eq_right hsmall,ite_eq_right hsmall₂,ite_eq_right hshort,ite_eq_left hm]
       · simp only [p,rankedSlotPrime,slotFallbackAt,ite_eq_right hm₁,a,rankedPrime]
     have ha := rankedPrime_spec slotBasePrimeCap (fallbackRank m)
     have hia := rankedPrime_injective slotBasePrimeCap (fallbackRank m)
@@ -513,7 +682,7 @@ theorem exists_ranked_parameters (k m : ℕ) :
     · intro i
       rw [lowCap,ite_eq_left hm]
       exact (hq i (by decide : 3 < 4)).2.2
-  · simpa [markerCap,lowCap,hm] using exists_ranked_separate k m hm hsmall hsmall₂
+  · simpa [markerCap,lowCap,hm] using exists_ranked_separate k m hm hsmall hsmall₂ hshort
 
 private theorem indexedProduct_eq {I : Type*} [Fintype I] {count : ℕ}
     (f : ℕ → ℕ) (rank : I ≃ Fin count) :

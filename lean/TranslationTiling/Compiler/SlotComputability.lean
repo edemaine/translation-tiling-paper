@@ -44,6 +44,12 @@ def compileSlot (T : LeanWang.TileSet) : Tile 3 :=
   let p := slotDimensions T.length
   compileSlotWith T p.1 p.2.1 p.2.2
 
+theorem compileSlot_wide (T : LeanWang.TileSet) (h : 28 ≤ T.length) :
+    compileSlot T = compileSlotWith T (slotPackedDigits T.length (wideSlotLength T.length))
+      (4*wideSlotLength T.length) (3*wideSlotLength T.length) := by
+  simp only [compileSlot,slotDimensions,ite_eq_right (by omega : ¬ T.length ≤ 1),
+    ite_eq_right (by omega : ¬ T.length ≤ 27)]
+
 private theorem slotPrimeCap_primrec : Primrec (fun z : ℕ × ℕ => slotPrimeCap z.1 z.2) := by
   have h : Primrec (fun _ : ℕ × ℕ => order (fourValueLayout 0)) := Primrec.const _
   have hA : Primrec (fun z : ℕ × ℕ => fallbackCap z.2) := by unfold fallbackCap; fun_prop
@@ -365,14 +371,18 @@ theorem compileSlot_twoOrThree (T : LeanWang.TileSet) (hlo : 2 ≤ T.length)
   simpa only [compileSlot,slotDimensions,ite_eq_right (by omega : ¬ T.length ≤ 1),
     ite_eq_left (show T.length ≤ 27 by omega),ite_eq_left hhi] using hvol
 
-private theorem twoSlotVolume :
-    let nr := rankedSlotOrders 2 1
-    reservedVolumeCap 35 (fun j => (slotAssemblyRadii 2 1 1).getD j 0) nr.2 (nr.1 / nr.2)
-      52577347910 ≤ 2^2316 := by
+private theorem twoSlotStackPrime : Nat.Prime 13147233959 := by
+  rw [Nat.prime_def_minFac]
   decide +kernel
 
-theorem compileSlot_fourToNine (T : LeanWang.TileSet) (hlo : 4 ≤ T.length)
-    (hhi : T.length ≤ 9) : (compileSlot T).length ≤ 2^2316 := by
+private theorem twoSlotVolume :
+    let nr := rankedSlotOrders 2 1
+    (reservedVolumeCap 35 (fun j => (slotAssemblyRadii 2 1 1).getD j 0) nr.2 (nr.1 / nr.2)
+      13147233959) ^ 2 ≤ 2^4627 := by
+  decide +kernel
+
+theorem compileSlot_fourToNine_square (T : LeanWang.TileSet) (hlo : 4 ≤ T.length)
+    (hhi : T.length ≤ 9) : (compileSlot T).length ^ 2 ≤ 2^4627 := by
   have hv := (compileSlotWith_volume T (k := 2) (m := 1) (w := 1) (by omega) (by decide)
     (by exact hhi)).2.2.2
   let nr := rankedSlotOrders 2 1
@@ -391,16 +401,155 @@ theorem compileSlot_fourToNine (T : LeanWang.TileSet) (hlo : 4 ≤ T.length)
     simp only [P,assemblyPrimeCap,slotPrimeCap,slotStackPrimeCap,markerCap,SlotParameters.lowCap,
       show ¬ 24 ≤ (1 : ℕ) by decide,show (1 : ℕ) ≠ 0 by decide,ite_eq_right,hA,hB,hC]
     decide
-  have hM : reservedCap X' P ≤ 52577347910 := by
+  have hM : reservedPrimeThreshold X' P < 13147233959 := by
     unfold X'
     rw [hP]
     simp only [slotDeckCap,arithmeticBaseline_length_exact]
     decide +kernel
-  have hq := (reservedPrimeCap_le_reservedCap X P).trans ((reservedCap_mono P hX).trans hM)
-  have hvol := hv.trans ((reservedVolumeCap_mono hq).trans twoSlotVolume)
+  have hq := reservedPrimeCap_le_of_prime twoSlotStackPrime
+    ((reservedPrimeThreshold_mono P (le_max_left ..) hX).trans_lt hM)
+  have hvol := (Nat.pow_le_pow_left (hv.trans (reservedVolumeCap_mono hq)) 2).trans twoSlotVolume
   simpa only [compileSlot,slotDimensions,ite_eq_right (by omega : ¬ T.length ≤ 1),
     ite_eq_left (show T.length ≤ 27 by omega),ite_eq_right (by omega : ¬ T.length ≤ 3),
     ite_eq_left hhi] using hvol
+
+theorem compileSlot_fourToNine (T : LeanWang.TileSet) (hlo : 4 ≤ T.length)
+    (hhi : T.length ≤ 9) : (compileSlot T).length ≤ 2^2316 := by
+  apply (Nat.pow_le_pow_iff_left (by decide : 2 ≠ 0)).mp
+  exact (compileSlot_fourToNine_square T hlo hhi).trans (by decide +kernel)
+
+private theorem widthOneCap_6217728_6 : slotSearchCap 6217728 6 = 6217952 := by
+  apply slotSearchCap_eq_short (by decide) (by decide)
+  let primes := [6217741, 6217747, 6217777, 6217789, 6217811, 6217817]
+  have h : ∀ p ∈ primes, p ∈ slotPrimeInterval 6217728 6217952 := by
+    simp only [primes,List.forall_mem_cons,List.not_mem_nil,IsEmpty.forall_iff,implies_true,mem_slotPrimeInterval]
+    norm_num
+  have hs : primes.toFinset ⊆ (slotPrimeInterval 6217728 6217952).toFinset := by
+    intro p hp
+    exact List.mem_toFinset.mpr (h p (List.mem_toFinset.mp hp))
+  exact (show 6 ≤ primes.toFinset.card by decide).trans
+    ((Finset.card_le_card hs).trans (List.toFinset_card_le _))
+
+private theorem widthOneCap_2208_24 : slotSearchCap 2208 24 = 3008 := by
+  apply slotSearchCap_eq_short (by decide) (by decide)
+  let primes := [2213, 2221, 2237, 2239, 2243, 2251, 2267, 2269, 2273,
+      2281, 2287, 2293, 2297, 2309, 2311, 2333, 2339, 2341,
+      2347, 2351, 2357, 2371, 2377, 2381]
+  have h : ∀ p ∈ primes, p ∈ slotPrimeInterval 2208 3008 := by
+    simp only [primes,List.forall_mem_cons,List.not_mem_nil,IsEmpty.forall_iff,implies_true,mem_slotPrimeInterval]
+    norm_num
+  have hs : primes.toFinset ⊆ (slotPrimeInterval 2208 3008).toFinset := by
+    intro p hp
+    exact List.mem_toFinset.mpr (h p (List.mem_toFinset.mp hp))
+  exact (show 24 ≤ primes.toFinset.card by decide).trans
+    ((Finset.card_le_card hs).trans (List.toFinset_card_le _))
+
+private theorem widthOneCap_6641664_8 : slotSearchCap 6641664 8 = 6641952 := by
+  apply slotSearchCap_eq_short (by decide) (by decide)
+  let primes := [6641669, 6641671, 6641681, 6641683, 6641693, 6641699, 6641707, 6641717]
+  have h : ∀ p ∈ primes, p ∈ slotPrimeInterval 6641664 6641952 := by
+    simp only [primes,List.forall_mem_cons,List.not_mem_nil,IsEmpty.forall_iff,implies_true,mem_slotPrimeInterval]
+    norm_num
+  have hs : primes.toFinset ⊆ (slotPrimeInterval 6641664 6641952).toFinset := by
+    intro p hp
+    exact List.mem_toFinset.mpr (h p (List.mem_toFinset.mp hp))
+  exact (show 8 ≤ primes.toFinset.card by decide).trans
+    ((Finset.card_le_card hs).trans (List.toFinset_card_le _))
+
+private theorem widthOneCap_2208_30 : slotSearchCap 2208 30 = 3200 := by
+  apply slotSearchCap_eq_short (by decide) (by decide)
+  let primes := [2213, 2221, 2237, 2239, 2243, 2251, 2267, 2269, 2273,
+      2281, 2287, 2293, 2297, 2309, 2311, 2333, 2339, 2341,
+      2347, 2351, 2357, 2371, 2377, 2381, 2383, 2389, 2393,
+      2399, 2411, 2417]
+  have h : ∀ p ∈ primes, p ∈ slotPrimeInterval 2208 3200 := by
+    simp only [primes,List.forall_mem_cons,List.not_mem_nil,IsEmpty.forall_iff,implies_true,mem_slotPrimeInterval]
+    norm_num
+  have hs : primes.toFinset ⊆ (slotPrimeInterval 2208 3200).toFinset := by
+    intro p hp
+    exact List.mem_toFinset.mpr (h p (List.mem_toFinset.mp hp))
+  exact (show 30 ≤ primes.toFinset.card by decide).trans
+    ((Finset.card_le_card hs).trans (List.toFinset_card_le _))
+
+private theorem widthOneCap_7065600_10 : slotSearchCap 7065600 10 = 7065952 := by
+  apply slotSearchCap_eq_short (by decide) (by decide)
+  let primes := [7065601, 7065607, 7065629, 7065637, 7065649, 7065671, 7065673, 7065679, 7065683,
+      7065689]
+  have h : ∀ p ∈ primes, p ∈ slotPrimeInterval 7065600 7065952 := by
+    simp only [primes,List.forall_mem_cons,List.not_mem_nil,IsEmpty.forall_iff,implies_true,mem_slotPrimeInterval]
+    norm_num
+  have hs : primes.toFinset ⊆ (slotPrimeInterval 7065600 7065952).toFinset := by
+    intro p hp
+    exact List.mem_toFinset.mpr (h p (List.mem_toFinset.mp hp))
+  exact (show 10 ≤ primes.toFinset.card by decide).trans
+    ((Finset.card_le_card hs).trans (List.toFinset_card_le _))
+
+private theorem widthOneCap_2208_36 : slotSearchCap 2208 36 = 3392 := by
+  apply slotSearchCap_eq_short (by decide) (by decide)
+  let primes := [2213, 2221, 2237, 2239, 2243, 2251, 2267, 2269, 2273,
+      2281, 2287, 2293, 2297, 2309, 2311, 2333, 2339, 2341,
+      2347, 2351, 2357, 2371, 2377, 2381, 2383, 2389, 2393,
+      2399, 2411, 2417, 2423, 2437, 2441, 2447, 2459, 2467]
+  have h : ∀ p ∈ primes, p ∈ slotPrimeInterval 2208 3392 := by
+    simp only [primes,List.forall_mem_cons,List.not_mem_nil,IsEmpty.forall_iff,implies_true,mem_slotPrimeInterval]
+    norm_num
+  have hs : primes.toFinset ⊆ (slotPrimeInterval 2208 3392).toFinset := by
+    intro p hp
+    exact List.mem_toFinset.mpr (h p (List.mem_toFinset.mp hp))
+  exact (show 36 ≤ primes.toFinset.card by decide).trans
+    ((Finset.card_le_card hs).trans (List.toFinset_card_le _))
+
+private theorem widthOneCap_7489536_12 : slotSearchCap 7489536 12 = 7489952 := by
+  apply slotSearchCap_eq_short (by decide) (by decide)
+  let primes := [7489541, 7489549, 7489561, 7489567, 7489579, 7489607, 7489609, 7489619, 7489633,
+      7489649, 7489681, 7489709]
+  have h : ∀ p ∈ primes, p ∈ slotPrimeInterval 7489536 7489952 := by
+    simp only [primes,List.forall_mem_cons,List.not_mem_nil,IsEmpty.forall_iff,implies_true,mem_slotPrimeInterval]
+    norm_num
+  have hs : primes.toFinset ⊆ (slotPrimeInterval 7489536 7489952).toFinset := by
+    intro p hp
+    exact List.mem_toFinset.mpr (h p (List.mem_toFinset.mp hp))
+  exact (show 12 ≤ primes.toFinset.card by decide).trans
+    ((Finset.card_le_card hs).trans (List.toFinset_card_le _))
+
+private def widthOneVolume (k : ℕ) : ℕ :=
+  let nr := rankedSlotOrders k 1
+  let P := assemblyPrimeCap 1 (slotPrimeCap k 1)
+  let X := slotStackTestCap P (slotDeckCap k 1 (3^k))
+  reservedVolumeCap 35 (fun j => (slotAssemblyRadii k 1 1).getD j 0) nr.2 (nr.1/nr.2)
+    (reservedCap X P)
+
+private theorem widthOneVolumeCheck {k : ℕ} (hk : 3 ≤ k) (hk' : k ≤ 6) :
+    widthOneVolume k ≤ 2^(120*k+2115) := by
+  have hA : fallbackCap 1 = 2208 := slotSearchCap_2048_4
+  interval_cases k
+  all_goals simp only [widthOneVolume,slotDeckCap,arithmeticBaseline_length_exact,
+    assemblyPrimeCap,slotStackPrimeCap,slotPrimeCap,show (1:ℕ) ≠ 0 by decide,ite_false,
+    slotAssemblyRadii,slotOffsetFactorCap,markerCap,SlotParameters.lowCap,
+    show ¬ 24 ≤ (1:ℕ) by decide,separateMarkerCap,separateLowCap,hA,Nat.mul_one,
+    Nat.reduceAdd,Nat.reduceMul,Nat.reduceEqDiff,Nat.reduceSub,Nat.min_self,
+    slotSearchCap_2208_18,widthOneCap_6217728_6, widthOneCap_2208_24, widthOneCap_6641664_8, widthOneCap_2208_30, widthOneCap_7065600_10, widthOneCap_2208_36, widthOneCap_7489536_12]
+  all_goals decide +kernel
+
+/-- Count the cyclic order and the support of width-one digits using their prime tables. -/
+theorem compileSlotWith_widthOne_bound (T : LeanWang.TileSet) {k : ℕ}
+    (hk : 3 ≤ k) (hk' : k ≤ 6) (hn : 0 < T.length) (hn' : T.length ≤ 3^k) :
+    let U := compileSlotWith T k 1 1
+    U ≠ [] ∧ FaceConnected U ∧ (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles U) ∧
+      U.length ≤ 2^(120*k+2115) := by
+  obtain ⟨hne,hconn,hiff,hv⟩ := compileSlotWith_volume T (k := k) (m := 1) (w := 1)
+    hn (by decide) (by simpa only [show slotRadix 1 1 = 3 by decide] using hn')
+  let nr := rankedSlotOrders k 1
+  let P := assemblyPrimeCap 1 (slotPrimeCap k 1)
+  let X := slotStackTestCap P (numericalSlotTests T nr.1 k 1 1).length.succ
+  let Y := slotStackTestCap P (slotDeckCap k 1 (3^k))
+  have hXY : X ≤ Y := max_le_max_left _ (max_le_max_left _ (by
+    simpa only [show slotRadix 1 1 = 3 by decide] using numericalSlotTests_length T nr.1 k 1 1))
+  have hq : reservedPrimeCap X P ≤ reservedCap Y P :=
+    (reservedPrimeCap_le_reservedCap X P).trans (reservedCap_mono P hXY)
+  have hvol : (compileSlotWith T k 1 1).length ≤ widthOneVolume k :=
+    hv.trans (reservedVolumeCap_mono hq)
+  exact ⟨hne,hconn,hiff,hvol.trans (widthOneVolumeCheck hk hk')⟩
 
 theorem compileSlot_correct (T : LeanWang.TileSet) (hn : 0 < T.length) :
     let U := compileSlot T
