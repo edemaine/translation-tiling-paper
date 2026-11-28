@@ -40,10 +40,10 @@ private theorem rankedPrime_spec {I : Type*} {count : ℕ} (threshold : ℕ)
 
 private def baseOrder : ℕ := sharedOrder (fourValueRows 0)
 
-private def twoDigitLows : List ℕ := [5557,9949,4229,5647]
+private def twoDigitLows : List ℕ := [5647, 4229, 6029, 9497]
 
 private def twoDigitMarkers : List ℕ :=
-  [691,751,787,757,1523,1879,887,1051,1093,677,823,857]
+  [677, 823, 857, 887, 1051, 1093, 929, 1087, 1153, 691, 941, 1063]
 
 private def shortDigitPrimes : List (ℕ × List ℕ) :=
   [(5557, [691, 751, 787]),
@@ -110,10 +110,19 @@ def rankedMarkerAt (k m i j : ℕ) : ℕ :=
         (Primrec.ite (by fun_prop) matchedPrimeAt_primrec (slotPrimeAt_primrec.comp hf))))
 
 /-- The slot moduli are specified by their numerical ranks. -/
+def rankedFallbackAt (k m i : ℕ) : ℕ :=
+  if k = 2 ∧ m = 1 then [227,653,257,641].getD i 0 else slotFallbackAt m i
+
+@[fun_prop] theorem rankedFallbackAt_primrec :
+    Primrec (fun z : ℕ × ℕ × ℕ => rankedFallbackAt z.1 z.2.1 z.2.2) := by
+  unfold rankedFallbackAt
+  exact Primrec.ite (by fun_prop) ((Primrec.list_getD 0).comp (Primrec.const _) (by fun_prop))
+    (slotFallbackAt_primrec.comp (by fun_prop))
+
 def rankedSlotPrime (k m : ℕ) : SlotPrime k m → ℕ
   | .inl (i,none) => rankedLowAt k m (slotRank k m i)
   | .inl (i,some j) => rankedMarkerAt k m (slotRank k m i) j
-  | .inr i => slotFallbackAt m (fallbackRank m i)
+  | .inr i => rankedFallbackAt k m (fallbackRank m i)
 
 private theorem firstFallbackIndex_eq {k m : ℕ} (i : WangSlot k m) :
     slotFirstFallbackIndex k m (slotRank k m i) = fallbackRank m (i.1,i.2.2,false) := by
@@ -178,7 +187,7 @@ private theorem exists_ranked_separate (k m : ℕ) (hm : ¬ 24 ≤ m)
     · simp [p,r,rankedPrime,rankedSlotPrime,rankedLowAt,hsmall,hsmall₂,hshort,hm,A,B]
     · rcases i with ⟨g,d,i⟩
       cases g <;> simp only [p,b,rankedPrime,rankedSlotPrime,rankedMarkerAt,ite_eq_right hsmall,ite_eq_right hsmall₂,ite_eq_right hshort,ite_eq_right hm,A] <;> rfl
-    · rfl
+    · simp only [p,a,rankedSlotPrime,rankedFallbackAt,ite_eq_right hsmall₂]
   have primeCoprime (v : ℕ) (hp : v.Prime) (h : N < v) :
       v.Prime ∧ v.Coprime (order (fourValueLayout 0)) :=
     ⟨hp,(coprime_of_primeBound (fourValueOrder_pos 0) slotBasePrimeBound hp h).symm⟩
@@ -303,12 +312,11 @@ private theorem exists_ranked_small :
       rankedSlotPrime 1 1 (.inl (i,none)) ≤ slotBasePrimeCap^2) i
 
 private def twoDigitBlockCounts (i : WangSlot 2 1) (j : Option (Fin 3)) : ℕ × ℕ :=
-  let rows := ![![(4,9),(6,1),(5,2),(2,5)], ![(11,4),(2,11),(1,6),(3,4)],
-    ![(10,3),(3,4),(14,1),(9,2)], ![(22,1),(4,7),(14,3),(6,5)]]
+  let rows := ![![(22,1),(4,7),(14,3),(6,5)], ![(10,3),(3,4),(14,1),(9,2)], ![(6,7),(9,4),(15,2),(10,3)], ![(17,8),(2,13),(4,9),(8,7)]]
   rows (slotRank 2 1 i) (j.elim 0 Fin.succ)
 
 private def twoDigitPrimes : List ℕ :=
-  [5557,691,751,787,9949,757,1523,1879,4229,887,1051,1093,5647,677,823,857,811,257,227,653]
+  [5647, 677, 823, 857, 4229, 887, 1051, 1093, 6029, 929, 1087, 1153, 9497, 691, 941, 1063, 227, 653, 257, 641]
 
 private def twoDigitPrimeIndex : SlotPrime 2 1 → ℕ
   | .inl (i,j) => 4*(slotRank 2 1 i).val+j.elim 0 (fun x => x.val+1)
@@ -363,7 +371,7 @@ private theorem twoDigitPrime_eq (i : SlotPrime 2 1) :
     generalize (slotRank 2 1 i).val = r at *
     generalize j.val = t at *
     interval_cases r <;> interval_cases t <;> decide
-  · simp only [rankedSlotPrime,slotFallbackAt,twoDigitPrimeIndex]
+  · simp only [rankedSlotPrime,rankedFallbackAt,twoDigitPrimeIndex]
     have h : (fallbackRank 1 i).val<4 := (fallbackRank 1 i).isLt
     generalize (fallbackRank 1 i).val = r at *
     interval_cases r <;> decide
@@ -419,8 +427,9 @@ private theorem getD_zero_le {L : List ℕ} {c : ℕ}
     exact Nat.zero_le _
 
 private theorem twoDigitFallback_le (i : SlotFallback 1) : twoDigitParameters.fallback i ≤ fallbackCap 1 := by
-  change slotFallbackAt 1 (fallbackRank 1 i).val ≤ fallbackCap 1
-  exact (slotFallbackAt_le (m := 1) (fallbackRank 1 i).isLt).2
+  have hbase : 2048 ≤ fallbackCap 1 := threshold_le_slotSearchCap ..
+  exact ((by decide +kernel : ∀ j : Fin 4, rankedFallbackAt 2 1 j ≤ 2048)
+    (fallbackRank 1 i)).trans hbase
 
 private theorem twoDigitMarker_le (i : WangSlot 2 1) (j : Fin 3) :
     twoDigitParameters.marker i j ≤ markerCap 2 1 := by
@@ -586,7 +595,11 @@ private theorem exists_ranked_short {k : ℕ} (hk : 3 ≤ k) (hk' : k ≤ 6) :
     rw [lowCap,ite_eq_right (by decide : ¬24 ≤ (1:ℕ)),separateLowCap,pow_two]
     exact (Nat.mul_le_mul ha (ha.trans (threshold_le_slotSearchCap ..))).trans
       (threshold_le_slotSearchCap ..)
-  exact ⟨s,rfl,fun i => (slotFallbackAt_le (fallbackRank 1 i).isLt).2,
+  have hf (i : SlotFallback 1) : s.fallback i ≤ fallbackCap 1 := by
+    change rankedFallbackAt k 1 (fallbackRank 1 i) ≤ _
+    rw [rankedFallbackAt,ite_eq_right (by omega)]
+    exact (slotFallbackAt_le (fallbackRank 1 i).isLt).2
+  exact ⟨s,rfl,hf,
     fun i j => (hm i j).trans (ha.trans (fallbackCap_le_markerCap k 1)),
     fun i => (hl i).trans hc⟩
 
@@ -617,7 +630,7 @@ theorem exists_ranked_parameters (k m : ℕ) :
       rcases i with ⟨i,_ | j⟩ | i
       · simp only [p,q,rankedSlotPrime,rankedLowAt,ite_eq_right hsmall,ite_eq_right hsmall₂,ite_eq_right hshort,ite_eq_left hm]
       · simp only [p,q,rankedSlotPrime,rankedMarkerAt,ite_eq_right hsmall,ite_eq_right hsmall₂,ite_eq_right hshort,ite_eq_left hm]
-      · simp only [p,rankedSlotPrime,slotFallbackAt,ite_eq_right hm₁,a,rankedPrime]
+      · simp only [p,rankedSlotPrime,rankedFallbackAt,ite_eq_right hsmall₂,slotFallbackAt,ite_eq_right hm₁,a,rankedPrime]
     have ha := rankedPrime_spec slotBasePrimeCap (fallbackRank m)
     have hia := rankedPrime_injective slotBasePrimeCap (fallbackRank m)
     have hA : slotBasePrimeCap ≤ fallbackCap m := threshold_le_slotSearchCap ..
@@ -700,7 +713,7 @@ def rankedSlotOrders (k m : ℕ) : ℕ × ℕ :=
   let L := ((List.range (2*k*m)).map (rankedLowAt k m)).prod
   let M := ((List.range (2*k*m)).map (fun i =>
     rankedMarkerAt k m i 0 * rankedMarkerAt k m i 1 * rankedMarkerAt k m i 2)).prod
-  let F := ((List.range (4*m)).map (slotFallbackAt m)).prod
+  let F := ((List.range (4*m)).map (rankedFallbackAt k m)).prod
   (baseOrder * (L^2*M*F), (guardedModuli (fourValueRows 0)).prod * L)
 
 theorem rankedSlotOrders_zero :
@@ -726,7 +739,7 @@ theorem rankedSlotOrders_eq {k m : ℕ} (s : SlotParameters k m)
   have hmark (i : WangSlot k m) (j : Fin 3) : rankedMarkerAt k m (slotRank k m i) j = s.marker i j := by
     change rankedSlotPrime k m (.inl (i,some j)) = s.prime (.inl (i,some j))
     rw [hs]
-  have hfall (i : SlotFallback m) : slotFallbackAt m (fallbackRank m i) = s.fallback i := by
+  have hfall (i : SlotFallback m) : rankedFallbackAt k m (fallbackRank m i) = s.fallback i := by
     change rankedSlotPrime k m (.inr i) = s.prime (.inr i)
     rw [hs]
   have hm : (∏ i : WangSlot k m,

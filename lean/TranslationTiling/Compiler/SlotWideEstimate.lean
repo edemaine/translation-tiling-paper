@@ -498,21 +498,21 @@ private theorem moderateCaps (b k : ℕ) (hb : 4≤b) :
         exact slotWindowCap_mono (Nat.mul_le_mul ha hm) le_rfl)
     simpa only [markerCap,SlotParameters.lowCap,ite_eq_right hh] using And.intro hm hC
 
-private theorem wideDyadicFloors {n : ℕ} (hn : 65536≤n) :
+private theorem wideDyadicFloors {n : ℕ} (hn : 65536≤n) (offset : ℕ := 4) :
     let b := Nat.log 2 (Nat.log 2 n)
-    let u := Real.logb 2 ((n:ℝ)+4)
+    let u := Real.logb 2 ((n:ℝ)+offset)
     let g := Real.logb 2 u
     let l := Real.logb 2 g
     4≤b ∧ (2:ℝ)^b≤u ∧ (b:ℝ)≤g ∧ (Nat.log 2 b:ℝ)≤l := by
   let b := Nat.log 2 (Nat.log 2 n)
-  let u := Real.logb 2 ((n:ℝ)+4)
+  let u := Real.logb 2 ((n:ℝ)+offset)
   let g := Real.logb 2 u
   have hn₀ : 0<n := by omega
   have hp : 16≤Nat.log 2 n := (Nat.le_log_iff_pow_le (by decide) (by omega)).mpr hn
   have hb : 4≤b := (Nat.le_log_iff_pow_le (by decide) (by omega)).mpr hp
   have hu : (2:ℝ)^b≤u := by
     have h : (2:ℝ)^b ≤ Nat.log 2 n := by exact_mod_cast Nat.pow_log_le_self 2 (by omega : Nat.log 2 n ≠ 0)
-    exact (h.trans (lg_natLog_le hn₀)).trans (lg_mono (by positivity : 0<(n:ℝ)) (by linarith : (n:ℝ)≤(n:ℝ)+4))
+    exact (h.trans (lg_natLog_le hn₀)).trans (lg_mono (by positivity : 0<(n:ℝ)) (le_add_of_nonneg_right (Nat.cast_nonneg offset)))
   have hg : (b:ℝ)≤g := by
     simpa only [lg_two_pow] using lg_mono (by positivity : 0 < (2:ℝ)^b) hu
   have hl : (Nat.log 2 b:ℝ)≤Real.logb 2 g :=
@@ -520,9 +520,9 @@ private theorem wideDyadicFloors {n : ℕ} (hn : 65536≤n) :
   exact ⟨hb,hu,hg,hl⟩
 
 private theorem moderateBudget {n : ℕ} (hn : 65536≤n)
-    (hb' : Nat.log 2 (Nat.log 2 n)<48) :
+    (hb' : Nat.log 2 (Nat.log 2 n)<48) (offset : ℕ := 4) :
     let b := Nat.log 2 (Nat.log 2 n)
-    let u := Real.logb 2 ((n:ℝ)+4)
+    let u := Real.logb 2 ((n:ℝ)+offset)
     let k := slotPackedDigits n (wideSlotLength n)
     let v := max (2^b) ((k-1)*moderateRadixLog b)
     v ≤ u ∧ k ≤ moderateMaximum b ∧ moderateCheck b k := by
@@ -531,7 +531,7 @@ private theorem moderateBudget {n : ℕ} (hn : 65536≤n)
   let R := slotRadix (4*t) (3*t)
   let k := slotPackedDigits n t
   let d := moderateRadixLog b
-  obtain ⟨hb,hu,_,_⟩ := wideDyadicFloors hn
+  obtain ⟨hb,hu,_,_⟩ := wideDyadicFloors hn (offset:=offset)
   have hd := (moderateCheck_cert b hb hb').1
   change 0<d at hd
   have ht : t=b*Nat.log 2 b/4 := by
@@ -565,7 +565,7 @@ private theorem moderateBudget {n : ℕ} (hn : 65536≤n)
   · rw [Nat.cast_max,Nat.cast_pow,Nat.cast_ofNat]
     refine max_le hu (?_ : (((k-1)*d:ℕ):ℝ)≤_)
     exact (Nat.cast_le.mpr hlog).trans ((lg_natLog_le (by omega : 0<n)).trans
-      (lg_mono (by positivity : 0<(n:ℝ)) (by linarith : (n:ℝ)≤(n:ℝ)+4)))
+      (lg_mono (by positivity : 0<(n:ℝ)) (le_add_of_nonneg_right (Nat.cast_nonneg offset))))
   · exact ⟨hk₃,moderateCheck_of hb hb' k⟩
 
 theorem slotRefinedEstimate_log_at {n : ℕ} (hn : 65536 ≤ n) :
@@ -883,6 +883,8 @@ theorem slotRefinedEstimate_log_at {n : ℕ} (hn : 65536 ≤ n) :
   rw [hsize,he]
   push_cast
   obtain ⟨hb₄,hub,hgb,hlb⟩ := wideDyadicFloors hn
+  change (b:ℝ)≤g at hgb
+  change (Nat.log 2 b:ℝ)≤l at hlb
   have hbB := hb
   by_cases hb : b<48
   · obtain ⟨hv,hkM,hcheck⟩ := moderateBudget hn hb
@@ -1058,6 +1060,310 @@ theorem slotRefinedEstimate_log {n : ℕ} (hn : 65536 ≤ n) :
       split <;> norm_num
       split <;> norm_num
     · norm_num
+
+private def moderateRadixCeil (b : ℕ) :=
+  Nat.clog 2 (slotRadix (moderateWidth b) (3*(b*Nat.log 2 b/4)))
+
+private def sharpModerateBase (b : ℕ) :=
+  let m := moderateWidth b
+  let K := moderateMaximum b
+  let a := Nat.clog 2 (moderateA b)
+  let p := Nat.clog 2 (moderateB b K)
+  let l := Nat.clog 2 (moderateC b K)
+  2000+35+b+4*m*a+2*(max 68 ((m/4+1)*(l+3*p+2*a))+1)
+
+private def sharpModerateSlope (b : ℕ) :=
+  let K := moderateMaximum b
+  2*moderateWidth b*(2*Nat.clog 2 (moderateC b K)+3*Nat.clog 2 (moderateB b K))
+    +4*moderateRadixCeil b
+
+private def sharpModerateRate (b : ℕ) := 172000000+4986901*(b+Nat.log 2 b)
+
+private def sharpModerateCheck (b k : ℕ) : Prop :=
+  1000000*(sharpModerateBase b+sharpModerateSlope b*k) ≤
+    1000000*1844+sharpModerateRate b*max (2^b) ((k-1)*moderateRadixLog b)
+
+set_option maxHeartbeats 5000000 in
+private theorem sharpModerate_cert (b : ℕ) (hb : 6≤b) (hb' : b<48) :
+    let m := moderateWidth b
+    let e := moderateRadixCeil b
+    let K := moderateMaximum b
+    let d := moderateRadixLog b
+    let j := 1+2^b/d
+    12≤m ∧ m≤e ∧
+    max 2313 (max 4 (max 2048 (max (moderateA b) (max (moderateB b K) (moderateC b K))))) ≤
+      2^(12+2*e) ∧
+    2*K*e+14 ≤ 2^(b+4) ∧ 0<d ∧
+    sharpModerateCheck b j ∧ sharpModerateCheck b (j+1) ∧
+    1000000*sharpModerateSlope b ≤ sharpModerateRate b*d := by
+  simp only [sharpModerateCheck]
+  interval_cases b <;> decide +kernel
+
+private theorem sharpModerateCheck_of {b : ℕ} (hb : 6≤b) (hb' : b<48) (k : ℕ) :
+    sharpModerateCheck b k := by
+  let d := moderateRadixLog b
+  let j := 1+2^b/d
+  obtain ⟨_,_,_,_,hd,hl,hr,hs⟩ := sharpModerate_cert b hb hb'
+  change 0<d at hd
+  change sharpModerateCheck b j at hl
+  change sharpModerateCheck b (j+1) at hr
+  change 1000000*sharpModerateSlope b ≤ sharpModerateRate b*d at hs
+  unfold sharpModerateCheck at *
+  by_cases hk : k≤j
+  · have h : (j-1)*d≤2^b := by
+      have hm := Nat.div_mul_le_self (2^b) d
+      change (1+2^b/d-1)*d≤2^b
+      simpa only [Nat.add_sub_cancel_left] using hm
+    rw [max_eq_left h] at hl
+    exact (Nat.mul_le_mul_left _ (Nat.add_le_add_left (Nat.mul_le_mul_left _ hk) _)).trans
+      (hl.trans (Nat.add_le_add_left (Nat.mul_le_mul_left _ (le_max_left ..)) _))
+  · have hj : 2^b≤(j+1-1)*d := by
+      have h := (Nat.div_lt_iff_lt_mul hd).mp (show 2^b/d<j by dsimp [j]; omega)
+      simpa only [Nat.add_sub_cancel] using h.le
+    rw [max_eq_right hj,Nat.add_sub_cancel] at hr
+    obtain ⟨i,rfl⟩ := Nat.exists_eq_add_of_le (show j+1≤k by omega)
+    have hi : (j+1+i-1)*d=(j+i)*d := by
+      rw [show j+1+i=j+i+1 by ac_rfl,Nat.add_sub_cancel]
+    refine le_trans ?_ (Nat.add_le_add_left (Nat.mul_le_mul_left _ (le_max_right ..)) _)
+    rw [hi]
+    calc
+      _ = 1000000*(sharpModerateBase b+sharpModerateSlope b*(j+1))+
+        (1000000*sharpModerateSlope b)*i := by ring
+      _ ≤ (1000000*1844+sharpModerateRate b*(j*d))+(sharpModerateRate b*d)*i :=
+        Nat.add_le_add hr (Nat.mul_le_mul_right _ hs)
+      _ = _ := by ring
+
+private theorem sharp_deck_le {k m D e : ℕ} (hk : 1≤k) (hm : 12≤m) (he : m≤e)
+    (hD : D≤2^e) : slotDeckCap k m (D^k) ≤ 2^(12+2*k*e) := by
+  let s := k*m
+  let Q := (2:ℕ)^(2*k*e)
+  have hms : m≤s := by dsimp [s]; simpa only [one_mul] using Nat.mul_le_mul_right m hk
+  have hks : k≤s := by dsimp [s]; simpa only [mul_one] using Nat.mul_le_mul_left k (by omega : 1≤m)
+  have hs : 12≤s := hm.trans hms
+  have hse : s≤k*e := Nat.mul_le_mul_left _ he
+  have hsq : (2:ℕ)^(2*s) ≤ Q := Nat.pow_le_pow_right (by decide)
+    (by simpa only [Nat.mul_assoc] using Nat.mul_le_mul_left 2 hse)
+  have hs2 : s≤2^s := (Nat.lt_two_pow_self (n:=s)).le
+  have hss : s^2≤Q := (Nat.pow_le_pow_left hs2 2).trans (by
+    rw [←pow_mul,mul_comm]; exact hsq)
+  have hsQ : s≤Q := (Nat.le_mul_of_pos_right _ (by omega : 0<s)).trans (by simpa only [pow_two] using hss)
+  have hpow : (D^k)^2≤Q := by
+    apply (Nat.pow_le_pow_left (Nat.pow_le_pow_left hD k) 2).trans_eq
+    dsimp only [Q]
+    rw [←pow_mul,←pow_mul]
+    congr 1
+    ring
+  have hact : 2*k*2^m≤2*Q := by
+    have h := Nat.mul_le_mul (hks.trans hs2) (Nat.pow_le_pow_right (by decide : 0<(2:ℕ)) hms)
+    rw [←pow_add,←two_mul] at h
+    simpa only [Nat.mul_assoc] using Nat.mul_le_mul_left 2 (h.trans hsq)
+  have hprod : (6*k*m+2*m)*(21+2*k*m+4*m) ≤ 64*Q := by
+    calc
+      _ ≤ (8*s)*(8*s) := by
+        apply Nat.mul_le_mul
+        · rw [Nat.mul_assoc]
+          change 6*s+2*m ≤ 8*s
+          omega
+        · rw [Nat.mul_assoc]
+          change 21+2*s+4*m ≤ 8*s
+          omega
+      _ = 64*s^2 := by ring
+      _ ≤ _ := Nat.mul_le_mul_left _ hss
+  have hlinear : 20*(2*k*m+4*m) ≤ 120*Q := by
+    rw [Nat.mul_assoc 2 k m]
+    change 20*(2*s+4*m) ≤ 120*Q
+    omega
+  have hsmall : 2530+arithmeticBaseline.length≤Q :=
+    (show 2530+arithmeticBaseline.length≤(2:ℕ)^(2*12) by decide +kernel).trans
+      ((Nat.pow_le_pow_right (by decide) (Nat.mul_le_mul_left 2 hs)).trans hsq)
+  unfold slotDeckCap
+  have hfinal : Q*2^12 = 2^(12+2*k*e) := by rw [←pow_add,add_comm]
+  rw [←hfinal]
+  omega
+
+private theorem sharp_reserved_le {X P b k e : ℕ}
+    (hPX : P≤X) (hX : X≤2^(12+2*k*e)) (hg : 2*k*e+14≤2^(b+4)) :
+    reservedCap X P ≤ 2^(b+35+4*k*e) := by
+  let Y := (2:ℕ)^(12+2*k*e)
+  have hlog : Stacking.differenceLog X ≤ 2^(b+4) := by
+    unfold Stacking.differenceLog
+    have h := Nat.log_mono_right (b:=2) (Nat.mul_le_mul_left 2 hX)
+    rw [show 2*2^(12+2*k*e)=2^(12+2*k*e+1) by rw [pow_succ,mul_comm],
+      Nat.log_pow (by decide : 1<2)] at h
+    omega
+  have hy : 1≤Y := one_le_pow₀ (by decide : 1≤(2:ℕ))
+  have hy2 : Y≤Y^2 := by rw [pow_two]; exact Nat.le_mul_of_pos_right _ (by omega)
+  have hP : 2*P+6 ≤ 8*Y^2 := by
+    have hp := hPX.trans hX |>.trans hy2
+    omega
+  have hstack : 40*X^2*Stacking.differenceLog X ≤ 40*Y^2*2^(b+4) :=
+    Nat.mul_le_mul (Nat.mul_le_mul_left _ (Nat.pow_le_pow_left hX 2)) hlog
+  have h1 : 1≤(2:ℕ)^b := one_le_pow₀ (by decide)
+  unfold reservedCap reservedThreshold
+  calc
+    _ = 40*X^2*Stacking.differenceLog X+(2*P+6) := by ring
+    _ ≤ 40*Y^2*2^(b+4)+8*Y^2 := Nat.add_le_add hstack hP
+    _ ≤ 2048*Y^2*2^b := by
+      rw [pow_add]
+      change 40*Y^2*(2^b*16)+8*Y^2≤2048*Y^2*2^b
+      have h := Nat.mul_le_mul_left (Y^2) h1
+      nlinarith
+    _ = _ := by
+      change (2:ℕ)^11*((2:ℕ)^(12+2*k*e))^2*2^b = _
+      rw [←pow_mul,←pow_add,←pow_add]
+      congr 1
+      ring
+
+theorem slotSharpEstimate_log {n : ℕ} (hn : (2:ℕ)^64≤n)
+    (hb' : Nat.log 2 (Nat.log 2 n)<48) :
+    let u := Real.logb 2 ((n:ℝ)+2)
+    let g := Real.logb 2 u
+    let t := wideSlotLength n
+    let k := slotPackedDigits n t
+    Real.logb 2 (slotSharpEstimate k (4*t) (3*t) : ℝ) ≤
+      1844+u*(4.986901*(g+Real.logb 2 g)+172) := by
+  let b := Nat.log 2 (Nat.log 2 n)
+  let x := (n:ℝ)+2
+  let u := Real.logb 2 x
+  let g := Real.logb 2 u
+  let t := wideSlotLength n
+  let k := slotPackedDigits n t
+  let m := 4*t
+  let w := 3*t
+  let D := slotRadix m w
+  let K := moderateMaximum b
+  let e := moderateRadixCeil b
+  let A := fallbackCap m
+  let B := markerCap k m
+  let C := SlotParameters.lowCap k m
+  let a := Nat.clog 2 (moderateA b)
+  let p := Nat.clog 2 (moderateB b K)
+  let c := Nat.clog 2 (moderateC b K)
+  let h := max 68 ((m/4+1)*(c+3*p+2*a))
+  let H := slotAssemblyRadius k m w
+  let P := slotStackPrimeCap (slotPrimeCap k m)
+  let X := stackTestCap P (slotDeckCap k m (D^k))
+  let v := max (2^b) ((k-1)*moderateRadixLog b)
+  have hb : 6≤b := by
+    have hh : 2^6≤Nat.log 2 n :=
+      (Nat.le_log_iff_pow_le (by decide) (by omega : n≠0)).mpr hn
+    exact (Nat.le_log_iff_pow_le (by decide) (by omega : Nat.log 2 n≠0)).mpr hh
+  have hn' : 65536≤n := (by decide : 65536≤(2:ℕ)^64).trans hn
+  obtain ⟨_,hU,hg,hl⟩ := wideDyadicFloors hn' (offset:=2)
+  obtain ⟨hv,hkK,_⟩ := moderateBudget hn' hb' (offset:=2)
+  change (v:ℝ)≤u at hv
+  change k≤K at hkK
+  have hk : 1≤k := le_max_left ..
+  have ht : t=b*Nat.log 2 b/4 := by
+    have hlog : 1≤Nat.log 2 b := (Nat.le_log_iff_pow_le (by decide) (by omega : b≠0)).mpr (by norm_num; omega)
+    have hh := Nat.mul_le_mul (show 4≤b by omega) hlog
+    change max 1 (b*Nat.log 2 b/4)=b*Nat.log 2 b/4
+    exact max_eq_right (by omega)
+  have hm : m=moderateWidth b := by simp only [m,ht,moderateWidth]
+  have he : e=Nat.clog 2 D := by simp only [e,moderateRadixCeil,D,hm,w,ht]
+  obtain ⟨hm12,hme,hStack,hLog,_,_,_,_⟩ := sharpModerate_cert b hb hb'
+  rw [←hm] at hm12 hme
+  have hD : D≤2^e := (Nat.clog_le_iff_le_pow (by decide)).mp (by rw [← he])
+  obtain ⟨hA,hB,hC⟩ := moderateCaps b k (by omega)
+  rw [←hm] at hA hB hC
+  have monoB : moderateB b k ≤ moderateB b K := by
+    by_cases h : 24≤moderateWidth b
+    · simp only [moderateB,ite_eq_left h]
+      exact slotWindowCap_mono le_rfl (by gcongr)
+    · simp only [moderateB,ite_eq_right h]
+      exact slotWindowCap_mono le_rfl (by gcongr)
+  have monoC : moderateC b k ≤ moderateC b K := by
+    by_cases h : 24≤moderateWidth b
+    · simpa only [moderateC,ite_eq_left h] using monoB
+    · simp only [moderateC,ite_eq_right h]
+      exact slotWindowCap_mono (Nat.mul_le_mul_left _ monoB) (by gcongr)
+  have hB' := hB.trans monoB
+  have hC' := hC.trans monoC
+  have hPX : P≤X := (le_max_left ..).trans (le_max_right ..)
+  have hX : X≤2^(12+2*k*e) := by
+    have hsmall : max 2313 P≤2^(12+2*k*e) := by
+      apply le_trans _ (hStack.trans (Nat.pow_le_pow_right (by decide : 0<(2:ℕ)) (by
+        change 12+2*e≤12+2*k*e
+        exact Nat.add_le_add_left (by simpa only [mul_one] using Nat.mul_le_mul_right e (Nat.mul_le_mul_left 2 hk)) _)))
+      unfold P slotStackPrimeCap slotPrimeCap
+      change max 2313 (max 4 (max slotBasePrimeCap (max A (max B C)))) ≤ _
+      rw [show slotBasePrimeCap=2048 by decide]
+      gcongr
+    unfold X stackTestCap
+    exact max_le ((le_max_left ..).trans hsmall)
+      (max_le ((le_max_right ..).trans hsmall) (sharp_deck_le hk hm12 hme hD))
+  have hL : reservedCap X P≤2^(b+35+4*k*e) :=
+    sharp_reserved_le hPX hX ((Nat.add_le_add_right (Nat.mul_le_mul_right e
+      (Nat.mul_le_mul_left 2 hkK)) _).trans hLog)
+  have ceilCap (z : ℕ) : z≤2^Nat.clog 2 z :=
+    (Nat.clog_le_iff_le_pow (by decide)).mp le_rfl
+  have ha : A≤2^a := hA.trans (ceilCap _)
+  have hp : B≤2^p := hB'.trans (ceilCap _)
+  have hc : C≤2^c := hC'.trans (ceilCap _)
+  have hW : C^2*B^3≤2^(2*c+3*p) := by
+    have hab := Nat.mul_le_mul (Nat.pow_le_pow_left hc 2) (Nat.pow_le_pow_left hp 3)
+    rwa [←pow_mul,←pow_mul,←pow_add,mul_comm c 2,mul_comm p 3] at hab
+  have hN : (10:ℕ)^32* (order (fourValueLayout 0) *
+      ((C^2*B^3)^(2*k*m)*A^(4*m))) ≤ 2^(2000+(2*c+3*p)*(2*k*m)+4*m*a) := by
+    have hfixed : (10:ℕ)^32*order (fourValueLayout 0) ≤ 2^2000 :=
+      (Nat.mul_le_mul_left _ arithmetic_order_le).trans (by decide +kernel)
+    rw [←Nat.mul_assoc]
+    calc
+      _ ≤ 2^2000*(((2:ℕ)^(2*c+3*p))^(2*k*m)*((2:ℕ)^a)^(4*m)) :=
+        Nat.mul_le_mul hfixed (Nat.mul_le_mul (Nat.pow_le_pow_left hW _) (Nat.pow_le_pow_left ha _))
+      _ = _ := by rw [←pow_mul,←pow_mul,←pow_add,←pow_add]; congr 1; ring
+  have hH : H ≤ 2^h := by
+    unfold H slotAssemblyRadius
+    rw [show fourValueRadius 0 = 2^68 by decide]
+    apply max_le (Nat.pow_le_pow_right (by decide) (le_max_left ..))
+    have hz := (slotOffsetFactorCap_le k m).trans
+      (Nat.mul_le_mul (Nat.mul_le_mul hc (Nat.pow_le_pow_left hp 3)) (Nat.pow_le_pow_left ha 2))
+    rw [←pow_mul,←pow_mul,←pow_add,←pow_add,mul_comm p 3,mul_comm a 2] at hz
+    apply (Nat.pow_le_pow_left hz _).trans
+    rw [←pow_mul,mul_comm]
+    have hh : min m (m+1-w)≤m/4+1 := by
+      have hx := min_le_right m (m+1-w)
+      dsimp [m,w] at *
+      omega
+    exact Nat.pow_le_pow_right (by decide) ((Nat.mul_le_mul_right _ hh).trans (le_max_right ..))
+  have hH' : H+1≤2^(h+1) := by
+    have hh : 1≤(2:ℕ)^h := one_le_pow₀ (by decide)
+    rw [pow_succ]
+    omega
+  have hvol : slotSharpEstimate k m w ≤ 2^(sharpModerateBase b+sharpModerateSlope b*k) := by
+    calc
+      _ ≤ 2^(2000+(2*c+3*p)*(2*k*m)+4*m*a)*2^(b+35+4*k*e)*(2^(h+1))^2 :=
+        Nat.mul_le_mul (Nat.mul_le_mul hN hL) (Nat.pow_le_pow_left hH' _)
+      _ = _ := by
+        rw [← pow_mul,← pow_add,←pow_add]
+        congr 1
+        unfold sharpModerateBase sharpModerateSlope
+        rw [←hm]
+        change _ = 2000+35+b+4*m*a+2*(h+1)+(2*m*(2*c+3*p)+4*e)*k
+        ring
+  have hpos : 0<slotSharpEstimate k m w := by
+    unfold slotSharpEstimate reservedCap reservedThreshold
+    have hq := fallbackCap_pos m
+    have hr := hq.trans_le (fallbackCap_le_markerCap k m)
+    have hs := hr.trans_le (markerCap_le_lowCap k m)
+    have ho := fourValueOrder_pos 0
+    positivity
+  apply (dyadic_log_le (by exact_mod_cast hpos) (by exact_mod_cast hvol)).trans
+  have hnum := sharpModerateCheck_of hb hb' k
+  change 1000000*(sharpModerateBase b+sharpModerateSlope b*k)≤
+    1000000*1844+sharpModerateRate b*v at hnum
+  have hcast : 1000000*((sharpModerateBase b:ℝ)+sharpModerateSlope b*k)≤
+    1000000*1844+(172000000+4986901*((b:ℝ)+Nat.log 2 b))*v := by
+    unfold sharpModerateRate at hnum
+    exact_mod_cast hnum
+  have hrate : 4.986901*((b:ℝ)+Nat.log 2 b)+172 ≤ 4.986901*(g+Real.logb 2 g)+172 := by
+    change (b:ℝ)≤g at hg
+    change (Nat.log 2 b:ℝ)≤Real.logb 2 g at hl
+    linarith
+  have hnon : 0≤4.986901*((b:ℝ)+Nat.log 2 b)+172 := by positivity
+  have hmul := mul_le_mul hrate hv (Nat.cast_nonneg (α:=ℝ) v) (hnon.trans hrate)
+  push_cast
+  nlinarith only [hcast,hmul]
 
 end
 end TranslationTiling.Compiler.Size

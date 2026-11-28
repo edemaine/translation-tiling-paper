@@ -1,6 +1,7 @@
 import TranslationTiling.Compiler.SlotWideEstimate
 import TranslationTiling.FiniteCompiler.Effective.PackedTotalCompiler
 import TranslationTiling.FiniteCompiler.Effective.SlotSmallPrimeCertificates
+import TranslationTiling.FiniteCompiler.Effective.SlotParameterEvaluation
 
 namespace TranslationTiling.Compiler.Size
 
@@ -227,14 +228,14 @@ theorem compileSlot_widthEight (T : LeanWang.TileSet) (hn : 65536 ≤ T.length)
     exact (compileSlotWith_short T (by omega) (by decide)
       (by rw [hD]; exact hn32.le.trans (by decide)) widthEight_three.1).trans widthEight_three.2
 
-private theorem input_logs_lower {n : ℕ} {a b c d e f h : ℕ} (hb : 0<b) (hd : 0<d) (hf : 0<f)
-      (hh : h≤n+4) (ha : 2^a≤h^b)
+private theorem input_logs_lower_from {n offset : ℕ} {a b c d e f h : ℕ} (hb : 0<b) (hd : 0<d) (hf : 0<f)
+      (hh : h≤n+offset) (hoff : 0<offset) (ha : 2^a≤h^b)
       (hc : (2:ℝ)^c≤((a:ℝ)/b)^d) (he : (2:ℝ)^e≤((c:ℝ)/d)^f)
       (ha₀ : 0<a) (hc₀ : 0<c) :
-    let u := Real.logb 2 ((n:ℝ)+4)
+    let u := Real.logb 2 ((n:ℝ)+offset)
     let g := Real.logb 2 u
     (a:ℝ)/b ≤ u ∧ (c:ℝ)/d ≤ g ∧ (e:ℝ)/f ≤ Real.logb 2 g := by
-  let x := (n:ℝ)+4
+  let x := (n:ℝ)+offset
   have hx : 0 < x := by dsimp [x]; positivity
   let u := Real.logb 2 x
   let g := Real.logb 2 u
@@ -250,6 +251,15 @@ private theorem input_logs_lower {n : ℕ} {a b c d e f h : ℕ} (hb : 0<b) (hd 
     lg_lower hd (hc.trans (pow_le_pow_left₀ hapos.le ha' _)) (hapos.trans_le ha')
   have hcpos : 0<(c:ℝ)/d := div_pos (Nat.cast_pos.mpr hc₀) (Nat.cast_pos.mpr hd)
   exact ⟨ha',hc',lg_lower hf (he.trans (pow_le_pow_left₀ hcpos.le hc' _)) (hcpos.trans_le hc')⟩
+
+private theorem input_logs_lower {n : ℕ} {a b c d e f h : ℕ} (hb : 0<b) (hd : 0<d) (hf : 0<f)
+      (hh : h≤n+4) (ha : 2^a≤h^b)
+      (hc : (2:ℝ)^c≤((a:ℝ)/b)^d) (he : (2:ℝ)^e≤((c:ℝ)/d)^f)
+      (ha₀ : 0<a) (hc₀ : 0<c) :
+    let u := Real.logb 2 ((n:ℝ)+4)
+    let g := Real.logb 2 u
+    (a:ℝ)/b ≤ u ∧ (c:ℝ)/d ≤ g ∧ (e:ℝ)/f ≤ Real.logb 2 g :=
+  input_logs_lower_from hb hd hf hh (by decide) ha hc he ha₀ hc₀
 
 private theorem small_slot_log {T : LeanWang.TileSet} (hn : 2 ≤ T.length)
     (hlt : T.length < 65536) (hB : 0 < ((compileSlot T).length : ℝ)) :
@@ -515,10 +525,10 @@ theorem compileCompactSlot_correct (T : LeanWang.TileSet) :
 
 theorem compileCompactSlot_small_log {T : LeanWang.TileSet} (hn : 2 ≤ T.length)
     (hlt : T.length < 65536) :
-    let u := Real.logb 2 ((T.length : ℝ)+4)
+    let u := Real.logb 2 ((T.length : ℝ)+2)
     let g := Real.logb 2 u
-    Real.logb 2 ((compileCompactSlot T).length : ℝ) ≤ u*(4.986901*(g+Real.logb 2 g)+192)+1880*(u/(u+0.31)) := by
-  let u := Real.logb 2 ((T.length : ℝ)+4)
+    Real.logb 2 ((compileCompactSlot T).length : ℝ) ≤ 1844+u*(4.986901*(g+Real.logb 2 g)+172) := by
+  let u := Real.logb 2 ((T.length : ℝ)+2)
   let g := Real.logb 2 u
   let l := Real.logb 2 g
   let U := compileCompactSlot T
@@ -526,39 +536,41 @@ theorem compileCompactSlot_small_log {T : LeanWang.TileSet} (hn : 2 ≤ T.length
     exact_mod_cast List.length_pos_iff.mpr (compileCompactSlot_correct T).1
   have compare {E A G L : ℝ} (he : Real.logb 2 (U.length:ℝ) ≤ E)
       (hlo : A≤u ∧ G≤g ∧ L≤l) (hA : 0≤A)
-      (hE : E≤A*(4.986901*(G+L)+192)+1880*(A/(A+0.31))) (hP : 0≤4.986901*(G+L)+192) :
-      Real.logb 2 (U.length:ℝ) ≤ u*(4.986901*(g+l)+192)+1880*(u/(u+0.31)) := by
-    have hP' : 4.986901*(G+L)+192 ≤ 4.986901*(g+l)+192 := by linarith [hlo.2.1,hlo.2.2]
-    have hratio : A/(A+0.31) ≤ u/(u+0.31) := by
-      apply (div_le_div_iff₀ (by linarith) (by linarith [hlo.1])).mpr
-      nlinarith only [hlo.1]
-    exact he.trans (hE.trans (add_le_add (mul_le_mul hlo.1 hP' hP (hA.trans hlo.1))
-      (mul_le_mul_of_nonneg_left hratio (by norm_num))))
+      (hE : E≤1844+A*(4.986901*(G+L)+172)) (hP : 0≤4.986901*(G+L)+172) :
+      Real.logb 2 (U.length:ℝ) ≤ 1844+u*(4.986901*(g+l)+172) := by
+    have hP' : 4.986901*(G+L)+172 ≤ 4.986901*(g+l)+172 := by linarith [hlo.2.1,hlo.2.2]
+    exact he.trans (hE.trans (add_le_add le_rfl (mul_le_mul hlo.1 hP' hP (hA.trans hlo.1))))
+  have powerLog {p q : ℕ} (hp : 0<p) (he : U.length^p ≤ (2:ℕ)^q) :
+      Real.logb 2 (U.length:ℝ) ≤ (q:ℝ)/p := by
+    have hpow : (U.length:ℝ)^p ≤ (2:ℝ)^q := by exact_mod_cast he
+    have hh := dyadic_log_le (pow_pos hU p) hpow
+    rw [Real.logb_pow] at hh
+    exact (le_div_iff₀ (by exact_mod_cast hp)).mpr (by rwa [mul_comm])
   have dyad {e : ℕ} (h : U.length ≤ 2^e) : Real.logb 2 (U.length:ℝ) ≤ e :=
     dyadic_log_le hU (by exact_mod_cast h)
   have hsame (hn' : ¬ (10 ≤ T.length ∧ T.length ≤ 729)) : U = compileSlot T := by
     simp [U,compileCompactSlot,compileSlotTotal,hn',nonemptyInput,show T.length ≠ 0 by omega]
-  change Real.logb 2 (U.length:ℝ) ≤ u*(4.986901*(g+l)+192)+1880*(u/(u+0.31))
+  change Real.logb 2 (U.length:ℝ) ≤ 1844+u*(4.986901*(g+l)+172)
   by_cases h₃ : T.length ≤ 3
-  · have he := compileSlot_twoOrThree T hn h₃
+  · have he := compileSlot_twoOrThree_pow T hn h₃
     rw [← hsame (by omega)] at he
-    refine compare (dyad he) (A:=137/53) (G:=41/30) (L:=9/20)
+    refine compare (powerLog (by decide) he) (A:=2) (G:=1) (L:=0)
       ?_ (by norm_num) (by norm_num) (by norm_num)
-    simpa only [Nat.cast_ofNat,Nat.cast_one,Nat.cast_zero,div_one] using (input_logs_lower (n:=T.length) (h:=6) (a:=137) (b:=53) (c:=41) (d:=30) (e:=9) (f:=20)
-      (by decide) (by decide) (by decide) (by omega) (by decide)
+    simpa only [Nat.cast_ofNat,Nat.cast_one,Nat.cast_zero,div_one] using (input_logs_lower_from (n:=T.length) (offset:=2) (h:=4) (a:=2) (b:=1) (c:=1) (d:=1) (e:=0) (f:=1)
+      (by decide) (by decide) (by decide) (by omega) (by decide) (by decide +kernel)
       (by norm_num) (by norm_num) (by decide) (by decide))
   by_cases h₉ : T.length ≤ 9
-  · have he := compileSlot_fourToNine_square T (by omega) h₉
+  · have he := compileSlot_fourToNine_tenth T (by omega) h₉
     rw [← hsame (by omega)] at he
-    have hpow : (U.length:ℝ)^2 ≤ (2:ℝ)^4627 := by exact_mod_cast he
-    have hh := dyadic_log_le (pow_pos hU 2) hpow
-    rw [Real.logb_pow] at hh
-    have hE : Real.logb 2 (U.length:ℝ) ≤ (4627:ℝ)/2 := by norm_num at hh; linarith
-    refine compare hE (A:=3/1) (G:=84/53) (L:=33/50)
+    refine compare (powerLog (by decide) he) (A:=137/53) (G:=137/100) (L:=227/500)
       ?_ (by norm_num) (by norm_num) (by norm_num)
-    simpa only [Nat.cast_ofNat,Nat.cast_one,Nat.cast_zero,div_one] using (input_logs_lower (n:=T.length) (h:=8) (a:=3) (b:=1) (c:=84) (d:=53) (e:=33) (f:=50)
-      (by decide) (by decide) (by decide) (by omega) (by decide)
-      (by norm_num) (by norm_num) (by decide) (by decide))
+    simpa only [Nat.cast_ofNat,Nat.cast_one,Nat.cast_zero,div_one] using (input_logs_lower_from (n:=T.length) (offset:=2) (h:=6) (a:=137) (b:=53) (c:=137) (d:=100) (e:=227) (f:=500)
+      (by decide) (by decide) (by decide) (by omega) (by decide) (by decide +kernel)
+      (by norm_num) (by
+        rw [div_pow]
+        exact (le_div_iff₀ (by positivity)).mpr (by
+          exact_mod_cast (by decide +kernel : (2:ℕ)^227 * 100^500 ≤ 137^500)))
+      (by decide) (by decide))
   by_cases h₇ : T.length ≤ 729
   · obtain ⟨hk,hk',hc⟩ := compactSlotDigits_bounds h₇
     have he := (compileSlotWith_widthOne_bound T hk hk' (by omega) hc).2.2.2
@@ -567,23 +579,23 @@ theorem compileCompactSlot_small_log {T : LeanWang.TileSet} (hn : 2 ≤ T.length
     rw [← hu] at he
     by_cases h₂₇ : T.length ≤ 27
     · have he : U.length ≤ 2^2475 := by simpa [compactSlotDigits,h₂₇] using he
-      refine compare (dyad he) (A:=19/5) (G:=7/4) (L:=3/4)
+      refine compare (dyad he) (A:=7/2) (G:=7/4) (L:=3/4)
         ?_ (by norm_num) (by norm_num) (by norm_num)
-      simpa only [Nat.cast_ofNat,Nat.cast_one,Nat.cast_zero,div_one] using (input_logs_lower (n:=T.length) (h:=14) (a:=19) (b:=5) (c:=7) (d:=4) (e:=3) (f:=4)
-        (by decide) (by decide) (by decide) (by omega) (by decide)
+      simpa only [Nat.cast_ofNat,Nat.cast_one,Nat.cast_zero,div_one] using (input_logs_lower_from (n:=T.length) (offset:=2) (h:=12) (a:=7) (b:=2) (c:=7) (d:=4) (e:=3) (f:=4)
+        (by decide) (by decide) (by decide) (by omega) (by decide) (by decide +kernel)
         (by norm_num) (by norm_num) (by decide) (by decide))
     by_cases h₈₁ : T.length ≤ 81
     · have he : U.length ≤ 2^2595 := by simpa [compactSlotDigits,h₂₇,h₈₁] using he
-      refine compare (dyad he) (A:=5/1) (G:=2/1) (L:=1/1)
+      refine compare (dyad he) (A:=24/5) (G:=2/1) (L:=1/1)
         ?_ (by norm_num) (by norm_num) (by norm_num)
-      simpa only [Nat.cast_ofNat,Nat.cast_one,Nat.cast_zero,div_one] using (input_logs_lower (n:=T.length) (h:=32) (a:=5) (b:=1) (c:=2) (d:=1) (e:=1) (f:=1)
-        (by decide) (by decide) (by decide) (by omega) (by decide)
+      simpa only [Nat.cast_ofNat,Nat.cast_one,Nat.cast_zero,div_one] using (input_logs_lower_from (n:=T.length) (offset:=2) (h:=30) (a:=24) (b:=5) (c:=2) (d:=1) (e:=1) (f:=1)
+        (by decide) (by decide) (by decide) (by omega) (by decide) (by decide +kernel)
         (by norm_num) (by norm_num) (by decide) (by decide))
     · have he : U.length ≤ 2^2835 := he.trans (Nat.pow_le_pow_right (by decide) (by omega))
       refine compare (dyad he) (A:=6/1) (G:=2/1) (L:=1/1)
         ?_ (by norm_num) (by norm_num) (by norm_num)
-      simpa only [Nat.cast_ofNat,Nat.cast_one,Nat.cast_zero,div_one] using (input_logs_lower (n:=T.length) (h:=86) (a:=6) (b:=1) (c:=2) (d:=1) (e:=1) (f:=1)
-        (by decide) (by decide) (by decide) (by omega) (by decide)
+      simpa only [Nat.cast_ofNat,Nat.cast_one,Nat.cast_zero,div_one] using (input_logs_lower_from (n:=T.length) (offset:=2) (h:=84) (a:=6) (b:=1) (c:=2) (d:=1) (e:=1) (f:=1)
+        (by decide) (by decide) (by decide) (by omega) (by decide) (by decide +kernel)
         (by norm_num) (by norm_num) (by decide) (by decide))
   let k := slotPackedDigits T.length 1
   have bound {j : ℕ} (hj : k = j)
@@ -596,19 +608,168 @@ theorem compileCompactSlot_small_log {T : LeanWang.TileSet} (hn : 2 ≤ T.length
   by_cases h₂ : T.length ≤ 11664
   · have hk : k = 2 := slot_digits_at_four (by decide) h₂ (Or.inr (by omega))
     have he : U.length ≤ 2^3711 := by rw [hsame (by omega)]; exact (bound hk shortSize_2_4.1).trans shortSize_2_4.2
-    refine compare (dyad he) (A:=9/1) (G:=3/1) (L:=3/2)
+    refine compare (dyad he) (A:=951/100) (G:=81/25) (L:=169/100)
       ?_ (by norm_num) (by norm_num) (by norm_num)
-    simpa only [Nat.cast_ofNat,Nat.cast_one,Nat.cast_zero,div_one] using (input_logs_lower (n:=T.length) (h:=734) (a:=9) (b:=1) (c:=3) (d:=1) (e:=3) (f:=2)
-      (by decide) (by decide) (by decide) (by omega) (by decide)
+    simpa only [Nat.cast_ofNat,Nat.cast_one,Nat.cast_zero,div_one] using (input_logs_lower_from (n:=T.length) (offset:=2) (h:=732) (a:=951) (b:=100) (c:=81) (d:=25) (e:=169) (f:=100)
+      (by decide) (by decide) (by decide) (by omega) (by decide) (by decide +kernel)
       (by norm_num) (by norm_num) (by decide) (by decide))
   · have hk : k = 3 := slot_digits_at_four (by decide) (by omega) (Or.inr (by omega))
     have he : U.length ≤ 2^4432 := by rw [hsame (by omega)]; exact (bound hk shortSize_3_4.1).trans shortSize_3_4.2
     refine compare (dyad he) (A:=27/2) (G:=15/4) (L:=19/10)
       ?_ (by norm_num) (by norm_num) (by norm_num)
-    simpa only [Nat.cast_ofNat,Nat.cast_one,Nat.cast_zero,div_one] using (input_logs_lower (n:=T.length) (h:=11669) (a:=27) (b:=2) (c:=15) (d:=4) (e:=19) (f:=10)
-      (by decide) (by decide) (by decide) (by omega) (by decide)
+    simpa only [Nat.cast_ofNat,Nat.cast_one,Nat.cast_zero,div_one] using (input_logs_lower_from (n:=T.length) (offset:=2) (h:=11667) (a:=27) (b:=2) (c:=15) (d:=4) (e:=19) (f:=10)
+      (by decide) (by decide) (by decide) (by omega) (by decide) (by decide +kernel)
       (by norm_num) (by norm_num) (by decide) (by decide))
 
+
+/-- A ternary digit in each slot bridges the range where wider digits
+cost more than they save. -/
+def ternarySlotDigits (n : ℕ) : ℕ := max 1 (Nat.clog 3 n)
+
+theorem ternarySlotDigits_primrec : Primrec ternarySlotDigits := by
+  have hc : Primrec (Nat.clog 3) :=
+    clog_primrec.comp ((Primrec.const 3).pair (Primrec.id : Primrec (id : ℕ → ℕ)))
+  exact Primrec.nat_max.comp (Primrec.const 1) hc
+
+private def ternaryVolumeExponent (k : ℕ) : ℕ :=
+  1844+201*max 16 (19*(k-1)/12)
+
+private theorem ternarySlot_cert {k : ℕ} (hk : 11 ≤ k) (hk' : k ≤ 41) :
+    shortVolumeCheck k 1 1 2208 (slotWindowCap 2208 (6*41))
+      (slotWindowCap (2208*slotWindowCap 2208 (6*41)) (2*41))
+      (ternaryVolumeExponent k) := by
+  simp only [shortVolumeCheck,slotDeckCap,arithmeticBaseline_length_exact]
+  interval_cases k <;> decide +kernel
+
+private theorem ternarySlot_size {k : ℕ} (hk : 11 ≤ k) (hk' : k ≤ 41) :
+    (4*Rails.Strips.countCapAt 35 (fun _ => slotAssemblyRadius k 1 1)+4229 ≤ 2^811) ∧
+      slotShortEstimate k 1 1 ≤ 2^ternaryVolumeExponent k := by
+  let B := slotWindowCap 2208 (6*41)
+  let C := slotWindowCap (2208*B) (2*41)
+  have hA : fallbackCap 1 = 2208 := slotSearchCap_2048_4
+  have hmono {a b c d : ℕ} (hab : a≤b) (hcd : c≤d) : slotWindowCap a c ≤ slotWindowCap b d := by
+    unfold slotWindowCap guardedPrimeCap
+    gcongr
+  have hB : markerCap k 1 ≤ B := by
+    simp only [markerCap,show ¬24 ≤ (1:ℕ) by decide,ite_false,separateMarkerCap,hA,Nat.mul_one]
+    exact (slotSearchCap_le_window (by decide)).trans (hmono le_rfl (Nat.mul_le_mul_left _ hk'))
+  have hC : SlotParameters.lowCap k 1 ≤ C := by
+    simp only [SlotParameters.lowCap,show ¬24 ≤ (1:ℕ) by decide,ite_false,separateLowCap,hA,Nat.mul_one]
+    have hBpos : 2208≤separateMarkerCap k 1 := by
+      unfold separateMarkerCap
+      rw [hA]
+      exact threshold_le_slotSearchCap ..
+    have hc : 512 ≤ 2208*separateMarkerCap k 1 :=
+      (by decide : 512≤2208*1).trans (Nat.mul_le_mul_left _ ((by decide : 1≤2208).trans hBpos))
+    exact (slotSearchCap_le_window hc).trans (hmono
+      (Nat.mul_le_mul_left _ (by simpa only [markerCap,show ¬24 ≤ (1:ℕ) by decide,ite_false] using hB))
+      (Nat.mul_le_mul_left _ hk'))
+  obtain ⟨hH,hV⟩ := ternarySlot_cert hk hk'
+  let H := max (2^68) ((C*B^3*2208^2)^(min 1 (1+1-1)))
+  let D := (slotRadix 1 1)^k
+  let P := max 4 (max slotBasePrimeCap (max 2208 (max B C)))
+  let X := slotStackTestCap P (slotDeckCap k 1 D)
+  let P' := assemblyPrimeCap 1 (slotPrimeCap k 1)
+  let X' := slotStackTestCap P' (slotDeckCap k 1 D)
+  have hh : slotAssemblyRadius k 1 1≤H := by
+    unfold H slotAssemblyRadius
+    rw [show fourValueRadius 0 = 2^68 by decide]
+    apply max_le_max_left
+    exact Nat.pow_le_pow_left ((slotOffsetFactorCap_le k 1).trans (by rw [hA]; gcongr)) _
+  have hs : Rails.Strips.countCapAt 35 (fun _ => slotAssemblyRadius k 1 1) ≤
+      Rails.Strips.countCapAt 35 (fun _ => H) := by
+    unfold Rails.Strips.countCapAt
+    apply listSumMap_le
+    intro i _
+    unfold Rails.Strips.radius
+    gcongr
+  have hP : P'≤P := by
+    simp only [P',P,assemblyPrimeCap,slotPrimeCap,slotStackPrimeCap,
+      show (1:ℕ) ≠ 0 by decide,ite_false,hA]
+    gcongr
+  have hX : X'≤X :=
+    max_le_max_left _ (max_le_max_right _ (Nat.add_le_add_right (Nat.sqrt_le_sqrt hP) _))
+  have hlog : Stacking.differenceLog X'≤Stacking.differenceLog X := by
+    unfold Stacking.differenceLog
+    exact Nat.add_le_add_right (Nat.log_mono_right (Nat.mul_le_mul_left _ hX)) _
+  have hL : reservedCap X' P'≤reservedCap X P := by
+    unfold reservedCap reservedThreshold
+    gcongr
+  have hN : (SlotParameters.lowCap k 1^2*markerCap k 1^3)^(2*k*1)*fallbackCap 1^(4*1) ≤
+      (C^2*B^3)^(2*k*1)*2208^(4*1) := by
+    rw [hA]
+    gcongr
+  constructor
+  · exact (Nat.add_le_add_right (Nat.mul_le_mul_left 4 hs) _).trans hH
+  · refine le_trans ?_ hV
+    change mssPieceCap*(2^1893*((SlotParameters.lowCap k 1^2*markerCap k 1^3)^(2*k*1)*fallbackCap 1^(4*1)))*
+      reservedCap X' P'*216*4222*(4*Rails.Strips.countCapAt 35 (fun _ => slotAssemblyRadius k 1 1)+1) ≤ _
+    gcongr
+
+theorem ternarySlot_log {T : LeanWang.TileSet} (hn : 65536 ≤ T.length) (hlt : T.length < 2^64) :
+    let u := Real.logb 2 ((T.length : ℝ)+2)
+    let g := Real.logb 2 u
+    let U := compileSlotWith T (ternarySlotDigits T.length) 1 1
+    U ≠ [] ∧ FaceConnected U ∧ (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles U) ∧
+      Real.logb 2 (U.length:ℝ) ≤ 1844+u*(4.986901*(g+Real.logb 2 g)+172) := by
+  let n := T.length
+  let k := ternarySlotDigits n
+  let x := (n:ℝ)+2
+  let u := Real.logb 2 x
+  let g := Real.logb 2 u
+  let U := compileSlotWith T k 1 1
+  have hk : 11 ≤ k := by
+    by_contra! h
+    have hh : Nat.clog 3 n ≤ 10 := (le_max_right 1 (Nat.clog 3 n)).trans (show k≤10 by omega)
+    have hpow := (Nat.clog_le_iff_le_pow (by decide)).mp hh
+    norm_num at hpow
+    omega
+  have hk' : k ≤ 41 :=
+    max_le (by decide) ((Nat.clog_le_iff_le_pow (by decide)).mpr
+      (hlt.le.trans (by decide +kernel : 2^64 ≤ 3^41)))
+  have hcap : n ≤ 3^k := (Nat.clog_le_iff_le_pow (by decide)).mp (le_max_right ..)
+  have hprev : 3^(k-1) ≤ n := by
+    have he : k = Nat.clog 3 n := by unfold k ternarySlotDigits at *; omega
+    by_contra! h
+    exact (by omega : ¬ Nat.clog 3 n ≤ k-1) ((Nat.clog_le_iff_le_pow (by decide)).mpr h.le)
+  obtain ⟨hne,hconn,hi,_⟩ := compileSlotWith_correct T (k:=k) (m:=1) (w:=1) (by omega)
+    (by decide) (by decide) hcap
+  refine ⟨hne,hconn,hi,?_⟩
+  have hp : 0 < (U.length:ℝ) := by exact_mod_cast List.length_pos_iff.mpr hne
+  have hu16 : (16:ℝ)≤u := by
+    have hh : (2:ℝ)^16≤x := by dsimp [x]; exact_mod_cast (by omega : (2:ℕ)^16≤n+2)
+    simpa only [lg_two_pow,Nat.cast_ofNat] using lg_mono (by positivity) hh
+  have hg4 : (4:ℝ)≤g := by
+    have hh : (2:ℝ)^4≤u := by norm_num; exact hu16
+    simpa only [lg_two_pow,Nat.cast_ofNat] using lg_mono (by positivity) hh
+  have hl2 : (2:ℝ)≤Real.logb 2 g := by
+    have hh : (2:ℝ)^2≤g := by norm_num; exact hg4
+    simpa only [lg_two_pow,Nat.cast_ofNat] using lg_mono (by positivity) hh
+  have hz : 2^(19*(k-1)/12) ≤ n := by
+    have hp' : ((2:ℕ)^(19*(k-1)/12))^12 ≤ n^12 := by
+      rw [← pow_mul]
+      refine (Nat.pow_le_pow_right (by decide) (Nat.div_mul_le_self ..)).trans ?_
+      rw [pow_mul]
+      exact (Nat.pow_le_pow_left (by decide : (2:ℕ)^19≤3^12) _).trans
+        (by rw [←pow_mul,mul_comm,pow_mul]; exact Nat.pow_le_pow_left hprev _)
+    exact (Nat.pow_le_pow_iff_left (by decide : 12≠0)).mp hp'
+  have huz : ((19*(k-1)/12:ℕ):ℝ)≤u := by
+    simpa only [lg_two_pow] using lg_mono (x := (2:ℝ)^(19*(k-1)/12:ℕ))
+      (by positivity) (show _≤x by dsimp [x]; exact_mod_cast (hz.trans (Nat.le_add_right ..)))
+  have hmax : ((max 16 (19*(k-1)/12):ℕ):ℝ)≤u := by
+    rw [Nat.cast_max,Nat.cast_ofNat]
+    exact max_le hu16 huz
+  have hsize := ternarySlot_size hk hk'
+  have hvol := (compileSlotWith_short T (by omega) (by decide) hcap hsize.1).trans hsize.2
+  have hlog := dyadic_log_le hp (by exact_mod_cast hvol)
+  refine hlog.trans ?_
+  simp only [ternaryVolumeExponent,Nat.cast_add,Nat.cast_mul,Nat.cast_ofNat]
+  have hcoef : (201:ℝ) ≤ 4.986901*(g+Real.logb 2 g)+172 := by linarith
+  have hmul := mul_le_mul hcoef hmax (Nat.cast_nonneg (α:=ℝ) _)
+    (show 0≤4.986901*(g+Real.logb 2 g)+172 by linarith)
+  change 1844+201*((max 16 (19*(k-1)/12):ℕ):ℝ) ≤ 1844+u*(4.986901*(g+Real.logb 2 g)+172)
+  rw [mul_comm u]
+  exact add_le_add le_rfl hmul
 
 end
 end TranslationTiling.Compiler.Size

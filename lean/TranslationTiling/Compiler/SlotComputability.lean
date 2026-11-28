@@ -137,10 +137,6 @@ private theorem singletonStackPrime : Nat.Prime 1190369951 := by
   rw [Nat.prime_def_minFac]
   decide +kernel
 
-private theorem oneSlotStackPrime : Nat.Prime 2025487297 := by
-  rw [Nat.prime_def_minFac]
-  decide +kernel
-
 private theorem emptyWord_volume :
     let nr := rankedSlotOrders 0 0
     reservedVolumeCap 35 (fun j => (slotAssemblyRadii 0 0 0).getD j 0) nr.2 (nr.1 / nr.2)
@@ -149,12 +145,6 @@ private theorem emptyWord_volume :
   rw [rankedSlotOrders_zero,show slotAssemblyRadii 0 0 0 = arithmeticStripRadii by
     simp only [slotAssemblyRadii, Nat.zero_min, pow_zero]
     decide]
-  decide +kernel
-
-private theorem oneSlot_volume :
-    let nr := rankedSlotOrders 1 1
-    reservedVolumeCap 35 (fun j => (slotAssemblyRadii 1 1 1).getD j 0) nr.2 (nr.1 / nr.2)
-      2025487297 ≤ 2^2198 := by
   decide +kernel
 
 private theorem compileSlotWith_volume (T : LeanWang.TileSet) {k m w : ℕ}
@@ -234,11 +224,20 @@ def slotRefinedEstimate (k m w : ℕ) :=
   let X := stackTestCap P (slotDeckCap k m ((slotRadix m w)^k))
   10^35*N*X^3*(slotAssemblyRadius k m w+1)^2
 
-theorem compileSlotWith_correct (T : LeanWang.TileSet) {k m w : ℕ}
+def slotSharpEstimate (k m w : ℕ) :=
+  let A := fallbackCap m
+  let B := markerCap k m
+  let C := SlotParameters.lowCap k m
+  let N := order (fourValueLayout 0) * ((C^2*B^3)^(2*k*m) * A^(4*m))
+  let P := slotStackPrimeCap (slotPrimeCap k m)
+  let X := stackTestCap P (slotDeckCap k m ((slotRadix m w)^k))
+  10^32*N*reservedCap X P*(slotAssemblyRadius k m w+1)^2
+
+theorem compileSlotWith_sharp (T : LeanWang.TileSet) {k m w : ℕ}
     (hn : 0 < T.length) (hm : 0 < m) (hwm : w ≤ m) (hcap : T.length ≤ (slotRadix m w)^k) :
     let U := compileSlotWith T k m w
     U ≠ [] ∧ FaceConnected U ∧ (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles U) ∧
-      U.length ≤ slotRefinedEstimate k m w := by
+      U.length ≤ slotSharpEstimate k m w := by
   obtain ⟨hne,hconn,hiff,hvol⟩ := compileSlotWith_volume T hn hwm hcap
   refine ⟨hne,hconn,hiff,?_⟩
   obtain ⟨s,hs,hA,hB,hC⟩ := exists_ranked_parameters k m
@@ -252,26 +251,39 @@ theorem compileSlotWith_correct (T : LeanWang.TileSet) {k m w : ℕ}
   have hX : slotStackTestCap P count ≤ X :=
     (slotStackTestCap_le (by omega : 1 < P)).trans
       (max_le_max_left _ (max_le_max_left _ (numericalSlotTests_length T N k m w)))
-  have hXpos : 1 ≤ X := (by decide : 1 ≤ 2313).trans (le_max_left ..)
-  have hPX : P ≤ X := (le_max_left ..).trans (le_max_right ..)
   have hV := slotVolume_le H s.period (N/s.period) N
     (reservedCap (slotStackTestCap P count) P) s.period_pos (Nat.div_mul_le_self ..)
   have hN := s.order_le_factors hA hC hB
-  have hL := (reservedCap_mono P hX).trans (slotStack_le X P hXpos hPX)
+  have hL := reservedCap_mono P hX
   simp only [assemblyPrimeCap,ite_eq_right hm.ne'] at hvol
   apply hvol.trans ((reservedVolumeCap_mono (reservedPrimeCap_le_reservedCap _ _)).trans
     ((uniformSlotVolume k m w _ _ _).trans (hV.trans ?_)))
+  exact Nat.mul_le_mul_right _ (Nat.mul_le_mul (Nat.mul_le_mul_left _ hN) hL)
+
+theorem compileSlotWith_correct (T : LeanWang.TileSet) {k m w : ℕ}
+    (hn : 0 < T.length) (hm : 0 < m) (hwm : w ≤ m) (hcap : T.length ≤ (slotRadix m w)^k) :
+    let U := compileSlotWith T k m w
+    U ≠ [] ∧ FaceConnected U ∧ (LeanWang.TilesPlane T ↔ TranslationTiling.Tiles U) ∧
+      U.length ≤ slotRefinedEstimate k m w := by
+  obtain ⟨hne,hconn,hiff,hvol⟩ := compileSlotWith_sharp T hn hm hwm hcap
+  refine ⟨hne,hconn,hiff,hvol.trans ?_⟩
+  let P := slotStackPrimeCap (slotPrimeCap k m)
+  let X := stackTestCap P (slotDeckCap k m ((slotRadix m w)^k))
+  have hXpos : 1 ≤ X := (by decide : 1 ≤ 2313).trans (le_max_left ..)
+  have hPX : P ≤ X := (le_max_left ..).trans (le_max_right ..)
+  have hL := slotStack_le X P hXpos hPX
+  unfold slotSharpEstimate
   unfold slotRefinedEstimate
   calc
-    _ ≤ 10^32*_*(128*X^3)*(H+1)^2 :=
-      Nat.mul_le_mul_right _ (Nat.mul_le_mul (Nat.mul_le_mul_left _ hN) hL)
+    _ ≤ 10^32*_*(128*X^3)*(slotAssemblyRadius k m w+1)^2 :=
+      Nat.mul_le_mul_right _ (Nat.mul_le_mul_left _ hL)
     _ ≤ _ := by
       rw [show 10^32 * (order (fourValueLayout 0) *
           ((SlotParameters.lowCap k m^2*markerCap k m^3)^(2*k*m)*fallbackCap m^(4*m))) *
-          (128*X^3)*(H+1)^2 =
+          (128*X^3)*(slotAssemblyRadius k m w+1)^2 =
           (128*10^32)*(order (fourValueLayout 0) *
           ((SlotParameters.lowCap k m^2*markerCap k m^3)^(2*k*m)*fallbackCap m^(4*m))) *
-          X^3*(H+1)^2 by ring]
+          X^3*(slotAssemblyRadius k m w+1)^2 by ring]
       dsimp only
       gcongr
       decide
@@ -342,15 +354,15 @@ theorem compileSlotWith_emptyWord (T : LeanWang.TileSet) (hn : T.length = 1) :
     (reservedPrimeCap_le_of_prime singletonStackPrime ((reservedPrimeThreshold_mono P (le_max_left ..) hX).trans_lt hM))).trans
     emptyWord_volume
 
-theorem compileSlot_twoOrThree (T : LeanWang.TileSet) (hlo : 2 ≤ T.length)
-    (hhi : T.length ≤ 3) : (compileSlot T).length ≤ 2^2198 := by
+theorem compileSlot_twoOrThree_pow (T : LeanWang.TileSet) (hlo : 2 ≤ T.length)
+    (hhi : T.length ≤ 3) : (compileSlot T).length ^ 20 ≤ 2^43959 := by
   have hv := (compileSlotWith_volume T (k := 1) (m := 1) (w := 1) (by omega) (by decide)
     (by exact hhi)).2.2.2
   let nr := rankedSlotOrders 1 1
   let P := assemblyPrimeCap 1 (slotPrimeCap 1 1)
   let X := slotStackTestCap P (numericalSlotTests T nr.1 1 1 1).length.succ
-  let X' := slotStackTestCap P (slotDeckCap 1 1 3)
-  have hX : X ≤ X' := max_le_max_left _ (max_le_max_left _ (numericalSlotTests_length T nr.1 1 1 1))
+  let X' := slotStackTestCap P (slotDeckCap 1 1 3 - 24*3)
+  have hX : X ≤ X' := max_le_max_left _ (max_le_max_left _ (numericalSlotTests_length_small T nr.1 1 (Or.inl rfl)))
   have hA : fallbackCap 1 = 2208 := slotSearchCap_2048_4
   have hB : separateMarkerCap 1 1 = 2432 := by
     rw [separateMarkerCap,hA]
@@ -362,35 +374,41 @@ theorem compileSlot_twoOrThree (T : LeanWang.TileSet) (hlo : 2 ≤ T.length)
     simp only [P,assemblyPrimeCap,slotPrimeCap,slotStackPrimeCap,markerCap,SlotParameters.lowCap,
       show ¬ 24 ≤ (1 : ℕ) by decide,show (1 : ℕ) ≠ 0 by decide,ite_eq_right,hA,hB,hC]
     decide
-  have hM : reservedPrimeThreshold X' P < 2025487297 := by
+  have hM : reservedPrimeThreshold X' P < 1952366959 := by
     unfold X'
     rw [hP]
     simp only [slotDeckCap,arithmeticBaseline_length_exact]
     decide +kernel
-  have hvol := hv.trans ((reservedVolumeCap_mono
-    (reservedPrimeCap_le_of_prime oneSlotStackPrime ((reservedPrimeThreshold_mono P (le_max_left ..) hX).trans_lt hM))).trans oneSlot_volume)
+  have hprime : Nat.Prime 1952366959 := by
+    rw [Nat.prime_def_minFac]
+    decide +kernel
+  have hq := reservedPrimeCap_le_of_prime hprime
+    ((reservedPrimeThreshold_mono P (le_max_left ..) hX).trans_lt hM)
+  have hV : (reservedVolumeCap 35 (fun j => (slotAssemblyRadii 1 1 1).getD j 0)
+      nr.2 (nr.1 / nr.2) 1952366959)^20 ≤ 2^43959 := by decide +kernel
+  have hvol := (Nat.pow_le_pow_left (hv.trans (reservedVolumeCap_mono hq)) 20).trans hV
   simpa only [compileSlot,slotDimensions,ite_eq_right (by omega : ¬ T.length ≤ 1),
     ite_eq_left (show T.length ≤ 27 by omega),ite_eq_left hhi] using hvol
 
-private theorem twoSlotStackPrime : Nat.Prime 13147233959 := by
+private theorem twoSlotStackPrime : Nat.Prime 12547704431 := by
   rw [Nat.prime_def_minFac]
   decide +kernel
 
 private theorem twoSlotVolume :
     let nr := rankedSlotOrders 2 1
     (reservedVolumeCap 35 (fun j => (slotAssemblyRadii 2 1 1).getD j 0) nr.2 (nr.1 / nr.2)
-      13147233959) ^ 2 ≤ 2^4627 := by
+      12547704431) ^ 10 ≤ 2^23121 := by
   decide +kernel
 
-theorem compileSlot_fourToNine_square (T : LeanWang.TileSet) (hlo : 4 ≤ T.length)
-    (hhi : T.length ≤ 9) : (compileSlot T).length ^ 2 ≤ 2^4627 := by
+theorem compileSlot_fourToNine_tenth (T : LeanWang.TileSet) (hlo : 4 ≤ T.length)
+    (hhi : T.length ≤ 9) : (compileSlot T).length ^ 10 ≤ 2^23121 := by
   have hv := (compileSlotWith_volume T (k := 2) (m := 1) (w := 1) (by omega) (by decide)
     (by exact hhi)).2.2.2
   let nr := rankedSlotOrders 2 1
   let P := assemblyPrimeCap 1 (slotPrimeCap 2 1)
   let X := slotStackTestCap P (numericalSlotTests T nr.1 2 1 1).length.succ
-  let X' := slotStackTestCap P (slotDeckCap 2 1 9)
-  have hX : X ≤ X' := max_le_max_left _ (max_le_max_left _ (numericalSlotTests_length T nr.1 2 1 1))
+  let X' := slotStackTestCap P (slotDeckCap 2 1 9 - 24*9)
+  have hX : X ≤ X' := max_le_max_left _ (max_le_max_left _ (numericalSlotTests_length_small T nr.1 2 (Or.inr rfl)))
   have hA : fallbackCap 1 = 2208 := slotSearchCap_2048_4
   have hB : separateMarkerCap 2 1 = 2624 := by
     rw [separateMarkerCap,hA]
@@ -402,17 +420,29 @@ theorem compileSlot_fourToNine_square (T : LeanWang.TileSet) (hlo : 4 ≤ T.leng
     simp only [P,assemblyPrimeCap,slotPrimeCap,slotStackPrimeCap,markerCap,SlotParameters.lowCap,
       show ¬ 24 ≤ (1 : ℕ) by decide,show (1 : ℕ) ≠ 0 by decide,ite_eq_right,hA,hB,hC]
     decide
-  have hM : reservedPrimeThreshold X' P < 13147233959 := by
+  have hM : reservedPrimeThreshold X' P < 12547704431 := by
     unfold X'
     rw [hP]
     simp only [slotDeckCap,arithmeticBaseline_length_exact]
     decide +kernel
   have hq := reservedPrimeCap_le_of_prime twoSlotStackPrime
     ((reservedPrimeThreshold_mono P (le_max_left ..) hX).trans_lt hM)
-  have hvol := (Nat.pow_le_pow_left (hv.trans (reservedVolumeCap_mono hq)) 2).trans twoSlotVolume
+  have hvol := (Nat.pow_le_pow_left (hv.trans (reservedVolumeCap_mono hq)) 10).trans twoSlotVolume
   simpa only [compileSlot,slotDimensions,ite_eq_right (by omega : ¬ T.length ≤ 1),
     ite_eq_left (show T.length ≤ 27 by omega),ite_eq_right (by omega : ¬ T.length ≤ 3),
     ite_eq_left hhi] using hvol
+
+theorem compileSlot_twoOrThree (T : LeanWang.TileSet) (hlo : 2 ≤ T.length)
+    (hhi : T.length ≤ 3) : (compileSlot T).length ≤ 2^2198 := by
+  apply (Nat.pow_le_pow_iff_left (by decide : 20 ≠ 0)).mp
+  exact (compileSlot_twoOrThree_pow T hlo hhi).trans (by decide +kernel)
+
+theorem compileSlot_fourToNine_square (T : LeanWang.TileSet) (hlo : 4 ≤ T.length)
+    (hhi : T.length ≤ 9) : (compileSlot T).length ^ 2 ≤ 2^4627 := by
+  apply (Nat.pow_le_pow_iff_left (by decide : 5 ≠ 0)).mp
+  simpa only [← pow_mul] using
+    (compileSlot_fourToNine_tenth T hlo hhi).trans
+      (show (2:ℕ)^23121 ≤ (2^4627)^5 by decide +kernel)
 
 theorem compileSlot_fourToNine (T : LeanWang.TileSet) (hlo : 4 ≤ T.length)
     (hhi : T.length ≤ 9) : (compileSlot T).length ≤ 2^2316 := by
@@ -627,7 +657,7 @@ private theorem rankedSlotOrder_le_products {k m L M F : ℕ}
     (hl : ((List.range (2*k*m)).map (rankedLowAt k m)).prod ≤ L)
     (hm : ((List.range (2*k*m)).map (fun i =>
       rankedMarkerAt k m i 0 * rankedMarkerAt k m i 1 * rankedMarkerAt k m i 2)).prod ≤ M)
-    (hf : ((List.range (4*m)).map (slotFallbackAt m)).prod ≤ F) :
+    (hf : ((List.range (4*m)).map (rankedFallbackAt k m)).prod ≤ F) :
     (rankedSlotOrders k m).1 ≤ 2^1893*(L^2*M*F) := by
   have hbase : (rankedSlotOrders 0 0).1 ≤ 2^1893 := by
     rw [rankedSlotOrders_zero]
@@ -671,7 +701,13 @@ private theorem widthEight_order :
   have hb := prod_le (l := List.range 32) (fun i hi => Nat.mul_le_mul
     (Nat.mul_le_mul (qb i 0 (List.mem_range.mp hi) (by decide)) (qb i 1 (List.mem_range.mp hi) (by decide)))
     (qb i 2 (List.mem_range.mp hi) (by decide)))
-  apply (rankedSlotOrder_le_products (k:=2) (m:=8) hl hb hf).trans
+  have hfall : rankedFallbackAt 2 8 = slotFallbackAt 8 := by
+    funext i
+    unfold rankedFallbackAt
+    rw [ite_eq_right (by decide : ¬ ((2:ℕ)=2 ∧ (8:ℕ)=1))]
+  have hf' := hf
+  rw [← hfall] at hf'
+  apply (rankedSlotOrder_le_products (k:=2) (m:=8) hl hb hf').trans
   dsimp only [f,b,widthEightFallbackWitnesses,widthEightMarkerWitnesses]
   decide +kernel
 
@@ -814,6 +850,16 @@ theorem compileSlot_large (T : LeanWang.TileSet) (h : 28 ≤ T.length) :
   simpa only [compileSlot,slotDimensions,ite_eq_right (by omega : ¬ T.length ≤ 1),
       ite_eq_right (by omega : ¬ T.length ≤ 27),t] using
     (compileSlotWith_correct T (k := slotPackedDigits T.length t) (m := 4*t) (w := 3*t)
+      (by omega) (by omega) (by omega) (slotPackedDigits_capacity _ _ ht)).2.2.2
+
+theorem compileSlot_large_sharp (T : LeanWang.TileSet) (h : 28 ≤ T.length) :
+    let t := wideSlotLength T.length
+    (compileSlot T).length ≤ slotSharpEstimate (slotPackedDigits T.length t) (4*t) (3*t) := by
+  let t := wideSlotLength T.length
+  have ht : 0 < t := (by decide : 0 < 1).trans_le (le_max_left ..)
+  simpa only [compileSlot,slotDimensions,ite_eq_right (by omega : ¬ T.length ≤ 1),
+      ite_eq_right (by omega : ¬ T.length ≤ 27),t] using
+    (compileSlotWith_sharp T (k := slotPackedDigits T.length t) (m := 4*t) (w := 3*t)
       (by omega) (by omega) (by omega) (slotPackedDigits_capacity _ _ ht)).2.2.2
 
 /-- The one-tile size estimate for the same compiler. -/

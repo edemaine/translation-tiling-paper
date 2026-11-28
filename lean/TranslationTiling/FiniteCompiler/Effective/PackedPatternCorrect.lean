@@ -160,6 +160,59 @@ theorem rawGuardedMasks_length (T : LeanWang.TileSet) (D : ℕ) :
   rw [List.length_flatMap]
   exact Nat.add_le_add_left houter 2313
 
+/-- The equality-phase tests omit the diagonal pairs. -/
+private def offDiagonalGuardBudget (D : ℕ) : ℕ :=
+  (guardTemplates.map fun (j, _) =>
+    ((List.range D).map fun a =>
+      ((List.range D).filter fun b => decide (j ≠ 0 ∨ a ≠ b)).length).sum).sum
+
+private theorem rawGuardedMasks_length_offDiagonal (T : LeanWang.TileSet) (D : ℕ) :
+    (rawGuardedMasks T D).length ≤ 2313 + offDiagonalGuardBudget D := by
+  have hA : arithmeticMasks.length = 2313 := by
+    simp only [arithmeticMasks,List.length_append,List.length_map]
+    decide +kernel
+  unfold rawGuardedMasks offDiagonalGuardBudget
+  rw [List.length_append,hA,List.length_flatMap]
+  apply Nat.add_le_add_left
+  apply listSumMap_le
+  rintro ⟨j,s⟩ _
+  rw [List.length_flatMap]
+  apply listSumMap_le
+  intro a _
+  rw [List.length_map]
+  have h : ∀ b, rawBadQuery j (T.getD a (T.getD 0 ⟨0,0,0,0⟩))
+        (T.getD b (T.getD 0 ⟨0,0,0,0⟩)) → j ≠ 0 ∨ a ≠ b := by
+    intro b hb
+    by_contra! h
+    rcases h with ⟨rfl,rfl⟩
+    exact hb (by simp [rawBadQuery])
+  generalize List.range D = xs
+  induction xs with
+  | nil => simp
+  | cons b xs ih =>
+    simp only [List.filter_cons]
+    split <;> split <;> simp_all <;> omega
+
+private theorem offDiagonalGuardBudget_small {D : ℕ} (hD : D = 3 ∨ D = 9) :
+    offDiagonalGuardBudget D + 24*D ≤ 72*D^2 := by
+  let f (j : Fin 3) :=
+    ((List.range D).map fun a =>
+      ((List.range D).filter fun b => decide ((j:ℕ) ≠ 0 ∨ a ≠ b)).length).sum
+  have hp : Fintype.card Units5 = 4 := Fintype.card_congr pEquiv |>.trans (by simp)
+  have hq : Fintype.card Units7 = 6 := Fintype.card_congr qEquiv |>.trans (by simp)
+  unfold offDiagonalGuardBudget guardTemplates
+  rw [List.map_map,Finset.sum_map_toList]
+  change (∑ j : QueryPhase, f j.1) + 24*D ≤ 72*D^2
+  rw [Fintype.sum_prod_type]
+  simp only [Finset.sum_const,Fintype.card_prod,hp,hq,nsmul_eq_mul,Fin.sum_univ_three]
+  rcases hD with rfl | rfl <;> decide +kernel
+
+theorem rawGuardedMasks_length_small (T : LeanWang.TileSet) {D : ℕ}
+    (hD : D = 3 ∨ D = 9) : (rawGuardedMasks T D).length + 24*D ≤ 2313+72*D^2 := by
+  have hb := rawGuardedMasks_length_offDiagonal T D
+  have hc := offDiagonalGuardBudget_small hD
+  omega
+
 variable {k r : ℕ} (hk : 0 < k) (hr : 0 < r)
   (c : Code T (radixLayoutProfile r k).radices.prod)
 

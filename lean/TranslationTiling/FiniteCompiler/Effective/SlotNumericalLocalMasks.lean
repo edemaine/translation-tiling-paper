@@ -55,7 +55,7 @@ def numericalMarkerMasks (N k m : ℕ) : List CyclicTile :=
 def numericalFallbackMasks (N k m : ℕ) : List CyclicTile :=
   [false,true].flatMap fun g =>
     (List.range m).flatMap fun i =>
-      numericalLocalMasks N k m (numericalFallback m (fallbackCode m g i false))
+      numericalLocalMasks N k m (numericalFallback k m (fallbackCode m g i false))
         (numericalSlope g) (numericalExcluded k m g i)
 
 @[fun_prop] private theorem slotBoolValue_primrec : Primrec Bool.toNat :=
@@ -118,13 +118,13 @@ theorem numericalFallbackMasks_primrec : Primrec (fun z : ℕ × ℕ × ℕ =>
   unfold numericalFallbackMasks
   apply flatMapList (Primrec.const [false,true])
   apply flatMapList (by fun_prop)
-  let fallArgs (z : FallbackArgs) : ℕ × ℕ :=
-    (z.1.1.2.2,fallbackCode z.1.1.2.2 z.1.2 z.2 false)
+  let fallArgs (z : FallbackArgs) : ℕ × ℕ × ℕ :=
+    (z.1.1.2.1,z.1.1.2.2,fallbackCode z.1.1.2.2 z.1.2 z.2 false)
   have hfallArgs : Primrec fallArgs := by unfold fallArgs; fun_prop
   have hp := numericalFallback_primrec.comp hfallArgs
   let input (z : FallbackArgs) : LocalMaskInput :=
     (z.1.1.1,z.1.1.2.1,z.1.1.2.2,
-      numericalFallback z.1.1.2.2 (fallbackCode z.1.1.2.2 z.1.2 z.2 false),
+      numericalFallback z.1.1.2.1 z.1.1.2.2 (fallbackCode z.1.1.2.2 z.1.2 z.2 false),
       numericalSlope z.1.2,numericalExcluded z.1.1.2.1 z.1.1.2.2 z.1.2 z.2)
   have hs : Primrec (fun z : FallbackArgs => numericalSlope z.1.2) :=
     numericalSlope_primrec.comp (by fun_prop)
@@ -222,7 +222,7 @@ theorem numericalMarkerAt_correct (hs : s.prime = rankedSlotPrime k m)
 
 theorem numericalFallbackAt_correct (hs : s.prime = rankedSlotPrime k m)
     (g : Bool) (i : Fin m) (F : Finset (SharedCoordinates.Ambient s.layout)) :
-    (∃ G ∈ numericalLocalMasks (order s.layout) k m (numericalFallback m (fallbackCode m g i false))
+    (∃ G ∈ numericalLocalMasks (order s.layout) k m (numericalFallback k m (fallbackCode m g i false))
         (numericalSlope g) (numericalExcluded k m g i),
         G.toFinset.image (decodePoint s.layout) = F) ↔ F ∈ s.fallbackTests g i := by
   rw [numericalFallback_eq s hs, s.numericalLocalMasks_correct hs _ (s.observedFallback_decode (g,i,false))]

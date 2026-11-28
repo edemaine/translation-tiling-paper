@@ -3394,9 +3394,9 @@ observed coordinates. The shift and the CRT residues recover the full test
 index. Thus each selected slot contributes at most $CB^3A^2$ to the modulus,
 where $A$, $B$, and $C$ cap the fallback, marker, and low primes.
 
-Write $u=\lg(n+4)$, $g=\lg u$, and $\ell=\lg g$. For $n\geq65536$,
-we choose the width $m$ to be a positive multiple of four between
-$g\ell/6$ and $g\ell$. The radix satisfies $\lg D\geq 2m-\lg(m+1)$.
+Write $u=\lg(n+4)$, $g=\lg u$, and $\ell=\lg g$. In the one-axis
+range $2^{64}\leq n<2^{2^{48}}$, we choose the width $m$ to be a
+positive multiple of four between $g\ell/6$ and $g\ell$. The radix satisfies $\lg D\geq 2m-\lg(m+1)$.
 With this width, the radix loss and rounding the number of digits up
 contribute only a constant to the exponent.
 
@@ -3420,30 +3420,28 @@ Each slot contributes the square of its low prime and three marker
 primes to the cyclic order, giving the term $5g+5\ell$ in the exponent
 after packing the words.
 
-For $2\leq n\leq9$, one or two radix-three digits of width one give
-bounds of $2^{2198}$ and $2^{2314}$ unit cubes, respectively. For
-$10\leq n\leq729$, we use three to six digits of the same width. We
-certify the positive block counts for smaller prime tables and count
-the cyclic order directly. For $730\leq n<65536$, two or three
-width-four digits of radix $108$ give bounds of $2^{3711}$ and $2^{4432}$.
+For $2\leq n\leq9$, we use one or two radix-three digits of width one.
+The equality tests exclude diagonal pairs, which saves $24D$ masks
+for a word alphabet of size $D$. With a smaller prime table for two
+digits, the base-2 logarithm of the volume is at most $2197.95$ for
+one digit and $2312.1$ for two digits. For $10\leq n\leq729$, we use
+three to six digits of the same width. We certify the positive block
+counts for smaller prime tables and count the cyclic order directly.
+For $730\leq n<65536$, two or three width-four digits of radix $108$
+give bounds of $2^{3711}$ and $2^{4432}$.
 
-For $65536\leq n<2^{64}$, width-eight digits have radix $20412$.
-For two digits, we bound the cyclic order using the products of
-certified lists of small fallback and marker primes.
-The rail length dominates the horizontal slot count, so the shell volume
-is linear in that count. This gives at most $2^{5392}$ unit cubes.
-The finite volume estimates for three, four, and five digits give
-$2^{7500}$, $2^{9500}$, and $2^{11500}$ unit cubes, respectively.
+For $65536\leq n<2^{64}$, we use up to $41$ width-one ternary digits.
+The rail length dominates the horizontal slot count, so the shell
+volume is linear in that count.
 
 For $2^{64}\leq n<2^{2^{48}}$, we certify the volume on each interval
 of fixed $b=\lfloor\lg\lfloor\lg n\rfloor\rfloor$. The width $m$ and
 radix $D$ are fixed on that interval. An upper bound on the digit count
-$k$ bounds the prime sizes. The logarithmic volume estimate is affine
-in $k$ after removing its term $18u$. We use
-$u\geq\max\{2^b,(k-1)\lfloor\lg D\rfloor\}$, so it suffices to check the
-two integer values of $k$ around the change of slope and compare the
-slopes beyond that point. This gives an exponent of at most
-$5g+5\ell+191+1322/u$ in this range.
+$k$ bounds the prime sizes. Keeping the $X^2\lg X$ stacking bound gives
+an affine upper bound in $k$ for the logarithm of the volume. We use
+$\lg(n+2)\geq\max\{2^b,(k-1)\lfloor\lg D\rfloor\}$, so it suffices to
+check the two integer values of $k$ around the change of slope and
+compare the slopes beyond that point.
 
 We center each compact arithmetic mask in the strip of its slope,
 halving the radius bound for that mask. For stacking, we improve the
@@ -3490,7 +3488,7 @@ unit cubes for these inputs.
 Below this cutoff we use the one-axis layout estimated above. The
 uniform bound for $n\geq2$ is
 $$
-  B(n)=(n+4)^{4.986901(\lg\lg(n+4)+\lg\lg\lg(n+4))+192+\frac{1880}{\lg(n+4)+0.31}}.
+  B(n)=(n+2)^{4.986901(\lg\lg(n+2)+\lg\lg\lg(n+2))+172}\cdot 2^{1844}.
 $$
 Lean verifies the bound and computability of the reduction in
 \leanfile{Compiler/AxisSlotExplicitBound.lean}. The Lean abstract uses

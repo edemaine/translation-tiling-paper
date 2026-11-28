@@ -203,14 +203,18 @@ private theorem numericalCycle_length (N k m : ℕ) (xs : GuardedAssignments) :
   unfold numericalSlotCycle
   split <;> simp
 
-theorem numericalGuardMasks_length (T : LeanWang.TileSet) (N k m w : ℕ) :
-    (numericalGuardMasks T N k m w).length ≤ 2313+72*((slotRadix m w)^k)^2 := by
+theorem numericalGuardMasks_length_le_raw (T : LeanWang.TileSet) (N k m w : ℕ) :
+    (numericalGuardMasks T N k m w).length ≤ (rawGuardedMasks T ((slotRadix m w)^k)).length := by
   unfold numericalGuardMasks
   rw [List.length_flatMap]
   have hb := listSumMap_le (as := rawGuardedMasks T ((slotRadix m w)^k))
     (f := fun p => (numericalSlotCycle N k m (expandSlotMask k m w p)).length)
     (g := fun _ => 1) (fun p _ => numericalCycle_length N k m _)
-  simpa using hb.trans (by simpa using rawGuardedMasks_length T ((slotRadix m w)^k))
+  simpa using hb
+
+theorem numericalGuardMasks_length (T : LeanWang.TileSet) (N k m w : ℕ) :
+    (numericalGuardMasks T N k m w).length ≤ 2313+72*((slotRadix m w)^k)^2 :=
+  (numericalGuardMasks_length_le_raw T N k m w).trans (rawGuardedMasks_length ..)
 
 theorem numericalSeedMasks_length (N k m : ℕ) :
     (numericalSeedMasks N k m).length ≤ 180 := by

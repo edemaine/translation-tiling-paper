@@ -75,7 +75,7 @@ private def numberedObservations (k m : ℕ) (g : Bool) (d : ℕ) (xs : List ℕ
   (List.range (4*xs.length)).map fun q =>
     let i := xs.getD (q/4) 0
     let j := q%4
-    if j = 0 then numericalFallback m (fallbackCode m g i false)
+    if j = 0 then numericalFallback k m (fallbackCode m g i false)
     else numericalMarker k m (wangCode k m g d i) (j-1)
 
 /-- A batch reads the selected low rows and the four observations
@@ -85,7 +85,7 @@ def numberedSlotBatch (N k m : ℕ) (g : Bool) (d : ℕ) (xs : List ℕ) : Numer
   let low := fun i => (numericalSlotRow k m i).1
   let rest := (List.range (20+2*k*m+4*m)).filter fun i => decide (i ∉ chosen)
   (N,if g then 0 else 2,chosen.map low,rest.map low,numberedObservations k m g d xs,
-    xs.map fun i => numericalFallback m (fallbackCode m g i true))
+    xs.map fun i => numericalFallback k m (fallbackCode m g i true))
 
 /-- There is one activation mask per subset of the required size,
 for each direction and each packed digit. -/
@@ -110,8 +110,8 @@ private theorem numberedObservations_primrec : Primrec (fun z : SelectedArgs =>
   let slot (z : SelectedArgs × ℕ) := z.1.2.2.2.2.getD (z.2/4) 0
   have hslot : Primrec slot := by unfold slot; fun_prop
   have htest : PrimrecPred (fun z : SelectedArgs × ℕ => z.2%4 = 0) := by fun_prop
-  let fallArgs (z : SelectedArgs × ℕ) : ℕ × ℕ :=
-    (z.1.2.1,fallbackCode z.1.2.1 z.1.2.2.1 (slot z) false)
+  let fallArgs (z : SelectedArgs × ℕ) : ℕ × ℕ × ℕ :=
+    (z.1.1,z.1.2.1,fallbackCode z.1.2.1 z.1.2.2.1 (slot z) false)
   let markArgs (z : SelectedArgs × ℕ) : ℕ × ℕ × ℕ × ℕ :=
     (z.1.1,z.1.2.1,wangCode z.1.1 z.1.2.1 z.1.2.2.1 z.1.2.2.2.1 (slot z),z.2%4-1)
   have hf : Primrec fallArgs := by unfold fallArgs; fun_prop
@@ -140,10 +140,10 @@ private theorem numberedSlotBatch_primrec :
   have hobs := numberedObservations_primrec.comp (Primrec.snd : Primrec (Prod.snd : ℕ × SelectedArgs → SelectedArgs))
   have hxs : Primrec (fun z : ℕ × SelectedArgs => z.2.2.2.2.2) := by fun_prop
   have hhid : Primrec (fun z : ℕ × SelectedArgs => z.2.2.2.2.2.map (fun i =>
-      numericalFallback z.2.2.1 (fallbackCode z.2.2.1 z.2.2.2.1 i true))) := by
+      numericalFallback z.2.1 z.2.2.1 (fallbackCode z.2.2.1 z.2.2.2.1 i true))) := by
     apply mapList hxs
-    let a (z : (ℕ × SelectedArgs) × ℕ) : ℕ × ℕ :=
-      (z.1.2.2.1,fallbackCode z.1.2.2.1 z.1.2.2.2.1 z.2 true)
+    let a (z : (ℕ × SelectedArgs) × ℕ) : ℕ × ℕ × ℕ :=
+      (z.1.2.1,z.1.2.2.1,fallbackCode z.1.2.2.1 z.1.2.2.2.1 z.2 true)
     have ha : Primrec a := by unfold a; fun_prop
     exact (numericalFallback_primrec.comp ha).of_eq (by intro z; rfl)
   have hs : Primrec (fun z : ℕ × SelectedArgs => (if z.2.2.2.1 then 0 else 2 : ℤ)) :=
@@ -224,7 +224,7 @@ private theorem numberedObservations_eq (hs : s.prime = rankedSlotPrime k m)
       rw [← hz,listedSlots_get _ _ hdiv]
       exact congrArg Fin.val (shiftIndex_slot S z).symm
     simp only [numberedObservations,observedModuli,List.getElem_map,List.getElem_range,List.getElem_ofFn]
-    change (if j%4 = 0 then numericalFallback m (fallbackCode m g ((listedSlots S).getD (j/4) 0) false)
+    change (if j%4 = 0 then numericalFallback k m (fallbackCode m g ((listedSlots S).getD (j/4) 0) false)
       else numericalMarker k m (wangCode k m g d ((listedSlots S).getD (j/4) 0)) (j%4-1)) =
         s.shiftModulus g d S z
     rw [hi,← hz,shiftModulus]
@@ -261,7 +261,7 @@ theorem numberedSlotBatch_correct (hs : s.prime = rankedSlotPrime k m)
   let chosen := selectedNumbers k m g d (listedSlots S)
   let selected := chosen.map f
   let remaining := ((List.range (20+2*k*m+4*m)).filter fun i => decide (i ∉ chosen)).map f
-  let hidden := (listedSlots S).map (fun i => numericalFallback m (fallbackCode m g i true))
+  let hidden := (listedSlots S).map (fun i => numericalFallback k m (fallbackCode m g i true))
   have hlo (i : Fin m) : f (20+wangCode k m g d i) = s.low (g,d,i) :=
     congrArg Prod.fst (numericalSlotRow_eq s hs (wangRow (g,d,i)))
   have hselect (i : SlotRow k m) : slotRowNumber i ∈ chosen ↔ i ∈ selectedRows g d S := by

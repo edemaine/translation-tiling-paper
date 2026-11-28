@@ -126,8 +126,9 @@ private theorem length_flatMap_le {α β : Type*} (xs : List α) (f : α → Lis
   rw [List.length_flatMap]
   exact (listSumMap_le h).trans_eq (by simp)
 
-theorem numericalSlotTests_length (T : LeanWang.TileSet) (N k m w : ℕ) :
-    (numericalSlotTests T N k m w).length+1 ≤ slotDeckCap k m ((slotRadix m w)^k) := by
+private theorem numericalSlotTests_length_of_guards (T : LeanWang.TileSet) (N k m w saving : ℕ)
+    (hg : (numericalGuardMasks T N k m w).length + saving ≤ 2313+72*((slotRadix m w)^k)^2) :
+    (numericalSlotTests T N k m w).length+1+saving ≤ slotDeckCap k m ((slotRadix m w)^k) := by
   let B := 21+2*k*m+4*m
   have ha : (numericalAnchorMasks N k m).length ≤ 20*(2*k*m+4*m) := by
     unfold numericalAnchorMasks
@@ -180,10 +181,25 @@ theorem numericalSlotTests_length (T : LeanWang.TileSet) (N k m w : ℕ) :
     rw [numericalSlotActivationMasks_length]
     apply Nat.mul_le_mul_left
     exact Nat.choose_le_two_pow _ _
-  have hg := numericalGuardMasks_length T N k m w
   have hs := numericalSeedMasks_length N k m
   simp only [numericalSlotTests,numericalArithmeticMasks,List.length_append,List.length_map]
   unfold slotDeckCap B at *
+  omega
+
+theorem numericalSlotTests_length (T : LeanWang.TileSet) (N k m w : ℕ) :
+    (numericalSlotTests T N k m w).length+1 ≤ slotDeckCap k m ((slotRadix m w)^k) := by
+  simpa only [Nat.add_zero] using numericalSlotTests_length_of_guards T N k m w 0
+    (by simpa only [Nat.add_zero] using numericalGuardMasks_length T N k m w)
+
+theorem numericalSlotTests_length_small (T : LeanWang.TileSet) (N k : ℕ) (hk : k = 1 ∨ k = 2) :
+    (numericalSlotTests T N k 1 1).length+1 ≤ slotDeckCap k 1 (3^k) - 24*3^k := by
+  have hD : (slotRadix 1 1)^k = 3^k := rfl
+  have hcases : (slotRadix 1 1)^k = 3 ∨ (slotRadix 1 1)^k = 9 := by
+    rcases hk with rfl | rfl <;> decide
+  have h := numericalSlotTests_length_of_guards T N k 1 1 (24*3^k)
+    ((Nat.add_le_add_right (numericalGuardMasks_length_le_raw T N k 1 1) _).trans
+      (by rw [← hD]; exact rawGuardedMasks_length_small T hcases))
+  rw [hD] at h
   omega
 
 section

@@ -27,7 +27,7 @@ def slotRadius (Q m : ℕ) := max (fourValueRadius 0) (Q^(11*m))
 /-- One horizontal CRT factor for each selected slot. -/
 def slotOffsetFactorCap (k m : ℕ) : ℕ :=
   if k = 1 ∧ m = 1 then 473028263936385713 else
-  if k = 2 ∧ m = 1 then 4492167808878468487 else
+  if k = 2 ∧ m = 1 then 1156407772718448787 else
     lowCap k m * markerCap k m^3 * fallbackCap m^2
 
 theorem slotOffsetFactorCap_le (k m : ℕ) :
@@ -40,7 +40,7 @@ theorem slotOffsetFactorCap_le (k m : ℕ) :
   split
   · exact (by decide : 473028263936385713 ≤ slotBasePrimeCap*slotBasePrimeCap^3*slotBasePrimeCap^2).trans hprod
   split
-  · exact (by decide : 4492167808878468487 ≤ slotBasePrimeCap*slotBasePrimeCap^3*slotBasePrimeCap^2).trans hprod
+  · exact (by decide : 1156407772718448787 ≤ slotBasePrimeCap*slotBasePrimeCap^3*slotBasePrimeCap^2).trans hprod
   · exact le_rfl
 
 theorem slotOffsetFactorCap_pos (k m : ℕ) : 0 < slotOffsetFactorCap k m := by

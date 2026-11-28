@@ -19,7 +19,7 @@ private abbrev lowCode := rankedLowAt
 
 abbrev numericalMarker := rankedMarkerAt
 
-abbrev numericalFallback := slotFallbackAt
+abbrev numericalFallback := rankedFallbackAt
 
 @[fun_prop] private theorem lowCode_primrec :
     Primrec (fun z : ℕ × ℕ × ℕ => lowCode z.1 z.2.1 z.2.2) := rankedLowAt_primrec
@@ -29,7 +29,7 @@ abbrev numericalFallback := slotFallbackAt
   rankedMarkerAt_primrec
 
 @[fun_prop] theorem numericalFallback_primrec :
-    Primrec (fun z : ℕ × ℕ => numericalFallback z.1 z.2) := slotFallbackAt_primrec
+    Primrec (fun z : ℕ × ℕ × ℕ => numericalFallback z.1 z.2.1 z.2.2) := rankedFallbackAt_primrec
 
 def slotRowNumber {k m : ℕ} : SlotRow k m → ℕ
   | .inl i => i.val
@@ -45,7 +45,7 @@ theorem numericalMarker_eq {k m : ℕ} (s : SlotParameters k m)
 
 theorem numericalFallback_eq {k m : ℕ} (s : SlotParameters k m)
     (hs : s.prime = rankedSlotPrime k m) (g : Bool) (i : Fin m) (b : Bool) :
-    numericalFallback m (fallbackCode m g i b) = s.fallback (g,i,b) := by
+    numericalFallback k m (fallbackCode m g i b) = s.fallback (g,i,b) := by
   unfold fallback
   rw [hs]
   cases g <;> cases b <;> rfl
@@ -65,7 +65,7 @@ def numericalSlotRow (k m i : ℕ) : ℕ × ℕ × ℕ :=
   else if i < 20+2*k*m then
     let j := i-20
     (lowCode k m j,1,numericalMarker k m j 0 * numericalMarker k m j 1 * numericalMarker k m j 2)
-  else (1,1,numericalFallback m (i-(20+2*k*m)))
+  else (1,1,numericalFallback k m (i-(20+2*k*m)))
 
 theorem numericalSlotRow_primrec :
     Primrec (fun z : ℕ × ℕ × ℕ => numericalSlotRow z.1 z.2.1 z.2.2) := by
